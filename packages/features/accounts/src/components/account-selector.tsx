@@ -98,7 +98,7 @@ export function AccountSelector({
             variant="ghost"
             role="combobox"
             aria-expanded={open}
-            className={cn('dark:shadow-primary/10 group w-full border px-4', {
+            className={cn('dark:shadow-primary/10 group px-2', {
               'justify-between': !collapsed,
               'justify-center': collapsed,
             })}
@@ -144,11 +144,11 @@ export function AccountSelector({
               )}
             </If>
 
-            <CaretSortIcon className="h-4 w-4 shrink-0 opacity-50" />
+            <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
 
-        <PopoverContent className="w-full p-0">
+        <PopoverContent className="w-full p-0" collisionPadding={20}>
           <Command>
             <CommandInput placeholder={t('searchAccount')} className="h-9" />
 

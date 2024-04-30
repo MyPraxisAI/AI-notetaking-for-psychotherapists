@@ -36,17 +36,9 @@ export const UpdateInvitationDialog: React.FC<{
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
   invitationId: number;
-  account: string;
   userRole: Role;
   userRoleHierarchy: number;
-}> = ({
-  isOpen,
-  setIsOpen,
-  invitationId,
-  userRole,
-  userRoleHierarchy,
-  account,
-}) => {
+}> = ({ isOpen, setIsOpen, invitationId, userRole, userRoleHierarchy }) => {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent>
@@ -61,7 +53,6 @@ export const UpdateInvitationDialog: React.FC<{
         </DialogHeader>
 
         <UpdateInvitationForm
-          account={account}
           invitationId={invitationId}
           userRole={userRole}
           userRoleHierarchy={userRoleHierarchy}
@@ -73,13 +64,11 @@ export const UpdateInvitationDialog: React.FC<{
 };
 
 function UpdateInvitationForm({
-  account,
   invitationId,
   userRole,
   userRoleHierarchy,
   setIsOpen,
 }: React.PropsWithChildren<{
-  account: string;
   invitationId: number;
   userRole: Role;
   userRoleHierarchy: number;

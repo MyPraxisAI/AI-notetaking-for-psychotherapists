@@ -24,7 +24,7 @@ const ErrorPage = ({
 
       <div
         className={
-          'm-auto flex w-full flex-1 flex-col items-center justify-center'
+          'container m-auto flex w-full flex-1 flex-col items-center justify-center'
         }
       >
         <div className={'flex flex-col items-center space-y-16'}>

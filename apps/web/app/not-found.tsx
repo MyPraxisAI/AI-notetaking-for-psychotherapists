@@ -33,12 +33,12 @@ const NotFoundPage = async () => {
 
       <div
         className={
-          'm-auto flex w-full flex-1 flex-col items-center justify-center'
+          'container m-auto flex w-full flex-1 flex-col items-center justify-center'
         }
       >
         <div className={'flex flex-col items-center space-y-12'}>
           <div>
-            <h1 className={'font-heading text-9xl font-extrabold'}>
+            <h1 className={'font-heading text-8xl font-extrabold xl:text-9xl'}>
               <Trans i18nKey={'common:pageNotFoundHeading'} />
             </h1>
           </div>

@@ -111,12 +111,12 @@ export function NotificationsPopover(params: {
   return (
     <Popover modal open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button className={'h-8 w-8'} variant={'ghost'}>
+        <Button className={'h-9 w-9'} variant={'ghost'}>
           <Bell className={'min-h-5 min-w-5'} />
 
           <span
             className={cn(
-              `fade-in animate-in zoom-in absolute right-5 top-5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-red-500 text-[0.65rem] text-white`,
+              `fade-in animate-in zoom-in absolute right-5 top-5 mt-0 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-red-500 text-[0.65rem] text-white`,
               {
                 hidden: !unread.length,
               },
@@ -128,8 +128,10 @@ export function NotificationsPopover(params: {
       </PopoverTrigger>
 
       <PopoverContent
-        className={'flex flex-col p-0'}
-        collisionPadding={{ right: 20 }}
+        className={'flex w-full flex-col p-0 lg:min-w-64'}
+        align={'start'}
+        collisionPadding={20}
+        sideOffset={10}
       >
         <div className={'flex items-center px-3 py-2 text-sm font-semibold'}>
           {t('common:notifications')}

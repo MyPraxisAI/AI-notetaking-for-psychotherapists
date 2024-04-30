@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+type LanguagePriority = 'user' | 'application';
+
 const FeatureFlagsSchema = z.object({
   enableThemeToggle: z.boolean({
     description: 'Enable theme toggle in the user interface.',
@@ -83,9 +85,8 @@ const featuresFlagConfig = FeatureFlagsSchema.parse({
     process.env.NEXT_PUBLIC_ENABLE_TEAM_ACCOUNTS_BILLING,
     false,
   ),
-  languagePriority: process.env.NEXT_PUBLIC_LANGUAGE_PRIORITY as
-    | 'user'
-    | 'application',
+  languagePriority: process.env
+    .NEXT_PUBLIC_LANGUAGE_PRIORITY as LanguagePriority,
   enableNotifications: getBoolean(
     process.env.NEXT_PUBLIC_ENABLE_NOTIFICATIONS,
     true,

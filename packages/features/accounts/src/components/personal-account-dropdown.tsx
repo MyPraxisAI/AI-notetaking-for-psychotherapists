@@ -115,15 +115,15 @@ export function PersonalAccountDropdown({
           </div>
 
           <EllipsisVertical
-            className={'text-muted-foreground hidden h-8 group-hover:flex'}
+            className={'text-muted-foreground mr-1 hidden h-8 group-hover:flex'}
           />
         </If>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
-        className={'!min-w-[15rem]'}
+        className={'xl:!min-w-[15rem]'}
         collisionPadding={{ right: 20, left: 20 }}
-        sideOffset={20}
+        sideOffset={10}
       >
         <DropdownMenuItem className={'!h-10 rounded-none'}>
           <div

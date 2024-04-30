@@ -1,4 +1,6 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
+
+import { useQuery } from '@tanstack/react-query';
 
 import { useSupabase } from '@kit/supabase/hooks/use-supabase';
 
@@ -20,8 +22,8 @@ export function useFetchNotifications({
   accountIds: string[];
   realtime: boolean;
 }) {
+  const { data: notifications } = useFetchInitialNotifications({ accountIds });
   const client = useSupabase();
-  const didFetchInitialData = useRef(false);
 
   useEffect(() => {
     let realtimeSubscription: { unsubscribe: () => void } | null = null;
@@ -45,10 +47,26 @@ export function useFetchNotifications({
         .subscribe();
     }
 
-    if (!didFetchInitialData.current) {
-      const now = new Date().toISOString();
+    if (notifications) {
+      onNotifications(notifications);
+    }
 
-      const initialFetch = client
+    return () => {
+      if (realtimeSubscription) {
+        realtimeSubscription.unsubscribe();
+      }
+    };
+  }, [client, onNotifications, accountIds, realtime, notifications]);
+}
+
+function useFetchInitialNotifications(props: { accountIds: string[] }) {
+  const client = useSupabase();
+  const now = new Date().toISOString();
+
+  return useQuery({
+    queryKey: ['notifications', ...props.accountIds],
+    queryFn: async () => {
+      const { data } = await client
         .from('notifications')
         .select(
           `id, 
@@ -59,29 +77,14 @@ export function useFetchNotifications({
            link
            `,
         )
-        .in('account_id', accountIds)
+        .in('account_id', props.accountIds)
         .eq('dismissed', false)
         .gt('expires_at', now)
         .order('created_at', { ascending: false })
         .limit(10);
 
-      didFetchInitialData.current = true;
-
-      void initialFetch.then(({ data, error }) => {
-        if (error) {
-          throw error;
-        }
-
-        if (data) {
-          onNotifications(data);
-        }
-      });
-    }
-
-    return () => {
-      if (realtimeSubscription) {
-        realtimeSubscription.unsubscribe();
-      }
-    };
-  }, [client, onNotifications, accountIds, realtime]);
+      return data;
+    },
+    refetchOnMount: false,
+  });
 }

@@ -30,7 +30,7 @@ import {
   InputOTPSeparator,
   InputOTPSlot,
 } from '@kit/ui/input-otp';
-import Spinner from '@kit/ui/spinner';
+import { Spinner } from '@kit/ui/spinner';
 import { Trans } from '@kit/ui/trans';
 
 export function MultiFactorChallengeContainer({

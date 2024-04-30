@@ -1,6 +1,6 @@
-import { cn } from '../utils/cn';
+import { cn } from '../utils';
 
-function Spinner(
+export function Spinner(
   props: React.PropsWithChildren<{
     className?: string;
   }>,
@@ -29,5 +29,3 @@ function Spinner(
     </div>
   );
 }
-
-export default Spinner;

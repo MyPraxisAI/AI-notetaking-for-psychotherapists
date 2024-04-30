@@ -18,13 +18,13 @@ export function ProfileAvatar(props: ProfileAvatarProps) {
     return (
       <Avatar className={avatarClassName}>
         <AvatarFallback>
-          <span className={'uppercase'}>{props.text.slice(0, 2)}</span>
+          <span className={'uppercase'}>{props.text.slice(0, 1)}</span>
         </AvatarFallback>
       </Avatar>
     );
   }
 
-  const initials = props.displayName?.slice(0, 2);
+  const initials = props.displayName?.slice(0, 1);
 
   return (
     <Avatar className={avatarClassName}>

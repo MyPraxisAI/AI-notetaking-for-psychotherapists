@@ -1,3 +1,5 @@
+'use client';
+
 import { useCallback, useState } from 'react';
 
 import type { Factor } from '@supabase/supabase-js';
@@ -25,7 +27,7 @@ import {
 import { Badge } from '@kit/ui/badge';
 import { Button } from '@kit/ui/button';
 import { If } from '@kit/ui/if';
-import Spinner from '@kit/ui/spinner';
+import { Spinner } from '@kit/ui/spinner';
 import {
   Table,
   TableBody,

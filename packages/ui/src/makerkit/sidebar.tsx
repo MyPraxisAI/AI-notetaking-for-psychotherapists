@@ -19,10 +19,10 @@ import {
 import { cn, isRouteActive } from '../utils';
 import { SidebarContext } from './context/sidebar.context';
 import { If } from './if';
-import { SidebarConfigSchema } from './sidebar-schema';
+import { NavigationConfigSchema } from './navigation-config.schema';
 import { Trans } from './trans';
 
-export type SidebarConfig = z.infer<typeof SidebarConfigSchema>;
+export type SidebarConfig = z.infer<typeof NavigationConfigSchema>;
 
 export function Sidebar(props: {
   collapsed?: boolean;
@@ -167,7 +167,7 @@ export function SidebarItem({
     <Button
       asChild
       className={cn('flex w-full text-sm shadow-none', {
-        'justify-start space-x-2': !collapsed,
+        'justify-start space-x-2.5': !collapsed,
       })}
       size={size}
       variant={variant}

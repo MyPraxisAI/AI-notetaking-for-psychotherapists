@@ -1,23 +1,98 @@
+import * as React from 'react';
+
 import { cn } from '../utils';
 
-export function Page(
-  props: React.PropsWithChildren<{
-    sidebar?: React.ReactNode;
-    contentContainerClassName?: string;
-    className?: string;
-  }>,
-) {
+type PageStyle = 'sidebar' | 'header' | 'custom';
+
+type PageProps = React.PropsWithChildren<{
+  style?: PageStyle;
+  contentContainerClassName?: string;
+  className?: string;
+  sticky?: boolean;
+}>;
+
+export function Page(props: PageProps) {
+  switch (props.style) {
+    case 'sidebar':
+      return <PageWithSidebar {...props} />;
+
+    case 'header':
+      return <PageWithHeader {...props} />;
+
+    case 'custom':
+      return props.children;
+
+    default:
+      return <PageWithSidebar {...props} />;
+  }
+}
+
+function PageWithSidebar(props: PageProps) {
+  const { Navigation, Children, MobileNavigation } = getSlotsFromPage(props);
+
   return (
     <div className={cn('flex', props.className)}>
-      <div className={'hidden lg:block'}>{props.sidebar}</div>
+      {Navigation}
 
       <div
         className={
           props.contentContainerClassName ??
-          'mx-auto flex h-screen w-full flex-col space-y-4 overflow-y-auto'
+          'mx-auto flex h-screen w-full flex-col overflow-y-auto px-4 lg:px-0'
         }
       >
-        {props.children}
+        {MobileNavigation}
+
+        <div className={'flex flex-col space-y-4 lg:mt-4 lg:px-4'}>
+          {Children}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function PageMobileNavigation(
+  props: React.PropsWithChildren<{
+    className?: string;
+  }>,
+) {
+  return (
+    <div className={cn('w-full py-2 lg:hidden', props.className)}>
+      {props.children}
+    </div>
+  );
+}
+
+function PageWithHeader(props: PageProps) {
+  const { Navigation, Children, MobileNavigation } = getSlotsFromPage(props);
+
+  return (
+    <div className={cn('flex flex-1 flex-col', props.className)}>
+      <div
+        className={
+          props.contentContainerClassName ?? 'flex flex-1 flex-col space-y-4'
+        }
+      >
+        <div
+          className={cn(
+            'dark:border-primary-900 flex h-14 items-center justify-between px-4 shadow-sm dark:shadow-primary/10 lg:justify-start',
+            {
+              'sticky top-0 z-10 bg-background/80 backdrop-blur-md':
+                props.sticky ?? true,
+            },
+          )}
+        >
+          <div
+            className={'hidden w-full flex-1 items-center space-x-8 lg:flex'}
+          >
+            {Navigation}
+          </div>
+
+          {MobileNavigation}
+        </div>
+
+        <div className={'flex flex-col space-y-8 px-4 py-4 lg:container'}>
+          {Children}
+        </div>
       </div>
     </div>
   );
@@ -28,54 +103,96 @@ export function PageBody(
     className?: string;
   }>,
 ) {
-  const className = cn('w-full px-4 flex flex-col flex-1', props.className);
+  const className = cn('w-full flex flex-col flex-1', props.className);
 
   return <div className={className}>{props.children}</div>;
+}
+
+export function PageNavigation(props: React.PropsWithChildren) {
+  return <div className={'hidden flex-1 lg:flex'}>{props.children}</div>;
+}
+
+export function PageDescription(props: React.PropsWithChildren) {
+  return (
+    <h2 className={'hidden lg:block'}>
+      <span
+        className={'text-base font-medium leading-none text-muted-foreground'}
+      >
+        {props.children}
+      </span>
+    </h2>
+  );
+}
+
+export function PageTitle(props: React.PropsWithChildren) {
+  return (
+    <h1
+      className={
+        'font-heading text-2xl font-semibold leading-none dark:text-white'
+      }
+    >
+      {props.children}
+    </h1>
+  );
 }
 
 export function PageHeader({
   children,
   title,
   description,
-  mobileNavigation,
 }: React.PropsWithChildren<{
   title?: string | React.ReactNode;
   description?: string | React.ReactNode;
-  mobileNavigation?: React.ReactNode;
 }>) {
   return (
-    <div className={'flex min-h-[4.5rem] items-center justify-between px-4'}>
+    <div className={'flex items-center justify-between'}>
       {title ? (
-        <div
-          className={
-            'flex items-center space-x-4 lg:flex-col lg:items-start lg:space-x-0 lg:space-y-0.5'
-          }
-        >
-          <div className={'flex items-center lg:hidden'}>
-            {mobileNavigation}
-          </div>
+        <div className={'flex flex-col space-y-1.5'}>
+          <PageTitle>{title}</PageTitle>
 
-          <h1
-            className={
-              'font-heading text-xl font-semibold leading-none dark:text-white'
-            }
-          >
-            {title}
-          </h1>
-
-          <h2 className={'hidden lg:block'}>
-            <span
-              className={
-                'text-base font-medium leading-none text-muted-foreground'
-              }
-            >
-              {description}
-            </span>
-          </h2>
+          <PageDescription>{description}</PageDescription>
         </div>
       ) : null}
 
       {children}
     </div>
+  );
+}
+
+function getSlotsFromPage(props: React.PropsWithChildren) {
+  return React.Children.toArray(props.children).reduce<{
+    Children: React.ReactElement | null;
+    Navigation: React.ReactElement | null;
+    MobileNavigation: React.ReactElement | null;
+  }>(
+    (acc, child) => {
+      if (!React.isValidElement(child)) {
+        return acc;
+      }
+
+      if (child.type === PageNavigation) {
+        return {
+          ...acc,
+          Navigation: child,
+        };
+      }
+
+      if (child.type === PageMobileNavigation) {
+        return {
+          ...acc,
+          MobileNavigation: child,
+        };
+      }
+
+      return {
+        ...acc,
+        Children: child,
+      };
+    },
+    {
+      Children: null,
+      Navigation: null,
+      MobileNavigation: null,
+    },
   );
 }
