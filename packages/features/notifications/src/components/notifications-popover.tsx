@@ -112,7 +112,7 @@ export function NotificationsPopover(params: {
     <Popover modal open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button className={'h-9 w-9'} variant={'ghost'}>
-          <Bell className={'min-h-5 min-w-5'} />
+          <Bell className={'min-h-4 min-w-4'} />
 
           <span
             className={cn(

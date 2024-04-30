@@ -85,7 +85,7 @@ export function AccountSelector({
     pictureUrl ? (
       <UserAvatar pictureUrl={pictureUrl} />
     ) : (
-      <PersonIcon className="h-4 w-4" />
+      <PersonIcon className="h-4 min-h-4 w-4 min-w-4" />
     );
 
   return (
@@ -98,19 +98,22 @@ export function AccountSelector({
             variant="ghost"
             role="combobox"
             aria-expanded={open}
-            className={cn('dark:shadow-primary/10 group px-2', {
-              'justify-between': !collapsed,
-              'justify-center': collapsed,
-            })}
+            className={cn(
+              'dark:shadow-primary/10 group w-full min-w-0 max-w-full px-2',
+              {
+                'justify-between': !collapsed,
+                'justify-center': collapsed,
+              },
+            )}
           >
             <If
               condition={selected}
               fallback={
-                <span className={'flex items-center space-x-2'}>
+                <span className={'flex max-w-full items-center space-x-2'}>
                   <PersonalAccountAvatar />
 
                   <span
-                    className={cn({
+                    className={cn('truncate', {
                       hidden: collapsed,
                     })}
                   >
@@ -120,7 +123,7 @@ export function AccountSelector({
               }
             >
               {(account) => (
-                <span className={'flex items-center space-x-2'}>
+                <span className={'flex max-w-full items-center space-x-2'}>
                   <Avatar
                     className={
                       'group-hover:border-border h-6 w-6 border border-transparent'
@@ -134,7 +137,7 @@ export function AccountSelector({
                   </Avatar>
 
                   <span
-                    className={cn({
+                    className={cn('truncate', {
                       hidden: collapsed,
                     })}
                   >
@@ -144,7 +147,7 @@ export function AccountSelector({
               )}
             </If>
 
-            <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            <CaretSortIcon className="ml-1 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
 

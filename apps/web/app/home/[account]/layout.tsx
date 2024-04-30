@@ -1,7 +1,14 @@
 import { use } from 'react';
 
+import { cookies } from 'next/headers';
+
 import { If } from '@kit/ui/if';
-import { Page, PageMobileNavigation, PageNavigation } from '@kit/ui/page';
+import {
+  Page,
+  PageLayoutStyle,
+  PageMobileNavigation,
+  PageNavigation,
+} from '@kit/ui/page';
 
 import { AppLogo } from '~/components/app-logo';
 import { getTeamAccountSidebarConfig } from '~/config/team-account-navigation.config';
@@ -24,7 +31,7 @@ function TeamWorkspaceLayout({
   params: Params;
 }>) {
   const data = use(loadTeamWorkspace(params.account));
-  const style = getTeamAccountSidebarConfig(params.account).style;
+  const style = getLayoutStyle(params.account);
 
   const accounts = data.accounts.map(({ name, slug, picture_url }) => ({
     label: name,
@@ -59,6 +66,13 @@ function TeamWorkspaceLayout({
 
       {children}
     </Page>
+  );
+}
+
+function getLayoutStyle(account: string) {
+  return (
+    (cookies().get('layout-style')?.value as PageLayoutStyle) ??
+    getTeamAccountSidebarConfig(account).style
   );
 }
 

@@ -2,10 +2,10 @@ import * as React from 'react';
 
 import { cn } from '../utils';
 
-type PageStyle = 'sidebar' | 'header' | 'custom';
+export type PageLayoutStyle = 'sidebar' | 'header' | 'custom';
 
 type PageProps = React.PropsWithChildren<{
-  style?: PageStyle;
+  style?: PageLayoutStyle;
   contentContainerClassName?: string;
   className?: string;
   sticky?: boolean;

@@ -60,8 +60,8 @@ function SidebarContainer(props: {
 
   return (
     <>
-      <SidebarContent className={'mt-4'}>
-        <div className={'flex items-center justify-between'}>
+      <SidebarContent className={'h-16 justify-center'}>
+        <div className={'flex max-w-full items-center space-x-2'}>
           <TeamAccountAccountsSelector
             selectedAccount={account}
             accounts={accounts}

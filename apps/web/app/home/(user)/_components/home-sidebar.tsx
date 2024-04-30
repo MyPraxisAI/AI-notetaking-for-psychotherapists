@@ -17,7 +17,7 @@ export function HomeSidebar(props: { workspace: UserWorkspace }) {
   return (
     <Sidebar>
       <SidebarContent className={'h-16 justify-center'}>
-        <div className={'flex items-center justify-between'}>
+        <div className={'flex items-center justify-between space-x-2'}>
           <If
             condition={featuresFlagConfig.enableTeamAccounts}
             fallback={<AppLogo className={'py-2'} />}

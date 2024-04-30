@@ -100,7 +100,7 @@ function AccountsTableFilters(props: {
 
   return (
     <div className={'flex items-center justify-between space-x-4'}>
-      <Heading level={4}>Accounts</Heading>
+      <Heading level={3}>Accounts</Heading>
 
       <div className={'flex space-x-4'}>
         <Form {...form}>

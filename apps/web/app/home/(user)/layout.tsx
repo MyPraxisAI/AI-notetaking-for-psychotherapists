@@ -1,7 +1,14 @@
 import { use } from 'react';
 
+import { cookies } from 'next/headers';
+
 import { If } from '@kit/ui/if';
-import { Page, PageMobileNavigation, PageNavigation } from '@kit/ui/page';
+import {
+  Page,
+  PageLayoutStyle,
+  PageMobileNavigation,
+  PageNavigation,
+} from '@kit/ui/page';
 
 import { AppLogo } from '~/components/app-logo';
 import { personalAccountNavigationConfig } from '~/config/personal-account-navigation.config';
@@ -13,10 +20,9 @@ import { HomeMobileNavigation } from './_components/home-mobile-navigation';
 import { HomeSidebar } from './_components/home-sidebar';
 import { loadUserWorkspace } from './_lib/server/load-user-workspace';
 
-const style = personalAccountNavigationConfig.style;
-
 function UserHomeLayout({ children }: React.PropsWithChildren) {
   const workspace = use(loadUserWorkspace());
+  const style = getLayoutStyle();
 
   return (
     <Page style={style}>
@@ -41,3 +47,10 @@ function UserHomeLayout({ children }: React.PropsWithChildren) {
 }
 
 export default withI18n(UserHomeLayout);
+
+function getLayoutStyle() {
+  return (
+    (cookies().get('layout-style')?.value as PageLayoutStyle) ??
+    personalAccountNavigationConfig.style
+  );
+}
