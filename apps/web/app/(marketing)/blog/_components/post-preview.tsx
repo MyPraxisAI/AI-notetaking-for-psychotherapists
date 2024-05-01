@@ -40,13 +40,13 @@ export function PostPreview({
         )}
       </If>
 
-      <div className={'flex flex-col space-y-2 px-1'}>
-        <div className={'flex flex-col space-y-1'}>
-          <h3 className="text-2xl font-semibold leading-snug">
+      <div className={'flex flex-col space-y-4 px-1'}>
+        <div className={'flex flex-col space-y-2'}>
+          <h2 className="text-2xl font-semibold leading-snug">
             <Link href={slug} className="hover:underline">
               {title}
             </Link>
-          </h3>
+          </h2>
 
           <div className="flex flex-row items-center space-x-2 text-sm">
             <div className="text-muted-foreground">
@@ -56,7 +56,7 @@ export function PostPreview({
         </div>
 
         <p
-          className="mb-4 text-base leading-relaxed text-secondary-foreground"
+          className="mb-4 text-sm leading-relaxed text-muted-foreground"
           dangerouslySetInnerHTML={{ __html: description ?? '' }}
         />
       </div>

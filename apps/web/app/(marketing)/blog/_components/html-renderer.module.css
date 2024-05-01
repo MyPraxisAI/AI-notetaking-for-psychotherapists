@@ -93,5 +93,5 @@ For more info: https://github.com/tailwindlabs/tailwindcss/issues/3258#issuecomm
 }
 
 .HTML pre {
-  @apply my-6 text-sm text-current bg-muted p-6;
+  @apply my-6 text-sm text-current border p-6 rounded-lg;
 }
