@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { Bell, CircleAlert, Info, TriangleAlert, XIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -33,7 +33,15 @@ export function NotificationsPopover(params: {
 
   const onNotifications = useCallback(
     (notifications: PartialNotification[]) => {
-      setNotifications((existing) => [...notifications, ...existing]);
+      setNotifications((existing) => {
+        const unique = new Set(existing.map((notification) => notification.id));
+
+        const notificationsFiltered = notifications.filter(
+          (notification) => !unique.has(notification.id),
+        );
+
+        return [...notificationsFiltered, ...existing];
+      });
     },
     [],
   );
@@ -107,6 +115,12 @@ export function NotificationsPopover(params: {
 
     return text.slice(0, 1).toUpperCase() + text.slice(1);
   };
+
+  useEffect(() => {
+    return () => {
+      setNotifications([]);
+    };
+  }, []);
 
   return (
     <Popover modal open={open} onOpenChange={setOpen}>

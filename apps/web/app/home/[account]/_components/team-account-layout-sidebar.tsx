@@ -29,6 +29,7 @@ type AccountModel = {
 
 export function TeamAccountLayoutSidebar(props: {
   account: string;
+  accountId: string;
   accounts: AccountModel[];
   collapsed: boolean;
   user: User;
@@ -40,6 +41,7 @@ export function TeamAccountLayoutSidebar(props: {
           collapsed={collapsed}
           setCollapsed={setCollapsed}
           account={props.account}
+          accountId={props.accountId}
           accounts={props.accounts}
           user={props.user}
         />
@@ -50,6 +52,7 @@ export function TeamAccountLayoutSidebar(props: {
 
 function SidebarContainer(props: {
   account: string;
+  accountId: string;
   accounts: AccountModel[];
   collapsed: boolean;
   setCollapsed: (collapsed: boolean) => void;
@@ -61,7 +64,9 @@ function SidebarContainer(props: {
   return (
     <>
       <SidebarContent className={'h-16 justify-center'}>
-        <div className={'flex max-w-full items-center space-x-2'}>
+        <div
+          className={'flex max-w-full items-center justify-between space-x-4'}
+        >
           <TeamAccountAccountsSelector
             selectedAccount={account}
             accounts={accounts}
@@ -69,7 +74,7 @@ function SidebarContainer(props: {
 
           <TeamAccountNotifications
             userId={props.user.id}
-            accountId={account}
+            accountId={props.accountId}
           />
         </div>
       </SidebarContent>

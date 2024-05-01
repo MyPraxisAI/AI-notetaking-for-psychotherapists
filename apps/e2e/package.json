@@ -15,11 +15,5 @@
     "@playwright/test": "^1.43.1",
     "@types/node": "^20.12.7",
     "node-html-parser": "^6.1.13"
-  },
-  "dependencies": {
-    "@tanstack/react-table": "^8.16.0",
-    "next": "14.2.3",
-    "tailwind-merge": "^2.3.0",
-    "zod": "^3.23.5"
   }
 }

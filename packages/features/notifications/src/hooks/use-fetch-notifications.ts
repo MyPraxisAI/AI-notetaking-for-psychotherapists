@@ -4,6 +4,8 @@ import { useQuery } from '@tanstack/react-query';
 
 import { useSupabase } from '@kit/supabase/hooks/use-supabase';
 
+import { useNotificationsStream } from './use-notifications-stream';
+
 type Notification = {
   id: number;
   body: string;
@@ -22,41 +24,21 @@ export function useFetchNotifications({
   accountIds: string[];
   realtime: boolean;
 }) {
-  const { data: notifications } = useFetchInitialNotifications({ accountIds });
-  const client = useSupabase();
+  const { data: initialNotifications } = useFetchInitialNotifications({
+    accountIds,
+  });
+
+  useNotificationsStream({
+    onNotifications,
+    accountIds,
+    enabled: realtime,
+  });
 
   useEffect(() => {
-    let realtimeSubscription: { unsubscribe: () => void } | null = null;
-
-    if (realtime) {
-      const channel = client.channel('notifications-channel');
-
-      realtimeSubscription = channel
-        .on(
-          'postgres_changes',
-          {
-            event: 'INSERT',
-            schema: 'public',
-            filter: `account_id=in.(${accountIds.join(', ')})`,
-            table: 'notifications',
-          },
-          (payload) => {
-            onNotifications([payload.new as Notification]);
-          },
-        )
-        .subscribe();
+    if (initialNotifications) {
+      onNotifications(initialNotifications);
     }
-
-    if (notifications) {
-      onNotifications(notifications);
-    }
-
-    return () => {
-      if (realtimeSubscription) {
-        realtimeSubscription.unsubscribe();
-      }
-    };
-  }, [client, onNotifications, accountIds, realtime, notifications]);
+  }, [initialNotifications, onNotifications]);
 }
 
 function useFetchInitialNotifications(props: { accountIds: string[] }) {
@@ -86,5 +68,6 @@ function useFetchInitialNotifications(props: { accountIds: string[] }) {
       return data;
     },
     refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 }

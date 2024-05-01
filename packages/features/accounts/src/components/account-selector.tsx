@@ -99,9 +99,9 @@ export function AccountSelector({
             role="combobox"
             aria-expanded={open}
             className={cn(
-              'dark:shadow-primary/10 group w-full min-w-0 max-w-full px-2',
+              'dark:shadow-primary/10 group w-auto min-w-0 max-w-fit px-2',
               {
-                'justify-between': !collapsed,
+                'justify-start': !collapsed,
                 'justify-center': collapsed,
               },
             )}
@@ -124,14 +124,10 @@ export function AccountSelector({
             >
               {(account) => (
                 <span className={'flex max-w-full items-center space-x-2'}>
-                  <Avatar
-                    className={
-                      'group-hover:border-border h-6 w-6 border border-transparent'
-                    }
-                  >
+                  <Avatar className={'h-5 w-5'}>
                     <AvatarImage src={account.image ?? undefined} />
 
-                    <AvatarFallback>
+                    <AvatarFallback className={'group-hover:bg-background'}>
                       {account.label ? account.label[0] : ''}
                     </AvatarFallback>
                   </Avatar>
@@ -147,7 +143,7 @@ export function AccountSelector({
               )}
             </If>
 
-            <CaretSortIcon className="ml-1 h-4 w-4 shrink-0 opacity-50" />
+            <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
 
@@ -188,7 +184,7 @@ export function AccountSelector({
                       data-name={account.label}
                       data-slug={account.value}
                       className={cn(
-                        'group flex justify-between transition-colors',
+                        'group my-1 flex justify-between transition-colors',
                         {
                           ['bg-muted']: value === account.value,
                         },
@@ -205,19 +201,16 @@ export function AccountSelector({
                       }}
                     >
                       <div className={'flex items-center'}>
-                        <Avatar
-                          className={cn(
-                            'mr-2 h-6 w-6 border border-transparent',
-                            {
-                              ['border-border']: value === account.value,
-                              ['group-hover:border-border ']:
-                                value !== account.value,
-                            },
-                          )}
-                        >
+                        <Avatar className={'mr-2 h-5 w-5'}>
                           <AvatarImage src={account.image ?? undefined} />
 
-                          <AvatarFallback>
+                          <AvatarFallback
+                            className={cn({
+                              ['bg-background']: value === account.value,
+                              ['group-hover:bg-background']:
+                                value !== account.value,
+                            })}
+                          >
                             {account.label ? account.label[0] : ''}
                           </AvatarFallback>
                         </Avatar>
@@ -241,7 +234,7 @@ export function AccountSelector({
             <Button
               data-test={'create-team-account-trigger'}
               variant="ghost"
-              className="w-full justify-start"
+              className="w-full justify-start rounded-none"
               onClick={() => {
                 setIsCreatingAccount(true);
                 setOpen(false);

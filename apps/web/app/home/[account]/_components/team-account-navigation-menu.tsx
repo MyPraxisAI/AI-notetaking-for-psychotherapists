@@ -50,10 +50,10 @@ export function TeamAccountNavigationMenu(props: {
 
       <div className={'flex justify-end space-x-2.5'}>
         <TeamAccountAccountsSelector
-          selectedAccount={account.id}
+          selectedAccount={account.slug}
           accounts={accounts.map((account) => ({
             label: account.name,
-            value: account.id,
+            value: account.slug,
             image: account.picture_url,
           }))}
         />

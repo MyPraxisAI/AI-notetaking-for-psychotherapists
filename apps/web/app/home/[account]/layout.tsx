@@ -46,6 +46,7 @@ function TeamWorkspaceLayout({
           <TeamAccountLayoutSidebar
             collapsed={false}
             account={params.account}
+            accountId={data.account.id}
             accounts={accounts}
             user={data.user}
           />
