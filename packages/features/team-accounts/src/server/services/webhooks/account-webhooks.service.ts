@@ -55,7 +55,7 @@ class AccountWebhooksService {
     const { getMailer } = await import('@kit/mailers');
     const mailer = await getMailer();
 
-    const html = renderAccountDeleteEmail({
+    const { html, subject } = await renderAccountDeleteEmail({
       userDisplayName: params.userDisplayName,
       productName: params.productName,
     });
@@ -63,7 +63,7 @@ class AccountWebhooksService {
     return mailer.sendEmail({
       to: params.userEmail,
       from: params.fromEmail,
-      subject: 'Account Deletion Request',
+      subject,
       html,
     });
   }

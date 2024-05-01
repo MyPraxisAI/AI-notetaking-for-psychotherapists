@@ -521,6 +521,9 @@ importers:
       '@kit/eslint-config':
         specifier: workspace:*
         version: link:../../tooling/eslint
+      '@kit/i18n':
+        specifier: workspace:*
+        version: link:../i18n
       '@kit/prettier-config':
         specifier: workspace:*
         version: link:../../tooling/prettier

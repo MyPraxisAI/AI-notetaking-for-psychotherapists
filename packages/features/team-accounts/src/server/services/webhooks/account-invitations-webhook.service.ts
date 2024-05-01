@@ -103,7 +103,7 @@ class AccountInvitationsWebhookService {
 
       const mailer = await getMailer();
 
-      const html = renderInviteEmail({
+      const { html, subject } = await renderInviteEmail({
         link: this.getInvitationLink(invitation.invite_token),
         invitedUserEmail: invitation.email,
         inviter: inviter.data.name ?? inviter.data.email ?? '',
@@ -115,7 +115,7 @@ class AccountInvitationsWebhookService {
         .sendEmail({
           from: env.emailSender,
           to: invitation.email,
-          subject: 'You have been invited to join a team',
+          subject,
           html,
         })
         .then(() => {

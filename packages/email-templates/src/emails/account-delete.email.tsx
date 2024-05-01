@@ -10,53 +10,75 @@ import {
   render,
 } from '@react-email/components';
 
+import { initializeEmailI18n } from '../lib/i18n';
+
 interface Props {
   productName: string;
   userDisplayName: string;
+  language?: string;
 }
 
-export function renderAccountDeleteEmail(props: Props) {
-  const previewText = `We have deleted your ${props.productName} account`;
+export async function renderAccountDeleteEmail(props: Props) {
+  const namespace = 'account-delete-email';
 
-  return render(
+  const { t } = await initializeEmailI18n({
+    language: props.language,
+    namespace,
+  });
+
+  const previewText = t(`${namespace}:previewText`, {
+    productName: props.productName,
+  });
+
+  const subject = t(`${namespace}:subject`);
+
+  const html = render(
     <Html>
       <Head />
       <Preview>{previewText}</Preview>
 
       <Tailwind>
-        <Body className="mx-auto my-auto bg-gray-50 font-sans">
+        <Body className="mx-auto my-auto bg-[#ffffff] font-sans">
           <Container className="mx-auto my-[40px] w-[465px] rounded-lg border border-solid border-[#eaeaea] bg-white p-[20px]">
             <Heading className="mx-0 my-[30px] p-0 text-center text-[24px] font-bold text-black">
               {previewText}
             </Heading>
 
             <Text className="text-[14px] leading-[24px] text-black">
-              Hello {props.userDisplayName},
+              {t(`${namespace}:hello`, {
+                displayName: props.userDisplayName,
+              })}
             </Text>
 
             <Text className="text-[14px] leading-[24px] text-black">
-              This is to confirm that we&apos;ve processed your request to
-              delete your account with {props.productName}.
+              {t(`${namespace}:paragraph1`, {
+                productName: props.productName,
+              })}
             </Text>
 
             <Text className="text-[14px] leading-[24px] text-black">
-              We&apos;re sorry to see you go. Please note that this action is
-              irreversible, and we&apos;ll make sure to delete all of your data
-              from our systems.
+              {t(`${namespace}:paragraph2`)}
             </Text>
 
             <Text className="text-[14px] leading-[24px] text-black">
-              We thank you again for using {props.productName}.
+              {t(`${namespace}:paragraph3`, {
+                productName: props.productName,
+              })}
             </Text>
 
             <Text className="text-[14px] leading-[24px] text-black">
-              Best,
-              <br />
-              The {props.productName} Team
+              {t(`${namespace}:paragraph4`, {
+                productName: props.productName,
+              })}
             </Text>
           </Container>
         </Body>
       </Tailwind>
     </Html>,
   );
+
+  return {
+    html,
+    subject,
+  };
 }
