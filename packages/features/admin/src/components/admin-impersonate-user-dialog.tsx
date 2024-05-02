@@ -2,8 +2,6 @@
 
 import { useState } from 'react';
 
-import { useRouter } from 'next/navigation';
-
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
@@ -139,7 +137,6 @@ function ImpersonateUserAuthSetter({
 
 function useSetSession(tokens: { accessToken: string; refreshToken: string }) {
   const supabase = useSupabase();
-  const router = useRouter();
 
   return useQuery({
     queryKey: ['impersonate-user', tokens.accessToken, tokens.refreshToken],
@@ -149,7 +146,8 @@ function useSetSession(tokens: { accessToken: string; refreshToken: string }) {
         access_token: tokens.accessToken,
       });
 
-      router.push('/home');
+      // use a hard refresh to avoid hitting cached pages
+      window.location.replace('/home');
     },
   });
 }
