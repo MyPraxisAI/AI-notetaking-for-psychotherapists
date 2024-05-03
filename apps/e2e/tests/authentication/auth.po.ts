@@ -57,8 +57,6 @@ export class AuthPageObject {
     return expect(async () => {
       const res = await this.mailbox.visitMailbox(email, params);
 
-      console.log(res);
-
       expect(res).not.toBeNull();
     }).toPass();
   }
