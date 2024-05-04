@@ -39,7 +39,7 @@ const config = {
     },
     // needed for supporting dynamic imports for local content
     outputFileTracingIncludes: {
-      "/*": ["./content/**/*"],
+      '/*': ['./content/**/*'],
     },
     optimizePackageImports: [
       'recharts',
