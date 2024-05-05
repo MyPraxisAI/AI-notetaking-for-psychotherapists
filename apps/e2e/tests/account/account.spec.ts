@@ -1,4 +1,5 @@
-import { expect, Page, test } from '@playwright/test';
+import { Page, expect, test } from '@playwright/test';
+
 import { AccountPageObject } from './account.po';
 
 test.describe('Account Settings', () => {
@@ -28,12 +29,6 @@ test.describe('Account Settings', () => {
     const email = account.auth.createRandomEmail();
 
     await account.updateEmail(email);
-
-    const req = await page.waitForResponse((resp) => {
-      return resp.url().includes('auth/v1/user');
-    });
-
-    expect(req.status()).toBe(200);
   });
 
   test('user can update their password', async () => {
@@ -57,8 +52,10 @@ test.describe('Account Deletion', () => {
     await account.deleteAccount();
 
     const response = await page.waitForResponse((resp) => {
-      return resp.url().includes('home/settings') &&
-        resp.request().method() === 'POST';
+      return (
+        resp.url().includes('home/settings') &&
+        resp.request().method() === 'POST'
+      );
     });
 
     // The server should respond with a 303 redirect

@@ -17,11 +17,12 @@ test.describe('User Billing', () => {
     await po.billing.selectPlan(0);
     await po.billing.proceedToCheckout();
 
+    await po.billing.stripe.waitForForm();
     await po.billing.stripe.fillForm();
     await po.billing.stripe.submitForm();
 
     await expect(po.billing.successStatus()).toBeVisible({
-      timeout: 30000,
+      timeout: 25_000,
     });
 
     await po.billing.returnToBilling();
