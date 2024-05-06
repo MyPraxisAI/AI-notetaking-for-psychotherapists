@@ -1312,9 +1312,6 @@ importers:
       '@next/eslint-plugin-next':
         specifier: ^14.2.3
         version: 14.2.3
-      '@tanstack/react-table':
-        specifier: ^8.16.0
-        version: 8.16.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@trivago/prettier-plugin-sort-imports':
         specifier: ^4.3.0
         version: 4.3.0(prettier@3.2.5)
@@ -1342,15 +1339,6 @@ importers:
       eslint-plugin-react-hooks:
         specifier: ^4.6.2
         version: 4.6.2(eslint@8.57.0)
-      next:
-        specifier: 14.2.3
-        version: 14.2.3(@babel/core@7.24.5)(@opentelemetry/api@1.8.0)(@playwright/test@1.43.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      tailwind-merge:
-        specifier: ^2.3.0
-        version: 2.3.0
-      zod:
-        specifier: ^3.23.6
-        version: 3.23.6
     devDependencies:
       '@kit/prettier-config':
         specifier: workspace:^
@@ -1382,12 +1370,6 @@ importers:
       prettier-plugin-tailwindcss:
         specifier: ^0.5.14
         version: 0.5.14(@ianvs/prettier-plugin-sort-imports@4.2.1(prettier@3.2.5))(@trivago/prettier-plugin-sort-imports@4.3.0(prettier@3.2.5))(prettier@3.2.5)
-      tailwind-merge:
-        specifier: ^2.3.0
-        version: 2.3.0
-      zod:
-        specifier: ^3.23.6
-        version: 3.23.6
     devDependencies:
       '@kit/tsconfig':
         specifier: workspace:^
@@ -1398,9 +1380,6 @@ importers:
 
   tooling/tailwind:
     dependencies:
-      '@tanstack/react-table':
-        specifier: ^8.16.0
-        version: 8.16.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       autoprefixer:
         specifier: ^10.4.19
         version: 10.4.19(postcss@8.4.38)
@@ -1410,18 +1389,12 @@ importers:
       postcss:
         specifier: 8.4.38
         version: 8.4.38
-      tailwind-merge:
-        specifier: ^2.3.0
-        version: 2.3.0
       tailwindcss:
         specifier: 3.4.3
         version: 3.4.3(ts-node@10.9.2(@types/node@20.12.8)(typescript@5.4.5))
       tailwindcss-animate:
         specifier: ^1.0.7
         version: 1.0.7(tailwindcss@3.4.3(ts-node@10.9.2(@types/node@20.12.8)(typescript@5.4.5)))
-      zod:
-        specifier: ^3.23.6
-        version: 3.23.6
     devDependencies:
       '@kit/eslint-config':
         specifier: workspace:^
@@ -1442,20 +1415,7 @@ importers:
         specifier: ^5.4.5
         version: 5.4.5
 
-  tooling/typescript:
-    dependencies:
-      '@tanstack/react-table':
-        specifier: ^8.16.0
-        version: 8.16.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      next:
-        specifier: 14.2.3
-        version: 14.2.3(@babel/core@7.24.5)(@opentelemetry/api@1.8.0)(@playwright/test@1.43.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      tailwind-merge:
-        specifier: ^2.3.0
-        version: 2.3.0
-      zod:
-        specifier: ^3.23.6
-        version: 3.23.6
+  tooling/typescript: {}
 
 packages:
 
