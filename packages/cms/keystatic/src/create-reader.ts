@@ -9,14 +9,10 @@ export async function createKeystaticReader() {
   switch (STORAGE_KIND) {
     case 'local': {
       if (process.env.NEXT_RUNTIME === 'nodejs') {
-        const path = await import('node:path');
         const { default: config } = await import('./keystatic.config');
         const { createReader } = await import('@keystatic/core/reader');
 
-        const contentPath = process.env.NEXT_PUBLIC_KEYSTATIC_CONTENT_PATH;
-        const repositoryPath = path.join(process.cwd(), contentPath as string);
-
-        return createReader(repositoryPath, config);
+        return createReader(process.cwd(), config);
       } else {
         // we should never get here but the compiler requires the check
         // to ensure we don't parse the package at build time
