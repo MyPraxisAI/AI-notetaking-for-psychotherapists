@@ -2,7 +2,7 @@ import type { PlopTypes } from '@turbo/gen';
 import { execSync } from 'node:child_process';
 
 export function createKeystaticAdminGenerator(plop: PlopTypes.NodePlopAPI) {
-  return plop.setGenerator('init', {
+  return plop.setGenerator('keystatic', {
     description: 'Generate a the admin for Keystatic',
     prompts: [],
     actions: [
@@ -24,7 +24,7 @@ export function createKeystaticAdminGenerator(plop: PlopTypes.NodePlopAPI) {
       {
         type: 'modify',
         path: 'apps/web/package.json',
-        async transform(content, answers) {
+        async transform(content) {
           const pkg = JSON.parse(content);
           const dep = `@keystatic/next`;
 
@@ -40,7 +40,7 @@ export function createKeystaticAdminGenerator(plop: PlopTypes.NodePlopAPI) {
           return JSON.stringify(pkg, null, 2);
         },
       },
-      async (answers) => {
+      async () => {
         /**
          * Install deps and format everything
          */
@@ -51,12 +51,6 @@ export function createKeystaticAdminGenerator(plop: PlopTypes.NodePlopAPI) {
         execSync('pnpm i', {
           stdio: 'inherit',
         });
-
-        execSync(
-          `pnpm prettier --write packages/${
-            (answers as { name: string }).name
-          }/** --list-different`,
-        );
 
         return `Keystatic admin generated!`;
       },

@@ -2,7 +2,7 @@ import type { PlopTypes } from '@turbo/gen';
 import { execSync } from 'node:child_process';
 
 export function createPackageGenerator(plop: PlopTypes.NodePlopAPI) {
-  plop.setGenerator('init', {
+  plop.setGenerator('package', {
     description: 'Generate a new package for the Monorepo',
     prompts: [
       {
