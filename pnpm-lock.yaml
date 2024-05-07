@@ -57,9 +57,6 @@ importers:
       '@hookform/resolvers':
         specifier: ^3.3.4
         version: 3.3.4(react-hook-form@7.51.4)
-      '@keystatic/next':
-        specifier: ^5.0.0
-        version: 5.0.0(@keystatic/core@0.5.14)(next@14.2.3)(react-dom@18.3.1)(react@18.3.1)
       '@kit/accounts':
         specifier: workspace:^
         version: link:../../packages/features/accounts
@@ -87,9 +84,6 @@ importers:
       '@kit/i18n':
         specifier: workspace:^
         version: link:../../packages/i18n
-      '@kit/keystatic':
-        specifier: workspace:^
-        version: link:../../packages/cms/keystatic
       '@kit/mailers':
         specifier: workspace:^
         version: link:../../packages/mailers
