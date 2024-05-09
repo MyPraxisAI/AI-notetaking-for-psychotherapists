@@ -169,8 +169,8 @@ importers:
         specifier: ^2.3.0
         version: 2.3.0
       zod:
-        specifier: ^3.23.7
-        version: 3.23.7
+        specifier: ^3.23.8
+        version: 3.23.8
     devDependencies:
       '@kit/eslint-config':
         specifier: workspace:^
@@ -242,8 +242,8 @@ importers:
         specifier: workspace:*
         version: link:../../ui
       zod:
-        specifier: ^3.23.7
-        version: 3.23.7
+        specifier: ^3.23.8
+        version: 3.23.8
 
   packages/billing/gateway:
     devDependencies:
@@ -305,8 +305,8 @@ importers:
         specifier: ^14.1.1
         version: 14.1.1(i18next@23.11.3)(react-dom@18.3.1)(react@18.3.1)
       zod:
-        specifier: ^3.23.7
-        version: 3.23.7
+        specifier: ^3.23.8
+        version: 3.23.8
 
   packages/billing/lemon-squeezy:
     dependencies:
@@ -348,8 +348,8 @@ importers:
         specifier: 18.3.1
         version: 18.3.1
       zod:
-        specifier: ^3.23.7
-        version: 3.23.7
+        specifier: ^3.23.8
+        version: 3.23.8
 
   packages/billing/stripe:
     dependencies:
@@ -400,8 +400,8 @@ importers:
         specifier: 18.3.1
         version: 18.3.1
       zod:
-        specifier: ^3.23.7
-        version: 3.23.7
+        specifier: ^3.23.8
+        version: 3.23.8
 
   packages/cms/core:
     devDependencies:
@@ -455,8 +455,8 @@ importers:
         specifier: 18.3.1
         version: 18.3.1
       zod:
-        specifier: ^3.23.7
-        version: 3.23.7
+        specifier: ^3.23.8
+        version: 3.23.8
 
   packages/cms/wordpress:
     devDependencies:
@@ -518,8 +518,8 @@ importers:
         specifier: ^2.43.1
         version: 2.43.1
       zod:
-        specifier: ^3.23.7
-        version: 3.23.7
+        specifier: ^3.23.8
+        version: 3.23.8
 
   packages/email-templates:
     dependencies:
@@ -628,8 +628,8 @@ importers:
         specifier: ^1.4.41
         version: 1.4.41(react-dom@18.3.1)(react@18.3.1)
       zod:
-        specifier: ^3.23.7
-        version: 3.23.7
+        specifier: ^3.23.8
+        version: 3.23.8
 
   packages/features/admin:
     devDependencies:
@@ -691,8 +691,8 @@ importers:
         specifier: ^7.51.4
         version: 7.51.4(react@18.3.1)
       zod:
-        specifier: ^3.23.7
-        version: 3.23.7
+        specifier: ^3.23.8
+        version: 3.23.8
 
   packages/features/auth:
     devDependencies:
@@ -751,8 +751,8 @@ importers:
         specifier: ^1.4.41
         version: 1.4.41(react-dom@18.3.1)(react@18.3.1)
       zod:
-        specifier: ^3.23.7
-        version: 3.23.7
+        specifier: ^3.23.8
+        version: 3.23.8
 
   packages/features/notifications:
     devDependencies:
@@ -887,8 +887,8 @@ importers:
         specifier: ^1.4.41
         version: 1.4.41(react-dom@18.3.1)(react@18.3.1)
       zod:
-        specifier: ^3.23.7
-        version: 3.23.7
+        specifier: ^3.23.8
+        version: 3.23.8
 
   packages/i18n:
     dependencies:
@@ -949,8 +949,8 @@ importers:
         specifier: 6.4.15
         version: 6.4.15
       zod:
-        specifier: ^3.23.7
-        version: 3.23.7
+        specifier: ^3.23.8
+        version: 3.23.8
 
   packages/monitoring/api:
     devDependencies:
@@ -1013,8 +1013,8 @@ importers:
         specifier: 18.3.1
         version: 18.3.1
       zod:
-        specifier: ^3.23.7
-        version: 3.23.7
+        specifier: ^3.23.8
+        version: 3.23.8
 
   packages/monitoring/core:
     devDependencies:
@@ -1107,8 +1107,8 @@ importers:
         specifier: 14.2.3
         version: 14.2.3(@opentelemetry/api@1.8.0)(react-dom@18.3.1)(react@18.3.1)
       zod:
-        specifier: ^3.23.7
-        version: 3.23.7
+        specifier: ^3.23.8
+        version: 3.23.8
 
   packages/shared:
     dependencies:
@@ -1168,8 +1168,8 @@ importers:
         specifier: 18.3.1
         version: 18.3.1
       zod:
-        specifier: ^3.23.7
-        version: 3.23.7
+        specifier: ^3.23.8
+        version: 3.23.8
 
   packages/ui:
     dependencies:
@@ -1313,8 +1313,8 @@ importers:
         specifier: ^5.4.5
         version: 5.4.5
       zod:
-        specifier: ^3.23.7
-        version: 3.23.7
+        specifier: ^3.23.8
+        version: 3.23.8
 
   tooling/eslint:
     dependencies:
@@ -2245,7 +2245,7 @@ packages:
       y-prosemirror: 1.2.3(prosemirror-model@1.21.0)(prosemirror-state@1.4.3)(prosemirror-view@1.33.6)(y-protocols@1.0.6)(yjs@13.6.15)
       y-protocols: 1.0.6(yjs@13.6.15)
       yjs: 13.6.15
-      zod: 3.23.7
+      zod: 3.23.8
     transitivePeerDependencies:
       - next
       - supports-color
@@ -12848,8 +12848,8 @@ packages:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
 
-  /zod@3.23.7:
-    resolution: {integrity: sha512-NBeIoqbtOiUMomACV/y+V3Qfs9+Okr18vR5c/5pHClPpufWOrsx8TENboDPe265lFdfewX2yBtNTLPvnmCxwog==}
+  /zod@3.23.8:
+    resolution: {integrity: sha512-XBx9AXhXktjUqnepgTiE5flcKIYWi/rme0Eaj+5Y0lftuGBq+jyRu/md4WnuxqgP1ubdpNCsYEYPxrzVHD8d6g==}
 
   /zwitch@2.0.4:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
