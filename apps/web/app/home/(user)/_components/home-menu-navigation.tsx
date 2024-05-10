@@ -12,7 +12,7 @@ import { personalAccountNavigationConfig } from '~/config/personal-account-navig
 // home imports
 import { HomeAccountSelector } from '../_components/home-account-selector';
 import { UserNotifications } from '../_components/user-notifications';
-import { type UserWorkspace } from '../_lib/server/user-workspace.loader';
+import { type UserWorkspace } from '../_lib/server/load-user-workspace';
 
 export function HomeMenuNavigation(props: { workspace: UserWorkspace }) {
   const { workspace, user, accounts } = props.workspace;

@@ -22,7 +22,7 @@ import { personalAccountNavigationConfig } from '~/config/personal-account-navig
 
 // home imports
 import { HomeAccountSelector } from '../_components/home-account-selector';
-import type { UserWorkspace } from '../_lib/server/user-workspace.loader';
+import type { UserWorkspace } from '../_lib/server/load-user-workspace';
 
 export function HomeMobileNavigation(props: { workspace: UserWorkspace }) {
   const signOut = useSignOut();

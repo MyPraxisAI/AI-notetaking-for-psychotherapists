@@ -8,7 +8,7 @@ import { personalAccountNavigationConfig } from '~/config/personal-account-navig
 import { UserNotifications } from '~/home/(user)/_components/user-notifications';
 
 // home imports
-import type { UserWorkspace } from '../_lib/server/user-workspace.loader';
+import type { UserWorkspace } from '../_lib/server/load-user-workspace';
 import { HomeAccountSelector } from './home-account-selector';
 
 export function HomeSidebar(props: { workspace: UserWorkspace }) {
