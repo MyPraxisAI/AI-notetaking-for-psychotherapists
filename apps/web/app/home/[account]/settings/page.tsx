@@ -7,7 +7,7 @@ import { createI18nServerInstance } from '~/lib/i18n/i18n.server';
 
 // local imports
 import { TeamAccountLayoutPageHeader } from '../_components/team-account-layout-page-header';
-import { loadTeamWorkspace } from '../_lib/server/load-user-workspace';
+import { loadTeamWorkspace } from '../_lib/server/team-account-workspace.loader';
 
 export const generateMetadata = async () => {
   const i18n = await createI18nServerInstance();

@@ -4,7 +4,7 @@ import { SupabaseClient } from '@supabase/supabase-js';
 
 import { Database } from '~/lib/database.types';
 
-import { loadTeamWorkspace } from '../../../_lib/server/load-user-workspace';
+import { loadTeamWorkspace } from '../../../_lib/server/team-account-workspace.loader';
 
 /**
  * Load data for the members page

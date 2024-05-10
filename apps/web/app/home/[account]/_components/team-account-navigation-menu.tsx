@@ -9,7 +9,7 @@ import { getTeamAccountSidebarConfig } from '~/config/team-account-navigation.co
 import { TeamAccountAccountsSelector } from '~/home/[account]/_components/team-account-accounts-selector';
 
 // local imports
-import { TeamAccountWorkspace } from '../_lib/server/load-user-workspace';
+import { TeamAccountWorkspace } from '../_lib/server/team-account-workspace.loader';
 import { TeamAccountNotifications } from './team-account-notifications';
 
 export function TeamAccountNavigationMenu(props: {

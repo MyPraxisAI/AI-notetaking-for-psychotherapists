@@ -17,8 +17,8 @@ import { withI18n } from '~/lib/i18n/with-i18n';
 
 // local imports
 import { TeamAccountLayoutPageHeader } from '../_components/team-account-layout-page-header';
-import { loadTeamWorkspace } from '../_lib/server/load-user-workspace';
 import { loadTeamAccountBillingPage } from '../_lib/server/team-account-billing-page.loader';
+import { loadTeamWorkspace } from '../_lib/server/team-account-workspace.loader';
 import { TeamAccountCheckoutForm } from './_components/team-account-checkout-form';
 import { createBillingPortalSession } from './_lib/server/server-actions';
 
