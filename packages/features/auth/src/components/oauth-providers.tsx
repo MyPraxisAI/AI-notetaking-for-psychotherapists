@@ -75,10 +75,18 @@ export function OauthProviders(props: {
 
                   const redirectTo = [origin, redirectPath].join('');
 
+                  const scopesOpts =
+                    provider === 'azure'
+                      ? {
+                          scopes: 'email',
+                        }
+                      : {};
+
                   const credentials = {
                     provider,
                     options: {
                       redirectTo,
+                      ...scopesOpts,
                     },
                   };
 
