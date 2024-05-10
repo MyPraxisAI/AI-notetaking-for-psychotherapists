@@ -96,17 +96,20 @@ async function adminMiddleware(request: NextRequest, response: NextResponse) {
     return response;
   }
 
-  const { data, error } = await getUser(request, response);
+  const {
+    data: { user },
+    error,
+  } = await getUser(request, response);
 
   // If user is not logged in, redirect to sign in page.
   // This should never happen, but just in case.
-  if (!data.user || error) {
+  if (!user || error) {
     return NextResponse.redirect(
       new URL(pathsConfig.auth.signIn, request.nextUrl.origin).href,
     );
   }
 
-  const role = data.user?.app_metadata.role;
+  const role = user?.app_metadata.role;
 
   // If user is not an admin, redirect to 404 page.
   if (!role || role !== 'super-admin') {
@@ -129,7 +132,9 @@ function getPatterns() {
     {
       pattern: new URLPattern({ pathname: '/auth*' }),
       handler: async (req: NextRequest, res: NextResponse) => {
-        const { data: user } = await getUser(req, res);
+        const {
+          data: { user },
+        } = await getUser(req, res);
 
         // the user is logged out, so we don't need to do anything
         if (!user) {
@@ -151,7 +156,9 @@ function getPatterns() {
     {
       pattern: new URLPattern({ pathname: '/home*' }),
       handler: async (req: NextRequest, res: NextResponse) => {
-        const { data: user } = await getUser(req, res);
+        const {
+          data: { user },
+        } = await getUser(req, res);
 
         const origin = req.nextUrl.origin;
         const next = req.nextUrl.pathname;
