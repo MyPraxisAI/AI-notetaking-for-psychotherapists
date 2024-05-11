@@ -44,6 +44,7 @@ export function PricingTable({
 
   CheckoutButtonRenderer?: React.ComponentType<{
     planId: string;
+    productId: string;
     highlighted?: boolean;
   }>;
 }) {
@@ -130,10 +131,12 @@ function PricingItem(
 
     CheckoutButton?: React.ComponentType<{
       planId: string;
+      productId: string;
       highlighted?: boolean;
     }>;
 
     product: {
+      id: string;
       name: string;
       currency: string;
       description: string;
@@ -274,6 +277,7 @@ function PricingItem(
               <CheckoutButton
                 highlighted={highlighted}
                 planId={props.plan.id}
+                productId={props.product.id}
               />
             )}
           </If>
