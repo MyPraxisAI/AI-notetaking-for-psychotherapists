@@ -9,6 +9,7 @@ import {
   NavigationMenuItem,
   NavigationMenuList,
 } from '../shadcn/navigation-menu';
+
 import { cn, isRouteActive } from '../utils';
 import { Trans } from './trans';
 
@@ -25,10 +26,14 @@ export function BorderedNavigationMenu(props: React.PropsWithChildren) {
 export function BorderedNavigationMenuItem(props: {
   path: string;
   label: string;
+  end?: boolean | ((path: string) => boolean);
   active?: boolean;
 }) {
   const pathname = usePathname();
-  const active = props.active ?? isRouteActive(pathname, props.path);
+
+  const active =
+    props.active ??
+    isRouteActive(props.path, pathname, props.end);
 
   return (
     <NavigationMenuItem>

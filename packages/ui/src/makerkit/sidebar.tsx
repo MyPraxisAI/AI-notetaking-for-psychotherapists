@@ -154,12 +154,12 @@ export function SidebarItem({
 }: React.PropsWithChildren<{
   path: string;
   Icon: React.ReactNode;
-  end?: boolean;
+  end?: boolean | ((path: string) => boolean);
 }>) {
   const { collapsed } = useContext(SidebarContext);
-
   const currentPath = usePathname() ?? '';
-  const active = isRouteActive(path, currentPath, end ? 0 : 3);
+
+  const active = isRouteActive(path, currentPath, end);
   const variant = active ? 'secondary' : 'ghost';
   const size = collapsed ? 'icon' : 'sm';
 
