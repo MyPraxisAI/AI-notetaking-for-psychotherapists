@@ -11,6 +11,25 @@ export class TeamAccountsApi {
   constructor(private readonly client: SupabaseClient<Database>) {}
 
   /**
+   * @name getTeamAccount
+   * @description Get the account data for the given slug.
+   * @param slug
+   */
+  async getTeamAccount(slug: string) {
+    const { data, error } = await this.client
+      .from('accounts')
+      .select('*')
+      .eq('slug', slug)
+      .single();
+
+    if (error) {
+      throw error;
+    }
+
+    return data;
+  }
+
+  /**
    * @name getTeamAccountById
    * @description Check if the user is already in the account.
    * @param accountId
@@ -20,7 +39,7 @@ export class TeamAccountsApi {
       .from('accounts')
       .select('*')
       .eq('id', accountId)
-      .maybeSingle();
+      .single();
 
     if (error) {
       throw error;

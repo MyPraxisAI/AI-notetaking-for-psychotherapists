@@ -11,6 +11,25 @@ class AccountsApi {
   constructor(private readonly client: SupabaseClient<Database>) {}
 
   /**
+   * @name getAccount
+   * @description Get the account data for the given ID.
+   * @param id
+   */
+  async getAccount(id: string) {
+    const { data, error } = await this.client
+      .from('accounts')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) {
+      throw error;
+    }
+
+    return data;
+  }
+
+  /**
    * @name getAccountWorkspace
    * @description Get the account workspace data.
    */

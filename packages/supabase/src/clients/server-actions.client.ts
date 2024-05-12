@@ -14,14 +14,16 @@ import { getSupabaseClientKeys } from '../get-supabase-client-keys';
 const keys = getSupabaseClientKeys();
 const serviceRoleKey = getServiceRoleKey();
 
-function createServerSupabaseClient() {
-  return createServerClient<Database>(keys.url, keys.anonKey, {
+function createServerSupabaseClient<
+  GenericSchema extends Database = Database,
+>() {
+  return createServerClient<GenericSchema>(keys.url, keys.anonKey, {
     cookies: getCookiesStrategy(),
   });
 }
 
 export function getSupabaseServerActionClient<
-  GenericSchema = Database,
+  GenericSchema extends Database = Database,
 >(params?: { admin: boolean }) {
   const keys = getSupabaseClientKeys();
   const admin = params?.admin ?? false;

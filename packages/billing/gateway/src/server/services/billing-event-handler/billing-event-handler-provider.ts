@@ -4,8 +4,8 @@ import { BillingConfig } from '@kit/billing';
 import { Database } from '@kit/supabase/database';
 import { getSupabaseServerActionClient } from '@kit/supabase/server-actions-client';
 
+import { BillingEventHandlerFactoryService } from './billing-event-handler-factory.service';
 import { BillingEventHandlerService } from './billing-event-handler.service';
-import { BillingEventHandlerFactoryService } from './billing-gateway-factory.service';
 
 /**
  * @description This function retrieves the billing provider from the database and returns a
