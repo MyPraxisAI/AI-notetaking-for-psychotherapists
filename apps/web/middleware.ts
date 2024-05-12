@@ -45,6 +45,12 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // append the action path to the request headers
+  // which is useful for knowing the action path in server actions
+  if (isServerAction(request)) {
+    csrfResponse.headers.set('x-action-path', request.nextUrl.pathname);
+  }
+
   // if no pattern handler returned a response,
   // return the session response
   return csrfResponse;
