@@ -3,6 +3,7 @@ import { ServerDataLoader } from '@makerkit/data-loader-supabase-nextjs';
 import { AdminAccountsTable } from '@kit/admin/components/admin-accounts-table';
 import { AdminGuard } from '@kit/admin/components/admin-guard';
 import { getSupabaseServerComponentClient } from '@kit/supabase/server-component-client';
+import { PageBody, PageHeader } from '@kit/ui/page';
 
 interface SearchParams {
   page?: string;
@@ -24,26 +25,33 @@ function AccountsPage({ searchParams }: { searchParams: SearchParams }) {
 
   return (
     <>
-      <ServerDataLoader
-        table={'accounts'}
-        client={client}
-        page={page}
-        where={filters}
-      >
-        {({ data, page, pageSize, pageCount }) => {
-          return (
-            <AdminAccountsTable
-              page={page}
-              pageSize={pageSize}
-              pageCount={pageCount}
-              data={data}
-              filters={{
-                type: searchParams.account_type ?? 'all',
-              }}
-            />
-          );
-        }}
-      </ServerDataLoader>
+      <PageHeader
+        title={'Accounts'}
+        description={`Below is the list of all the accounts in your application.`}
+      />
+
+      <PageBody>
+        <ServerDataLoader
+          table={'accounts'}
+          client={client}
+          page={page}
+          where={filters}
+        >
+          {({ data, page, pageSize, pageCount }) => {
+            return (
+              <AdminAccountsTable
+                page={page}
+                pageSize={pageSize}
+                pageCount={pageCount}
+                data={data}
+                filters={{
+                  type: searchParams.account_type ?? 'all',
+                }}
+              />
+            );
+          }}
+        </ServerDataLoader>
+      </PageBody>
     </>
   );
 }
