@@ -3,6 +3,7 @@ import { cache } from 'react';
 import { AdminAccountPage } from '@kit/admin/components/admin-account-page';
 import { AdminGuard } from '@kit/admin/components/admin-guard';
 import { getSupabaseServerComponentClient } from '@kit/supabase/server-component-client';
+import { PageBody } from '@kit/ui/page';
 
 interface Params {
   params: {
@@ -21,7 +22,11 @@ export const generateMetadata = async ({ params }: Params) => {
 async function AccountPage({ params }: Params) {
   const account = await loadAccount(params.id);
 
-  return <AdminAccountPage account={account} />;
+  return (
+    <PageBody className={'py-4'}>
+      <AdminAccountPage account={account} />
+    </PageBody>
+  );
 }
 
 export default AdminGuard(AccountPage);

@@ -159,7 +159,7 @@ export function SidebarItem({
   const { collapsed } = useContext(SidebarContext);
   const currentPath = usePathname() ?? '';
 
-  const active = isRouteActive(path, currentPath, end);
+  const active = isRouteActive(path, currentPath, end ?? false);
   const variant = active ? 'secondary' : 'ghost';
   const size = collapsed ? 'icon' : 'sm';
 
