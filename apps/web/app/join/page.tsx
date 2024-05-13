@@ -70,7 +70,9 @@ async function JoinTeamAccountPage({ searchParams }: Context) {
   // we need to verify the user isn't already in the account
   // we do so by checking if the user can read the account
   // if the user can read the account, then they are already in the account
-  const account = await api.getTeamAccountById(invitation.account.id);
+  const account = await api
+    .getTeamAccountById(invitation.account.id)
+    .catch(() => undefined);
 
   // if the user is already in the account redirect to the home page
   if (account) {
