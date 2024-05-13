@@ -32,7 +32,6 @@ const config = {
   },
   experimental: {
     mdxRs: true,
-    taint: true,
     instrumentationHook: true,
     turbo: {
       resolveExtensions: ['.ts', '.tsx', '.js', '.jsx'],
