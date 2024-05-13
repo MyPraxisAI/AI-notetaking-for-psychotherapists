@@ -30,14 +30,14 @@ export const CardButton = React.forwardRef<
 });
 
 export const CardButtonTitle = React.forwardRef<
-  HTMLSpanElement,
+  HTMLDivElement,
   {
     className?: string;
     asChild?: boolean;
     children: React.ReactNode;
   }
 >(function CardButtonTitle({ className, asChild, ...props }, ref) {
-  const Comp = asChild ? Slot : 'span';
+  const Comp = asChild ? Slot : 'div';
 
   return (
     <Comp
@@ -58,18 +58,30 @@ export const CardButtonHeader = React.forwardRef<
   {
     className?: string;
     children: React.ReactNode;
+    asChild?: boolean;
+    displayArrow?: boolean;
   }
->(function CardButtonHeader({ className, ...props }, ref) {
-  return (
-    <div className={cn(className, 'p-4')} {...props} ref={ref}>
-      {props.children}
+>(function CardButtonHeader(
+  { className, asChild, displayArrow = true, ...props },
+  ref,
+) {
+  const Comp = asChild ? Slot : 'div';
 
-      <ChevronRight
-        className={
-          'absolute right-2 top-4 h-4 text-muted-foreground transition-colors group-hover:text-secondary-foreground'
-        }
-      />
-    </div>
+  return (
+    <Comp className={cn(className, 'p-4')} {...props} ref={ref}>
+      <Slottable>
+        {props.children}
+
+        <ChevronRight
+          className={cn(
+            'absolute right-2 top-4 h-4 text-muted-foreground transition-colors group-hover:text-secondary-foreground',
+            {
+              hidden: !displayArrow,
+            },
+          )}
+        />
+      </Slottable>
+    </Comp>
   );
 });
 
