@@ -12,14 +12,14 @@ export const CardButton = React.forwardRef<
     className?: string;
     children: React.ReactNode;
   }
->(({ className, asChild, ...props }, ref) => {
+>(function CardButton({ className, asChild, ...props }, ref) {
   const Comp = asChild ? Slot : 'button';
 
   return (
     <Comp
       ref={ref}
       className={cn(
-        'group relative flex h-36 rounded-lg bg-secondary/80 p-4 transition-all hover:bg-secondary/90 hover:shadow-sm active:bg-secondary active:shadow-lg',
+        'group relative flex h-36 flex-col rounded-lg bg-secondary/80 transition-all hover:bg-secondary/90 hover:shadow-sm active:bg-secondary active:shadow-lg',
         className,
       )}
       {...props}
@@ -29,18 +29,91 @@ export const CardButton = React.forwardRef<
   );
 });
 
-export function CardButtonHeader(props: React.PropsWithChildren) {
+export const CardButtonTitle = React.forwardRef<
+  HTMLSpanElement,
+  {
+    className?: string;
+    asChild?: boolean;
+    children: React.ReactNode;
+  }
+>(function CardButtonTitle({ className, asChild, ...props }, ref) {
+  const Comp = asChild ? Slot : 'span';
+
   return (
-    <>
-      <span className="text-sm font-medium text-muted-foreground transition-colors group-hover:text-secondary-foreground">
-        {props.children}
-      </span>
+    <Comp
+      ref={ref}
+      className={cn(
+        className,
+        'align-super text-sm font-medium text-muted-foreground transition-colors group-hover:text-secondary-foreground',
+      )}
+      {...props}
+    >
+      <Slottable>{props.children}</Slottable>
+    </Comp>
+  );
+});
+
+export const CardButtonHeader = React.forwardRef<
+  HTMLDivElement,
+  {
+    className?: string;
+    children: React.ReactNode;
+  }
+>(function CardButtonHeader({ className, ...props }, ref) {
+  return (
+    <div className={cn(className, 'p-4')} {...props} ref={ref}>
+      {props.children}
 
       <ChevronRight
         className={
           'absolute right-2 top-4 h-4 text-muted-foreground transition-colors group-hover:text-secondary-foreground'
         }
       />
-    </>
+    </div>
   );
-}
+});
+
+export const CardButtonContent = React.forwardRef<
+  HTMLDivElement,
+  {
+    className?: string;
+    asChild?: boolean;
+    children: React.ReactNode;
+  }
+>(function CardButtonContent({ className, asChild, ...props }, ref) {
+  const Comp = asChild ? Slot : 'div';
+
+  return (
+    <Comp
+      className={cn(className, 'flex flex-1 flex-col px-4')}
+      {...props}
+      ref={ref}
+    >
+      <Slottable>{props.children}</Slottable>
+    </Comp>
+  );
+});
+
+export const CardButtonFooter = React.forwardRef<
+  HTMLDivElement,
+  {
+    className?: string;
+    asChild?: boolean;
+    children: React.ReactNode;
+  }
+>(function CardButtonFooter({ className, asChild, ...props }, ref) {
+  const Comp = asChild ? Slot : 'div';
+
+  return (
+    <Comp
+      className={cn(
+        className,
+        'mt-auto flex h-0 w-full flex-col justify-center border-t px-4',
+      )}
+      {...props}
+      ref={ref}
+    >
+      <Slottable>{props.children}</Slottable>
+    </Comp>
+  );
+});

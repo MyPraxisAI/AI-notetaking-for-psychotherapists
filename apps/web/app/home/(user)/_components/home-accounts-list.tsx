@@ -2,7 +2,11 @@ import { use } from 'react';
 
 import Link from 'next/link';
 
-import { CardButton, CardButtonHeader } from '@kit/ui/card-button';
+import {
+  CardButton,
+  CardButtonHeader,
+  CardButtonTitle,
+} from '@kit/ui/card-button';
 import { Heading } from '@kit/ui/heading';
 
 import { loadUserWorkspace } from '../_lib/server/load-user-workspace';
@@ -21,7 +25,9 @@ export function HomeAccountsList() {
         {accounts.map((account) => (
           <CardButton key={account.value} asChild>
             <Link href={`/home/${account.value}`}>
-              <CardButtonHeader>{account.label}</CardButtonHeader>
+              <CardButtonHeader>
+                <CardButtonTitle>{account.label}</CardButtonTitle>
+              </CardButtonHeader>
             </Link>
           </CardButton>
         ))}
