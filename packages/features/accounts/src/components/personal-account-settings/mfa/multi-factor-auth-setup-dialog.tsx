@@ -174,7 +174,7 @@ function MultiFactorAuthSetupForm({
             onSubmit={verificationCodeForm.handleSubmit(onSubmit)}
             className={'w-full'}
           >
-            <div className={'flex flex-col space-y-4'}>
+            <div className={'flex flex-col space-y-8'}>
               <FormField
                 render={({ field }) => {
                   return (
@@ -212,13 +212,15 @@ function MultiFactorAuthSetupForm({
                 name={'verificationCode'}
               />
 
-              <div className={'flex space-x-2'}>
+              <div className={'flex justify-end space-x-2'}>
                 <Button type={'button'} variant={'ghost'} onClick={onCancel}>
                   <Trans i18nKey={'common:cancel'} />
                 </Button>
 
                 <Button
-                  disabled={!verificationCodeForm.formState.isValid}
+                  disabled={
+                    !verificationCodeForm.formState.isValid || state.loading
+                  }
                   type={'submit'}
                 >
                   {state.loading ? (
