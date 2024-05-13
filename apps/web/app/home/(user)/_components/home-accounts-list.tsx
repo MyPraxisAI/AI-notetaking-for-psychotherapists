@@ -8,6 +8,7 @@ import {
   CardButtonTitle,
 } from '@kit/ui/card-button';
 import { Heading } from '@kit/ui/heading';
+import { Trans } from '@kit/ui/trans';
 
 import { loadUserWorkspace } from '../_lib/server/load-user-workspace';
 import { HomeAddAccountButton } from './home-add-account-button';
@@ -40,13 +41,15 @@ function HomeAccountsListEmptyState() {
   return (
     <div className="flex flex-col items-center justify-center space-y-8 py-24">
       <div className="flex flex-col items-center space-y-1">
-        <Heading level={2}>You don&apos;t have any teams yet.</Heading>
+        <Heading level={2}>
+          <Trans i18nKey={'account:noTeamsYet'} />
+        </Heading>
 
         <Heading
           className="font-sans font-medium text-muted-foreground"
           level={4}
         >
-          Create a team to get started.
+          <Trans i18nKey={'account:createTeam'} />
         </Heading>
       </div>
 
