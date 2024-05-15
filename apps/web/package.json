@@ -32,7 +32,7 @@
   },
   "dependencies": {
     "@edge-csrf/nextjs": "2.0.0",
-    "@hookform/resolvers": "^3.3.4",
+    "@hookform/resolvers": "^3.4.0",
     "@kit/accounts": "workspace:^",
     "@kit/admin": "workspace:^",
     "@kit/auth": "workspace:^",
@@ -57,7 +57,7 @@
     "@supabase/supabase-js": "^2.43.1",
     "@tanstack/react-query": "5.36.0",
     "@tanstack/react-query-next-experimental": "^5.36.0",
-    "@tanstack/react-table": "^8.17.0",
+    "@tanstack/react-table": "^8.17.3",
     "date-fns": "^3.6.0",
     "lucide-react": "^0.378.0",
     "next": "14.2.3",
@@ -86,7 +86,7 @@
     "dotenv-cli": "^7.4.2",
     "eslint": "^8.57.0",
     "prettier": "^3.2.5",
-    "supabase": "^1.165.0",
+    "supabase": "^1.167.4",
     "tailwindcss": "3.4.3",
     "typescript": "^5.4.5"
   },
