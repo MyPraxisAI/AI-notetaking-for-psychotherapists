@@ -23,7 +23,7 @@ const heading = HeadingFont({
   variable: '--font-heading',
   fallback: ['system-ui', 'Helvetica Neue', 'Helvetica', 'Arial'],
   preload: true,
-  weight: ['500', '700'],
+  weight: ['500', '600'],
 });
 
 // we export these fonts into the root layout

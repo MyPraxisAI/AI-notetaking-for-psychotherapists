@@ -9,7 +9,6 @@ import {
   NavigationMenuItem,
   NavigationMenuList,
 } from '../shadcn/navigation-menu';
-
 import { cn, isRouteActive } from '../utils';
 import { Trans } from './trans';
 
@@ -31,20 +30,24 @@ export function BorderedNavigationMenuItem(props: {
 }) {
   const pathname = usePathname();
 
-  const active =
-    props.active ??
-    isRouteActive(props.path, pathname, props.end);
+  const active = props.active ?? isRouteActive(props.path, pathname, props.end);
 
   return (
     <NavigationMenuItem>
-      <Button asChild variant={'ghost'} className={'relative'}>
-        <Link href={props.path} className={'text-sm'}>
+      <Button asChild variant={'ghost'} className={'relative active:shadow-sm'}>
+        <Link
+          href={props.path}
+          className={cn('text-sm', {
+            'text-primary': active,
+            'text-primary/80 hover:text-primary': !active,
+          })}
+        >
           <Trans i18nKey={props.label} defaults={props.label} />
 
           {active ? (
             <span
               className={cn(
-                'absolute -bottom-2.5 left-0 h-1 w-full bg-primary animate-in fade-in zoom-in-90',
+                'absolute -bottom-2.5 left-0 h-0.5 w-full bg-primary animate-in fade-in zoom-in-90',
               )}
             />
           ) : null}
