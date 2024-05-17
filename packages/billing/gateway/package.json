@@ -27,7 +27,7 @@
     "@kit/tailwind-config": "workspace:*",
     "@kit/tsconfig": "workspace:*",
     "@kit/ui": "workspace:^",
-    "@supabase/supabase-js": "^2.43.1",
+    "@supabase/supabase-js": "^2.43.2",
     "@types/react": "^18.3.1",
     "date-fns": "^3.6.0",
     "lucide-react": "^0.378.0",
