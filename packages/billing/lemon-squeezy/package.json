@@ -14,7 +14,7 @@
     "./components": "./src/components/index.ts"
   },
   "dependencies": {
-    "@lemonsqueezy/lemonsqueezy.js": "2.2.0"
+    "@lemonsqueezy/lemonsqueezy.js": "3.0.0"
   },
   "devDependencies": {
     "@kit/billing": "workspace:^",
@@ -25,7 +25,7 @@
     "@kit/tailwind-config": "workspace:*",
     "@kit/tsconfig": "workspace:*",
     "@kit/ui": "workspace:^",
-    "@types/react": "^18.3.1",
+    "@types/react": "^18.3.2",
     "next": "14.2.3",
     "react": "18.3.1",
     "zod": "^3.23.8"

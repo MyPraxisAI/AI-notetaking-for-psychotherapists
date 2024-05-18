@@ -28,7 +28,7 @@
     "@kit/tsconfig": "workspace:*",
     "@kit/ui": "workspace:^",
     "@supabase/supabase-js": "^2.43.2",
-    "@types/react": "^18.3.1",
+    "@types/react": "^18.3.2",
     "date-fns": "^3.6.0",
     "lucide-react": "^0.378.0",
     "next": "14.2.3",
