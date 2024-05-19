@@ -18,7 +18,8 @@
     "./check-requires-mfa": "./src/check-requires-mfa.ts",
     "./require-user": "./src/require-user.ts",
     "./hooks/*": "./src/hooks/*.ts",
-    "./database": "./src/database.types.ts"
+    "./database": "./src/database.types.ts",
+    "./auth": "./src/auth.ts"
   },
   "devDependencies": {
     "@kit/eslint-config": "workspace:*",
