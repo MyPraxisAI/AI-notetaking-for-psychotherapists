@@ -64,7 +64,7 @@ function PageWithHeader(props: PageProps) {
   const { Navigation, Children, MobileNavigation } = getSlotsFromPage(props);
 
   return (
-    <div className={cn('flex flex-1 flex-col', props.className)}>
+    <div className={cn('flex h-screen flex-1 flex-col', props.className)}>
       <div
         className={
           props.contentContainerClassName ?? 'flex flex-1 flex-col space-y-4'
@@ -87,7 +87,11 @@ function PageWithHeader(props: PageProps) {
           {MobileNavigation}
         </div>
 
-        <div className={'flex flex-col space-y-8 px-4 py-4 lg:container'}>
+        <div
+          className={
+            'flex h-screen flex-1 flex-col space-y-8 px-4 py-4 lg:container'
+          }
+        >
           {Children}
         </div>
       </div>

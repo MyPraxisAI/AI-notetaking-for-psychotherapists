@@ -22,12 +22,12 @@ interface Config<Schema> {
 }
 
 interface HandlerParams<
-  Body extends object,
+  Schema extends z.ZodType | undefined,
   RequireAuth extends boolean | undefined,
 > {
   request: NextRequest;
   user: RequireAuth extends false ? undefined : User;
-  body: Body;
+  body: Schema extends z.ZodType ? z.infer<Schema> : never;
 }
 
 /**
@@ -51,19 +51,17 @@ interface HandlerParams<
  *
  */
 export const enhanceRouteHandler = <
-  Body extends object,
-  Schema extends z.ZodType<Body, z.ZodTypeDef>,
-  Params extends Config<Schema> = Config<Schema>,
+  Body,
+  Params extends Config<z.ZodType<Body, z.ZodTypeDef>>,
 >(
   // Route handler function
   handler:
     | ((
-        params: HandlerParams<z.infer<Schema>, Params['auth']>,
+        params: HandlerParams<Params['schema'], Params['auth']>,
       ) => NextResponse | Response)
     | ((
-        params: HandlerParams<z.infer<Schema>, Params['auth']>,
+        params: HandlerParams<Params['schema'], Params['auth']>,
       ) => Promise<NextResponse | Response>),
-
   // Parameters object
   params?: Params,
 ) => {
