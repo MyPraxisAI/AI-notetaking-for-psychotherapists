@@ -38,8 +38,9 @@ export function BorderedNavigationMenuItem(props: {
         <Link
           href={props.path}
           className={cn('text-sm', {
-            'text-primary': active,
-            'text-primary/80 hover:text-primary': !active,
+            'text-secondary-foreground': active,
+            'text-secondary-foreground/80 hover:text-secondary-foreground':
+              !active,
           })}
         >
           <Trans i18nKey={props.label} defaults={props.label} />

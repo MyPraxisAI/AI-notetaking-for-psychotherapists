@@ -1,5 +1,6 @@
 import 'server-only';
 
+import { unstable_noStore as noStore } from 'next/cache';
 import { cookies } from 'next/headers';
 
 import type { CookieOptions } from '@supabase/ssr';
@@ -24,6 +25,9 @@ export function getSupabaseRouteHandlerClient<GenericSchema = Database>(
     admin: false,
   },
 ) {
+  // prevent any caching (to be removed in Next v15)
+  noStore();
+
   if (params.admin) {
     warnServiceRoleKeyUsage();
 
