@@ -14,7 +14,7 @@ import { Trans } from './trans';
 
 export function BorderedNavigationMenu(props: React.PropsWithChildren) {
   return (
-    <NavigationMenu className={'h-full'}>
+    <NavigationMenu>
       <NavigationMenuList className={'relative h-full space-x-2'}>
         {props.children}
       </NavigationMenuList>
@@ -24,17 +24,23 @@ export function BorderedNavigationMenu(props: React.PropsWithChildren) {
 
 export function BorderedNavigationMenuItem(props: {
   path: string;
-  label: string;
+  label: React.ReactNode | string;
   end?: boolean | ((path: string) => boolean);
   active?: boolean;
+  className?: string;
+  buttonClassName?: string;
 }) {
   const pathname = usePathname();
 
   const active = props.active ?? isRouteActive(props.path, pathname, props.end);
 
   return (
-    <NavigationMenuItem>
-      <Button asChild variant={'ghost'} className={'relative active:shadow-sm'}>
+    <NavigationMenuItem className={props.className}>
+      <Button
+        asChild
+        variant={'ghost'}
+        className={cn('relative active:shadow-sm', props.buttonClassName)}
+      >
         <Link
           href={props.path}
           className={cn('text-sm', {
@@ -43,7 +49,11 @@ export function BorderedNavigationMenuItem(props: {
               !active,
           })}
         >
-          <Trans i18nKey={props.label} defaults={props.label} />
+          {typeof props.label === 'string' ? (
+            <Trans i18nKey={props.label} defaults={props.label} />
+          ) : (
+            props.label
+          )}
 
           {active ? (
             <span
