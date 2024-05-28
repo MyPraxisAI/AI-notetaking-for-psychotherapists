@@ -5,6 +5,10 @@
  * Please set the MONITORING_PROVIDER environment variable to 'baselime' to register Baselime instrumentation.
  */
 export async function registerInstrumentation() {
+  if (!process.env.ENABLE_MONITORING_INSTRUMENTATION) {
+    return;
+  }
+
   const serviceName = process.env.INSTRUMENTATION_SERVICE_NAME;
 
   if (!serviceName) {
@@ -14,19 +18,20 @@ export async function registerInstrumentation() {
     `);
   }
 
-  const { BaselimeSDK, BetterHttpInstrumentation, VercelPlugin } = await import(
-    '@baselime/node-opentelemetry'
-  );
+  if (process.env.NEXT_RUNTIME === 'nodejs') {
+    const { BaselimeSDK, BetterHttpInstrumentation, VercelPlugin } =
+      await import('@baselime/node-opentelemetry');
 
-  const sdk = new BaselimeSDK({
-    serverless: true,
-    service: serviceName,
-    instrumentations: [
-      new BetterHttpInstrumentation({
-        plugins: [new VercelPlugin()],
-      }),
-    ],
-  });
+    const sdk = new BaselimeSDK({
+      serverless: true,
+      service: serviceName,
+      instrumentations: [
+        new BetterHttpInstrumentation({
+          plugins: [new VercelPlugin()],
+        }),
+      ],
+    });
 
-  sdk.start();
+    sdk.start();
+  }
 }
