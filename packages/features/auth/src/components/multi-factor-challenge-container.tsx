@@ -10,7 +10,7 @@ import { useMutation } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
-import useFetchAuthFactors from '@kit/supabase/hooks/use-fetch-mfa-factors';
+import { useFetchAuthFactors } from '@kit/supabase/hooks/use-fetch-mfa-factors';
 import { useSignOut } from '@kit/supabase/hooks/use-sign-out';
 import { useSupabase } from '@kit/supabase/hooks/use-supabase';
 import { Alert, AlertDescription, AlertTitle } from '@kit/ui/alert';
@@ -35,7 +35,9 @@ import { Trans } from '@kit/ui/trans';
 
 export function MultiFactorChallengeContainer({
   paths,
+  userId,
 }: React.PropsWithChildren<{
+  userId: string;
   paths: {
     redirectPath: string;
   };
@@ -65,6 +67,7 @@ export function MultiFactorChallengeContainer({
   if (!factorId) {
     return (
       <FactorsListContainer
+        userId={userId}
         onSelect={(factorId) => {
           verificationCodeForm.setValue('factorId', factorId);
         }}
@@ -195,12 +198,14 @@ function useVerifyMFAChallenge() {
 function FactorsListContainer({
   onSuccess,
   onSelect,
+  userId,
 }: React.PropsWithChildren<{
+  userId: string;
   onSuccess: () => void;
   onSelect: (factor: string) => void;
 }>) {
   const signOut = useSignOut();
-  const { data: factors, isLoading, error } = useFetchAuthFactors();
+  const { data: factors, isLoading, error } = useFetchAuthFactors(userId);
 
   const isSuccess = factors && !isLoading && !error;
 

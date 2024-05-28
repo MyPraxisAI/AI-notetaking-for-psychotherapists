@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 
 import { MultiFactorChallengeContainer } from '@kit/auth/mfa';
 import { checkRequiresMultiFactorAuthentication } from '@kit/supabase/check-requires-mfa';
+import { requireUser } from '@kit/supabase/require-user';
 import { getSupabaseServerComponentClient } from '@kit/supabase/server-component-client';
 
 import pathsConfig from '~/config/paths.config';
@@ -31,9 +32,15 @@ async function VerifyPage(props: Props) {
   }
 
   const redirectPath = props.searchParams.next ?? pathsConfig.app.home;
+  const auth = await requireUser(client);
+
+  if (auth.error) {
+    redirect(auth.redirectTo);
+  }
 
   return (
     <MultiFactorChallengeContainer
+      userId={auth.data.id}
       paths={{
         redirectPath,
       }}

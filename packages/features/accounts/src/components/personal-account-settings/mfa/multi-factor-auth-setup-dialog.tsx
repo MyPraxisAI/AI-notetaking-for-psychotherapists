@@ -44,7 +44,7 @@ import { Trans } from '@kit/ui/trans';
 
 import { refreshAuthSession } from '../../../server/personal-accounts-server-actions';
 
-export function MultiFactorAuthSetupDialog() {
+export function MultiFactorAuthSetupDialog(props: { userId: string }) {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
 
@@ -77,6 +77,7 @@ export function MultiFactorAuthSetupDialog() {
 
           <div>
             <MultiFactorAuthSetupForm
+              userId={props.userId}
               onCancel={() => setIsOpen(false)}
               onEnrolled={onEnrollSuccess}
             />
@@ -90,11 +91,13 @@ export function MultiFactorAuthSetupDialog() {
 function MultiFactorAuthSetupForm({
   onEnrolled,
   onCancel,
+  userId,
 }: React.PropsWithChildren<{
+  userId: string;
   onCancel: () => void;
   onEnrolled: () => void;
 }>) {
-  const verifyCodeMutation = useVerifyCodeMutation();
+  const verifyCodeMutation = useVerifyCodeMutation(userId);
 
   const verificationCodeForm = useForm({
     resolver: zodResolver(
@@ -161,6 +164,7 @@ function MultiFactorAuthSetupForm({
     <div className={'flex flex-col space-y-4'}>
       <div className={'flex justify-center'}>
         <FactorQrCode
+          userId={userId}
           onCancel={onCancel}
           onSetFactorId={(factorId) =>
             verificationCodeForm.setValue('factorId', factorId)
@@ -241,11 +245,13 @@ function MultiFactorAuthSetupForm({
 function FactorQrCode({
   onSetFactorId,
   onCancel,
+  userId,
 }: React.PropsWithChildren<{
+  userId: string;
   onCancel: () => void;
   onSetFactorId: (factorId: string) => void;
 }>) {
-  const enrollFactorMutation = useEnrollFactor();
+  const enrollFactorMutation = useEnrollFactor(userId);
   const [error, setError] = useState(false);
 
   const form = useForm({
@@ -385,9 +391,9 @@ function QrImage({ src }: { src: string }) {
   return <Image alt={'QR Code'} src={src} width={160} height={160} />;
 }
 
-function useEnrollFactor() {
+function useEnrollFactor(userId: string) {
   const client = useSupabase();
-  const mutationKey = useFactorsMutationKey();
+  const mutationKey = useFactorsMutationKey(userId);
 
   const mutationFn = async (factorName: string) => {
     const { data, error } = await client.auth.mfa.enroll({
@@ -408,8 +414,8 @@ function useEnrollFactor() {
   });
 }
 
-function useVerifyCodeMutation() {
-  const mutationKey = useFactorsMutationKey();
+function useVerifyCodeMutation(userId: string) {
+  const mutationKey = useFactorsMutationKey(userId);
   const client = useSupabase();
 
   const mutationFn = async (params: { factorId: string; code: string }) => {

@@ -10,7 +10,7 @@ import { ShieldCheck, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
-import useFetchAuthFactors from '@kit/supabase/hooks/use-fetch-mfa-factors';
+import { useFetchAuthFactors } from '@kit/supabase/hooks/use-fetch-mfa-factors';
 import { useSupabase } from '@kit/supabase/hooks/use-supabase';
 import { useFactorsMutationKey } from '@kit/supabase/hooks/use-user-factors-mutation-key';
 import { Alert, AlertDescription, AlertTitle } from '@kit/ui/alert';
@@ -48,8 +48,13 @@ import { MultiFactorAuthSetupDialog } from './multi-factor-auth-setup-dialog';
 
 const MAX_FACTOR_COUNT = 10;
 
-export function MultiFactorAuthFactorsList() {
-  const { data: factors, isLoading, isError } = useFetchAuthFactors();
+export function MultiFactorAuthFactorsList(props: { userId: string }) {
+  const {
+    data: factors,
+    isLoading,
+    isError,
+  } = useFetchAuthFactors(props.userId);
+
   const [unEnrolling, setUnenrolling] = useState<string>();
 
   if (isLoading) {
@@ -100,7 +105,7 @@ export function MultiFactorAuthFactorsList() {
         </Alert>
 
         <div>
-          <MultiFactorAuthSetupDialog />
+          <MultiFactorAuthSetupDialog userId={props.userId} />
         </div>
       </div>
     );
@@ -114,13 +119,14 @@ export function MultiFactorAuthFactorsList() {
 
       <If condition={canAddNewFactors}>
         <div>
-          <MultiFactorAuthSetupDialog />
+          <MultiFactorAuthSetupDialog userId={props.userId} />
         </div>
       </If>
 
       <If condition={unEnrolling}>
         {(factorId) => (
           <ConfirmUnenrollFactorModal
+            userId={props.userId}
             factorId={factorId}
             setIsModalOpen={() => setUnenrolling(undefined)}
           />
@@ -133,11 +139,12 @@ export function MultiFactorAuthFactorsList() {
 function ConfirmUnenrollFactorModal(
   props: React.PropsWithChildren<{
     factorId: string;
+    userId: string;
     setIsModalOpen: (isOpen: boolean) => void;
   }>,
 ) {
   const { t } = useTranslation();
-  const unEnroll = useUnenrollFactor();
+  const unEnroll = useUnenrollFactor(props.userId);
 
   const onUnenrollRequested = useCallback(
     (factorId: string) => {
@@ -261,10 +268,10 @@ function FactorsTable({
   );
 }
 
-function useUnenrollFactor() {
+function useUnenrollFactor(userId: string) {
   const queryClient = useQueryClient();
   const client = useSupabase();
-  const mutationKey = useFactorsMutationKey();
+  const mutationKey = useFactorsMutationKey(userId);
 
   const mutationFn = async (factorId: string) => {
     const { data, error } = await client.auth.mfa.unenroll({
