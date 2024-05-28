@@ -5,32 +5,46 @@
  * Please set the MONITORING_PROVIDER environment variable to 'sentry' to register Sentry instrumentation.
  */
 export async function registerInstrumentation() {
-  const serviceName = process.env.INSTRUMENTATION_SERVICE_NAME;
+  const { initializeSentryServerClient } = await import(
+    './sentry.server.config'
+  );
 
-  if (!serviceName) {
-    throw new Error(
-      `You have set the Sentry instrumentation provider, but have not set the INSTRUMENTATION_SERVICE_NAME environment variable. Please set the INSTRUMENTATION_SERVICE_NAME environment variable.`,
-    );
+  // initialize the Sentry client in the server
+  void initializeSentryServerClient();
+
+  if (!process.env.ENABLE_MONITORING_INSTRUMENTATION) {
+    return;
   }
 
-  const { Resource } = await import('@opentelemetry/resources');
-  const { NodeSDK } = await import('@opentelemetry/sdk-node');
+  // make sure the instrumentation is only run in a Node.js environment
+  if (process.env.NEXT_RUNTIME === 'nodejs') {
+    const serviceName = process.env.INSTRUMENTATION_SERVICE_NAME;
 
-  const { SEMRESATTRS_SERVICE_NAME } = await import(
-    '@opentelemetry/semantic-conventions'
-  );
+    if (!serviceName) {
+      throw new Error(
+        `You have set the Sentry instrumentation provider, but have not set the INSTRUMENTATION_SERVICE_NAME environment variable. Please set the INSTRUMENTATION_SERVICE_NAME environment variable.`,
+      );
+    }
 
-  const { SentrySpanProcessor, SentryPropagator } = await import(
-    '@sentry/opentelemetry-node'
-  );
+    const { Resource } = await import('@opentelemetry/resources');
+    const { NodeSDK } = await import('@opentelemetry/sdk-node');
 
-  const sdk = new NodeSDK({
-    resource: new Resource({
-      [SEMRESATTRS_SERVICE_NAME]: serviceName,
-    }),
-    spanProcessors: [new SentrySpanProcessor()],
-    textMapPropagator: new SentryPropagator(),
-  });
+    const { SEMRESATTRS_SERVICE_NAME } = await import(
+      '@opentelemetry/semantic-conventions'
+    );
 
-  sdk.start();
+    const { SentrySpanProcessor, SentryPropagator } = await import(
+      '@sentry/opentelemetry-node'
+    );
+
+    const sdk = new NodeSDK({
+      resource: new Resource({
+        [SEMRESATTRS_SERVICE_NAME]: serviceName,
+      }),
+      spanProcessors: [new SentrySpanProcessor()],
+      textMapPropagator: new SentryPropagator(),
+    });
+
+    sdk.start();
+  }
 }

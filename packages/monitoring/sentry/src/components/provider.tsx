@@ -2,14 +2,14 @@ import { useRef } from 'react';
 
 import { MonitoringContext } from '@kit/monitoring-core';
 
-import { SentryServerMonitoringService } from '../services/sentry-server-monitoring.service';
+import { SentryMonitoringService } from '../services/sentry-monitoring.service';
 
 export function SentryProvider({ children }: React.PropsWithChildren) {
   return <MonitoringProvider>{children}</MonitoringProvider>;
 }
 
 function MonitoringProvider(props: React.PropsWithChildren) {
-  const service = useRef(new SentryServerMonitoringService());
+  const service = useRef(new SentryMonitoringService());
 
   return (
     <MonitoringContext.Provider value={service.current}>

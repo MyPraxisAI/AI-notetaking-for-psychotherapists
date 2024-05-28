@@ -4,7 +4,7 @@ Please set the following environment variable to your preferred monitoring provi
 
 ```
 NEXT_PUBLIC_MONITORING_PROVIDER=
-MONITORING_INSTRUMENTATION_ENABLED=true
+ENABLE_MONITORING_INSTRUMENTATION=true
 ```
 
 ## Available Providers
@@ -32,8 +32,8 @@ NEXT_PUBLIC_MONITORING_PROVIDER=sentry
 
 ## Instrumentation
 
-To enable instrumentation, set the `MONITORING_INSTRUMENTATION_ENABLED` environment variable to `true`.
+To enable instrumentation, set the `ENABLE_MONITORING_INSTRUMENTATION` environment variable to `true`.
 
 ```
-MONITORING_INSTRUMENTATION_ENABLED=true
+ENABLE_MONITORING_INSTRUMENTATION=true
 ```
