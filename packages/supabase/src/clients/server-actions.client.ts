@@ -3,6 +3,8 @@ import 'server-only';
 import { unstable_noStore as noStore } from 'next/cache';
 import { cookies } from 'next/headers';
 
+import { createClient } from '@supabase/supabase-js';
+
 import { createServerClient } from '@supabase/ssr';
 
 import { Database } from '../database.types';
@@ -35,11 +37,12 @@ export function getSupabaseServerActionClient<
   if (admin) {
     warnServiceRoleKeyUsage();
 
-    return createServerClient<GenericSchema>(keys.url, serviceRoleKey, {
+    return createClient<GenericSchema>(keys.url, serviceRoleKey, {
       auth: {
         persistSession: false,
+        detectSessionInUrl: false,
+        autoRefreshToken: false,
       },
-      cookies: {},
     });
   }
 

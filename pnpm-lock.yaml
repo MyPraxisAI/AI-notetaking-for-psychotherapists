@@ -127,8 +127,8 @@ importers:
         specifier: 5.40.0
         version: 5.40.0(react@18.3.1)
       '@tanstack/react-query-next-experimental':
-        specifier: ^5.39.0
-        version: 5.39.0(@tanstack/react-query@5.40.0(react@18.3.1))(next@14.2.3(@opentelemetry/api@1.8.0)(@playwright/test@1.44.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
+        specifier: ^5.40.0
+        version: 5.40.0(@tanstack/react-query@5.40.0(react@18.3.1))(next@14.2.3(@opentelemetry/api@1.8.0)(@playwright/test@1.44.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
       '@tanstack/react-table':
         specifier: ^8.17.3
         version: 8.17.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -212,8 +212,8 @@ importers:
         specifier: ^3.2.5
         version: 3.2.5
       supabase:
-        specifier: ^1.169.6
-        version: 1.169.6
+        specifier: ^1.169.8
+        version: 1.169.8
       tailwindcss:
         specifier: 3.4.3
         version: 3.4.3(ts-node@10.9.2(@types/node@20.12.12)(typescript@5.4.5))
@@ -3791,10 +3791,10 @@ packages:
   '@tanstack/query-core@5.40.0':
     resolution: {integrity: sha512-eD8K8jsOIq0Z5u/QbvOmfvKKE/XC39jA7yv4hgpl/1SRiU+J8QCIwgM/mEHuunQsL87dcvnHqSVLmf9pD4CiaA==}
 
-  '@tanstack/react-query-next-experimental@5.39.0':
-    resolution: {integrity: sha512-96vdfzarxpHjoCn92pOoVRIALZlLkAIpOSsaOzbb3Cxo4KZfofsyEy5PxmBau0zrWV+kV4uFhjelUwOyCNJBDw==}
+  '@tanstack/react-query-next-experimental@5.40.0':
+    resolution: {integrity: sha512-JOEKhzjF4juzzB7N6T+dc8BX5a6UxR7IUJBbmfRYa+Ju8Ibamw4W6xVWzZmH1mVd0G3XGuhcIKhba80n+iK+EQ==}
     peerDependencies:
-      '@tanstack/react-query': ^5.39.0
+      '@tanstack/react-query': ^5.40.0
       next: ^13 || ^14 || ^15
       react: 18.3.1
 
@@ -7201,8 +7201,8 @@ packages:
     engines: {node: '>=16 || 14 >=14.17'}
     hasBin: true
 
-  supabase@1.169.6:
-    resolution: {integrity: sha512-eSJ1xDFcFqy7EK5TDyC3RwJLzGJyZRgwSAt/CcOHJJ/t+TghS6hfjpyL/R6yqDeGlHo8LBuakdV605EnKSIeZA==}
+  supabase@1.169.8:
+    resolution: {integrity: sha512-39vOiK2qZBZXUo0iWIRyJB1DLMk0kNb6iW166uvWRWkKWVaBTOErL510AdD1tVGn+sELsW7erl2vy9qLFmBX0Q==}
     engines: {npm: '>=8'}
     hasBin: true
 
@@ -11114,7 +11114,7 @@ snapshots:
 
   '@tanstack/query-core@5.40.0': {}
 
-  '@tanstack/react-query-next-experimental@5.39.0(@tanstack/react-query@5.40.0(react@18.3.1))(next@14.2.3(@opentelemetry/api@1.8.0)(@playwright/test@1.44.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)':
+  '@tanstack/react-query-next-experimental@5.40.0(@tanstack/react-query@5.40.0(react@18.3.1))(next@14.2.3(@opentelemetry/api@1.8.0)(@playwright/test@1.44.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)':
     dependencies:
       '@tanstack/react-query': 5.40.0(react@18.3.1)
       next: 14.2.3(@opentelemetry/api@1.8.0)(@playwright/test@1.44.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -15179,7 +15179,7 @@ snapshots:
       pirates: 4.0.6
       ts-interface-checker: 0.1.13
 
-  supabase@1.169.6:
+  supabase@1.169.8:
     dependencies:
       bin-links: 4.0.4
       https-proxy-agent: 7.0.4
