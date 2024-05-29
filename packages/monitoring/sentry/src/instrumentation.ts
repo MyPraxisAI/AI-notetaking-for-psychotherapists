@@ -12,7 +12,7 @@ export async function registerInstrumentation() {
   // initialize the Sentry client in the server
   void initializeSentryServerClient();
 
-  if (!process.env.ENABLE_MONITORING_INSTRUMENTATION) {
+  if (process.env.ENABLE_MONITORING_INSTRUMENTATION !== 'true') {
     return;
   }
 

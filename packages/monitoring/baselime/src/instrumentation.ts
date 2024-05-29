@@ -5,7 +5,7 @@
  * Please set the MONITORING_PROVIDER environment variable to 'baselime' to register Baselime instrumentation.
  */
 export async function registerInstrumentation() {
-  if (!process.env.ENABLE_MONITORING_INSTRUMENTATION) {
+  if (process.env.ENABLE_MONITORING_INSTRUMENTATION !== 'true') {
     return;
   }
 
