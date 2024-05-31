@@ -21,7 +21,7 @@
     "@opentelemetry/resources": "1.24.1",
     "@opentelemetry/sdk-node": "0.51.1",
     "@opentelemetry/semantic-conventions": "^1.24.1",
-    "@sentry/nextjs": "^8.5.0",
+    "@sentry/nextjs": "^8.7.0",
     "@sentry/opentelemetry-node": "^7.114.0"
   },
   "devDependencies": {
