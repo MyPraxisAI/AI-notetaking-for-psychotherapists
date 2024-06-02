@@ -26,7 +26,7 @@ function Home() {
         <div
           className={
             'flex flex-col items-center md:flex-row' +
-            ' mx-auto flex-1 justify-center animate-in fade-in ' +
+            ' mx-auto flex-1 justify-center animate-in fade-in' +
             ' duration-500 zoom-in-95 slide-in-from-top-24'
           }
         >
