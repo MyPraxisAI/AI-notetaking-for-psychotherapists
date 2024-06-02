@@ -11,8 +11,6 @@ const PROVIDER = getMonitoringProvider();
  */
 export async function registerMonitoringInstrumentation() {
   if (!PROVIDER) {
-    console.info(`No instrumentation provider specified. Skipping...`);
-
     return;
   }
 
