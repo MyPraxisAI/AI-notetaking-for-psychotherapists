@@ -69,7 +69,7 @@ export function PersonalAccountDropdown({
     const phone = user?.phone ?? undefined;
 
     return email ?? phone;
-  }, [user?.email, user?.phone]);
+  }, [user]);
 
   const displayName =
     personalAccountData?.name ?? account?.name ?? user?.email ?? '';

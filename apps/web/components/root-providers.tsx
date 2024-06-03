@@ -2,7 +2,6 @@
 
 import dynamic from 'next/dynamic';
 
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryStreamedHydration } from '@tanstack/react-query-next-experimental';
 import { ThemeProvider } from 'next-themes';
 
@@ -17,8 +16,9 @@ import pathsConfig from '~/config/paths.config';
 import { i18nResolver } from '~/lib/i18n/i18n.resolver';
 import { getI18nSettings } from '~/lib/i18n/i18n.settings';
 
+import { ReactQueryProvider } from './react-query-provider';
+
 const captchaSiteKey = authConfig.captchaTokenSiteKey;
-const queryClient = new QueryClient();
 
 const CaptchaTokenSetter = dynamic(async () => {
   if (!captchaSiteKey) {
@@ -44,7 +44,7 @@ export function RootProviders({
 
   return (
     <MonitoringProvider>
-      <QueryClientProvider client={queryClient}>
+      <ReactQueryProvider>
         <ReactQueryStreamedHydration>
           <I18nProvider settings={i18nSettings} resolver={i18nResolver}>
             <CaptchaProvider>
@@ -64,7 +64,7 @@ export function RootProviders({
             </CaptchaProvider>
           </I18nProvider>
         </ReactQueryStreamedHydration>
-      </QueryClientProvider>
+      </ReactQueryProvider>
     </MonitoringProvider>
   );
 }

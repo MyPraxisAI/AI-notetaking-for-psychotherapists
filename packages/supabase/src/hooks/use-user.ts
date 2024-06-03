@@ -24,14 +24,10 @@ export function useUser(initialData?: User | null) {
     return Promise.reject('Unexpected result format');
   };
 
-  // update staleTime to 5 minutes
-  const staleTime = 1000 * 60 * 5;
-
   return useQuery({
     queryFn,
     queryKey,
     initialData,
-    staleTime,
     refetchInterval: false,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
