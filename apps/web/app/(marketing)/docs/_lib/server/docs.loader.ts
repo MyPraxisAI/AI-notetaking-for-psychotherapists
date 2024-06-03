@@ -2,7 +2,14 @@ import { cache } from 'react';
 
 import { createCmsClient } from '@kit/cms';
 
-export const getDocs = cache(async (language: string | undefined) => {
+/**
+ * @name getDocs
+ * @description Load the documentation pages.
+ * @param language
+ */
+export const getDocs = cache(docsLoader);
+
+async function docsLoader(language: string | undefined) {
   const cms = await createCmsClient();
 
   const { items: pages } = await cms.getContentItems({
@@ -12,4 +19,4 @@ export const getDocs = cache(async (language: string | undefined) => {
   });
 
   return pages;
-});
+}

@@ -28,7 +28,11 @@ const BILLING_MODE = z
  * @returns The subscription data or the orders data and the billing customer ID.
  * This function is cached per-request.
  */
-export const loadPersonalAccountBillingPageData = cache((userId: string) => {
+export const loadPersonalAccountBillingPageData = cache(
+  personalAccountBillingPageDataLoader,
+);
+
+function personalAccountBillingPageDataLoader(userId: string) {
   const client = getSupabaseServerComponentClient();
   const api = createAccountsApi(client);
 
@@ -40,4 +44,4 @@ export const loadPersonalAccountBillingPageData = cache((userId: string) => {
   const customerId = api.getCustomerId(userId);
 
   return Promise.all([data, customerId]);
-});
+}

@@ -11,9 +11,11 @@ import { createAdminDashboardService } from '../services/admin-dashboard.service
  * @description Load the admin dashboard data.
  * @param params
  */
-export const loadAdminDashboard = cache(() => {
+export const loadAdminDashboard = cache(adminDashboardLoader);
+
+function adminDashboardLoader() {
   const client = getSupabaseServerComponentClient({ admin: true });
   const service = createAdminDashboardService(client);
 
   return service.getDashboardData();
-});
+}

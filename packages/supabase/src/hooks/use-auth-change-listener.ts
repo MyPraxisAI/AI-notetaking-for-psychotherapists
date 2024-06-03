@@ -7,7 +7,6 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { useSupabase } from './use-supabase';
-import { useRevalidateUserSession } from './use-user-session';
 
 /**
  * @name PRIVATE_PATH_PREFIXES
@@ -30,7 +29,6 @@ export function useAuthChangeListener({
   const client = useSupabase();
   const pathName = usePathname();
   const router = useRouter();
-  const revalidateUserSession = useRevalidateUserSession();
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -61,7 +59,6 @@ export function useAuthChangeListener({
   }, [
     client.auth,
     router,
-    revalidateUserSession,
     pathName,
     appHomePath,
     privatePathPrefixes,

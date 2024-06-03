@@ -12,11 +12,13 @@ import { SitePageHeader } from '../../_components/site-page-header';
 import styles from '../../blog/_components/html-renderer.module.css';
 import { DocsCards } from '../_components/docs-cards';
 
-const getPageBySlug = cache(async (slug: string) => {
+const getPageBySlug = cache(pageLoader);
+
+async function pageLoader(slug: string) {
   const client = await createCmsClient();
 
-  return client.getContentItemBySlug({ slug, collection: 'documentation' });
-});
+  return client.getContentItemBySlug({ slug, collection: 'pages' });
+}
 
 interface PageParams {
   params: {

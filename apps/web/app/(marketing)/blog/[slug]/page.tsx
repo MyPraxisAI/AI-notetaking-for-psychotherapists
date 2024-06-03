@@ -10,11 +10,13 @@ import { withI18n } from '~/lib/i18n/with-i18n';
 
 import { Post } from '../../blog/_components/post';
 
-const getPostBySlug = cache(async (slug: string) => {
+const getPostBySlug = cache(postLoader);
+
+async function postLoader(slug: string) {
   const client = await createCmsClient();
 
   return client.getContentItemBySlug({ slug, collection: 'posts' });
-});
+}
 
 export async function generateMetadata({
   params,

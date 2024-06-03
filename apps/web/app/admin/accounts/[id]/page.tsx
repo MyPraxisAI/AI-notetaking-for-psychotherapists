@@ -31,7 +31,9 @@ async function AccountPage({ params }: Params) {
 
 export default AdminGuard(AccountPage);
 
-const loadAccount = cache(async (id: string) => {
+const loadAccount = cache(accountLoader);
+
+async function accountLoader(id: string) {
   const client = getSupabaseServerComponentClient({
     admin: true,
   });
@@ -47,4 +49,4 @@ const loadAccount = cache(async (id: string) => {
   }
 
   return data;
-});
+}

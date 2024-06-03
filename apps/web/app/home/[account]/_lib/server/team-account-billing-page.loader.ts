@@ -22,7 +22,13 @@ const BILLING_MODE = z
   .default('subscription')
   .parse(process.env.BILLING_MODE);
 
-export const loadTeamAccountBillingPage = cache((accountId: string) => {
+/**
+ * @name loadTeamAccountBillingPage
+ * @description Load the team account billing page data for the given account.
+ */
+export const loadTeamAccountBillingPage = cache(teamAccountBillingPageLoader);
+
+function teamAccountBillingPageLoader(accountId: string) {
   const client = getSupabaseServerComponentClient();
   const api = createAccountsApi(client);
 
@@ -34,4 +40,4 @@ export const loadTeamAccountBillingPage = cache((accountId: string) => {
   const customerId = api.getCustomerId(accountId);
 
   return Promise.all([data, customerId]);
-});
+}

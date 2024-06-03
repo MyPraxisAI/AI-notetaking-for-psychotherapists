@@ -23,7 +23,9 @@ export type TeamAccountWorkspace = Awaited<
  *
  * @param accountSlug
  */
-export const loadTeamWorkspace = cache(async (accountSlug: string) => {
+export const loadTeamWorkspace = cache(workspaceLoader);
+
+async function workspaceLoader(accountSlug: string) {
   const client = getSupabaseServerComponentClient();
   const api = createTeamAccountsApi(client);
 
@@ -48,4 +50,4 @@ export const loadTeamWorkspace = cache(async (accountSlug: string) => {
     ...workspace.data,
     user,
   };
-});
+}
