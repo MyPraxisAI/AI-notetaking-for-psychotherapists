@@ -17,7 +17,7 @@ const getPageBySlug = cache(pageLoader);
 async function pageLoader(slug: string) {
   const client = await createCmsClient();
 
-  return client.getContentItemBySlug({ slug, collection: 'pages' });
+  return client.getContentItemBySlug({ slug, collection: 'documentation' });
 }
 
 interface PageParams {
