@@ -5,7 +5,11 @@ import { createRef, useEffect, useRef } from 'react';
 import type { LoadingBarRef } from 'react-top-loading-bar';
 import LoadingBar from 'react-top-loading-bar';
 
-export function TopLoadingBarIndicator() {
+export function TopLoadingBarIndicator({
+  completeOnUnmount = true,
+}: {
+  completeOnUnmount?: boolean;
+}) {
   const ref = createRef<LoadingBarRef>();
   const runningRef = useRef(false);
 
@@ -20,10 +24,12 @@ export function TopLoadingBarIndicator() {
     runningRef.current = true;
 
     return () => {
-      loadingBarRef.complete();
+      if (completeOnUnmount) {
+        loadingBarRef.complete();
+      }
       runningRef.current = false;
     };
-  }, [ref]);
+  }, [completeOnUnmount, ref]);
 
   return (
     <LoadingBar

@@ -1,12 +1,8 @@
-'use client';
-
 import { If } from './if';
 import { LoadingOverlay } from './loading-overlay';
 import { TopLoadingBarIndicator } from './top-loading-bar-indicator';
-import { Trans } from './trans';
 
 export function GlobalLoader({
-  children,
   displayLogo = false,
   fullPage = false,
   displaySpinner = true,
@@ -17,21 +13,19 @@ export function GlobalLoader({
   displaySpinner?: boolean;
   displayTopLoadingBar?: boolean;
 }>) {
-  const Text = children ?? <Trans i18nKey={'common:loading'} />;
-
   return (
     <>
       <If condition={displayTopLoadingBar}>
-        <TopLoadingBarIndicator />
+        <TopLoadingBarIndicator completeOnUnmount={false} />
       </If>
 
       <If condition={displaySpinner}>
         <div
-          className={'flex flex-1 flex-col items-center justify-center py-48'}
+          className={
+            'zoom-in-80 flex flex-1 flex-col items-center justify-center py-48 animate-in fade-in'
+          }
         >
-          <LoadingOverlay displayLogo={displayLogo} fullPage={fullPage}>
-            {Text}
-          </LoadingOverlay>
+          <LoadingOverlay displayLogo={displayLogo} fullPage={fullPage} />
         </div>
       </If>
     </>
