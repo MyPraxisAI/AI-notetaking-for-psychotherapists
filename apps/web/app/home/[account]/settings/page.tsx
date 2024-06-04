@@ -1,3 +1,5 @@
+import { getSupabaseServerComponentClient } from '@kit/supabase/server-component-client';
+import { createTeamAccountsApi } from '@kit/team-accounts/api';
 import { TeamAccountSettingsContainer } from '@kit/team-accounts/components';
 import { PageBody } from '@kit/ui/page';
 import { Trans } from '@kit/ui/trans';
@@ -7,7 +9,6 @@ import { createI18nServerInstance } from '~/lib/i18n/i18n.server';
 
 // local imports
 import { TeamAccountLayoutPageHeader } from '../_components/team-account-layout-page-header';
-import { loadTeamWorkspace } from '../_lib/server/team-account-workspace.loader';
 
 export const generateMetadata = async () => {
   const i18n = await createI18nServerInstance();
@@ -29,14 +30,15 @@ const paths = {
 };
 
 async function TeamAccountSettingsPage(props: Props) {
-  const data = await loadTeamWorkspace(props.params.account);
+  const api = createTeamAccountsApi(getSupabaseServerComponentClient());
+  const data = await api.getTeamAccount(props.params.account);
 
   const account = {
-    id: data.account.id,
-    name: data.account.name,
-    pictureUrl: data.account.picture_url,
-    slug: data.account.slug,
-    primaryOwnerUserId: data.account.primary_owner_user_id,
+    id: data.id,
+    name: data.name,
+    pictureUrl: data.picture_url,
+    slug: data.slug as string,
+    primaryOwnerUserId: data.primary_owner_user_id,
   };
 
   return (

@@ -4,7 +4,6 @@ import { notFound, redirect } from 'next/navigation';
 
 import { getBillingGatewayProvider } from '@kit/billing-gateway';
 import { BillingSessionStatus } from '@kit/billing-gateway/components';
-import { requireUser } from '@kit/supabase/require-user';
 import { getSupabaseServerComponentClient } from '@kit/supabase/server-component-client';
 
 import billingConfig from '~/config/billing.config';

@@ -2,9 +2,8 @@ import 'server-only';
 
 import { SupabaseClient } from '@supabase/supabase-js';
 
+import { loadTeamWorkspace } from '~/home/[account]/_lib/server/team-account-workspace.loader';
 import { Database } from '~/lib/database.types';
-
-import { loadTeamWorkspace } from '../../../_lib/server/team-account-workspace.loader';
 
 /**
  * Load data for the members page
@@ -16,10 +15,10 @@ export async function loadMembersPageData(
   slug: string,
 ) {
   return Promise.all([
-    loadTeamWorkspace(slug),
     loadAccountMembers(client, slug),
     loadInvitations(client, slug),
     canAddMember,
+    loadTeamWorkspace(slug),
   ]);
 }
 
