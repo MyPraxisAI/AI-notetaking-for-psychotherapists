@@ -2,9 +2,7 @@
 
 import { useEffect } from 'react';
 
-import { usePathname, useRouter } from 'next/navigation';
-
-import { useQueryClient } from '@tanstack/react-query';
+import { usePathname } from 'next/navigation';
 
 import { useSupabase } from './use-supabase';
 
@@ -28,12 +26,10 @@ export function useAuthChangeListener({
 }) {
   const client = useSupabase();
   const pathName = usePathname();
-  const router = useRouter();
-  const queryClient = useQueryClient();
 
   useEffect(() => {
     // keep this running for the whole session unless the component was unmounted
-    const listener = client.auth.onAuthStateChange(async (event, user) => {
+    const listener = client.auth.onAuthStateChange((event, user) => {
       // log user out if user is falsy
       // and if the current path is a private route
       const shouldRedirectUser =
@@ -48,22 +44,13 @@ export function useAuthChangeListener({
 
       // revalidate user session when user signs in or out
       if (event === 'SIGNED_OUT') {
-        await queryClient.invalidateQueries();
-
-        return router.refresh();
+        window.location.reload();
       }
     });
 
     // destroy listener on un-mounts
     return () => listener.data.subscription.unsubscribe();
-  }, [
-    client.auth,
-    router,
-    pathName,
-    appHomePath,
-    privatePathPrefixes,
-    queryClient,
-  ]);
+  }, [client.auth, pathName, appHomePath, privatePathPrefixes]);
 }
 
 /**
