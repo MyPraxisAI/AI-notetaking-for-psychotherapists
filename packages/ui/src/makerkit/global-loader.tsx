@@ -16,13 +16,13 @@ export function GlobalLoader({
   return (
     <>
       <If condition={displayTopLoadingBar}>
-        <TopLoadingBarIndicator completeOnUnmount={false} />
+        <TopLoadingBarIndicator />
       </If>
 
       <If condition={displaySpinner}>
         <div
           className={
-            'zoom-in-80 flex flex-1 flex-col items-center justify-center py-48 animate-in fade-in'
+            'flex flex-1 flex-col items-center justify-center py-48 animate-in fade-in zoom-in-50 slide-in-from-bottom-4'
           }
         >
           <LoadingOverlay displayLogo={displayLogo} fullPage={fullPage} />
