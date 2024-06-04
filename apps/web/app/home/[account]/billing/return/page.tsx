@@ -9,6 +9,7 @@ import { getSupabaseServerComponentClient } from '@kit/supabase/server-component
 
 import billingConfig from '~/config/billing.config';
 import { withI18n } from '~/lib/i18n/with-i18n';
+import { requireUserInServerComponent } from '~/lib/server/require-user-in-server-component';
 
 interface SessionPageProps {
   searchParams: {
@@ -73,13 +74,9 @@ function BlurryBackdrop() {
 }
 
 async function loadCheckoutSession(sessionId: string) {
+  await requireUserInServerComponent();
+
   const client = getSupabaseServerComponentClient();
-  const { error } = await requireUser(client);
-
-  if (error) {
-    throw new Error('Authentication required');
-  }
-
   const gateway = await getBillingGatewayProvider(client);
 
   const session = await gateway.retrieveCheckoutSession({

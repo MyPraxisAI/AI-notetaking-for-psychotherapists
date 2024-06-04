@@ -1,12 +1,10 @@
 import { cache } from 'react';
 
-import { redirect } from 'next/navigation';
-
 import { createAccountsApi } from '@kit/accounts/api';
-import { requireUser } from '@kit/supabase/require-user';
 import { getSupabaseServerComponentClient } from '@kit/supabase/server-component-client';
 
 import featureFlagsConfig from '~/config/feature-flags.config';
+import { requireUserInServerComponent } from '~/lib/server/require-user-in-server-component';
 
 const shouldLoadAccounts = featureFlagsConfig.enableTeamAccounts;
 
@@ -30,17 +28,11 @@ async function workspaceLoader() {
 
   const workspacePromise = api.getAccountWorkspace();
 
-  const [accounts, workspace, auth] = await Promise.all([
+  const [accounts, workspace, user] = await Promise.all([
     accountsPromise(),
     workspacePromise,
-    requireUser(client),
+    requireUserInServerComponent(),
   ]);
-
-  if (!auth.data) {
-    return redirect(auth.redirectTo);
-  }
-
-  const user = auth.data;
 
   return {
     accounts,

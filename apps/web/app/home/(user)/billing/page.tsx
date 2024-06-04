@@ -1,12 +1,8 @@
-import { redirect } from 'next/navigation';
-
 import {
   BillingPortalCard,
   CurrentLifetimeOrderCard,
   CurrentSubscriptionCard,
 } from '@kit/billing-gateway/components';
-import { requireUser } from '@kit/supabase/require-user';
-import { getSupabaseServerComponentClient } from '@kit/supabase/server-component-client';
 import { If } from '@kit/ui/if';
 import { PageBody } from '@kit/ui/page';
 import { Trans } from '@kit/ui/trans';
@@ -14,6 +10,7 @@ import { Trans } from '@kit/ui/trans';
 import billingConfig from '~/config/billing.config';
 import { createI18nServerInstance } from '~/lib/i18n/i18n.server';
 import { withI18n } from '~/lib/i18n/with-i18n';
+import { requireUserInServerComponent } from '~/lib/server/require-user-in-server-component';
 
 // local imports
 import { HomeLayoutPageHeader } from '../_components/home-page-header';
@@ -31,16 +28,9 @@ export const generateMetadata = async () => {
 };
 
 async function PersonalAccountBillingPage() {
-  const client = getSupabaseServerComponentClient();
-  const auth = await requireUser(client);
+  const user = await requireUserInServerComponent();
 
-  if (auth.error) {
-    redirect(auth.redirectTo);
-  }
-
-  const [data, customerId] = await loadPersonalAccountBillingPageData(
-    auth.data.id,
-  );
+  const [data, customerId] = await loadPersonalAccountBillingPageData(user.id);
 
   return (
     <>
