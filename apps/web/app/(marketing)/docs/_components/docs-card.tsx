@@ -19,7 +19,7 @@ export function DocsCard({
       <div
         className={`flex grow flex-col space-y-2.5 border bg-background p-6 ${link ? 'rounded-t-2xl border-b-0' : 'rounded-2xl'}`}
       >
-        <h3 className="mt-0 text-lg font-semibold dark:text-white">
+        <h3 className="mt-0 text-lg font-semibold hover:underline dark:text-white">
           <Link href={link.url}>{title}</Link>
         </h3>
 
