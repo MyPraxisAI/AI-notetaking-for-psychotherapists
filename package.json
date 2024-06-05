@@ -26,7 +26,9 @@
     "supabase:web:stop": "pnpm --filter web supabase:stop",
     "supabase:web:typegen": "pnpm --filter web supabase:typegen",
     "supabase:web:reset": "pnpm --filter web supabase:reset",
-    "stripe:listen": "pnpm --filter '@kit/stripe' start"
+    "stripe:listen": "pnpm --filter '@kit/stripe' start",
+    "env:generate": "turbo gen env",
+    "env:validate": "turbo gen validate-env"
   },
   "prettier": "@kit/prettier-config",
   "workspaces": [
