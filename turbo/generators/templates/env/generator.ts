@@ -1,9 +1,19 @@
 import type { PlopTypes } from '@turbo/gen';
 import { writeFileSync } from 'node:fs';
 
+import { generator } from '../../utils';
+
 export function createEnvironmentVariablesGenerator(
   plop: PlopTypes.NodePlopAPI,
 ) {
+  const allVariables = generator.loadAllEnvironmentVariables('apps/web');
+
+  if (allVariables) {
+    console.log(
+      `Loaded ${Object.values(allVariables).length} default environment variables in your env files. We use these as defaults.`,
+    );
+  }
+
   return plop.setGenerator('env', {
     description: 'Generate the environment variables to be used in the app',
     actions: [
@@ -31,129 +41,130 @@ export function createEnvironmentVariablesGenerator(
         name: 'values.NEXT_PUBLIC_SITE_URL',
         message:
           'What is the site URL of you website? (Ex. https://makerkit.dev)',
+        default: allVariables.NEXT_PUBLIC_SITE_URL,
       },
       {
         type: 'input',
         name: 'values.NEXT_PUBLIC_PRODUCT_NAME',
         message: 'What is the name of your product? (Ex. MakerKit)',
+        default: allVariables.NEXT_PUBLIC_PRODUCT_NAME,
       },
       {
         type: 'input',
         name: 'values.NEXT_PUBLIC_SITE_TITLE',
         message:
           'What is the title of your website? (Ex. MakerKit - The best way to make things)',
+        default: allVariables.NEXT_PUBLIC_SITE_TITLE,
       },
       {
         type: 'input',
         name: 'values.NEXT_PUBLIC_SITE_DESCRIPTION',
         message:
           'What is the description of your website? (Ex. MakerKit is the best way to make things and stuff)',
+        default: allVariables.NEXT_PUBLIC_SITE_DESCRIPTION,
       },
       {
         type: 'list',
         name: 'values.NEXT_PUBLIC_DEFAULT_THEME_MODE',
-        message:
-          'What is the default theme mode of your website? (leave empty for light)',
+        message: 'What is the default theme mode of your website?',
         choices: ['light', 'dark', 'system'],
-        default: 'light',
+        default: allVariables.NEXT_PUBLIC_DEFAULT_THEME_MODE ?? 'light',
       },
       {
         type: 'input',
         name: 'values.NEXT_PUBLIC_DEFAULT_LOCALE',
-        message:
-          'What is the default locale of your website? (leave empty for en)',
-        default: 'en',
+        message: 'What is the default locale of your website?',
+        default: allVariables.NEXT_PUBLIC_DEFAULT_LOCALE ?? 'en',
       },
       {
         type: 'input',
         name: 'values.NEXT_PUBLIC_AUTH_PASSWORD',
-        message:
-          'Do you want to use email/password authentication? (leave empty for true)',
-        default: 'true',
+        message: 'Do you want to use email/password authentication?',
+        default: allVariables.NEXT_PUBLIC_DEFAULT_LOCALE ?? 'true',
       },
       {
         type: 'input',
         name: 'values.NEXT_PUBLIC_AUTH_MAGIC_LINK',
         message:
           'Do you want to use magic link authentication? (leave empty for false)',
-        default: 'false',
+        default: allVariables.NEXT_PUBLIC_AUTH_MAGIC_LINK ?? 'false',
       },
       {
         type: 'input',
         name: 'values.CONTACT_EMAIL',
         message: 'What is the contact email you want to receive emails to?',
+        default: allVariables.CONTACT_EMAIL,
       },
       {
         type: 'input',
         name: 'values.NEXT_PUBLIC_ENABLE_THEME_TOGGLE',
-        message:
-          'Do you want to enable the theme toggle? (leave empty for true)',
-        default: 'true',
+        message: 'Do you want to enable the theme toggle?',
+        default: allVariables.NEXT_PUBLIC_ENABLE_THEME_TOGGLE ?? 'true',
       },
       {
         type: 'input',
         name: 'values.NEXT_PUBLIC_ENABLE_PERSONAL_ACCOUNT_DELETION',
-        message:
-          'Do you want to enable personal account deletion? (leave empty for true)',
-        default: 'true',
+        message: 'Do you want to enable personal account deletion?',
+        default:
+          allVariables.NEXT_PUBLIC_ENABLE_PERSONAL_ACCOUNT_DELETION ?? 'true',
       },
       {
         type: 'input',
         name: 'values.NEXT_PUBLIC_ENABLE_PERSONAL_ACCOUNT_BILLING',
-        message:
-          'Do you want to enable personal account billing? (leave empty for true)',
-        default: 'true',
+        message: 'Do you want to enable personal account billing?',
+        default:
+          allVariables.NEXT_PUBLIC_ENABLE_PERSONAL_ACCOUNT_BILLING ?? 'true',
       },
       {
         type: 'input',
         name: 'values.NEXT_PUBLIC_ENABLE_TEAM_ACCOUNTS',
-        message: 'Do you want to enable team accounts? (leave empty for true)',
-        default: 'true',
+        message: 'Do you want to enable team accounts?',
+        default: allVariables.NEXT_PUBLIC_ENABLE_TEAM_ACCOUNTS ?? 'true',
       },
       {
         type: 'input',
         name: 'values.NEXT_PUBLIC_ENABLE_TEAM_ACCOUNT_DELETION',
-        message:
-          'Do you want to enable team account deletion? (leave empty for true)',
-        default: 'true',
+        message: 'Do you want to enable team account deletion?',
+        default:
+          allVariables.NEXT_PUBLIC_ENABLE_TEAM_ACCOUNT_DELETION ?? 'true',
       },
       {
         type: 'input',
         name: 'values.NEXT_PUBLIC_ENABLE_TEAM_ACCOUNTS_BILLING',
-        message:
-          'Do you want to enable team account billing? (leave empty for true)',
-        default: 'true',
+        message: 'Do you want to enable team account billing?',
+        default:
+          allVariables.NEXT_PUBLIC_ENABLE_TEAM_ACCOUNTS_BILLING ?? 'true',
       },
       {
         type: 'input',
         name: 'values.NEXT_PUBLIC_ENABLE_TEAM_ACCOUNTS_CREATION',
-        message:
-          'Do you want to enable team account creation? (leave empty for true)',
-        default: 'true',
+        message: 'Do you want to enable team account creation?',
+        default:
+          allVariables.NEXT_PUBLIC_ENABLE_TEAM_ACCOUNTS_CREATION ?? 'true',
       },
       {
         type: 'input',
         name: 'values.NEXT_PUBLIC_REALTIME_NOTIFICATIONS',
-        message:
-          'Do you want to enable realtime notifications? (leave empty for false)',
-        default: 'false',
+        message: 'Do you want to enable realtime notifications?',
+        default: allVariables.NEXT_PUBLIC_REALTIME_NOTIFICATIONS ?? 'true',
       },
       {
         type: 'input',
         name: 'values.NEXT_PUBLIC_ENABLE_NOTIFICATIONS',
-        message:
-          'Do you want to enable email notifications? (leave empty for true)',
-        default: 'true',
+        message: 'Do you want to enable email notifications?',
+        default: allVariables.NEXT_PUBLIC_ENABLE_NOTIFICATIONS ?? 'true',
       },
       {
         type: 'input',
         name: 'values.NEXT_PUBLIC_SUPABASE_URL',
         message: 'What is the Supabase URL? (Ex. https://yourapp.supabase.co)',
+        default: allVariables.NEXT_PUBLIC_SUPABASE_URL,
       },
       {
         type: 'input',
         name: 'values.NEXT_PUBLIC_SUPABASE_ANON_KEY',
         message: 'What is the Supabase anon key?',
+        default: allVariables.NEXT_PUBLIC_SUPABASE_ANON_KEY,
       },
       {
         type: 'input',
@@ -163,10 +174,9 @@ export function createEnvironmentVariablesGenerator(
       {
         type: 'list',
         name: 'values.NEXT_PUBLIC_BILLING_PROVIDER',
-        message:
-          'What is the billing provider you want to use? (leave empty for stripe)',
+        message: 'What is the billing provider you want to use?',
         choices: ['stripe', 'lemon-squeezy'],
-        default: 'stripe',
+        default: allVariables.NEXT_PUBLIC_BILLING_PROVIDER ?? 'stripe',
       },
       {
         when: (answers) =>
@@ -174,6 +184,7 @@ export function createEnvironmentVariablesGenerator(
         type: 'input',
         name: 'values.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY',
         message: 'What is the Stripe publishable key?',
+        default: allVariables.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
       },
       {
         when: (answers) =>
@@ -202,6 +213,7 @@ export function createEnvironmentVariablesGenerator(
         type: 'input',
         name: 'values.LEMON_SQUEEZY_STORE_ID',
         message: 'What is the Lemon Squeezy store ID?',
+        default: allVariables.LEMON_SQUEEZY_STORE_ID,
       },
       {
         when: (answers) =>
@@ -218,17 +230,16 @@ export function createEnvironmentVariablesGenerator(
       {
         type: 'list',
         name: 'values.CMS_CLIENT',
-        message:
-          'What is the CMS client you want to use? (leave empty for keystatic)',
+        message: 'What is the CMS client you want to use?',
         choices: ['keystatic', 'wordpress'],
-        default: 'keystatic',
+        default: allVariables.CMS_CLIENT ?? 'keystatic',
       },
       {
         type: 'list',
         name: 'values.MAILER_PROVIDER',
         message: 'What is the mailer provider you want to use?',
         choices: ['nodemailer', 'resend'],
-        default: 'nodemailer',
+        default: allVariables.MAILER_PROVIDER ?? 'nodemailer',
       },
       {
         when: (answers) => answers.values.MAILER_PROVIDER === 'resend',
@@ -270,8 +281,7 @@ export function createEnvironmentVariablesGenerator(
         when: (answers) => answers.values.MAILER_PROVIDER === 'nodemailer',
         type: 'input',
         name: 'values.EMAIL_TLS',
-        message:
-          'Do you want to enable TLS for your emails? (leave empty for true)',
+        message: 'Do you want to enable TLS for your emails?',
         default: 'true',
       },
     ],

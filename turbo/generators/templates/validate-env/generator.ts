@@ -1,8 +1,8 @@
 import type { PlopTypes } from '@turbo/gen';
-import { readFileSync } from 'node:fs';
 
 // quick hack to avoid installing zod globally
 import { z } from '../../../../apps/web/node_modules/zod';
+import { generator } from '../../utils';
 
 const BooleanStringEnum = z.enum(['true', 'false']);
 
@@ -156,26 +156,11 @@ export function createEnvironmentVariablesValidatorGenerator(
           throw new Error('URL is required');
         }
 
-        const file = readFileSync(answers.path as string, 'utf-8');
+        const env = generator.loadEnvironmentVariables(answers.path as string);
 
-        if (!file) {
-          throw new Error('File is empty');
-        }
-
-        const vars = file.split('\n').filter((line) => line.trim() !== '');
-
-        for (const line of vars) {
-          const [key, value] = line.split('=');
-
-          if (!key) {
-            throw new Error(`The line ${line} has no key`);
-          }
-
-          if (!value) {
-            console.warn(`The value ${key} has no value`);
-          }
-
+        for (const key of Object.keys(env)) {
           const property = Schema[key];
+          const value = env[key];
 
           if (property) {
             // parse with Zod
@@ -183,7 +168,7 @@ export function createEnvironmentVariablesValidatorGenerator(
 
             if (error) {
               throw new Error(
-                `Encountered a validation error for key ${key}: ${JSON.stringify(error, null, 2)}`,
+                `Encountered a validation error for key ${key}:${value} \n\n${JSON.stringify(error, null, 2)}`,
               );
             } else {
               console.log(`Key ${key} is valid!`);
