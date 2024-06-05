@@ -132,13 +132,6 @@ export class LemonSqueezyWebhookHandlerService
         );
       }
 
-      case 'subscription_payment_success': {
-        return this.handleInvoicePaid(
-          event as SubscriptionWebhook,
-          params.onInvoicePaid,
-        );
-      }
-
       default: {
         const logger = await getLogger();
 
@@ -284,18 +277,6 @@ export class LemonSqueezyWebhookHandlerService
     return this.handleSubscriptionCreatedEvent(
       event,
       onSubscriptionUpdatedCallback,
-    );
-  }
-
-  private handleInvoicePaid(
-    subscription: SubscriptionWebhook,
-    onInvoicePaidCallback: (
-      subscription: UpsertSubscriptionParams,
-    ) => Promise<unknown>,
-  ) {
-    return this.handleSubscriptionCreatedEvent(
-      subscription,
-      onInvoicePaidCallback,
     );
   }
 

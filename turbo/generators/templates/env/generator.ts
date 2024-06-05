@@ -1,5 +1,4 @@
 import type { PlopTypes } from '@turbo/gen';
-import { execSync } from 'node:child_process';
 import { writeFileSync } from 'node:fs';
 
 export function createEnvironmentVariablesGenerator(
@@ -23,7 +22,7 @@ export function createEnvironmentVariablesGenerator(
 
         writeFileSync('turbo/generators/templates/env/.env.local', env);
 
-        return 'Environment variables generated at turbo/generators/templates/env/.env.local. Please double check and use this file in your hosting provider to set the environment variables. Never commit this file, it contains secrets!';
+        return 'Environment variables generated at /turbo/generators/templates/env/.env.local.\nPlease double check and use this file in your hosting provider to set the environment variables. \nNever commit this file, it contains secrets!';
       },
     ],
     prompts: [
@@ -271,7 +270,8 @@ export function createEnvironmentVariablesGenerator(
         when: (answers) => answers.values.MAILER_PROVIDER === 'nodemailer',
         type: 'input',
         name: 'values.EMAIL_TLS',
-        message: 'Do you want to enable TLS? (leave empty for true)',
+        message:
+          'Do you want to enable TLS for your emails? (leave empty for true)',
         default: 'true',
       },
     ],

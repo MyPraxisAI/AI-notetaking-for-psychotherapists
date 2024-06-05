@@ -66,7 +66,7 @@
     "trialing": {
       "badge": "Trial",
       "heading": "You're on a trial",
-      "description": "Your trial will end on {{- trialEndDate }}."
+      "description": "You can enjoy the benefits of plan until the trial ends"
     },
     "past_due": {
       "badge": "Past Due",
