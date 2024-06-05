@@ -1,5 +1,6 @@
 import type { PlopTypes } from '@turbo/gen';
 import { execSync } from 'node:child_process';
+import { writeFileSync } from 'node:fs';
 
 export function createEnvironmentVariablesGenerator(
   plop: PlopTypes.NodePlopAPI,
@@ -20,12 +21,9 @@ export function createEnvironmentVariablesGenerator(
           env += `${key}=${value}\n`;
         }
 
-        // write .env.local here with values
-        execSync(
-          `echo "${env}" > turbo/generators/templates/env/out/.env.local`,
-        );
+        writeFileSync('turbo/generators/templates/env/.env.local', env);
 
-        return 'Environment variables generated at turbo/generators/templates/env/out/.env.local. Please double check and use this file in your hosting provider to set the environment variables. Never commit this file, it contains secrets!';
+        return 'Environment variables generated at turbo/generators/templates/env/.env.local. Please double check and use this file in your hosting provider to set the environment variables. Never commit this file, it contains secrets!';
       },
     ],
     prompts: [
