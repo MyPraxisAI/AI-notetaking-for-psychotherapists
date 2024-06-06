@@ -24,11 +24,9 @@ export async function registerMonitoringInstrumentation() {
     }
 
     case InstrumentationProvider.Sentry: {
-      const { registerInstrumentation } = await import(
-        '@kit/sentry/instrumentation'
-      );
+      // Sentry v8 automatically sets this up
 
-      return registerInstrumentation();
+      return;
     }
 
     default:
