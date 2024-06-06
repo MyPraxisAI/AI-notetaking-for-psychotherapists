@@ -32,6 +32,10 @@ const paths = {
 function SignUpPage({ searchParams }: Props) {
   const inviteToken = searchParams.invite_token;
 
+  const signInPath =
+    pathsConfig.auth.signIn +
+    (inviteToken ? `?invite_token=${inviteToken}` : '');
+
   return (
     <>
       <Heading level={4}>
@@ -46,7 +50,7 @@ function SignUpPage({ searchParams }: Props) {
 
       <div className={'justify-centers flex'}>
         <Button asChild variant={'link'} size={'sm'}>
-          <Link href={pathsConfig.auth.signIn}>
+          <Link href={signInPath}>
             <Trans i18nKey={'auth:alreadyHaveAnAccount'} />
           </Link>
         </Button>

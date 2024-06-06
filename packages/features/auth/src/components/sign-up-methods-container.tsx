@@ -51,6 +51,7 @@ export function SignUpMethodsContainer(props: {
         <OauthProviders
           enabledProviders={props.providers.oAuth}
           inviteToken={props.inviteToken}
+          shouldCreateUser={true}
           paths={{
             callback: props.paths.callback,
             returnPath: props.paths.appHome,

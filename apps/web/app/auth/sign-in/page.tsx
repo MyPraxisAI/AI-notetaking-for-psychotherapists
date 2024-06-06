@@ -10,6 +10,12 @@ import pathsConfig from '~/config/paths.config';
 import { createI18nServerInstance } from '~/lib/i18n/i18n.server';
 import { withI18n } from '~/lib/i18n/with-i18n';
 
+interface SignInPageProps {
+  searchParams: {
+    invite_token?: string;
+  };
+}
+
 export const generateMetadata = async () => {
   const i18n = await createI18nServerInstance();
 
@@ -21,20 +27,31 @@ export const generateMetadata = async () => {
 const paths = {
   callback: pathsConfig.auth.callback,
   home: pathsConfig.app.home,
+  joinTeam: pathsConfig.app.joinTeam,
 };
 
-function SignInPage() {
+function SignInPage({ searchParams }: SignInPageProps) {
+  const inviteToken = searchParams.invite_token;
+
+  const signUpPath =
+    pathsConfig.auth.signUp +
+    (inviteToken ? `?invite_token=${inviteToken}` : '');
+
   return (
     <>
       <Heading level={4}>
         <Trans i18nKey={'auth:signInHeading'} />
       </Heading>
 
-      <SignInMethodsContainer paths={paths} providers={authConfig.providers} />
+      <SignInMethodsContainer
+        inviteToken={inviteToken}
+        paths={paths}
+        providers={authConfig.providers}
+      />
 
       <div className={'flex justify-center'}>
         <Button asChild variant={'link'} size={'sm'}>
-          <Link href={pathsConfig.auth.signUp}>
+          <Link href={signUpPath}>
             <Trans i18nKey={'auth:doNotHaveAccountYet'} />
           </Link>
         </Button>

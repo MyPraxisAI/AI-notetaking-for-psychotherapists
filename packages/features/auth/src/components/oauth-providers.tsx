@@ -14,6 +14,7 @@ import { AuthProviderButton } from './auth-provider-button';
 
 export function OauthProviders(props: {
   inviteToken?: string;
+  shouldCreateUser: boolean;
   enabledProviders: Provider[];
 
   paths: {
@@ -85,6 +86,7 @@ export function OauthProviders(props: {
                   const credentials = {
                     provider,
                     options: {
+                      shouldCreateUser: props.shouldCreateUser,
                       redirectTo,
                       ...scopesOpts,
                     },
