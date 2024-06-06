@@ -29,22 +29,22 @@ export default defineConfig({
     screenshot: 'only-on-failure',
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    trace: 'on-first-retry'
+    trace: 'on-first-retry',
   },
 
   // test timeout set to 1 minutes
   timeout: 60 * 1000,
   expect: {
     // expect timeout set to 10 seconds
-    timeout: 10 * 1000
+    timeout: 10 * 1000,
   },
 
   /* Configure projects for major browsers */
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] }
-    }
+      use: { ...devices['Desktop Chrome'] },
+    },
     /* Test against mobile viewports. */
     // {
     //   name: 'Mobile Chrome',
@@ -67,12 +67,14 @@ export default defineConfig({
   ],
 
   /* Run your local dev server before starting the tests */
-  webServer: process.env.PLAYWRIGHT_SERVER_COMMAND ? {
-    cwd: '../../',
-    command: process.env.PLAYWRIGHT_SERVER_COMMAND,
-    url: 'http://localhost:3000',
-    reuseExistingServer: !process.env.CI,
-    stdout: 'pipe',
-    stderr: 'pipe',
-  } : undefined
+  webServer: process.env.PLAYWRIGHT_SERVER_COMMAND
+    ? {
+        cwd: '../../',
+        command: process.env.PLAYWRIGHT_SERVER_COMMAND,
+        url: 'http://localhost:3000',
+        reuseExistingServer: !process.env.CI,
+        stdout: 'pipe',
+        stderr: 'pipe',
+      }
+    : undefined,
 });

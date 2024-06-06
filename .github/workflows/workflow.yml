@@ -54,7 +54,6 @@ jobs:
       SUPABASE_DB_WEBHOOK_SECRET: ${{ secrets.SUPABASE_DB_WEBHOOK_SECRET }}
       STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
       STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
-      PLAYWRIGHT_SERVER_COMMAND: pnpm --filter web start:test
 
     steps:
       - uses: actions/checkout@v4
@@ -109,6 +108,9 @@ jobs:
 
       - name: Production Build (test env)
         run: pnpm --filter web build:test
+
+      - name: Next.js Server
+        run: pnpm --filter web start:test &
 
       - name: Run Playwright tests
         run: pnpm run test
