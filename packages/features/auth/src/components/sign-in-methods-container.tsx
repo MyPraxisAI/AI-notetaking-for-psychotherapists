@@ -58,6 +58,7 @@ export function SignInMethodsContainer(props: {
         <MagicLinkAuthContainer
           inviteToken={props.inviteToken}
           redirectUrl={redirectUrl}
+          shouldCreateUser={false}
         />
       </If>
 

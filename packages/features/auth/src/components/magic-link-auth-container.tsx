@@ -27,9 +27,11 @@ import { useCaptchaToken } from '../captcha/client';
 export function MagicLinkAuthContainer({
   inviteToken,
   redirectUrl,
+  shouldCreateUser,
 }: {
   inviteToken?: string;
   redirectUrl: string;
+  shouldCreateUser: boolean;
 }) {
   const { captchaToken, resetCaptchaToken } = useCaptchaToken();
   const { t } = useTranslation();
@@ -56,6 +58,7 @@ export function MagicLinkAuthContainer({
         options: {
           emailRedirectTo,
           captchaToken,
+          shouldCreateUser,
         },
       });
 
