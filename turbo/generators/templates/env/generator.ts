@@ -77,17 +77,16 @@ export function createEnvironmentVariablesGenerator(
         default: allVariables.NEXT_PUBLIC_DEFAULT_LOCALE ?? 'en',
       },
       {
-        type: 'input',
+        type: 'confirm',
         name: 'values.NEXT_PUBLIC_AUTH_PASSWORD',
         message: 'Do you want to use email/password authentication?',
-        default: allVariables.NEXT_PUBLIC_DEFAULT_LOCALE ?? 'true',
+        default: getBoolean(allVariables.NEXT_PUBLIC_AUTH_PASSWORD, true),
       },
       {
-        type: 'input',
+        type: 'confirm',
         name: 'values.NEXT_PUBLIC_AUTH_MAGIC_LINK',
-        message:
-          'Do you want to use magic link authentication? (leave empty for false)',
-        default: allVariables.NEXT_PUBLIC_AUTH_MAGIC_LINK ?? 'false',
+        message: 'Do you want to use magic link authentication?',
+        default: getBoolean(allVariables.NEXT_PUBLIC_AUTH_MAGIC_LINK, false),
       },
       {
         type: 'input',
@@ -96,63 +95,85 @@ export function createEnvironmentVariablesGenerator(
         default: allVariables.CONTACT_EMAIL,
       },
       {
-        type: 'input',
+        type: 'confirm',
         name: 'values.NEXT_PUBLIC_ENABLE_THEME_TOGGLE',
         message: 'Do you want to enable the theme toggle?',
-        default: allVariables.NEXT_PUBLIC_ENABLE_THEME_TOGGLE ?? 'true',
+        default: getBoolean(allVariables.NEXT_PUBLIC_ENABLE_THEME_TOGGLE, true),
       },
       {
-        type: 'input',
+        type: 'confirm',
         name: 'values.NEXT_PUBLIC_ENABLE_PERSONAL_ACCOUNT_DELETION',
         message: 'Do you want to enable personal account deletion?',
-        default:
-          allVariables.NEXT_PUBLIC_ENABLE_PERSONAL_ACCOUNT_DELETION ?? 'true',
+        default: getBoolean(
+          allVariables.NEXT_PUBLIC_ENABLE_PERSONAL_ACCOUNT_DELETION,
+          true,
+        ),
       },
       {
-        type: 'input',
+        type: 'confirm',
         name: 'values.NEXT_PUBLIC_ENABLE_PERSONAL_ACCOUNT_BILLING',
         message: 'Do you want to enable personal account billing?',
-        default:
-          allVariables.NEXT_PUBLIC_ENABLE_PERSONAL_ACCOUNT_BILLING ?? 'true',
+        default: getBoolean(
+          allVariables.NEXT_PUBLIC_ENABLE_PERSONAL_ACCOUNT_BILLING,
+          true,
+        ),
       },
       {
-        type: 'input',
+        type: 'confirm',
         name: 'values.NEXT_PUBLIC_ENABLE_TEAM_ACCOUNTS',
         message: 'Do you want to enable team accounts?',
-        default: allVariables.NEXT_PUBLIC_ENABLE_TEAM_ACCOUNTS ?? 'true',
+        default: getBoolean(
+          allVariables.NEXT_PUBLIC_ENABLE_TEAM_ACCOUNTS,
+          true,
+        ),
       },
       {
-        type: 'input',
+        type: 'confirm',
         name: 'values.NEXT_PUBLIC_ENABLE_TEAM_ACCOUNT_DELETION',
         message: 'Do you want to enable team account deletion?',
-        default:
-          allVariables.NEXT_PUBLIC_ENABLE_TEAM_ACCOUNT_DELETION ?? 'true',
+        default: getBoolean(
+          allVariables.NEXT_PUBLIC_ENABLE_TEAM_ACCOUNT_DELETION,
+          true,
+        ),
       },
       {
-        type: 'input',
+        type: 'confirm',
         name: 'values.NEXT_PUBLIC_ENABLE_TEAM_ACCOUNTS_BILLING',
         message: 'Do you want to enable team account billing?',
-        default:
-          allVariables.NEXT_PUBLIC_ENABLE_TEAM_ACCOUNTS_BILLING ?? 'true',
+        default: getBoolean(
+          allVariables.NEXT_PUBLIC_ENABLE_TEAM_ACCOUNTS_BILLING,
+          true,
+        ),
       },
       {
-        type: 'input',
+        type: 'confirm',
         name: 'values.NEXT_PUBLIC_ENABLE_TEAM_ACCOUNTS_CREATION',
         message: 'Do you want to enable team account creation?',
-        default:
-          allVariables.NEXT_PUBLIC_ENABLE_TEAM_ACCOUNTS_CREATION ?? 'true',
+        default: getBoolean(
+          allVariables.NEXT_PUBLIC_ENABLE_TEAM_ACCOUNTS_CREATION,
+          true,
+        ),
       },
       {
-        type: 'input',
-        name: 'values.NEXT_PUBLIC_REALTIME_NOTIFICATIONS',
-        message: 'Do you want to enable realtime notifications?',
-        default: allVariables.NEXT_PUBLIC_REALTIME_NOTIFICATIONS ?? 'true',
-      },
-      {
-        type: 'input',
+        type: 'confirm',
         name: 'values.NEXT_PUBLIC_ENABLE_NOTIFICATIONS',
-        message: 'Do you want to enable email notifications?',
-        default: allVariables.NEXT_PUBLIC_ENABLE_NOTIFICATIONS ?? 'true',
+        message:
+          'Do you want to enable notifications? If not - we will hide the notifications bell from the UI.',
+        default: getBoolean(
+          allVariables.NEXT_PUBLIC_ENABLE_NOTIFICATIONS,
+          true,
+        ),
+      },
+      {
+        when: (answers) => answers.values.NEXT_PUBLIC_ENABLE_NOTIFICATIONS,
+        type: 'confirm',
+        name: 'values.NEXT_PUBLIC_REALTIME_NOTIFICATIONS',
+        message:
+          'Do you want to enable realtime notifications? If yes, we will enable the realtime notifications from Supabase. If not - updated will be fetched lazily.',
+        default: getBoolean(
+          allVariables.NEXT_PUBLIC_REALTIME_NOTIFICATIONS,
+          false,
+        ),
       },
       {
         type: 'input',
@@ -279,11 +300,35 @@ export function createEnvironmentVariablesGenerator(
       },
       {
         when: (answers) => answers.values.MAILER_PROVIDER === 'nodemailer',
-        type: 'input',
+        type: 'confirm',
         name: 'values.EMAIL_TLS',
         message: 'Do you want to enable TLS for your emails?',
-        default: 'true',
+        default: getBoolean(allVariables.EMAIL_TLS, true),
+      },
+      {
+        type: 'confirm',
+        name: 'captcha',
+        message:
+          'Do you want to enable Cloudflare Captcha protection for the Auth endpoints?',
+      },
+      {
+        when: (answers) => answers.captcha,
+        type: 'input',
+        name: 'values.NEXT_PUBLIC_CAPTCHA_SITE_KEY',
+        message:
+          'What is the Cloudflare Captcha site key? NB: this is the PUBLIC key!',
+      },
+      {
+        when: (answers) => answers.captcha,
+        type: 'input',
+        name: 'values.CAPTCHA_SECRET_TOKEN',
+        message:
+          'What is the Cloudflare Captcha secret key? NB: this is the PRIVATE key!',
       },
     ],
   });
+}
+
+function getBoolean(value: string | undefined, defaultValue: boolean) {
+  return value === 'true' ? true : defaultValue;
 }
