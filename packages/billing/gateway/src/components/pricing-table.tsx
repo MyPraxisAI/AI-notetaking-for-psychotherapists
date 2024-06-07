@@ -347,7 +347,7 @@ function Price({ children }: React.PropsWithChildren) {
 function ListItem({ children }: React.PropsWithChildren) {
   return (
     <li className={'flex items-center space-x-2.5'}>
-      <CheckCircle className={'text-primary h-4'} />
+      <CheckCircle className={'text-primary h-4 min-h-4 w-4 min-w-4'} />
 
       <span
         className={cn('text-sm', {
