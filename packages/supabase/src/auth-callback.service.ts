@@ -39,7 +39,7 @@ class AuthCallbackService {
     // set the host to the request host
     // since outside of Vercel it gets set as "localhost"
     if (url.host.includes('localhost:')) {
-      url.host = request.headers.get('host') ?? params.host;
+      url.host = request.headers.get('host') as string;
       url.port = '';
     }
 
