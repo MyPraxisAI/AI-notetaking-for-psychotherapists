@@ -58,6 +58,12 @@ export class StripeWebhookHandlerService
     return event;
   }
 
+  /**
+   * @name handleWebhookEvent
+   * @description Handle the webhook event from the billing provider
+   * @param event
+   * @param params
+   */
   async handleWebhookEvent(
     event: Stripe.Event,
     params: {
@@ -70,8 +76,7 @@ export class StripeWebhookHandlerService
       onSubscriptionDeleted: (subscriptionId: string) => Promise<unknown>;
       onPaymentSucceeded: (sessionId: string) => Promise<unknown>;
       onPaymentFailed: (sessionId: string) => Promise<unknown>;
-      onInvoicePaid: (data: UpsertSubscriptionParams) => Promise<unknown>;
-      onEvent: (eventType: string) => Promise<unknown>;
+      onEvent?: (event: Stripe.Event) => Promise<unknown>;
     },
   ) {
     switch (event.type) {
@@ -109,7 +114,7 @@ export class StripeWebhookHandlerService
 
       default: {
         if (params.onEvent) {
-          return params.onEvent(event.type);
+          return params.onEvent(event);
         }
 
         const Logger = await getLogger();
