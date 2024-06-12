@@ -49,11 +49,13 @@ jobs:
     name: ⚫️ Test
     timeout-minutes: 8
     runs-on: ubuntu-latest
+    if: ${{ vars.ENABLE_E2E_JOB == 'true' }}
     env:
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
       SUPABASE_DB_WEBHOOK_SECRET: ${{ secrets.SUPABASE_DB_WEBHOOK_SECRET }}
       STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
       STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
+      ENABLE_BILLING_TESTS: ${{ vars.ENABLE_BILLING_TESTS }}
 
     steps:
       - uses: actions/checkout@v4
@@ -106,14 +108,16 @@ jobs:
         run: |
           docker run --add-host=host.docker.internal:host-gateway --rm -it --name=stripe -d stripe/stripe-cli:latest listen --forward-to http://host.docker.internal:3000/api/billing/webhook --skip-verify --api-key "$STRIPE_SECRET_KEY" --log-level debug &
 
-      - name: Production Build (test env)
+      - name: Run Next.js Production Build (test env)
         run: pnpm --filter web build:test
 
-      - name: Next.js Server
+      - name: Run Next.js Server
         run: pnpm --filter web start:test &
 
       - name: Run Playwright tests
-        run: pnpm run test
+        run: |
+          echo "Running Playwright tests. Billing tests enabled: $ENABLE_BILLING_TESTS"
+          pnpm run test
 
       - name: Run Supabase tests
         run: pnpm --filter web supabase:test
