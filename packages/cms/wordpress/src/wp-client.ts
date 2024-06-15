@@ -41,7 +41,11 @@ class WordpressClient implements CmsClient {
     }
 
     if (options.sortBy) {
-      queryParams.append('orderby', options.sortBy);
+      const sortBy = mapSortByParam(options.sortBy);
+
+      if (sortBy) {
+        queryParams.append('orderby', sortBy);
+      }
     }
 
     if (options.sortDirection) {
@@ -349,5 +353,20 @@ class WordpressClient implements CmsClient {
           }
         ).source_url
       : '';
+  }
+}
+
+function mapSortByParam(sortBy: string) {
+  switch (sortBy) {
+    case 'publishedAt':
+      return 'date';
+    case 'title':
+      return 'title';
+    case 'slug':
+      return 'slug';
+    case 'order':
+      return 'menu_order';
+    default:
+      return;
   }
 }
