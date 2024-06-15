@@ -36,18 +36,21 @@ class AuthCallbackService {
     const url = new URL(request.url);
     const searchParams = url.searchParams;
 
-    // set the host to the request host
-    // since outside of Vercel it gets set as "localhost"
-    if (url.host.includes('localhost:')) {
-      url.host = request.headers.get('host') as string;
+    const host = request.headers.get('host');
+
+    // set the host to the request host since outside of Vercel it gets set as "localhost"
+    if (url.host.includes('localhost:') && !host?.includes('localhost')) {
+      url.host = host as string;
       url.port = '';
     }
 
     const token_hash = searchParams.get('token_hash');
     const type = searchParams.get('type') as EmailOtpType | null;
     const callbackParam = searchParams.get('callback');
-    
-    const next = callbackParam ? new URL(callbackParam).pathname : params.redirectPath;
+
+    const next = callbackParam
+      ? new URL(callbackParam).pathname
+      : params.redirectPath;
 
     const callbackUrl = callbackParam ? new URL(callbackParam) : null;
     const inviteToken = callbackUrl?.searchParams.get('invite_token');
