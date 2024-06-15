@@ -4,10 +4,11 @@ import Link from 'next/link';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
-  ArrowLeftIcon,
   CheckIcon,
   ExclamationTriangleIcon,
 } from '@radix-ui/react-icons';
+
+import { ArrowRightIcon } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import type { z } from 'zod';
 
@@ -44,7 +45,7 @@ export function UpdatePasswordForm(params: { redirectTo: string }) {
   }
 
   if (updateUser.data && !updateUser.isPending) {
-    return <SuccessState />;
+    return <SuccessState redirectTo={params.redirectTo} />;
   }
 
   return (
@@ -114,7 +115,7 @@ export function UpdatePasswordForm(params: { redirectTo: string }) {
   );
 }
 
-function SuccessState() {
+function SuccessState(props: { redirectTo: string }) {
   return (
     <div className={'flex flex-col space-y-4'}>
       <Alert variant={'success'}>
@@ -129,13 +130,13 @@ function SuccessState() {
         </AlertDescription>
       </Alert>
 
-      <Link href={'/'}>
+      <Link href={props.redirectTo}>
         <Button variant={'outline'} className={'w-full'}>
-          <ArrowLeftIcon className={'mr-2 h-4'} />
-
           <span>
             <Trans i18nKey={'common:backToHomePage'} />
           </span>
+
+          <ArrowRightIcon className={'ml-2 h-4'} />
         </Button>
       </Link>
     </div>
