@@ -20,5 +20,6 @@ export function useFetchAuthFactors(userId: string) {
   return useQuery({
     queryKey,
     queryFn,
+    staleTime: 0,
   });
 }

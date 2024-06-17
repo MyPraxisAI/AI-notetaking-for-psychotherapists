@@ -171,7 +171,6 @@ export function MultiFactorChallengeContainer({
 
 function useVerifyMFAChallenge() {
   const client = useSupabase();
-
   const mutationKey = ['mfa-verify-challenge'];
 
   const mutationFn = async (params: {

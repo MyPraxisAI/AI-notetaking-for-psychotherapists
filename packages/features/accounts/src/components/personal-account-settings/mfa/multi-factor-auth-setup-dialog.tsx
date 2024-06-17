@@ -292,9 +292,15 @@ function FactorQrCode({
       <FactorNameForm
         onCancel={onCancel}
         onSetFactorName={async (name) => {
-          const data = await enrollFactorMutation.mutateAsync(name);
+          const data = await enrollFactorMutation
+            .mutateAsync(name)
+            .catch((error) => {
+              console.error(error);
 
-          if (!data) {
+              return;
+            });
+
+          if (data === undefined) {
             return setError(true);
           }
 
