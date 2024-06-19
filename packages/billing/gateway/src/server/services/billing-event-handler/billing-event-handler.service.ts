@@ -26,6 +26,7 @@ interface CustomHandlersParams {
   ) => Promise<unknown>;
   onPaymentSucceeded: (sessionId: string) => Promise<unknown>;
   onPaymentFailed: (sessionId: string) => Promise<unknown>;
+  onInvoicePaid: (subscription: UpsertSubscriptionParams) => Promise<unknown>;
   onEvent(event: unknown): Promise<unknown>;
 }
 
@@ -62,7 +63,7 @@ class BillingEventHandlerService {
    */
   async handleWebhookEvent(
     request: Request,
-    params: Partial<CustomHandlersParams> = {}
+    params: Partial<CustomHandlersParams> = {},
   ) {
     const event = await this.strategy.verifyWebhookSignature(request);
 
@@ -272,6 +273,11 @@ class BillingEventHandlerService {
         }
 
         logger.info(ctx, 'Successfully updated payment status');
+      },
+      onInvoicePaid: async (payload) => {
+        if (params.onInvoicePaid) {
+          return params.onInvoicePaid(payload);
+        }
       },
       onEvent: params.onEvent,
     });
