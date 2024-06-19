@@ -44,15 +44,14 @@ class AuthCallbackService {
       url.port = '';
     }
 
+    url.pathname = params.redirectPath;
+
     const token_hash = searchParams.get('token_hash');
     const type = searchParams.get('type') as EmailOtpType | null;
     const callbackParam = searchParams.get('callback');
 
-    const next = callbackParam
-      ? new URL(callbackParam).pathname
-      : params.redirectPath;
-
     const callbackUrl = callbackParam ? new URL(callbackParam) : null;
+    const nextPath = callbackUrl ? callbackUrl.searchParams.get('next') : null;
     const inviteToken = callbackUrl?.searchParams.get('invite_token');
     const errorPath = params.errorPath ?? '/auth/callback/error';
 
@@ -62,7 +61,10 @@ class AuthCallbackService {
     searchParams.delete('next');
     searchParams.delete('callback');
 
-    url.pathname = next;
+    // if we have a next path, we redirect to that path
+    if (nextPath) {
+      url.pathname = nextPath;
+    }
 
     // if we have an invite token, we append it to the redirect url
     if (inviteToken) {

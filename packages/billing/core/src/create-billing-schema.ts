@@ -173,7 +173,12 @@ export const PlanSchema = z
   )
   .refine(
     (item) => {
-      const ids = item.lineItems.map((item) => item.id);
+      // metered line items can be shared across plans
+      const lineItems = item.lineItems.filter(
+        (item) => item.type !== LineItemType.Metered,
+      );
+
+      const ids = lineItems.map((item) => item.id);
 
       return ids.length === new Set(ids).size;
     },
