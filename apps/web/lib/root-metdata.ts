@@ -12,7 +12,7 @@ export const generateRootMetadata = (): Metadata => {
   const csrfToken = headers().get('x-csrf-token') ?? '';
 
   return {
-    title: appConfig.name,
+    title: appConfig.title,
     description: appConfig.description,
     metadataBase: new URL(appConfig.url),
     applicationName: appConfig.name,
@@ -22,6 +22,7 @@ export const generateRootMetadata = (): Metadata => {
     openGraph: {
       url: appConfig.url,
       siteName: appConfig.name,
+      title: appConfig.title,
       description: appConfig.description,
     },
     twitter: {
