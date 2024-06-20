@@ -38,8 +38,7 @@
     "pnpm": "^9.4.0",
     "prettier": "^3.3.2",
     "turbo": "2.0.4",
-    "typescript": "^5.4.5",
-    "yarn": "^1.22.22"
+    "typescript": "^5.4.5"
   },
   "pnpm": {
     "overrides": {
