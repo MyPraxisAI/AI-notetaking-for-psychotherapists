@@ -54,7 +54,7 @@ function Node({
   activePath: string;
 }) {
   const pathPrefix = `/docs`;
-  const url = `${pathPrefix}/${node.url}`;
+  const url = `${pathPrefix}/${node.slug}`;
 
   return (
     <>

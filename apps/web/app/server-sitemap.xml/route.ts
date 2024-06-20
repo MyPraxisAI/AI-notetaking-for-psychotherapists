@@ -5,13 +5,12 @@ import { createCmsClient } from '@kit/cms';
 import appConfig from '~/config/app.config';
 
 export async function GET() {
-  const urls = getSiteUrls();
-
-  const items = await getAllItems();
+  const paths = getPaths();
+  const contentItems = await getContentItems();
 
   return getServerSideSitemap([
-    ...urls,
-    ...items.map((path) => {
+    ...paths,
+    ...contentItems.map((path) => {
       return {
         loc: new URL(path, appConfig.url).href,
         lastmod: new Date().toISOString(),
@@ -20,8 +19,8 @@ export async function GET() {
   ]);
 }
 
-function getSiteUrls() {
-  const urls = [
+function getPaths() {
+  const paths = [
     '/',
     '/faq',
     '/blog',
@@ -31,17 +30,18 @@ function getSiteUrls() {
     '/cookie-policy',
     '/terms-of-service',
     '/privacy-policy',
+    // add more paths here
   ];
 
-  return urls.map((url) => {
+  return paths.map((path) => {
     return {
-      loc: new URL(url, appConfig.url).href,
+      loc: new URL(path, appConfig.url).href,
       lastmod: new Date().toISOString(),
     };
   });
 }
 
-async function getAllItems() {
+async function getContentItems() {
   const client = await createCmsClient();
 
   const posts = client
