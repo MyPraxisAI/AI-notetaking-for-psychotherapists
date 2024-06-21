@@ -67,11 +67,11 @@ export abstract class BillingStrategyProviderService {
     amount: number;
   }>;
 
-  abstract getSubscription(
-    subscriptionId: string,
-  ): Promise<UpsertSubscriptionParams & {
-    // we can't always guarantee that the target account id will be present
-    // so we need to make it optional and let the consumer handle it
-    target_account_id: string | undefined;
-  }>;
+  abstract getSubscription(subscriptionId: string): Promise<
+    UpsertSubscriptionParams & {
+      // we can't always guarantee that the target account id will be present
+      // so we need to make it optional and let the consumer handle it
+      target_account_id: string | undefined;
+    }
+  >;
 }

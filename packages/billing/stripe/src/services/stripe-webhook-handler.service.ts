@@ -88,9 +88,7 @@ export class StripeWebhookHandlerService
       onSubscriptionDeleted: (subscriptionId: string) => Promise<unknown>;
       onPaymentSucceeded: (sessionId: string) => Promise<unknown>;
       onPaymentFailed: (sessionId: string) => Promise<unknown>;
-      onInvoicePaid: (
-        data: UpsertSubscriptionParams,
-      ) => Promise<unknown>;
+      onInvoicePaid: (data: UpsertSubscriptionParams) => Promise<unknown>;
       onEvent?(event: Stripe.Event): Promise<unknown>;
     },
   ) {
@@ -294,9 +292,7 @@ export class StripeWebhookHandlerService
 
   private async handleInvoicePaid(
     event: Stripe.InvoicePaidEvent,
-    onInvoicePaid: (
-      data: UpsertSubscriptionParams,
-    ) => Promise<unknown>,
+    onInvoicePaid: (data: UpsertSubscriptionParams) => Promise<unknown>,
   ) {
     const stripe = await this.loadStripe();
 

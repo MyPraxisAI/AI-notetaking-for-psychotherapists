@@ -1,4 +1,5 @@
 import { User } from '@supabase/supabase-js';
+
 import { Sidebar, SidebarContent } from '@kit/ui/sidebar';
 
 import { ProfileAccountDropdownContainer } from '~/components//personal-account-dropdown-container';
