@@ -50,6 +50,10 @@ const FeatureFlagsSchema = z.object({
     description: 'Enable realtime for the notifications functionality',
     required_error: 'Provide the variable NEXT_PUBLIC_REALTIME_NOTIFICATIONS',
   }),
+  enableVersionUpdater: z.boolean({
+    description: 'Enable version updater',
+    required_error: 'Provide the variable NEXT_PUBLIC_ENABLE_VERSION_UPDATER',
+  }),
 });
 
 const featuresFlagConfig = FeatureFlagsSchema.parse({
@@ -89,6 +93,10 @@ const featuresFlagConfig = FeatureFlagsSchema.parse({
   ),
   realtimeNotifications: getBoolean(
     process.env.NEXT_PUBLIC_REALTIME_NOTIFICATIONS,
+    false,
+  ),
+  enableVersionUpdater: getBoolean(
+    process.env.NEXT_PUBLIC_ENABLE_VERSION_UPDATER,
     false,
   ),
 } satisfies z.infer<typeof FeatureFlagsSchema>);

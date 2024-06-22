@@ -9,9 +9,12 @@ import { CaptchaProvider } from '@kit/auth/captcha/client';
 import { I18nProvider } from '@kit/i18n/provider';
 import { MonitoringProvider } from '@kit/monitoring/components';
 import { useAuthChangeListener } from '@kit/supabase/hooks/use-auth-change-listener';
+import { If } from '@kit/ui/if';
+import { VersionUpdater } from '@kit/ui/version-updater';
 
 import appConfig from '~/config/app.config';
 import authConfig from '~/config/auth.config';
+import featuresFlagConfig from '~/config/feature-flags.config';
 import pathsConfig from '~/config/paths.config';
 import { i18nResolver } from '~/lib/i18n/i18n.resolver';
 import { getI18nSettings } from '~/lib/i18n/i18n.settings';
@@ -62,6 +65,10 @@ export function RootProviders({
                 </ThemeProvider>
               </AuthProvider>
             </CaptchaProvider>
+
+            <If condition={featuresFlagConfig.enableVersionUpdater}>
+              <VersionUpdater />
+            </If>
           </I18nProvider>
         </ReactQueryStreamedHydration>
       </ReactQueryProvider>
