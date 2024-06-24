@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 
 import { useQuery } from '@tanstack/react-query';
+import { RocketIcon } from 'lucide-react';
 
 import {
   AlertDialog,
@@ -29,8 +30,8 @@ const DEFAULT_REFETCH_INTERVAL = 120;
 /**
  * Default interval time in seconds to check for new version
  */
-const VERSION_UPDATER_REFETCH_INTERVAL_SECONDS = process.env
-    .VERSION_UDPATER_REFETCH_INTERVAL_SECONDS;
+const VERSION_UPDATER_REFETCH_INTERVAL_SECONDS =
+  process.env.NEXT_PUBLIC_VERSION_UPDATER_REFETCH_INTERVAL_SECONDS;
 
 export function VersionUpdater(props: { intervalTimeInSecond?: number }) {
   const { data } = useVersionUpdater(props);
@@ -49,7 +50,8 @@ export function VersionUpdater(props: { intervalTimeInSecond?: number }) {
     <AlertDialog open={showDialog} onOpenChange={setShowDialog}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>
+          <AlertDialogTitle className={'flex items-center space-x-4'}>
+            <RocketIcon className={'h-4'} />
             <Trans i18nKey="common:newVersionAvailable" />
           </AlertDialogTitle>
 
@@ -80,8 +82,8 @@ export function VersionUpdater(props: { intervalTimeInSecond?: number }) {
 
 function useVersionUpdater(props: { intervalTimeInSecond?: number } = {}) {
   const interval = VERSION_UPDATER_REFETCH_INTERVAL_SECONDS
-      ? Number(VERSION_UPDATER_REFETCH_INTERVAL_SECONDS)
-      : DEFAULT_REFETCH_INTERVAL;
+    ? Number(VERSION_UPDATER_REFETCH_INTERVAL_SECONDS)
+    : DEFAULT_REFETCH_INTERVAL;
 
   const refetchInterval = (props.intervalTimeInSecond ?? interval) * 1000;
 
@@ -98,7 +100,7 @@ function useVersionUpdater(props: { intervalTimeInSecond?: number } = {}) {
     queryFn: async () => {
       const response = await fetch('/version');
       const currentVersion = await response.text();
-      const oldVersion = version;
+      const oldVersion = version + '23';
 
       version = currentVersion;
 

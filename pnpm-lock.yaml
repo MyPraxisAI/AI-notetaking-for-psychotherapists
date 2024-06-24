@@ -418,11 +418,11 @@ importers:
   packages/cms/keystatic:
     dependencies:
       '@keystatic/core':
-        specifier: 0.5.22
-        version: 0.5.22(next@14.2.4(@opentelemetry/api@1.9.0)(@playwright/test@1.44.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: 0.5.23
+        version: 0.5.23(next@14.2.4(@opentelemetry/api@1.9.0)(@playwright/test@1.44.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@keystatic/next':
         specifier: ^5.0.1
-        version: 5.0.1(@keystatic/core@0.5.22(next@14.2.4(@opentelemetry/api@1.9.0)(@playwright/test@1.44.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(next@14.2.4(@opentelemetry/api@1.9.0)(@playwright/test@1.44.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 5.0.1(@keystatic/core@0.5.23(next@14.2.4(@opentelemetry/api@1.9.0)(@playwright/test@1.44.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(next@14.2.4(@opentelemetry/api@1.9.0)(@playwright/test@1.44.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@markdoc/markdoc':
         specifier: ^0.4.0
         version: 0.4.0(@types/react@18.3.3)(react@18.3.1)
@@ -1754,8 +1754,8 @@ packages:
       next:
         optional: true
 
-  '@keystatic/core@0.5.22':
-    resolution: {integrity: sha512-gg4TFrL1NDG86o+UGBJvvqChYg5IL4wzrhYc+Hildkh2t/SYyxqlm3FLMQqqdc9EPT+dHdnmsngeTerapVvX4w==}
+  '@keystatic/core@0.5.23':
+    resolution: {integrity: sha512-y4xxgjnM+PYsawUVuxNvnZtkdumocrW3dYZgAl3FoBU1LMsO6jb3o76mpcNawGKuYFD1WHQR7GlOi9ZYJV5yvg==}
     peerDependencies:
       react: 18.3.1
       react-dom: 18.3.1
@@ -4898,8 +4898,8 @@ packages:
   electron-to-chromium@1.4.792:
     resolution: {integrity: sha512-rkg5/N3L+Y844JyfgPUyuKK0Hk0efo3JNxUDKvz3HgP6EmN4rNGhr2D8boLsfTV/hGo7ZGAL8djw+jlg99zQyA==}
 
-  electron-to-chromium@1.4.809:
-    resolution: {integrity: sha512-Xg2vEbpMfkVivK8l9QwbjkLoHSUQouZLC0InWHqKJhNvB1VGoOfdlzbdnl4f1jVGTnxmWV1dP/IwoJRqJP78ug==}
+  electron-to-chromium@1.4.810:
+    resolution: {integrity: sha512-Kaxhu4T7SJGpRQx99tq216gCq2nMxJo+uuT6uzz9l8TVN2stL7M06MIIXAtr9jsrLs2Glflgf2vMQRepxawOdQ==}
 
   emery@1.4.3:
     resolution: {integrity: sha512-DrP24dscOZx5BJpOo32X1CjaWgbFojS4sAXKtlmTQmCJ01Vv2brjeWKIS6cQ4Rblt/hZIN+6pdV2L7Y9Rsh8EA==}
@@ -5367,8 +5367,8 @@ packages:
     peerDependencies:
       graphql: ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0
 
-  graphql@16.8.2:
-    resolution: {integrity: sha512-cvVIBILwuoSyD54U4cF/UXDh5yAobhNV/tPygI4lZhgOIJQE/WLWC4waBRb4I6bDVYb3OVx3lfHbaQOEoUD5sg==}
+  graphql@16.9.0:
+    resolution: {integrity: sha512-GGTKBX4SD7Wdb8mqeDLni2oaRGYQWjWHGKPQ24ZMnUtKfcsVoiv4uX8+LJr1K6U5VW2Lu1BwJnj7uiori0YtRw==}
     engines: {node: ^12.22.0 || ^14.16.0 || ^16.0.0 || >=17.0.0}
 
   gzip-size@6.0.0:
@@ -7791,9 +7791,9 @@ packages:
 
 snapshots:
 
-  '@0no-co/graphql.web@1.0.7(graphql@16.8.2)':
+  '@0no-co/graphql.web@1.0.7(graphql@16.9.0)':
     optionalDependencies:
-      graphql: 16.8.2
+      graphql: 16.9.0
 
   '@alloc/quick-lru@5.2.0': {}
 
@@ -8139,9 +8139,9 @@ snapshots:
     dependencies:
       tslib: 2.6.3
 
-  '@graphql-typed-document-node/core@3.2.0(graphql@16.8.2)':
+  '@graphql-typed-document-node/core@3.2.0(graphql@16.9.0)':
     dependencies:
-      graphql: 16.8.2
+      graphql: 16.9.0
 
   '@grpc/grpc-js@1.10.8':
     dependencies:
@@ -8336,7 +8336,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@keystatic/core@0.5.22(next@14.2.4(@opentelemetry/api@1.9.0)(@playwright/test@1.44.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@keystatic/core@0.5.23(next@14.2.4(@opentelemetry/api@1.9.0)(@playwright/test@1.44.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       '@babel/runtime': 7.24.7
       '@braintree/sanitize-url': 6.0.4
@@ -8361,21 +8361,21 @@ snapshots:
       '@react-types/shared': 3.23.1(react@18.3.1)
       '@sindresorhus/slugify': 1.1.2
       '@toeverything/y-indexeddb': 0.10.0-canary.9(yjs@13.6.18)
-      '@ts-gql/tag': 0.7.3(graphql@16.8.2)
+      '@ts-gql/tag': 0.7.3(graphql@16.9.0)
       '@types/mdast': 4.0.4
       '@types/node': 16.11.13
       '@types/react': 18.3.3
       '@types/react-dom': 18.3.0
-      '@urql/core': 4.3.0(graphql@16.8.2)
-      '@urql/exchange-auth': 2.2.0(@urql/core@4.3.0(graphql@16.8.2))
-      '@urql/exchange-graphcache': 6.5.1(graphql@16.8.2)
-      '@urql/exchange-persisted': 4.3.0(@urql/core@4.3.0(graphql@16.8.2))
+      '@urql/core': 4.3.0(graphql@16.9.0)
+      '@urql/exchange-auth': 2.2.0(@urql/core@4.3.0(graphql@16.9.0))
+      '@urql/exchange-graphcache': 6.5.1(graphql@16.9.0)
+      '@urql/exchange-persisted': 4.3.0(@urql/core@4.3.0(graphql@16.9.0))
       cookie: 0.5.0
       decimal.js-light: 2.5.1
       emery: 1.4.3
       escape-string-regexp: 4.0.0
       fast-deep-equal: 3.1.3
-      graphql: 16.8.2
+      graphql: 16.9.0
       idb-keyval: 6.2.1
       ignore: 5.3.1
       is-hotkey: 0.2.0
@@ -8411,7 +8411,7 @@ snapshots:
       slate-react: 0.91.11(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate@0.91.4)
       superstruct: 1.0.4
       unist-util-visit: 5.0.0
-      urql: 4.1.0(@urql/core@4.3.0(graphql@16.8.2))(react@18.3.1)
+      urql: 4.1.0(@urql/core@4.3.0(graphql@16.9.0))(react@18.3.1)
       y-prosemirror: 1.2.9(prosemirror-model@1.21.1)(prosemirror-state@1.4.3)(prosemirror-view@1.33.8)(y-protocols@1.0.6(yjs@13.6.18))(yjs@13.6.18)
       y-protocols: 1.0.6(yjs@13.6.18)
       yjs: 13.6.18
@@ -8419,10 +8419,10 @@ snapshots:
       - next
       - supports-color
 
-  '@keystatic/next@5.0.1(@keystatic/core@0.5.22(next@14.2.4(@opentelemetry/api@1.9.0)(@playwright/test@1.44.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(next@14.2.4(@opentelemetry/api@1.9.0)(@playwright/test@1.44.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@keystatic/next@5.0.1(@keystatic/core@0.5.23(next@14.2.4(@opentelemetry/api@1.9.0)(@playwright/test@1.44.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(next@14.2.4(@opentelemetry/api@1.9.0)(@playwright/test@1.44.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       '@babel/runtime': 7.24.7
-      '@keystatic/core': 0.5.22(next@14.2.4(@opentelemetry/api@1.9.0)(@playwright/test@1.44.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@keystatic/core': 0.5.23(next@14.2.4(@opentelemetry/api@1.9.0)(@playwright/test@1.44.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@types/react': 18.3.3
       chokidar: 3.6.0
       next: 14.2.4(@babel/core@7.24.7)(@opentelemetry/api@1.9.0)(@playwright/test@1.44.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -11106,11 +11106,11 @@ snapshots:
 
   '@trpc/server@10.45.2': {}
 
-  '@ts-gql/tag@0.7.3(graphql@16.8.2)':
+  '@ts-gql/tag@0.7.3(graphql@16.9.0)':
     dependencies:
-      '@graphql-typed-document-node/core': 3.2.0(graphql@16.8.2)
-      graphql: 16.8.2
-      graphql-tag: 2.12.6(graphql@16.8.2)
+      '@graphql-typed-document-node/core': 3.2.0(graphql@16.9.0)
+      graphql: 16.9.0
+      graphql-tag: 2.12.6(graphql@16.9.0)
 
   '@tsconfig/node10@1.0.11': {}
 
@@ -11477,29 +11477,29 @@ snapshots:
 
   '@ungap/structured-clone@1.2.0': {}
 
-  '@urql/core@4.3.0(graphql@16.8.2)':
+  '@urql/core@4.3.0(graphql@16.9.0)':
     dependencies:
-      '@0no-co/graphql.web': 1.0.7(graphql@16.8.2)
+      '@0no-co/graphql.web': 1.0.7(graphql@16.9.0)
       wonka: 6.3.4
     transitivePeerDependencies:
       - graphql
 
-  '@urql/exchange-auth@2.2.0(@urql/core@4.3.0(graphql@16.8.2))':
+  '@urql/exchange-auth@2.2.0(@urql/core@4.3.0(graphql@16.9.0))':
     dependencies:
-      '@urql/core': 4.3.0(graphql@16.8.2)
+      '@urql/core': 4.3.0(graphql@16.9.0)
       wonka: 6.3.4
 
-  '@urql/exchange-graphcache@6.5.1(graphql@16.8.2)':
+  '@urql/exchange-graphcache@6.5.1(graphql@16.9.0)':
     dependencies:
-      '@0no-co/graphql.web': 1.0.7(graphql@16.8.2)
-      '@urql/core': 4.3.0(graphql@16.8.2)
+      '@0no-co/graphql.web': 1.0.7(graphql@16.9.0)
+      '@urql/core': 4.3.0(graphql@16.9.0)
       wonka: 6.3.4
     transitivePeerDependencies:
       - graphql
 
-  '@urql/exchange-persisted@4.3.0(@urql/core@4.3.0(graphql@16.8.2))':
+  '@urql/exchange-persisted@4.3.0(@urql/core@4.3.0(graphql@16.9.0))':
     dependencies:
-      '@urql/core': 4.3.0(graphql@16.8.2)
+      '@urql/core': 4.3.0(graphql@16.9.0)
       wonka: 6.3.4
 
   '@webassemblyjs/ast@1.12.1':
@@ -11842,7 +11842,7 @@ snapshots:
   browserslist@4.23.1:
     dependencies:
       caniuse-lite: 1.0.30001636
-      electron-to-chromium: 1.4.809
+      electron-to-chromium: 1.4.810
       node-releases: 2.0.14
       update-browserslist-db: 1.0.16(browserslist@4.23.1)
 
@@ -12302,7 +12302,7 @@ snapshots:
 
   electron-to-chromium@1.4.792: {}
 
-  electron-to-chromium@1.4.809: {}
+  electron-to-chromium@1.4.810: {}
 
   emery@1.4.3: {}
 
@@ -12904,12 +12904,12 @@ snapshots:
 
   graphemer@1.4.0: {}
 
-  graphql-tag@2.12.6(graphql@16.8.2):
+  graphql-tag@2.12.6(graphql@16.9.0):
     dependencies:
-      graphql: 16.8.2
+      graphql: 16.9.0
       tslib: 2.6.3
 
-  graphql@16.8.2: {}
+  graphql@16.9.0: {}
 
   gzip-size@6.0.0:
     dependencies:
@@ -15485,9 +15485,9 @@ snapshots:
     dependencies:
       punycode: 2.3.1
 
-  urql@4.1.0(@urql/core@4.3.0(graphql@16.8.2))(react@18.3.1):
+  urql@4.1.0(@urql/core@4.3.0(graphql@16.9.0))(react@18.3.1):
     dependencies:
-      '@urql/core': 4.3.0(graphql@16.8.2)
+      '@urql/core': 4.3.0(graphql@16.9.0)
       react: 18.3.1
       wonka: 6.3.4
 
