@@ -100,7 +100,7 @@ function useVersionUpdater(props: { intervalTimeInSecond?: number } = {}) {
     queryFn: async () => {
       const response = await fetch('/version');
       const currentVersion = await response.text();
-      const oldVersion = version + '23';
+      const oldVersion = version;
 
       version = currentVersion;
 
