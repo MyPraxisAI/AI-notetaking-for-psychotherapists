@@ -36,7 +36,7 @@ async function getHashFromProcess() {
   if (process.env.NEXT_RUNTIME === 'nodejs') {
     if (process.env.NODE_ENV !== 'development') {
       console.warn(
-          `[WARN] Could not find git hash in environment variables. Falling back to git command. Supply a known git hash environment variable to avoid this warning.`,
+        `[WARN] Could not find git hash in environment variables. Falling back to git command. Supply a known git hash environment variable to avoid this warning.`,
       );
     }
 
@@ -45,5 +45,7 @@ async function getHashFromProcess() {
     return execSync('git log --pretty=format:"%h" -n1').toString().trim();
   }
 
-  console.log(`[INFO] Could not find git hash in environment variables. Falling back to git command. Supply a known git hash environment variable to avoid this warning.`)
+  console.log(
+    `[INFO] Could not find git hash in environment variables. Falling back to git command. Supply a known git hash environment variable to avoid this warning.`,
+  );
 }
