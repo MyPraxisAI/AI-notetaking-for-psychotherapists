@@ -2,6 +2,7 @@ import { use } from 'react';
 
 import { cookies } from 'next/headers';
 
+import { UserWorkspaceContextProvider } from '@kit/accounts/components';
 import { If } from '@kit/ui/if';
 import {
   Page,
@@ -41,7 +42,9 @@ function UserHomeLayout({ children }: React.PropsWithChildren) {
         <HomeMobileNavigation workspace={workspace} />
       </PageMobileNavigation>
 
-      {children}
+      <UserWorkspaceContextProvider value={workspace}>
+        {children}
+      </UserWorkspaceContextProvider>
     </Page>
   );
 }

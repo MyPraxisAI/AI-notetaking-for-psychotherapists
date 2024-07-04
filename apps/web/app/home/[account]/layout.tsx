@@ -2,6 +2,7 @@ import { use } from 'react';
 
 import { cookies } from 'next/headers';
 
+import { TeamAccountWorkspaceContextProvider } from '@kit/team-accounts/components';
 import { If } from '@kit/ui/if';
 import {
   Page,
@@ -69,7 +70,9 @@ function TeamWorkspaceLayout({
         </div>
       </PageMobileNavigation>
 
-      {children}
+      <TeamAccountWorkspaceContextProvider value={data}>
+        {children}
+      </TeamAccountWorkspaceContextProvider>
     </Page>
   );
 }
