@@ -1,5 +1,6 @@
 import { SupabaseClient } from '@supabase/supabase-js';
 
+import { getLogger } from '@kit/shared/logger';
 import { Database } from '@kit/supabase/database';
 
 export function createAdminDashboardService(client: SupabaseClient<Database>) {
@@ -18,6 +19,11 @@ export class AdminDashboardService {
       count: 'estimated',
     },
   ) {
+    const logger = await getLogger();
+    const ctx = {
+      name: `admin.dashboard`,
+    };
+
     const selectParams = {
       count,
       head: true,
@@ -29,7 +35,12 @@ export class AdminDashboardService {
       .eq('status', 'active')
       .then((response) => {
         if (response.error) {
-          throw new Error(response.error.message);
+          logger.error(
+            { ...ctx, error: response.error.message },
+            `Error fetching active subscriptions`,
+          );
+
+          throw new Error();
         }
 
         return response.count;
@@ -41,7 +52,12 @@ export class AdminDashboardService {
       .eq('status', 'trialing')
       .then((response) => {
         if (response.error) {
-          throw new Error(response.error.message);
+          logger.error(
+            { ...ctx, error: response.error.message },
+            `Error fetching trialing subscriptions`,
+          );
+
+          throw new Error();
         }
 
         return response.count;
@@ -53,7 +69,12 @@ export class AdminDashboardService {
       .eq('is_personal_account', true)
       .then((response) => {
         if (response.error) {
-          throw new Error(response.error.message);
+          logger.error(
+            { ...ctx, error: response.error.message },
+            `Error fetching personal accounts`,
+          );
+
+          throw new Error();
         }
 
         return response.count;
@@ -65,7 +86,12 @@ export class AdminDashboardService {
       .eq('is_personal_account', false)
       .then((response) => {
         if (response.error) {
-          throw new Error(response.error.message);
+          logger.error(
+            { ...ctx, error: response.error.message },
+            `Error fetching team accounts`,
+          );
+
+          throw new Error();
         }
 
         return response.count;

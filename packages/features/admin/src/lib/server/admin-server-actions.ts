@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
 import { enhanceAction } from '@kit/next/actions';
+import { getLogger } from '@kit/shared/logger';
 import { getSupabaseServerActionClient } from '@kit/supabase/server-actions-client';
 
 import {
@@ -25,8 +26,13 @@ export const banUserAction = adminAction(
   enhanceAction(
     async ({ userId }) => {
       const service = getAdminAuthService();
+      const logger = await getLogger();
+
+      logger.info({ userId }, `Super Admin is banning user...`);
 
       await service.banUser(userId);
+
+      logger.info({ userId }, `Super Admin has successfully banned user`);
 
       revalidateAdmin();
 
@@ -48,8 +54,13 @@ export const reactivateUserAction = adminAction(
   enhanceAction(
     async ({ userId }) => {
       const service = getAdminAuthService();
+      const logger = await getLogger();
+
+      logger.info({ userId }, `Super Admin is reactivating user...`);
 
       await service.reactivateUser(userId);
+
+      logger.info({ userId }, `Super Admin has successfully reactivated user`);
 
       revalidateAdmin();
 
@@ -71,6 +82,9 @@ export const impersonateUserAction = adminAction(
   enhanceAction(
     async ({ userId }) => {
       const service = getAdminAuthService();
+      const logger = await getLogger();
+
+      logger.info({ userId }, `Super Admin is impersonating user...`);
 
       return await service.impersonateUser(userId);
     },
@@ -88,8 +102,13 @@ export const deleteUserAction = adminAction(
   enhanceAction(
     async ({ userId }) => {
       const service = getAdminAuthService();
+      const logger = await getLogger();
+
+      logger.info({ userId }, `Super Admin is deleting user...`);
 
       await service.deleteUser(userId);
+
+      logger.info({ userId }, `Super Admin has successfully deleted user`);
 
       revalidateAdmin();
 
@@ -109,8 +128,16 @@ export const deleteAccountAction = adminAction(
   enhanceAction(
     async ({ accountId }) => {
       const service = getAdminAccountsService();
+      const logger = await getLogger();
+
+      logger.info({ accountId }, `Super Admin is deleting account...`);
 
       await service.deleteAccount(accountId);
+
+      logger.info(
+        { accountId },
+        `Super Admin has successfully deleted account`,
+      );
 
       revalidateAdmin();
 
