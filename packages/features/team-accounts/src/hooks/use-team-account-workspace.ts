@@ -5,16 +5,16 @@ import { useContext } from 'react';
 import { TeamAccountWorkspaceContext } from '../components';
 
 /**
- * @name useAccountWorkspace
+ * @name useTeamAccountWorkspace
  * @description A hook to access the account workspace data.
  * @returns The account workspace data.
  */
-export function useAccountWorkspace() {
+export function useTeamAccountWorkspace() {
   const ctx = useContext(TeamAccountWorkspaceContext);
 
   if (!ctx) {
     throw new Error(
-      'useAccountWorkspace must be used within a TeamAccountWorkspaceContext.Provider. This is only provided within the account workspace /home/[account]',
+      'useTeamAccountWorkspace must be used within a TeamAccountWorkspaceContext.Provider. This is only provided within the account workspace /home/[account]',
     );
   }
 
