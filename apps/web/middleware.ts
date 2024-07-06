@@ -132,11 +132,11 @@ async function adminMiddleware(request: NextRequest, response: NextResponse) {
 function getPatterns() {
   return [
     {
-      pattern: new URLPattern({ pathname: '/admin*' }),
+      pattern: new URLPattern({ pathname: '/admin/*?' }),
       handler: adminMiddleware,
     },
     {
-      pattern: new URLPattern({ pathname: '/auth*' }),
+      pattern: new URLPattern({ pathname: '/auth/*?' }),
       handler: async (req: NextRequest, res: NextResponse) => {
         const {
           data: { user },
@@ -160,7 +160,7 @@ function getPatterns() {
       },
     },
     {
-      pattern: new URLPattern({ pathname: '/home*' }),
+      pattern: new URLPattern({ pathname: '/home/*?' }),
       handler: async (req: NextRequest, res: NextResponse) => {
         const {
           data: { user },
