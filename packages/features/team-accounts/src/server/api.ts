@@ -56,7 +56,7 @@ export class TeamAccountsApi {
   async getSubscription(accountId: string) {
     const { data, error } = await this.client
       .from('subscriptions')
-      .select('*')
+      .select('*, items: subscription_items !inner (*)')
       .eq('account_id', accountId)
       .maybeSingle();
 
