@@ -9,7 +9,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@hookform/resolvers": "^3.7.0",
+    "@hookform/resolvers": "^3.9.0",
     "@radix-ui/react-accordion": "1.2.0",
     "@radix-ui/react-alert-dialog": "^1.1.1",
     "@radix-ui/react-avatar": "^1.1.0",
@@ -31,9 +31,9 @@
     "clsx": "^2.1.1",
     "cmdk": "1.0.0",
     "input-otp": "1.2.4",
-    "lucide-react": "^0.400.0",
+    "lucide-react": "^0.402.0",
     "react-top-loading-bar": "2.3.1",
-    "tailwind-merge": "^2.3.0"
+    "tailwind-merge": "^2.4.0"
   },
   "devDependencies": {
     "@kit/eslint-config": "workspace:*",
