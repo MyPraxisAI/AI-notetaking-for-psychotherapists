@@ -4,8 +4,8 @@ import { cache } from 'react';
 
 import { z } from 'zod';
 
-import { createAccountsApi } from '@kit/accounts/api';
 import { getSupabaseServerComponentClient } from '@kit/supabase/server-component-client';
+import { createTeamAccountsApi } from '@kit/team-accounts/api';
 
 /**
  * The variable BILLING_MODE represents the billing mode for a service. It can
@@ -30,7 +30,7 @@ export const loadTeamAccountBillingPage = cache(teamAccountBillingPageLoader);
 
 function teamAccountBillingPageLoader(accountId: string) {
   const client = getSupabaseServerComponentClient();
-  const api = createAccountsApi(client);
+  const api = createTeamAccountsApi(client);
 
   const data =
     BILLING_MODE === 'subscription'
