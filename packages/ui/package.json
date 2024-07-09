@@ -120,7 +120,8 @@
     "./stepper": "./src/makerkit/stepper.tsx",
     "./cookie-banner": "./src/makerkit/cookie-banner.tsx",
     "./card-button": "./src/makerkit/card-button.tsx",
-    "./version-updater": "./src/makerkit/version-updater.tsx"
+    "./version-updater": "./src/makerkit/version-updater.tsx",
+    "./multi-step-form": "./src/makerkit/multi-step-form.tsx"
   },
   "typesVersions": {
     "*": {
