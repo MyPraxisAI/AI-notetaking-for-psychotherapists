@@ -27,7 +27,8 @@ export function SignUpMethodsContainer(props: {
   inviteToken?: string;
 }) {
   const redirectUrl = getCallbackUrl(props);
-
+  const defaultValues = getDefaultValues();
+  
   return (
     <>
       <If condition={props.inviteToken}>
@@ -35,7 +36,10 @@ export function SignUpMethodsContainer(props: {
       </If>
 
       <If condition={props.providers.password}>
-        <EmailPasswordSignUpContainer emailRedirectTo={redirectUrl} />
+        <EmailPasswordSignUpContainer
+          emailRedirectTo={redirectUrl}
+          defaultValues={defaultValues}
+        />
       </If>
 
       <If condition={props.providers.magicLink}>
@@ -43,6 +47,7 @@ export function SignUpMethodsContainer(props: {
           inviteToken={props.inviteToken}
           redirectUrl={redirectUrl}
           shouldCreateUser={true}
+          defaultValues={defaultValues}
         />
       </If>
 
@@ -91,6 +96,23 @@ function getCallbackUrl(props: {
   }
 
   return url.href;
+}
+
+function getDefaultValues() {
+  if (!isBrowser()) {
+    return { email: '' };
+  }
+
+  const searchParams = new URLSearchParams(window.location.search);
+  const inviteToken = searchParams.get('invite_token');
+
+  if (!inviteToken) {
+    return { email: '' };
+  }
+
+  return {
+    email: searchParams.get('email') ?? '',
+  };
 }
 
 function InviteAlert() {

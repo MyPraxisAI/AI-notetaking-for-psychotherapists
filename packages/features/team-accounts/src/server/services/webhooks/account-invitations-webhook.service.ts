@@ -102,9 +102,10 @@ class AccountInvitationsWebhookService {
       const { getMailer } = await import('@kit/mailers');
 
       const mailer = await getMailer();
+      const link = this.getInvitationLink(invitation.invite_token, invitation.email);
 
       const { html, subject } = await renderInviteEmail({
-        link: this.getInvitationLink(invitation.invite_token),
+        link,
         invitedUserEmail: invitation.email,
         inviter: inviter.data.name ?? inviter.data.email ?? '',
         productName: env.productName,
@@ -141,7 +142,14 @@ class AccountInvitationsWebhookService {
     }
   }
 
-  private getInvitationLink(token: string) {
-    return new URL(env.invitePath, env.siteURL).href + `?invite_token=${token}`;
+  private getInvitationLink(token: string, email: string) {
+    const searchParams = new URLSearchParams({
+      invite_token: token,
+      email,
+    }).toString();
+
+    const href = new URL(env.invitePath, env.siteURL).href;
+
+    return `${href}?${searchParams}`;
   }
 }

@@ -87,6 +87,12 @@ class AuthCallbackService {
       // correct page.
       url.pathname = params.joinTeamPath;
       searchParams.set('invite_token', inviteToken);
+
+      const emailParam = callbackUrl?.searchParams.get('email');
+
+      if (emailParam) {
+        searchParams.set('email', emailParam);
+      }
     }
 
     if (token_hash && type) {
@@ -138,7 +144,14 @@ class AuthCallbackService {
     // to join a team and we want to make sure they are redirected to the
     // correct page.
     if (inviteToken) {
-      nextUrl = `${params.joinTeamPath}?invite_token=${inviteToken}`;
+      const emailParam = searchParams.get('email');
+
+      const urlParams = new URLSearchParams({
+        invite_token: inviteToken,
+        email: emailParam ?? ''
+      });
+
+      nextUrl = `${params.joinTeamPath}?${urlParams.toString()}`;
     }
 
     if (authCode) {

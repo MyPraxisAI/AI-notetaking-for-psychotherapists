@@ -22,9 +22,14 @@ import { Trans } from '@kit/ui/trans';
 import { PasswordSignUpSchema } from '../schemas/password-sign-up.schema';
 
 export function PasswordSignUpForm({
+  defaultValues,
   onSubmit,
   loading,
 }: {
+  defaultValues?: {
+    email: string;
+  };
+
   onSubmit: (params: {
     email: string;
     password: string;
@@ -37,7 +42,7 @@ export function PasswordSignUpForm({
   const form = useForm({
     resolver: zodResolver(PasswordSignUpSchema),
     defaultValues: {
-      email: '',
+      email: defaultValues?.email ?? '',
       password: '',
       repeatPassword: '',
     },

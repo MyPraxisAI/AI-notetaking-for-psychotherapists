@@ -12,11 +12,11 @@ import React, {
 } from 'react';
 
 import { Slot, Slottable } from '@radix-ui/react-slot';
+import { useMutation } from '@tanstack/react-query';
 import { Path, UseFormReturn } from 'react-hook-form';
 import { z } from 'zod';
 
 import { cn } from '../utils';
-import {useMutation} from "@tanstack/react-query";
 
 interface MultiStepFormProps<T extends z.ZodType> {
   schema: T;
@@ -287,7 +287,7 @@ export function useMultiStepForm<Schema extends z.ZodType>(
   const mutation = useMutation({
     mutationFn: () => {
       return form.handleSubmit(onSubmit)();
-    }
+    },
   });
 
   return useMemo(

@@ -14,11 +14,16 @@ import { AuthErrorAlert } from './auth-error-alert';
 import { PasswordSignUpForm } from './password-sign-up-form';
 
 interface EmailPasswordSignUpContainerProps {
+  defaultValues?: {
+    email: string;
+  };
+
   onSignUp?: (userId?: string) => unknown;
   emailRedirectTo: string;
 }
 
 export function EmailPasswordSignUpContainer({
+  defaultValues,
   onSignUp,
   emailRedirectTo,
 }: EmailPasswordSignUpContainerProps) {
@@ -72,7 +77,11 @@ export function EmailPasswordSignUpContainer({
       <If condition={!showVerifyEmailAlert}>
         <AuthErrorAlert error={signUpMutation.error} />
 
-        <PasswordSignUpForm onSubmit={onSignupRequested} loading={loading} />
+        <PasswordSignUpForm
+          onSubmit={onSignupRequested}
+          loading={loading}
+          defaultValues={defaultValues}
+        />
       </If>
     </>
   );

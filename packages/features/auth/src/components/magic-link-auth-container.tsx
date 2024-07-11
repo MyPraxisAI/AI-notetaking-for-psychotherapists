@@ -28,10 +28,14 @@ export function MagicLinkAuthContainer({
   inviteToken,
   redirectUrl,
   shouldCreateUser,
+  defaultValues,
 }: {
   inviteToken?: string;
   redirectUrl: string;
   shouldCreateUser: boolean;
+  defaultValues?: {
+    email: string;
+  };
 }) {
   const { captchaToken, resetCaptchaToken } = useCaptchaToken();
   const { t } = useTranslation();
@@ -44,7 +48,7 @@ export function MagicLinkAuthContainer({
       }),
     ),
     defaultValues: {
-      email: '',
+      email: defaultValues?.email ?? ''
     },
   });
 

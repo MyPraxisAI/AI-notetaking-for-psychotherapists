@@ -22,7 +22,7 @@ export function GlobalLoader({
       <If condition={displaySpinner}>
         <div
           className={
-            'flex flex-1 flex-col items-center justify-center animate-in fade-in zoom-in-50 slide-in-from-bottom-8'
+            'flex flex-1 flex-col items-center justify-center duration-500 animate-in fade-in zoom-in-80 slide-in-from-bottom-12'
           }
         >
           <LoadingOverlay displayLogo={displayLogo} fullPage={fullPage} />

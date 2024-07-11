@@ -20,6 +20,7 @@ import { withI18n } from '~/lib/i18n/with-i18n';
 interface Context {
   searchParams: {
     invite_token?: string;
+    email?: string;
   };
 }
 
@@ -46,9 +47,15 @@ async function JoinTeamAccountPage({ searchParams }: Context) {
   // redirect to the sign up page with the invite token
   // so that they will get back to this page after signing up
   if (auth.error ?? !auth.data) {
-    const path = `${pathsConfig.auth.signUp}?invite_token=${token}`;
+    const urlParams = new URLSearchParams({
+      invite_token: token,
+      email: searchParams.email ?? '',
+    });
 
-    redirect(path);
+    const signUpPath = `${pathsConfig.auth.signUp}?${urlParams.toString()}`;
+
+    // redirect to the sign up page with the invite token
+    redirect(signUpPath);
   }
 
   // get api to interact with team accounts
