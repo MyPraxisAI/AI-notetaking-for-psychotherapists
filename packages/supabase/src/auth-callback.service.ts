@@ -148,7 +148,7 @@ class AuthCallbackService {
 
       const urlParams = new URLSearchParams({
         invite_token: inviteToken,
-        email: emailParam ?? ''
+        email: emailParam ?? '',
       });
 
       nextUrl = `${params.joinTeamPath}?${urlParams.toString()}`;

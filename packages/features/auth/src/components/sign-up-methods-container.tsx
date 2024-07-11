@@ -28,7 +28,7 @@ export function SignUpMethodsContainer(props: {
 }) {
   const redirectUrl = getCallbackUrl(props);
   const defaultValues = getDefaultValues();
-  
+
   return (
     <>
       <If condition={props.inviteToken}>

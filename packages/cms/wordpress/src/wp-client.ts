@@ -1,4 +1,5 @@
 import type {
+  WP_Post_Status_Name,
   WP_REST_API_Category,
   WP_REST_API_Post,
   WP_REST_API_Tag,
@@ -104,7 +105,9 @@ class WordpressClient implements CmsClient {
     const total = totalHeader ? Number(totalHeader) : 0;
     const results = (await response.json()) as WP_REST_API_Post[];
 
-    const posts = await Promise.all(
+    const status = options.status ?? 'published';
+
+    const postsResults = await Promise.allSettled(
       results.map(async (item: WP_REST_API_Post) => {
         let parentId: string | undefined;
 
@@ -114,6 +117,12 @@ class WordpressClient implements CmsClient {
 
         if (item.parent) {
           parentId = item.parent.toString();
+        }
+
+        const mappedStatus = mapToStatus(item.status as WP_Post_Status_Name);
+
+        if (mappedStatus !== status) {
+          throw new Error('Status does not match');
         }
 
         const categories = await this.getCategoriesByIds(item.categories ?? []);
@@ -130,6 +139,7 @@ class WordpressClient implements CmsClient {
           url: item.link,
           slug: item.slug,
           publishedAt: item.date,
+          status: mappedStatus ?? 'draft',
           categories: categories,
           tags: tags,
           parentId,
@@ -138,6 +148,10 @@ class WordpressClient implements CmsClient {
         };
       }),
     );
+
+    const posts = postsResults
+      .filter((item) => item.status === 'fulfilled')
+      .map((item) => item.value);
 
     return {
       total,
@@ -148,9 +162,11 @@ class WordpressClient implements CmsClient {
   async getContentItemBySlug({
     slug,
     collection,
+    status,
   }: {
     slug: string;
     collection: string;
+    status?: Cms.ContentItemStatus;
   }) {
     const searchParams = new URLSearchParams({
       _embed: 'true',
@@ -174,6 +190,15 @@ class WordpressClient implements CmsClient {
       return;
     }
 
+    const mappedStatus = status
+      ? mapToStatus(item.status as WP_Post_Status_Name)
+      : undefined;
+    const statusMatch = status ? mappedStatus === status : true;
+
+    if (!statusMatch) {
+      return;
+    }
+
     const categories = await this.getCategoriesByIds(item.categories ?? []);
     const tags = await this.getTagsByIds(item.tags ?? []);
     const image = item.featured_media ? this.getFeaturedMedia(item) : '';
@@ -189,6 +214,7 @@ class WordpressClient implements CmsClient {
       content: item.content.rendered,
       slug: item.slug,
       publishedAt: item.date,
+      status: mappedStatus ?? 'draft',
       categories,
       tags,
       parentId: item.parent?.toString(),
@@ -368,5 +394,25 @@ function mapSortByParam(sortBy: string) {
       return 'menu_order';
     default:
       return;
+  }
+}
+
+function mapToStatus(status: WP_Post_Status_Name): Cms.ContentItemStatus {
+  const Draft = 'draft' as WP_Post_Status_Name;
+  const Publish = 'publish' as WP_Post_Status_Name;
+  const Pending = 'pending' as WP_Post_Status_Name;
+
+  switch (status) {
+    case Draft:
+      return 'draft';
+
+    case Publish:
+      return 'published';
+
+    case Pending:
+      return 'pending';
+
+    default:
+      return 'draft';
   }
 }

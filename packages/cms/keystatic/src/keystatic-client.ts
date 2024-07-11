@@ -1,5 +1,3 @@
-import Markdoc from '@markdoc/markdoc';
-
 import { Cms, CmsClient } from '@kit/cms';
 
 import { createKeystaticReader } from './create-reader';
@@ -27,6 +25,12 @@ class KeystaticClient implements CmsClient {
 
     const filtered = docs
       .filter((item) => {
+        const status = options?.status ?? 'published';
+
+        if (item.entry.status !== status) {
+          return false;
+        }
+
         const categoryMatch = options?.categories?.length
           ? options.categories.find((category) =>
               item.entry.categories.includes(category),
@@ -89,7 +93,11 @@ class KeystaticClient implements CmsClient {
     };
   }
 
-  async getContentItemBySlug(params: { slug: string; collection: string }) {
+  async getContentItemBySlug(params: {
+    slug: string;
+    collection: string;
+    status?: Cms.ContentItemStatus;
+  }) {
     const reader = await createKeystaticReader();
 
     const collection =
@@ -100,8 +108,15 @@ class KeystaticClient implements CmsClient {
     }
 
     const doc = await reader.collections[collection].read(params.slug);
+    const status = params.status ?? 'published';
 
+    // verify that the document exists
     if (!doc) {
+      return Promise.resolve(undefined);
+    }
+
+    // check the document matches the status provided in the params
+    if (doc.status !== status) {
       return Promise.resolve(undefined);
     }
 
@@ -136,13 +151,15 @@ class KeystaticClient implements CmsClient {
       slug: string;
     },
   >(item: Type, children: Type[] = []): Promise<Cms.ContentItem> {
+    const { transform, renderers } = await import('@markdoc/markdoc');
+
     const publishedAt = item.entry.publishedAt
       ? new Date(item.entry.publishedAt)
       : new Date();
 
     const markdoc = await item.entry.content();
-    const content = Markdoc.transform(markdoc.node);
-    const html = Markdoc.renderers.html(content);
+    const content = transform(markdoc.node);
+    const html = renderers.html(content);
 
     return {
       id: item.slug,
@@ -153,6 +170,7 @@ class KeystaticClient implements CmsClient {
       publishedAt: publishedAt.toISOString(),
       content: html,
       image: item.entry.image ?? undefined,
+      status: item.entry.status,
       categories:
         item.entry.categories.map((item) => {
           return {

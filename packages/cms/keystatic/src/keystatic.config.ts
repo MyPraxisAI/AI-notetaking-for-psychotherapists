@@ -124,6 +124,16 @@ function getKeystaticCollections(path: string) {
         language: fields.text({ label: 'Language' }),
         order: fields.number({ label: 'Order' }),
         content: getContentField(),
+        status: fields.select({
+          defaultValue: 'draft',
+          label: 'Status',
+          options: [
+            { label: 'Draft', value: 'draft' },
+            { label: 'Published', value: 'published' },
+            { label: 'Review', value: 'review' },
+            { label: 'Pending', value: 'pending' },
+          ],
+        }),
       },
     }),
     documentation: collection({
@@ -149,6 +159,16 @@ function getKeystaticCollections(path: string) {
         }),
         categories: fields.array(fields.text({ label: 'Category' })),
         tags: fields.array(fields.text({ label: 'Tag' })),
+        status: fields.select({
+          defaultValue: 'draft',
+          label: 'Status',
+          options: [
+            { label: 'Draft', value: 'draft' },
+            { label: 'Published', value: 'published' },
+            { label: 'Review', value: 'review' },
+            { label: 'Pending', value: 'pending' },
+          ],
+        }),
       },
     }),
   };

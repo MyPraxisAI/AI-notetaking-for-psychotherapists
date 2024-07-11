@@ -48,7 +48,7 @@ export function MagicLinkAuthContainer({
       }),
     ),
     defaultValues: {
-      email: defaultValues?.email ?? ''
+      email: defaultValues?.email ?? '',
     },
   });
 

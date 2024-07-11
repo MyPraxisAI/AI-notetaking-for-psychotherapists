@@ -102,7 +102,10 @@ class AccountInvitationsWebhookService {
       const { getMailer } = await import('@kit/mailers');
 
       const mailer = await getMailer();
-      const link = this.getInvitationLink(invitation.invite_token, invitation.email);
+      const link = this.getInvitationLink(
+        invitation.invite_token,
+        invitation.email,
+      );
 
       const { html, subject } = await renderInviteEmail({
         link,

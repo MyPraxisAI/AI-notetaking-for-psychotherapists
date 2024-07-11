@@ -8,6 +8,7 @@ export namespace Cms {
     content: unknown;
     publishedAt: string;
     image: string | undefined;
+    status: ContentItemStatus;
     slug: string;
     categories: Category[];
     tags: Tag[];
@@ -15,6 +16,8 @@ export namespace Cms {
     children: ContentItem[];
     parentId: string | undefined;
   }
+
+  export type ContentItemStatus = 'draft' | 'published' | 'review' | 'pending';
 
   export interface Category {
     id: string;
@@ -38,6 +41,7 @@ export namespace Cms {
     language?: string | undefined;
     sortDirection?: 'asc' | 'desc';
     sortBy?: 'publishedAt' | 'order' | 'title';
+    status?: ContentItemStatus;
   }
 
   export interface GetCategoriesOptions {
@@ -74,6 +78,7 @@ export abstract class CmsClient {
   abstract getContentItemBySlug(params: {
     slug: string;
     collection: string;
+    status?: Cms.ContentItemStatus;
   }): Promise<Cms.ContentItem | undefined>;
 
   /**
