@@ -20,15 +20,19 @@ import { Input } from '@kit/ui/input';
 import { Trans } from '@kit/ui/trans';
 
 import { PasswordSignUpSchema } from '../schemas/password-sign-up.schema';
+import { TermsAndConditionsFormField } from './terms-and-conditions-form-field';
 
 export function PasswordSignUpForm({
   defaultValues,
+  displayTermsCheckbox,
   onSubmit,
   loading,
 }: {
   defaultValues?: {
     email: string;
   };
+
+  displayTermsCheckbox?: boolean;
 
   onSubmit: (params: {
     email: string;
@@ -129,6 +133,10 @@ export function PasswordSignUpForm({
             </FormItem>
           )}
         />
+
+        <If condition={displayTermsCheckbox}>
+          <TermsAndConditionsFormField />
+        </If>
 
         <Button
           data-test={'auth-submit-button'}

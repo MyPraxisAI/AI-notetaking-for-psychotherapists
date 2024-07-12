@@ -14,6 +14,7 @@ import { AuthErrorAlert } from './auth-error-alert';
 import { PasswordSignUpForm } from './password-sign-up-form';
 
 interface EmailPasswordSignUpContainerProps {
+  displayTermsCheckbox?: boolean;
   defaultValues?: {
     email: string;
   };
@@ -26,6 +27,7 @@ export function EmailPasswordSignUpContainer({
   defaultValues,
   onSignUp,
   emailRedirectTo,
+  displayTermsCheckbox
 }: EmailPasswordSignUpContainerProps) {
   const { captchaToken, resetCaptchaToken } = useCaptchaToken();
 
@@ -81,6 +83,7 @@ export function EmailPasswordSignUpContainer({
           onSubmit={onSignupRequested}
           loading={loading}
           defaultValues={defaultValues}
+          displayTermsCheckbox={displayTermsCheckbox}
         />
       </If>
     </>

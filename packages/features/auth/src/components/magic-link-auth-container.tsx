@@ -23,16 +23,20 @@ import { Input } from '@kit/ui/input';
 import { Trans } from '@kit/ui/trans';
 
 import { useCaptchaToken } from '../captcha/client';
+import { TermsAndConditionsFormField } from './terms-and-conditions-form-field';
 
 export function MagicLinkAuthContainer({
   inviteToken,
   redirectUrl,
   shouldCreateUser,
   defaultValues,
+  displayTermsCheckbox,
 }: {
   inviteToken?: string;
   redirectUrl: string;
   shouldCreateUser: boolean;
+  displayTermsCheckbox?: boolean;
+
   defaultValues?: {
     email: string;
   };
@@ -114,6 +118,10 @@ export function MagicLinkAuthContainer({
             )}
             name={'email'}
           />
+
+          <If condition={displayTermsCheckbox}>
+            <TermsAndConditionsFormField />
+          </If>
 
           <Button disabled={signInWithOtpMutation.isPending}>
             <If
