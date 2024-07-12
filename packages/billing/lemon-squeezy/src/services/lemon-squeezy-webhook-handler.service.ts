@@ -441,6 +441,6 @@ function getSubscriptionIntervalType(renewsAt: string) {
 
   return {
     interval: 'year',
-    intervalCount: 12,
+    intervalCount: 1,
   };
 }
