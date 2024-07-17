@@ -13,12 +13,14 @@ export async function initializeServerI18n(
   resolver: (language: string, namespace: string) => Promise<object>,
 ) {
   const i18nInstance = createInstance();
+  const loadedNamespaces = new Set<string>();
 
   await i18nInstance
     .use(
       resourcesToBackend(async (language, namespace, callback) => {
         try {
           const data = await resolver(language, namespace);
+          loadedNamespaces.add(namespace);
 
           return callback(null, data);
         } catch (error) {
@@ -27,16 +29,50 @@ export async function initializeServerI18n(
             error,
           );
 
-          return {};
+          return callback(null, {});
         }
       }),
     )
     .use(initReactI18next)
-    .init(settings, (error) => {
-      if (error) {
-        console.error('Error initializing i18n server', error);
+    .init(settings);
+
+  const namespaces = settings.ns as string[];
+
+  // If all namespaces are already loaded, return the i18n instance
+  if (loadedNamespaces.size === namespaces.length) {
+    return i18nInstance;
+  }
+
+  // Otherwise, wait for all namespaces to be loaded
+
+  const maxWaitTime = 0.1; // 100 milliseconds
+  const checkIntervalMs = 5; // 5 milliseconds
+
+  async function waitForNamespaces() {
+    const startTime = Date.now();
+
+    while (Date.now() - startTime < maxWaitTime) {
+      const allNamespacesLoaded = namespaces.every((ns) =>
+        loadedNamespaces.has(ns),
+      );
+
+      if (allNamespacesLoaded) {
+        return true;
       }
-    });
+
+      await new Promise((resolve) => setTimeout(resolve, checkIntervalMs));
+    }
+
+    return false;
+  }
+
+  const success = await waitForNamespaces();
+
+  if (!success) {
+    console.warn(
+      `Not all namespaces were loaded after ${maxWaitTime}ms. Initialization may be incomplete.`,
+    );
+  }
 
   return i18nInstance;
 }

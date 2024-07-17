@@ -9,10 +9,10 @@ export function SiteHeader(props: { user?: User | null }) {
   return (
     <div
       className={
-        'sticky top-0 z-10 w-full bg-background/80 shadow-sm backdrop-blur-md dark:bg-background/50 dark:shadow-primary/10'
+        'sticky top-0 z-10 w-full bg-background/80 backdrop-blur-md dark:bg-background/50 py-2 site-header'
       }
     >
-      <div className={'px-4 lg:px-8'}>
+      <div className={'container'}>
         <div className="grid h-14 grid-cols-3 items-center">
           <div>
             <AppLogo />

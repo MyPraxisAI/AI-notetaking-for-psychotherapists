@@ -12,7 +12,7 @@ export function Heading({
       return (
         <h1
           className={cn(
-            `scroll-m-20 font-heading text-4xl font-bold tracking-tight dark:text-white`,
+            `scroll-m-20 font-heading text-3xl lg:text-4xl font-bold tracking-tight dark:text-white`,
             className,
           )}
         >
@@ -23,7 +23,7 @@ export function Heading({
       return (
         <h2
           className={cn(
-            `scroll-m-20 pb-2 font-heading text-3xl font-semibold tracking-tight transition-colors first:mt-0`,
+            `scroll-m-20 pb-2 font-heading text-2xl lg:text-3xl font-semibold tracking-tight transition-colors first:mt-0`,
             className,
           )}
         >
@@ -34,7 +34,7 @@ export function Heading({
       return (
         <h3
           className={cn(
-            'scroll-m-20 font-heading text-2xl font-semibold tracking-tight',
+            'scroll-m-20 font-heading text-xl lg:text-2xl font-semibold tracking-tight',
             className,
           )}
         >
@@ -45,7 +45,7 @@ export function Heading({
       return (
         <h4
           className={cn(
-            'scroll-m-20 font-heading text-xl font-semibold tracking-tight',
+            'scroll-m-20 font-heading text-lg lg:text-xl font-semibold tracking-tight',
             className,
           )}
         >
@@ -56,7 +56,7 @@ export function Heading({
       return (
         <h5
           className={cn(
-            'scroll-m-20 font-heading text-lg font-medium',
+            'scroll-m-20 font-heading text-base lg:text-lg font-medium',
             className,
           )}
         >

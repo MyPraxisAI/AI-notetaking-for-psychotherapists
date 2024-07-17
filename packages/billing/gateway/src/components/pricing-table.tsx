@@ -377,7 +377,7 @@ function PlanIntervalSwitcher(
           {
             'rounded-r-none border-r-transparent': index === 0,
             'rounded-l-none': index === props.intervals.length - 1,
-            ['hover:text-primary border']: !selected,
+            ['hover:text-primary border text-muted-foreground']: !selected,
             ['font-semibold cursor-default hover:text-initial hover:bg-background']:
               selected,
           },
@@ -444,7 +444,7 @@ function DefaultCheckoutButton(
     <Link className={'w-full'} href={linkHref}>
       <Button
         size={'lg'}
-        className={'ring-primary w-full ring-2'}
+        className={'border-primary w-full border rounded-lg'}
         variant={props.highlighted ? 'default' : 'outline'}
       >
         <span>

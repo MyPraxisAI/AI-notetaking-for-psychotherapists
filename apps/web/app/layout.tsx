@@ -36,15 +36,19 @@ function getClassName(theme?: string) {
   const dark = theme === 'dark';
   const light = !dark;
 
-  return cn(
-    'min-h-screen bg-background antialiased',
-    sans.variable,
-    heading.variable,
-    {
-      dark,
-      light,
+  const font = [sans.variable, heading.variable].reduce<string[]>(
+    (acc, curr) => {
+      if (acc.includes(curr)) return acc;
+
+      return [...acc, curr];
     },
+    [],
   );
+
+  return cn('min-h-screen bg-background antialiased', ...font, {
+    dark,
+    light,
+  });
 }
 
 function getTheme() {

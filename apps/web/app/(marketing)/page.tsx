@@ -2,7 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 import {
-  ChevronRight,
+  ArrowRightIcon,
   CreditCard,
   LayoutDashboard,
   Lock,
@@ -21,7 +21,7 @@ import { withI18n } from '~/lib/i18n/with-i18n';
 
 function Home() {
   return (
-    <div className={'mt-4 flex flex-col space-y-24 py-16'}>
+    <div className={'mt-4 flex flex-col space-y-24 py-14'}>
       <div className={'container mx-auto flex flex-col space-y-20'}>
         <div
           className={
@@ -32,7 +32,7 @@ function Home() {
         >
           <div
             className={
-              'flex w-full flex-1 flex-col items-center space-y-8 xl:space-y-12 2xl:space-y-14'
+              'flex w-full flex-1 flex-col items-center space-y-6 xl:space-y-8 2xl:space-y-10'
             }
           >
             <Pill>
@@ -41,44 +41,25 @@ function Home() {
 
             <div className={'flex flex-col items-center space-y-8'}>
               <HeroTitle>
-                <span>The SaaS Starter Kit</span>
+                <span>The ultimate SaaS Starter</span>
 
-                <span>
-                  <span>for ambitious developers</span>
-                </span>
+                <span>for your next project</span>
               </HeroTitle>
 
-              <div className={'flex flex-col'}>
+              <div className={'flex max-w-2xl flex-col space-y-1'}>
                 <Heading
-                  level={2}
+                  level={3}
                   className={
-                    'p-0 text-center font-sans text-2xl font-normal text-muted-foreground'
+                    'p-0 text-center font-sans font-normal text-muted-foreground'
                   }
                 >
-                  <span>Build and launch a SaaS in days, not months</span>
-                </Heading>
-
-                <Heading
-                  level={2}
-                  className={
-                    'p-0 text-center font-sans text-2xl font-normal text-muted-foreground'
-                  }
-                >
-                  <span>Focus on your business, not on the tech</span>
-                </Heading>
-
-                <Heading
-                  level={2}
-                  className={
-                    'p-0 text-center font-sans text-2xl font-normal text-muted-foreground'
-                  }
-                >
-                  Ship something great, today.
+                  Build and Ship a SaaS faster than ever before with the
+                  next-gen SaaS Starter Kit. Ship your SaaS in days, not months.
                 </Heading>
               </div>
-
-              <MainCallToActionButton />
             </div>
+
+            <MainCallToActionButton />
           </div>
         </div>
 
@@ -103,42 +84,13 @@ function Home() {
 
       <div className={'container mx-auto'}>
         <div
-          className={
-            'flex flex-col items-center justify-center space-y-8 py-8 xl:space-y-16 xl:py-16'
-          }
-        >
-          <div
-            className={
-              'flex max-w-3xl flex-col items-center space-y-8 text-center'
-            }
-          >
-            <Pill>
-              <span>A modern, scalable, and secure SaaS Starter Kit</span>
-            </Pill>
-
-            <div className={'flex flex-col space-y-2'}>
-              <Heading level={1}>The best tool in the space</Heading>
-
-              <Heading
-                level={2}
-                className={'font-sans font-normal text-muted-foreground'}
-              >
-                Unbeatable Features and Benefits for Your SaaS Business
-              </Heading>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className={'container mx-auto'}>
-        <div
           className={'flex flex-col space-y-16 xl:space-y-32 2xl:space-y-36'}
         >
           <FeatureShowcaseContainer>
             <FeatureContainer>
-              <div className={'flex flex-col space-y-6'}>
-                <IconContainer className={'bg-green-50 dark:bg-green-500/10'}>
-                  <Lock className={'h-5 text-green-500'} />
+              <div className={'flex flex-col space-y-4'}>
+                <IconContainer className={'border'}>
+                  <Lock className={'h-5'} />
                 </IconContainer>
 
                 <div className={'flex flex-col'}>
@@ -146,7 +98,7 @@ function Home() {
 
                   <Heading
                     level={3}
-                    className={'font-sans font-normal text-muted-foreground'}
+                    className={'font-sans font-normal text-muted-foreground tracking-normal'}
                   >
                     Secure and Easy-to-Use Authentication for Your SaaS Website
                     and API
@@ -154,12 +106,12 @@ function Home() {
                 </div>
               </div>
 
-              <div>
+              <p className={'text-muted-foreground'}>
                 Our authentication system is built on top of the
                 industry-leading PaaS such as Supabase and Firebase. It is
                 secure, easy-to-use, and fully customizable. It supports
                 email/password, social logins, and more.
-              </div>
+              </p>
             </FeatureContainer>
 
             <FeatureContainer>
@@ -185,9 +137,9 @@ function Home() {
             </FeatureContainer>
 
             <FeatureContainer>
-              <div className={'flex flex-col space-y-6'}>
-                <IconContainer className={'bg-indigo-50 dark:bg-indigo-500/10'}>
-                  <LayoutDashboard className={'h-5 text-indigo-500'} />
+              <div className={'flex flex-col space-y-4'}>
+                <IconContainer className={'border'}>
+                  <LayoutDashboard className={'h-5'} />
                 </IconContainer>
 
                 <div className={'flex flex-col'}>
@@ -195,26 +147,26 @@ function Home() {
 
                   <Heading
                     level={3}
-                    className={'font-sans font-normal text-muted-foreground'}
+                    className={'font-sans font-normal text-muted-foreground tracking-normal'}
                   >
                     A fantastic dashboard to manage your SaaS business
                   </Heading>
                 </div>
               </div>
 
-              <div>
+              <p className={'text-muted-foreground'}>
                 Our dashboard offers an overview of your SaaS business. It shows
                 at a glance all you need to know about your business. It is
                 fully customizable and extendable.
-              </div>
+              </p>
             </FeatureContainer>
           </FeatureShowcaseContainer>
 
           <FeatureShowcaseContainer>
             <FeatureContainer>
-              <div className={'flex flex-col space-y-6'}>
-                <IconContainer className={'bg-blue-50 dark:bg-blue-500/10'}>
-                  <CreditCard className={'h-5 text-blue-500'} />
+              <div className={'flex flex-col space-y-4'}>
+                <IconContainer className={'border'}>
+                  <CreditCard className={'h-5'} />
                 </IconContainer>
 
                 <div className={'flex flex-col'}>
@@ -222,18 +174,18 @@ function Home() {
 
                   <Heading
                     level={3}
-                    className={'font-sans font-normal text-muted-foreground'}
+                    className={'font-sans font-normal text-muted-foreground tracking-normal'}
                   >
                     A powerful billing system for your SaaS business
                   </Heading>
                 </div>
               </div>
 
-              <div>
+              <p className={'text-muted-foreground'}>
                 Powerful billing system that supports multiple payment gateways
                 such as Stripe, Lemon Squeezy and Paddle. Fully customizable and
                 easy to use.
-              </div>
+              </p>
             </FeatureContainer>
 
             <FeatureContainer>
@@ -255,16 +207,16 @@ function Home() {
             'flex flex-col items-center justify-center space-y-16 py-16'
           }
         >
-          <div className={'flex flex-col items-center space-y-8 text-center'}>
+          <div className={'flex flex-col items-center space-y-4 text-center'}>
             <Pill>Get started for free. No credit card required.</Pill>
 
-            <div className={'flex flex-col space-y-2'}>
-              <Heading level={1}>
+            <div className={'flex flex-col'}>
+              <Heading level={2}>
                 Fair pricing for all types of businesses
               </Heading>
 
               <Heading
-                level={2}
+                level={3}
                 className={'font-sans font-normal text-muted-foreground'}
               >
                 Get started on our free plan and upgrade when you are ready.
@@ -293,7 +245,7 @@ function HeroTitle({ children }: React.PropsWithChildren) {
   return (
     <h1
       className={
-        'flex flex-col text-center font-heading text-5xl font-semibold tracking-tight sm:text-6xl lg:text-7xl'
+        'flex flex-col space-y-1 text-center font-sans text-4xl font-medium tracking-tight dark:text-white sm:text-6xl lg:max-w-5xl lg:text-7xl xl:text-[4.5rem]'
       }
     >
       {children}
@@ -305,10 +257,10 @@ function Pill(props: React.PropsWithChildren) {
   return (
     <h2
       className={
-        'rounded-full px-4 py-2 text-center text-sm text-muted-foreground shadow dark:shadow-primary/20'
+        'rounded-full border border-gray-100 px-2.5 py-2 text-center text-sm font-medium dark:border-primary/10'
       }
     >
-      <Sparkle className={'inline-block h-4'} />
+      <Sparkle className={'mr-2 inline-block h-4'} />
       {props.children}
     </h2>
   );
@@ -346,27 +298,34 @@ function FeatureContainer(
 
 function MainCallToActionButton() {
   return (
-    <div className={'flex space-x-2'}>
-      <Button asChild variant={'link'}>
-        <Link href={'/docs'}>
-          <Trans i18nKey={'common:documentation'} />
-        </Link>
-      </Button>
-
-      <Button asChild>
+    <div className={'flex space-x-4'}>
+      <Button
+        className={'h-12 px-4 rounded-xl text-base font-semibold'}
+        asChild
+      >
         <Link href={'/auth/sign-up'}>
           <span className={'flex items-center space-x-0.5'}>
             <span>
               <Trans i18nKey={'common:getStarted'} />
             </span>
 
-            <ChevronRight
+            <ArrowRightIcon
               className={
                 'h-4 animate-in fade-in slide-in-from-left-8' +
                 ' delay-800 duration-1000 zoom-in fill-mode-both'
               }
             />
           </span>
+        </Link>
+      </Button>
+
+      <Button
+        variant={'link'}
+        className={'h-12 px-4 rounded-xl text-base font-semibold'}
+        asChild
+      >
+        <Link href={'/contact'}>
+          <Trans i18nKey={'common:contactUs'} />
         </Link>
       </Button>
     </div>

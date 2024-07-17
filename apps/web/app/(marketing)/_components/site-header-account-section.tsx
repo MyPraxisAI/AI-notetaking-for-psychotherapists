@@ -5,7 +5,7 @@ import Link from 'next/link';
 
 import type { User } from '@supabase/supabase-js';
 
-import { ChevronRight } from 'lucide-react';
+import { ArrowRightIcon } from 'lucide-react';
 
 import { PersonalAccountDropdown } from '@kit/accounts/personal-account-dropdown';
 import { useSignOut } from '@kit/supabase/hooks/use-sign-out';
@@ -64,17 +64,14 @@ function SuspendedPersonalAccountDropdown(props: { user: User | null }) {
 }
 
 function AuthButtons() {
-  const textClassName =
-    'text-gray-600 hover:text-current dark:text-gray-400 dark:hover:text-white';
-
   return (
     <div className={'flex space-x-2'}>
       <div className={'hidden space-x-0.5 md:flex'}>
         <If condition={features.enableThemeToggle}>
-          <ModeToggle className={textClassName} />
+          <ModeToggle />
         </If>
 
-        <Button asChild variant={'ghost'} className={textClassName}>
+        <Button asChild variant={'ghost'}>
           <Link href={pathsConfig.auth.signIn}>
             <Trans i18nKey={'auth:signIn'} />
           </Link>
@@ -85,7 +82,7 @@ function AuthButtons() {
         <Link href={pathsConfig.auth.signUp}>
           <Trans i18nKey={'auth:signUp'} />
 
-          <ChevronRight
+          <ArrowRightIcon
             className={
               'ml-1 h-4 w-4 transition-transform duration-500 group-hover:translate-x-1'
             }
