@@ -22,7 +22,7 @@
     "@tanstack/react-table": "^8.19.3"
   },
   "dependencies": {
-    "pino": "^9.3.0"
+    "pino": "^9.3.1"
   },
   "eslintConfig": {
     "root": true,

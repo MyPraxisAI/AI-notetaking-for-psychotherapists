@@ -34,11 +34,11 @@
   "prettier": "@kit/prettier-config",
   "dependencies": {
     "@manypkg/cli": "^0.21.4",
-    "@turbo/gen": "^2.0.6",
+    "@turbo/gen": "^2.0.7",
     "cross-env": "^7.0.3",
     "pnpm": "^9.5.0",
     "prettier": "^3.3.3",
-    "turbo": "2.0.6",
+    "turbo": "2.0.7",
     "typescript": "^5.5.3"
   },
   "pnpm": {

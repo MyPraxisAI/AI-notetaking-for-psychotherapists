@@ -21,14 +21,20 @@ export const GET = async () => {
   });
 };
 
-function getGitHash() {
+async function getGitHash() {
   for (const envVar of KNOWN_GIT_ENV_VARS) {
     if (process.env[envVar]) {
       return process.env[envVar];
     }
   }
 
-  return getHashFromProcess();
+  try {
+    return await getHashFromProcess();
+  } catch (error) {
+    console.warn(`[WARN] Could not find git hash: ${JSON.stringify(error)}. You may want to provide a fallback.`);
+
+    return '';
+  }
 }
 
 async function getHashFromProcess() {
