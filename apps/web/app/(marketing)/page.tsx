@@ -11,6 +11,13 @@ import {
 
 import { PricingTable } from '@kit/billing-gateway/marketing';
 import { Button } from '@kit/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@kit/ui/card';
 import { Heading } from '@kit/ui/heading';
 import { Trans } from '@kit/ui/trans';
 import { cn } from '@kit/ui/utils';
@@ -27,7 +34,7 @@ function Home() {
           className={
             'flex flex-col items-center md:flex-row' +
             ' mx-auto flex-1 justify-center animate-in fade-in' +
-            ' duration-500 zoom-in-95 slide-in-from-top-24'
+            ' duration-1000 zoom-in-90 slide-in-from-top-36'
           }
         >
           <div
@@ -35,7 +42,7 @@ function Home() {
               'flex w-full flex-1 flex-col items-center space-y-6 xl:space-y-8 2xl:space-y-10'
             }
           >
-            <Pill>
+            <Pill new>
               <span>The leading SaaS Starter Kit for ambitious developers</span>
             </Pill>
 
@@ -49,9 +56,7 @@ function Home() {
               <div className={'flex max-w-2xl flex-col space-y-1'}>
                 <Heading
                   level={3}
-                  className={
-                    'p-0 text-center font-sans font-normal text-muted-foreground'
-                  }
+                  className={'p-0 text-center font-sans text-base font-normal'}
                 >
                   Build and Ship a SaaS faster than ever before with the
                   next-gen SaaS Starter Kit. Ship your SaaS in days, not months.
@@ -65,18 +70,18 @@ function Home() {
 
         <div
           className={
-            'mx-auto flex max-w-6xl justify-center py-12 animate-in fade-in ' +
-            ' delay-300 duration-1000 slide-in-from-top-16 fill-mode-both'
+            'mx-auto flex max-w-[100rem] justify-center py-8 animate-in fade-in ' +
+            ' delay-300 duration-1000 zoom-in-95 slide-in-from-top-32 fill-mode-both'
           }
         >
           <Image
             priority
             className={
-              'delay-250 rounded-lg border duration-1000 ease-out animate-in fade-in zoom-in-50 fill-mode-both'
+              'delay-250 rounded-2xl border border-gray-200 duration-1000 ease-out animate-in fade-in zoom-in-50 fill-mode-both dark:border-primary/10'
             }
-            width={1689}
-            height={1057}
-            src={`/images/dashboard-demo.webp`}
+            width={3558}
+            height={2222}
+            src={`/images/dashboard.webp`}
             alt={`App Image`}
           />
         </div>
@@ -87,121 +92,103 @@ function Home() {
           className={'flex flex-col space-y-16 xl:space-y-32 2xl:space-y-36'}
         >
           <FeatureShowcaseContainer>
-            <FeatureContainer>
+            <FeatureContainer className={'w-full max-w-5xl'}>
               <div className={'flex flex-col space-y-4'}>
-                <IconContainer className={'border'}>
-                  <Lock className={'h-5'} />
-                </IconContainer>
-
-                <div className={'flex flex-col'}>
-                  <Heading level={2}>Authentication</Heading>
-
-                  <Heading
-                    level={3}
-                    className={
-                      'font-sans font-normal tracking-normal text-muted-foreground'
-                    }
-                  >
-                    Secure and Easy-to-Use Authentication for Your SaaS Website
-                    and API
-                  </Heading>
-                </div>
-              </div>
-
-              <p className={'text-muted-foreground'}>
-                Our authentication system is built on top of the
-                industry-leading PaaS such as Supabase and Firebase. It is
-                secure, easy-to-use, and fully customizable. It supports
-                email/password, social logins, and more.
-              </p>
-            </FeatureContainer>
-
-            <FeatureContainer>
-              <Image
-                className="rounded-2xl"
-                src={'/images/sign-in.webp'}
-                width={'1760'}
-                height={'1680'}
-                alt={'Sign In'}
-              />
-            </FeatureContainer>
-          </FeatureShowcaseContainer>
-
-          <FeatureShowcaseContainer>
-            <FeatureContainer reverse>
-              <Image
-                className="rounded-2xl"
-                src={'/images/dashboard.webp'}
-                width={'2004'}
-                height={'1410'}
-                alt={'Dashboard'}
-              />
-            </FeatureContainer>
-
-            <FeatureContainer>
-              <div className={'flex flex-col space-y-4'}>
-                <IconContainer className={'border'}>
+                <IconContainer>
                   <LayoutDashboard className={'h-5'} />
+
+                  <span>SaaS Starter Kit</span>
                 </IconContainer>
 
                 <div className={'flex flex-col'}>
-                  <Heading level={2}>Dashboard</Heading>
-
-                  <Heading
-                    level={3}
+                  <h3
                     className={
-                      'font-sans font-normal tracking-normal text-muted-foreground'
+                      'text-3xl font-normal tracking-tighter xl:text-5xl'
                     }
                   >
-                    A fantastic dashboard to manage your SaaS business
-                  </Heading>
+                    <b className={'font-semibold dark:text-white'}>
+                      The ultimate SaaS Starter Kit
+                    </b>
+                    .{' '}
+                    <GradientSecondaryText
+                      className={
+                        'from-foreground/70 to-foreground/80 font-medium'
+                      }
+                    >
+                      Unleash your creativity and build your SaaS faster than
+                      ever with Makerkit.
+                    </GradientSecondaryText>
+                  </h3>
                 </div>
               </div>
-
-              <p className={'text-muted-foreground'}>
-                Our dashboard offers an overview of your SaaS business. It shows
-                at a glance all you need to know about your business. It is
-                fully customizable and extendable.
-              </p>
-            </FeatureContainer>
-          </FeatureShowcaseContainer>
-
-          <FeatureShowcaseContainer>
-            <FeatureContainer>
-              <div className={'flex flex-col space-y-4'}>
-                <IconContainer className={'border'}>
-                  <CreditCard className={'h-5'} />
-                </IconContainer>
-
-                <div className={'flex flex-col'}>
-                  <Heading level={2}>Billing</Heading>
-
-                  <Heading
-                    level={3}
-                    className={
-                      'font-sans font-normal tracking-normal text-muted-foreground'
-                    }
-                  >
-                    A powerful billing system for your SaaS business
-                  </Heading>
-                </div>
-              </div>
-
-              <p className={'text-muted-foreground'}>
-                Powerful billing system that supports multiple payment gateways
-                such as Stripe, Lemon Squeezy and Paddle. Fully customizable and
-                easy to use.
-              </p>
             </FeatureContainer>
 
-            <FeatureContainer>
-              <Image
-                className="rounded-2xl"
-                src={'/images/billing.webp'}
-                width={'1916'}
-                height={'1392'}
-                alt={'Billing'}
-              />
+            <FeatureContainer
+              className={
+                'grid w-full grid-cols-1 gap-6 space-y-0 lg:grid-cols-3'
+              }
+            >
+              <FeatureCard
+                className={
+                  'relative col-span-2 overflow-hidden bg-violet-500 text-white lg:h-96'
+                }
+                title={'Beautiful Dashboard'}
+                description={`Makerkit provides a beautiful dashboard to manage your SaaS business.`}
+              >
+                <Image
+                  className="absolute right-0 top-0 hidden h-full w-full rounded-tl-2xl border border-border lg:top-36 lg:flex lg:h-auto lg:w-10/12"
+                  src={'/images/dashboard-header.webp'}
+                  width={'2061'}
+                  height={'800'}
+                  alt={'Dashboard Header'}
+                />
+              </FeatureCard>
+
+              <FeatureCard
+                className={
+                  'relative col-span-2 w-full overflow-hidden lg:col-span-1'
+                }
+                title={'Authentication'}
+                description={`Makerkit provides a variety of providers to allow your users to sign in.`}
+              >
+                <Image
+                  className="absolute left-16 top-32 hidden h-auto w-8/12 rounded-l-2xl lg:flex"
+                  src={'/images/sign-in.webp'}
+                  width={'1760'}
+                  height={'1680'}
+                  alt={'Sign In'}
+                />
+              </FeatureCard>
+
+              <FeatureCard
+                className={
+                  'relative col-span-2 overflow-hidden lg:col-span-1 lg:h-96'
+                }
+                title={'Multi Tenancy'}
+                description={`Multi tenant memberships for your SaaS business.`}
+              >
+                <Image
+                  className="absolute right-0 top-0 hidden h-full w-full rounded-tl-2xl border lg:top-28 lg:flex lg:h-auto lg:w-8/12"
+                  src={'/images/multi-tenancy.webp'}
+                  width={'2061'}
+                  height={'800'}
+                  alt={'Multi Tenancy'}
+                />
+              </FeatureCard>
+
+              <FeatureCard
+                className={'relative col-span-2 overflow-hidden lg:h-96'}
+                title={'Billing'}
+                description={`Makerkit supports multiple payment gateways to charge your customers.`}
+              >
+                <Image
+                  className="absolute right-0 top-0 hidden h-full w-full rounded-tl-2xl border border-border lg:top-36 lg:flex lg:h-auto lg:w-11/12"
+                  src={'/images/billing.webp'}
+                  width={'2061'}
+                  height={'800'}
+                  alt={'Billing'}
+                />
+              </FeatureCard>
             </FeatureContainer>
           </FeatureShowcaseContainer>
         </div>
@@ -217,13 +204,15 @@ function Home() {
             <Pill>Get started for free. No credit card required.</Pill>
 
             <div className={'flex flex-col'}>
-              <Heading level={2}>
+              <Heading level={2} className={'tracking-tighter'}>
                 Fair pricing for all types of businesses
               </Heading>
 
               <Heading
                 level={3}
-                className={'font-sans font-normal text-muted-foreground'}
+                className={
+                  'font-sans font-normal tracking-tight text-muted-foreground'
+                }
               >
                 Get started on our free plan and upgrade when you are ready.
               </Heading>
@@ -251,7 +240,7 @@ function HeroTitle({ children }: React.PropsWithChildren) {
   return (
     <h1
       className={
-        'flex flex-col space-y-1 text-center font-sans text-4xl font-medium tracking-tight dark:text-white sm:text-6xl lg:max-w-5xl lg:text-7xl xl:text-[4.5rem]'
+        'hero-title flex flex-col space-y-1 text-center font-sans text-4xl font-semibold tracking-tighter dark:text-white sm:text-6xl lg:max-w-5xl lg:text-7xl xl:text-[5.125rem]'
       }
     >
       {children}
@@ -259,27 +248,34 @@ function HeroTitle({ children }: React.PropsWithChildren) {
   );
 }
 
-function Pill(props: React.PropsWithChildren) {
+function Pill(
+  props: React.PropsWithChildren<{
+    new?: boolean;
+  }>,
+) {
   return (
     <h2
       className={
-        'rounded-full border border-gray-100 px-2.5 py-2 text-center text-sm font-medium dark:border-primary/10'
+        'space-x-2.5 rounded-full border border-gray-100 px-2 py-2.5 text-center text-sm font-medium text-transparent dark:border-primary/10'
       }
     >
-      <Sparkle className={'mr-2 inline-block h-4'} />
-      {props.children}
+      {props.new && (
+        <span
+          className={
+            'rounded-2xl bg-primary px-2 py-1.5 text-sm font-semibold text-primary-foreground'
+          }
+        >
+          New
+        </span>
+      )}
+      <GradientSecondaryText>{props.children}</GradientSecondaryText>
     </h2>
   );
 }
 
 function FeatureShowcaseContainer(props: React.PropsWithChildren) {
   return (
-    <div
-      className={
-        'flex flex-col items-center justify-between space-y-8 lg:flex-row lg:space-y-0' +
-        ' lg:space-x-24'
-      }
-    >
+    <div className={'flex flex-col justify-between space-y-8'}>
       {props.children}
     </div>
   );
@@ -293,9 +289,13 @@ function FeatureContainer(
 ) {
   return (
     <div
-      className={cn('flex w-full flex-col space-y-6 lg:w-6/12', {
-        'order-2 mt-8 lg:order-none lg:mt-0': props.reverse,
-      })}
+      className={cn(
+        'flex w-full flex-col space-y-6 py-4',
+        {
+          'order-2 mt-8 lg:order-none lg:mt-0': props.reverse,
+        },
+        props.className,
+      )}
     >
       {props.children}
     </div>
@@ -318,7 +318,7 @@ function MainCallToActionButton() {
             <ArrowRightIcon
               className={
                 'h-4 animate-in fade-in slide-in-from-left-8' +
-                ' delay-800 duration-1000 zoom-in fill-mode-both'
+                ' delay-1000 duration-1000 zoom-in fill-mode-both'
               }
             />
           </span>
@@ -345,14 +345,62 @@ function IconContainer(
 ) {
   return (
     <div className={'flex'}>
-      <span
+      <div
         className={cn(
-          'flex items-center justify-center rounded-lg p-3',
+          'flex items-center justify-center space-x-4 rounded-lg p-3 font-semibold',
           props.className,
         )}
       >
         {props.children}
-      </span>
+      </div>
     </div>
+  );
+}
+
+function FeatureCard(
+  props: React.PropsWithChildren<{
+    title: string;
+    description: string;
+    className?: string;
+  }>,
+) {
+  return (
+    <div
+      className={cn(
+        props.className,
+        'rounded-3xl p-2 ring-2 ring-gray-100 dark:ring-primary/10',
+      )}
+    >
+      <CardHeader>
+        <CardTitle className={'text-xl font-semibold'}>{props.title}</CardTitle>
+
+        <CardDescription
+          className={
+            'max-w-xs text-sm font-semibold tracking-tight text-current'
+          }
+        >
+          {props.description}
+        </CardDescription>
+      </CardHeader>
+
+      <CardContent>{props.children}</CardContent>
+    </div>
+  );
+}
+
+function GradientSecondaryText(
+  props: React.PropsWithChildren<{
+    className?: string;
+  }>,
+) {
+  return (
+    <span
+      className={cn(
+        'bg-gradient-to-r from-foreground/60 to-foreground bg-clip-text text-transparent',
+        props.className,
+      )}
+    >
+      {props.children}
+    </span>
   );
 }

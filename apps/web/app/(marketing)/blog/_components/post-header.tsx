@@ -14,7 +14,7 @@ export function PostHeader({ post }: { post: Cms.ContentItem }) {
         <div className={'mx-auto flex max-w-3xl flex-col space-y-4'}>
           <h1
             className={
-              'font-heading text-3xl font-semibold dark:text-white xl:text-5xl'
+              'font-heading text-3xl font-semibold dark:text-white xl:text-5xl tracking-tighter'
             }
           >
             {title}

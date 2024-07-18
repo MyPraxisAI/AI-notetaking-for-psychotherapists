@@ -10,7 +10,7 @@ export function SitePageHeader(props: {
       <div className={'container flex flex-col space-y-2 lg:space-y-4'}>
         <h1
           className={
-            'font-heading text-3xl font-medium tracking-tight dark:text-white xl:text-5xl'
+            'font-heading text-3xl font-medium tracking-tighter dark:text-white xl:text-5xl'
           }
         >
           {props.title}

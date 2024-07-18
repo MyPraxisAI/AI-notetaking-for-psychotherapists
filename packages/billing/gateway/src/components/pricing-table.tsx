@@ -161,17 +161,19 @@ function PricingItem(
       data-cy={'subscription-plan'}
       className={cn(
         props.className,
-        `s-full relative flex flex-1 grow flex-col items-stretch justify-between self-stretch rounded-lg border p-8 lg:w-4/12 xl:max-w-[20rem]`,
+        `s-full relative flex flex-1 grow flex-col items-stretch justify-between self-stretch rounded-xl border p-8 lg:w-4/12 xl:max-w-[20rem]`,
         {
           ['border-primary']: highlighted,
-          ['dark:shadow-primary/40 border-transparent shadow dark:shadow-sm']:
-            !highlighted,
+          ['border-border']: !highlighted,
         },
       )}
     >
       <If condition={props.product.badge}>
         <div className={'absolute -top-2.5 left-0 flex w-full justify-center'}>
-          <Badge variant={highlighted ? 'default' : 'outline'}>
+          <Badge
+            className={highlighted ? '' : 'bg-background'}
+            variant={highlighted ? 'default' : 'outline'}
+          >
             <span>
               <Trans
                 i18nKey={props.product.badge}
@@ -187,7 +189,7 @@ function PricingItem(
           <div className={'flex items-center space-x-6'}>
             <b
               className={
-                'text-current-foreground font-heading font-semibold uppercase'
+                'text-current-foreground font-heading tracking-tight font-semibold uppercase'
               }
             >
               <Trans
@@ -339,7 +341,7 @@ function Price({ children }: React.PropsWithChildren) {
     >
       <span
         className={
-          'font-heading flex items-center text-3xl font-bold lg:text-4xl'
+          'font-heading flex items-center text-3xl font-bold lg:text-4xl tracking-tighter'
         }
       >
         {children}
