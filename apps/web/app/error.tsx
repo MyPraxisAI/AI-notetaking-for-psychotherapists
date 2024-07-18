@@ -1,6 +1,8 @@
 'use client';
 
-import { ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
+
+import { ArrowLeft, MessageCircle } from 'lucide-react';
 
 import { useCaptureException } from '@kit/monitoring/hooks';
 import { Button } from '@kit/ui/button';
@@ -27,31 +29,43 @@ const ErrorPage = ({
           'container m-auto flex w-full flex-1 flex-col items-center justify-center'
         }
       >
-        <div className={'flex flex-col items-center space-y-16'}>
+        <div className={'flex flex-col items-center space-y-8'}>
           <div>
-            <h1 className={'font-heading text-9xl font-extrabold'}>
+            <h1 className={'font-heading text-9xl font-semibold'}>
               <Trans i18nKey={'common:errorPageHeading'} />
             </h1>
           </div>
 
           <div className={'flex flex-col items-center space-y-8'}>
-            <div className={'flex flex-col items-center space-y-2.5'}>
+            <div
+              className={
+                'flex max-w-xl flex-col items-center space-y-1 text-center'
+              }
+            >
               <div>
-                <Heading level={1}>
+                <Heading level={2}>
                   <Trans i18nKey={'common:genericError'} />
                 </Heading>
               </div>
 
-              <p className={'text-muted-foreground'}>
+              <p className={'text-lg text-muted-foreground'}>
                 <Trans i18nKey={'common:genericErrorSubHeading'} />
               </p>
             </div>
 
-            <div>
-              <Button variant={'outline'} onClick={reset}>
+            <div className={'flex space-x-4'}>
+              <Button className={'w-full'} variant={'default'} onClick={reset}>
                 <ArrowLeft className={'mr-2 h-4'} />
 
                 <Trans i18nKey={'common:goBack'} />
+              </Button>
+
+              <Button className={'w-full'} variant={'outline'} asChild>
+                <Link href={'/contact'}>
+                  <MessageCircle className={'mr-2 h-4'} />
+
+                  <Trans i18nKey={'common:contactUs'} />
+                </Link>
               </Button>
             </div>
           </div>

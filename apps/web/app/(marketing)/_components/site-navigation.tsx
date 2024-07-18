@@ -33,7 +33,7 @@ const links = {
   Contact: {
     label: 'marketing:contact',
     path: '/contact',
-  }
+  },
 };
 
 export function SiteNavigation() {
@@ -48,7 +48,11 @@ export function SiteNavigation() {
   return (
     <>
       <div className={'hidden items-center justify-center md:flex'}>
-        <NavigationMenu className={'border border-gray-100 dark:border-primary/10 rounded-full py-2 px-4'}>
+        <NavigationMenu
+          className={
+            'rounded-full border border-gray-100 px-4 py-2 dark:border-primary/10'
+          }
+        >
           <NavigationMenuList className={'space-x-1'}>
             {NavItems}
           </NavigationMenuList>

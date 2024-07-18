@@ -211,7 +211,7 @@ function PricingItem(
           <Price>
             {lineItem
               ? formatCurrency(props.product.currency, lineItem.cost)
-              : props.plan.label ?? <Trans i18nKey={'billing:custom'} />}
+              : (props.plan.label ?? <Trans i18nKey={'billing:custom'} />)}
           </Price>
 
           <If condition={props.plan.name}>
@@ -444,7 +444,7 @@ function DefaultCheckoutButton(
     <Link className={'w-full'} href={linkHref}>
       <Button
         size={'lg'}
-        className={'border-primary w-full border rounded-lg'}
+        className={'border-primary w-full rounded-lg border'}
         variant={props.highlighted ? 'default' : 'outline'}
       >
         <span>

@@ -11,7 +11,7 @@ async function DocsLayout({ children }: React.PropsWithChildren) {
   const pages = await getDocs(resolvedLanguage);
 
   return (
-    <div className={'flex container'}>
+    <div className={'container flex'}>
       <DocsNavigation pages={buildDocumentationTree(pages)} />
 
       {children}

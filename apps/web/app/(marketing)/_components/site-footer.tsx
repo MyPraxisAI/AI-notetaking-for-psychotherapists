@@ -7,7 +7,7 @@ import appConfig from '~/config/app.config';
 
 export function SiteFooter() {
   return (
-    <footer className={'mt-auto py-8 2xl:py-16 relative w-full site-footer'}>
+    <footer className={'site-footer relative mt-auto w-full py-8 2xl:py-16'}>
       <div className={'container'}>
         <div className={'flex flex-col space-y-8 lg:flex-row lg:space-y-0'}>
           <div

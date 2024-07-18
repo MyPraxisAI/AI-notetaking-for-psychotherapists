@@ -1,6 +1,7 @@
 import { cache } from 'react';
 
 import { createCmsClient } from '@kit/cms';
+import { getLogger } from '@kit/shared/logger';
 import { If } from '@kit/ui/if';
 import { Trans } from '@kit/ui/trans';
 
@@ -24,15 +25,22 @@ export const generateMetadata = async () => {
 const getContentItems = cache(
   async (language: string | undefined, limit: number, offset: number) => {
     const client = await createCmsClient();
+    const logger = await getLogger();
 
-    return client.getContentItems({
-      collection: 'posts',
-      limit,
-      offset,
-      language,
-      sortBy: 'publishedAt',
-      sortDirection: 'desc',
-    });
+    try {
+      return await client.getContentItems({
+        collection: 'posts',
+        limit,
+        offset,
+        language,
+        sortBy: 'publishedAt',
+        sortDirection: 'desc',
+      });
+    } catch (error) {
+      logger.error({ error }, 'Failed to load blog posts');
+
+      return { total: 0, items: [] };
+    }
   },
 );
 

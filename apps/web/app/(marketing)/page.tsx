@@ -98,7 +98,9 @@ function Home() {
 
                   <Heading
                     level={3}
-                    className={'font-sans font-normal text-muted-foreground tracking-normal'}
+                    className={
+                      'font-sans font-normal tracking-normal text-muted-foreground'
+                    }
                   >
                     Secure and Easy-to-Use Authentication for Your SaaS Website
                     and API
@@ -147,7 +149,9 @@ function Home() {
 
                   <Heading
                     level={3}
-                    className={'font-sans font-normal text-muted-foreground tracking-normal'}
+                    className={
+                      'font-sans font-normal tracking-normal text-muted-foreground'
+                    }
                   >
                     A fantastic dashboard to manage your SaaS business
                   </Heading>
@@ -174,7 +178,9 @@ function Home() {
 
                   <Heading
                     level={3}
-                    className={'font-sans font-normal text-muted-foreground tracking-normal'}
+                    className={
+                      'font-sans font-normal tracking-normal text-muted-foreground'
+                    }
                   >
                     A powerful billing system for your SaaS business
                   </Heading>
@@ -300,7 +306,7 @@ function MainCallToActionButton() {
   return (
     <div className={'flex space-x-4'}>
       <Button
-        className={'h-12 px-4 rounded-xl text-base font-semibold'}
+        className={'h-12 rounded-xl px-4 text-base font-semibold'}
         asChild
       >
         <Link href={'/auth/sign-up'}>
@@ -321,7 +327,7 @@ function MainCallToActionButton() {
 
       <Button
         variant={'link'}
-        className={'h-12 px-4 rounded-xl text-base font-semibold'}
+        className={'h-12 rounded-xl px-4 text-base font-semibold'}
         asChild
       >
         <Link href={'/contact'}>

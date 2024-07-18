@@ -9,7 +9,7 @@ export function SiteHeader(props: { user?: User | null }) {
   return (
     <div
       className={
-        'sticky top-0 z-10 w-full bg-background/80 backdrop-blur-md dark:bg-background/50 py-2 site-header'
+        'site-header sticky top-0 z-10 w-full bg-background/80 py-2 backdrop-blur-md dark:bg-background/50'
       }
     >
       <div className={'container'}>

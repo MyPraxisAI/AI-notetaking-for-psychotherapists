@@ -27,7 +27,7 @@ export function EmailPasswordSignUpContainer({
   defaultValues,
   onSignUp,
   emailRedirectTo,
-  displayTermsCheckbox
+  displayTermsCheckbox,
 }: EmailPasswordSignUpContainerProps) {
   const { captchaToken, resetCaptchaToken } = useCaptchaToken();
 
