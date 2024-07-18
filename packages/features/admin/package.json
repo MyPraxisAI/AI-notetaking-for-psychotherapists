@@ -22,7 +22,7 @@
     "@makerkit/data-loader-supabase-core": "^0.0.8",
     "@makerkit/data-loader-supabase-nextjs": "^1.2.3",
     "@supabase/supabase-js": "^2.44.4",
-    "@tanstack/react-query": "5.51.3",
+    "@tanstack/react-query": "5.51.8",
     "@tanstack/react-table": "^8.19.3",
     "@types/react": "^18.3.3",
     "lucide-react": "^0.408.0",
