@@ -262,7 +262,7 @@ function Pill(
       {props.new && (
         <span
           className={
-            'rounded-2xl bg-primary px-2 py-1.5 text-sm font-semibold text-primary-foreground'
+            'rounded-2xl bg-primary px-2.5 py-1.5 text-sm font-semibold text-primary-foreground'
           }
         >
           New
@@ -306,7 +306,7 @@ function MainCallToActionButton() {
   return (
     <div className={'flex space-x-4'}>
       <Button
-        className={'h-12 rounded-xl px-4 text-base font-semibold'}
+        className={'h-12 rounded-xl px-4 text-base font-semibold hover:shadow-2xl transition-all dark:shadow-primary/30'}
         asChild
       >
         <Link href={'/auth/sign-up'}>
