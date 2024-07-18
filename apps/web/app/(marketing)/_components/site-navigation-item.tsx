@@ -10,7 +10,7 @@ const getClassName = (path: string, currentPathName: string) => {
   const isActive = isRouteActive(path, currentPathName);
 
   return cn(
-    `text-sm font-medium px-2.5 py-2 border rounded-lg border-transparent transition-colors duration-100`,
+    `text-sm font-medium transition-colors duration-300 inline-flex w-max`,
     {
       'dark:text-gray-300 dark:hover:text-white': !isActive,
       'dark:text-white text-current': isActive,

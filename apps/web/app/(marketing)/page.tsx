@@ -1,18 +1,11 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
-import {
-  ArrowRightIcon,
-  CreditCard,
-  LayoutDashboard,
-  Lock,
-  Sparkle,
-} from 'lucide-react';
+import { ArrowRightIcon, LayoutDashboard } from 'lucide-react';
 
 import { PricingTable } from '@kit/billing-gateway/marketing';
 import { Button } from '@kit/ui/button';
 import {
-  Card,
   CardContent,
   CardDescription,
   CardHeader,
@@ -306,7 +299,9 @@ function MainCallToActionButton() {
   return (
     <div className={'flex space-x-4'}>
       <Button
-        className={'h-12 rounded-xl px-4 text-base font-semibold hover:shadow-2xl transition-all dark:shadow-primary/30'}
+        className={
+          'h-12 rounded-xl px-4 text-base font-semibold transition-all hover:shadow-2xl dark:shadow-primary/30'
+        }
         asChild
       >
         <Link href={'/auth/sign-up'}>
