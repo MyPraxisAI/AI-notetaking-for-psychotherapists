@@ -209,9 +209,13 @@ function PricingItem(
 
         <div className={'flex flex-col space-y-1'}>
           <Price>
-            {lineItem
-              ? formatCurrency(props.product.currency, lineItem.cost)
-              : (props.plan.label ?? <Trans i18nKey={'billing:custom'} />)}
+            {lineItem ? (
+              formatCurrency(props.product.currency, lineItem.cost)
+            ) : props.plan.label ? (
+              <Trans i18nKey={props.plan.label} defaults={props.plan.label} />
+            ) : (
+              <Trans i18nKey={'billing:custom'} />
+            )}
           </Price>
 
           <If condition={props.plan.name}>
