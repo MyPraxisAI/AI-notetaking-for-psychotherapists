@@ -189,7 +189,7 @@ function PricingItem(
           <div className={'flex items-center space-x-6'}>
             <b
               className={
-                'text-current-foreground font-heading tracking-tight font-semibold uppercase'
+                'text-current-foreground font-heading font-semibold uppercase tracking-tight'
               }
             >
               <Trans
@@ -341,7 +341,7 @@ function Price({ children }: React.PropsWithChildren) {
     >
       <span
         className={
-          'font-heading flex items-center text-3xl font-bold lg:text-4xl tracking-tighter'
+          'font-heading flex items-center text-3xl font-bold tracking-tighter lg:text-4xl'
         }
       >
         {children}
