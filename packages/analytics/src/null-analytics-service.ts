@@ -1,7 +1,14 @@
 import { AnalyticsService } from './types';
 
-const noop = () => {
+const noop = (event: string) => {
   // do nothing - this is to prevent errors when the analytics service is not initialized
+
+  return (...args: unknown[]) => {
+    console.debug(
+      `Noop analytics service called with event: ${event}`,
+      ...args.filter(Boolean),
+    );
+  };
 };
 
 /**
@@ -9,8 +16,8 @@ const noop = () => {
  * the user is calling analytics methods before the analytics service is initialized.
  */
 export const NullAnalyticsService: AnalyticsService = {
-  initialize: noop,
-  trackPageView: noop,
-  trackEvent: noop,
-  identify: noop,
+  initialize: noop('initialize'),
+  trackPageView: noop('trackPageView'),
+  trackEvent: noop('trackEvent'),
+  identify: noop('identify'),
 };

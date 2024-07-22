@@ -7,6 +7,7 @@ import dynamic from 'next/dynamic';
 import { ExclamationTriangleIcon } from '@radix-ui/react-icons';
 
 import { PlanPicker } from '@kit/billing-gateway/components';
+import { useAppEvents } from '@kit/shared/events';
 import { Alert, AlertDescription, AlertTitle } from '@kit/ui/alert';
 import {
   Card,
@@ -40,6 +41,7 @@ export function PersonalAccountCheckoutForm(props: {
 }) {
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState(false);
+  const appEvents = useAppEvents();
 
   const [checkoutToken, setCheckoutToken] = useState<string | undefined>(
     undefined,
@@ -85,6 +87,11 @@ export function PersonalAccountCheckoutForm(props: {
             onSubmit={({ planId, productId }) => {
               startTransition(async () => {
                 try {
+                  appEvents.emit({
+                    type: 'checkout.started',
+                    payload: { planId },
+                  });
+
                   const { checkoutToken } =
                     await createPersonalAccountCheckoutSession({
                       planId,

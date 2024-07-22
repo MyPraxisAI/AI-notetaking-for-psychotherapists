@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
+import { useAppEvents } from '@kit/shared/events';
 import { useSignInWithOtp } from '@kit/supabase/hooks/use-sign-in-with-otp';
 import { Alert, AlertDescription, AlertTitle } from '@kit/ui/alert';
 import { Button } from '@kit/ui/button';
@@ -44,6 +45,7 @@ export function MagicLinkAuthContainer({
   const { captchaToken, resetCaptchaToken } = useCaptchaToken();
   const { t } = useTranslation();
   const signInWithOtpMutation = useSignInWithOtp();
+  const appEvents = useAppEvents();
 
   const form = useForm({
     resolver: zodResolver(
@@ -65,8 +67,8 @@ export function MagicLinkAuthContainer({
 
     const emailRedirectTo = url.href;
 
-    const promise = () =>
-      signInWithOtpMutation.mutateAsync({
+    const promise = async () => {
+      await signInWithOtpMutation.mutateAsync({
         email,
         options: {
           emailRedirectTo,
@@ -74,6 +76,14 @@ export function MagicLinkAuthContainer({
           shouldCreateUser,
         },
       });
+
+      appEvents.emit({
+        type: 'user.signedUp',
+        payload: {
+          method: 'magiclink',
+        },
+      });
+    };
 
     toast.promise(promise, {
       loading: t('auth:sendingEmailLink'),

@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic';
 import { useParams } from 'next/navigation';
 
 import { PlanPicker } from '@kit/billing-gateway/components';
+import { useAppEvents } from '@kit/shared/events';
 import {
   Card,
   CardContent,
@@ -38,6 +39,7 @@ export function TeamAccountCheckoutForm(params: {
 }) {
   const routeParams = useParams();
   const [pending, startTransition] = useTransition();
+  const appEvents = useAppEvents();
 
   const [checkoutToken, setCheckoutToken] = useState<string | undefined>(
     undefined,
@@ -78,6 +80,14 @@ export function TeamAccountCheckoutForm(params: {
           onSubmit={({ planId, productId }) => {
             startTransition(async () => {
               const slug = routeParams.account as string;
+
+              appEvents.emit({
+                type: 'checkout.started',
+                payload: {
+                  planId,
+                  account: slug,
+                },
+              });
 
               const { checkoutToken } = await createTeamAccountCheckoutSession({
                 planId,

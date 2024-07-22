@@ -1,5 +1,5 @@
 import { NullAnalyticsService } from './null-analytics-service';
-import {
+import type {
   AnalyticsManager,
   AnalyticsService,
   CreateAnalyticsManagerOptions,
@@ -18,7 +18,7 @@ export function createAnalyticsManager<T extends string, Config extends object>(
 
   const getActiveService = (): AnalyticsService => {
     if (activeService === NullAnalyticsService) {
-      console.warn(
+      console.debug(
         'Analytics service not initialized. Using NullAnalyticsService.',
       );
     }
@@ -30,7 +30,7 @@ export function createAnalyticsManager<T extends string, Config extends object>(
     const factory = options.providers[provider];
 
     if (!factory) {
-      console.error(
+      console.warn(
         `Analytics provider '${provider}' not registered. Using NullAnalyticsService.`,
       );
 
@@ -57,6 +57,7 @@ export function createAnalyticsManager<T extends string, Config extends object>(
     trackPageView: (url: string) => {
       return getActiveService().trackPageView(url);
     },
+
     /**
      * Track an event with the given name and properties.
      * @param eventName
