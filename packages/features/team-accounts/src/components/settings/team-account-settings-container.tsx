@@ -25,6 +25,10 @@ export function TeamAccountSettingsContainer(props: {
   paths: {
     teamAccountSettings: string;
   };
+
+  features: {
+    enableTeamDeletion: boolean;
+  }
 }) {
   return (
     <div className={'flex w-full flex-col space-y-6'}>
@@ -78,6 +82,7 @@ export function TeamAccountSettingsContainer(props: {
           <TeamAccountDangerZone
             primaryOwnerUserId={props.account.primaryOwnerUserId}
             account={props.account}
+            features={props.features}
           />
         </CardContent>
       </Card>

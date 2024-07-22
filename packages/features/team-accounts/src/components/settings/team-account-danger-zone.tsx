@@ -39,10 +39,15 @@ import { leaveTeamAccountAction } from '../../server/actions/leave-team-account-
 export function TeamAccountDangerZone({
   account,
   primaryOwnerUserId,
+  features,
 }: React.PropsWithChildren<{
   account: {
     name: string;
     id: string;
+  };
+
+  features: {
+    enableTeamDeletion: boolean;
   };
 
   primaryOwnerUserId: string;
@@ -56,7 +61,7 @@ export function TeamAccountDangerZone({
   // Only the primary owner can delete the team account
   const userIsPrimaryOwner = user.id === primaryOwnerUserId;
 
-  if (userIsPrimaryOwner) {
+  if (userIsPrimaryOwner && features.enableTeamDeletion) {
     return <DeleteTeamContainer account={account} />;
   }
 
