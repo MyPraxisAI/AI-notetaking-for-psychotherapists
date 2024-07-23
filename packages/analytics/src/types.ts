@@ -2,19 +2,25 @@ interface TrackEvent {
   trackEvent(
     eventName: string,
     eventProperties?: Record<string, string | string[]>,
-  ): void;
+  ): Promise<unknown>;
 }
 
 interface TrackPageView {
-  trackPageView(url: string): void;
+  trackPageView(url: string): Promise<unknown>;
 }
 
 interface Identify {
-  identify(userId: string, traits?: Record<string, string>): void;
+  identify(userId: string, traits?: Record<string, string>): Promise<unknown>;
+}
+
+interface ProviderManager {
+  addProvider(provider: string, config: object): Promise<unknown>;
+
+  removeProvider(provider: string): void;
 }
 
 export interface AnalyticsService extends TrackPageView, TrackEvent, Identify {
-  initialize(): void;
+  initialize(): Promise<unknown>;
 }
 
 export type AnalyticsProviderFactory<Config extends object> = (
@@ -25,8 +31,11 @@ export interface CreateAnalyticsManagerOptions<
   T extends string,
   Config extends object,
 > {
-  defaultProvider: T;
   providers: Record<T, AnalyticsProviderFactory<Config>>;
 }
 
-export interface AnalyticsManager extends TrackPageView, TrackEvent, Identify {}
+export interface AnalyticsManager
+  extends TrackPageView,
+    TrackEvent,
+    Identify,
+    ProviderManager {}
