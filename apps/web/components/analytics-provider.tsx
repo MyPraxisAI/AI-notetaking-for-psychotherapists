@@ -15,7 +15,7 @@ import {
 type AnalyticsMapping<
   T extends ConsumerProvidedEventTypes = NonNullable<unknown>,
 > = {
-  [K in AppEventType<T>]?: (event: AppEvent<T, K>) => void;
+  [K in AppEventType<T>]?: (event: AppEvent<T, K>) => unknown;
 };
 
 /**
@@ -51,17 +51,17 @@ const analyticsMapping: AnalyticsMapping = {
     const userId = event.payload.userId;
 
     if (userId) {
-      analytics.identify(userId);
+      return analytics.identify(userId);
     }
   },
   'user.signedUp': (event) => {
-    analytics.trackEvent(event.type, event.payload);
+    return analytics.trackEvent(event.type, event.payload);
   },
   'checkout.started': (event) => {
-    analytics.trackEvent(event.type, event.payload);
+    return analytics.trackEvent(event.type, event.payload);
   },
   'user.updated': (event) => {
-    analytics.trackEvent(event.type, event.payload);
+    return analytics.trackEvent(event.type, event.payload);
   },
 };
 
@@ -83,7 +83,7 @@ export function AnalyticsProvider(props: React.PropsWithChildren) {
  * Hook to report page views to the analytics service
  * @param reportAnalyticsFn
  */
-function useReportPageView(reportAnalyticsFn: (url: string) => void) {
+function useReportPageView(reportAnalyticsFn: (url: string) => unknown) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
