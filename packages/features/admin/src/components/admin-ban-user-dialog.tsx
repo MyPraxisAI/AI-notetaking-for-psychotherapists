@@ -50,7 +50,8 @@ export function AdminBanUserDialog(
           <AlertDialogTitle>Ban User</AlertDialogTitle>
 
           <AlertDialogDescription>
-            Are you sure you want to ban this user?
+            Are you sure you want to ban this user? Please note that the user
+            will stay logged in until their session expires.
           </AlertDialogDescription>
         </AlertDialogHeader>
 
