@@ -100,6 +100,7 @@
     "./input-otp": "./src/shadcn/input-otp.tsx",
     "./textarea": "./src/shadcn/textarea.tsx",
     "./switch": "./src/shadcn/switch.tsx",
+    "./breadcrumb": "./src/shadcn/breadcrumb.tsx",
     "./utils": "./src/utils/index.ts",
     "./if": "./src/makerkit/if.tsx",
     "./trans": "./src/makerkit/trans.tsx",
