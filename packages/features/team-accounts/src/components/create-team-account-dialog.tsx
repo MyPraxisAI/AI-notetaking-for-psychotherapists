@@ -78,7 +78,7 @@ function CreateOrganizationAccountForm(props: { onClose: () => void }) {
           startTransition(async () => {
             try {
               await createTeamAccountAction(data);
-            } catch (error) {
+            } catch {
               setError(true);
             }
           });

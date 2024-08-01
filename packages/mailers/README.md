@@ -19,12 +19,6 @@ Make sure the app installs the `@kit/mailers` package before using it.
 
 By default, the package uses `nodemailer`. 
 
-To use Cloudflare, please set the environment variable `MAILER_PROVIDER` to `cloudflare`.
-
-```
-MAILER_PROVIDER=cloudflare
-```
-
 To use [Resend](https:///resend.com)'s HTTP API, please set the environment variable `MAILER_PROVIDER` to `resend`.
 
 ```
@@ -47,10 +41,6 @@ async function sendEmail() {
   });
 }
 ```
-
-## Cloudflare
-
-If you're using the `cloudflare` provider, please also read the instructions of the package [Vercel Email](https://github.com/Sh4yy/vercel-email) to setup your Workers.
 
 ## Resend
 

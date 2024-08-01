@@ -93,7 +93,7 @@ function UpdateInvitationForm({
         });
 
         setIsOpen(false);
-      } catch (e) {
+      } catch {
         setError(true);
       }
     });

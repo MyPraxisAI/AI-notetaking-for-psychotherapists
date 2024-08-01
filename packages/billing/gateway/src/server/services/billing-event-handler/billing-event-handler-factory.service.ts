@@ -4,7 +4,7 @@ import { z } from 'zod';
 
 import {
   BillingConfig,
-  BillingProviderSchema,
+  type BillingProviderSchema,
   BillingWebhookHandlerService,
 } from '@kit/billing';
 

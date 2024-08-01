@@ -68,7 +68,7 @@ function RenewInvitationForm({
         await renewInvitationAction({ invitationId });
 
         setIsOpen(false);
-      } catch (e) {
+      } catch {
         setError(true);
       }
     });

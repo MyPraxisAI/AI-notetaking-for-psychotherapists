@@ -7,9 +7,9 @@ import { z } from 'zod';
 import { getLogger } from '@kit/shared/logger';
 import { Database } from '@kit/supabase/database';
 
-import { RemoveMemberSchema } from '../../schema/remove-member.schema';
-import { TransferOwnershipConfirmationSchema } from '../../schema/transfer-ownership-confirmation.schema';
-import { UpdateMemberRoleSchema } from '../../schema/update-member-role.schema';
+import type { RemoveMemberSchema } from '../../schema/remove-member.schema';
+import type { TransferOwnershipConfirmationSchema } from '../../schema/transfer-ownership-confirmation.schema';
+import type { UpdateMemberRoleSchema } from '../../schema/update-member-role.schema';
 import { createAccountPerSeatBillingService } from './account-per-seat-billing.service';
 
 export function createAccountMembersService(client: SupabaseClient<Database>) {

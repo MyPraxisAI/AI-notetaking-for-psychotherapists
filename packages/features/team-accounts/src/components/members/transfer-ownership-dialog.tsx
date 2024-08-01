@@ -102,7 +102,7 @@ function TransferOrganizationOwnershipForm({
               await transferOwnershipAction(data);
 
               setIsOpen(false);
-            } catch (error) {
+            } catch {
               setError(true);
             }
           });

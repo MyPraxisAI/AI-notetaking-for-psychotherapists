@@ -68,7 +68,7 @@ function RemoveMemberForm({
         await removeMemberFromAccountAction({ accountId, userId });
 
         setIsOpen(false);
-      } catch (e) {
+      } catch {
         setError(true);
       }
     });

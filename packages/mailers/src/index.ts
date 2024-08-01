@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 const MAILER_PROVIDER = z
-  .enum(['nodemailer', 'cloudflare', 'resend'])
+  .enum(['nodemailer', 'resend'])
   .default('nodemailer')
   .parse(process.env.MAILER_PROVIDER);
 
@@ -12,9 +12,6 @@ export async function getMailer() {
   switch (MAILER_PROVIDER) {
     case 'nodemailer':
       return getNodemailer();
-
-    case 'cloudflare':
-      return getCloudflareMailer();
 
     case 'resend':
       return getResendMailer();
@@ -34,12 +31,6 @@ async function getNodemailer() {
       'Nodemailer is not available on the edge runtime. Please use another mailer.',
     );
   }
-}
-
-async function getCloudflareMailer() {
-  const { CloudflareMailer } = await import('./impl/cloudflare');
-
-  return new CloudflareMailer();
 }
 
 async function getResendMailer() {

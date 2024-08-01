@@ -33,7 +33,7 @@ export function PasswordSignInContainer({
 
           onSignIn(userId);
         }
-      } catch (e) {
+      } catch {
         // wrong credentials, do nothing
       } finally {
         resetCaptchaToken();

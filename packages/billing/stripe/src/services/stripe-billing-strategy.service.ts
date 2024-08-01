@@ -4,7 +4,7 @@ import type { Stripe } from 'stripe';
 import { z } from 'zod';
 
 import { BillingStrategyProviderService } from '@kit/billing';
-import {
+import type {
   CancelSubscriptionParamsSchema,
   CreateBillingCheckoutSchema,
   CreateBillingPortalSessionSchema,

@@ -24,6 +24,7 @@ const config = {
     '@typescript-eslint/consistent-type-definitions': 'off',
     '@typescript-eslint/no-unsafe-member-access': 'off',
     '@typescript-eslint/non-nullable-type-assertion-style': 'off',
+    '@typescript-eslint/only-throw-error': 'off',
     '@typescript-eslint/no-unused-vars': [
       'error',
       { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },

@@ -32,7 +32,7 @@ export function OauthProviders(props: {
       const credential = await signInRequest();
 
       if (!credential) {
-        return Promise.reject();
+        return Promise.reject(new Error('Failed to sign in with provider'));
       }
     },
     [],

@@ -63,7 +63,7 @@ function DeleteInvitationForm({
         await deleteInvitationAction({ invitationId });
 
         setIsOpen(false);
-      } catch (e) {
+      } catch {
         setError(true);
       }
     });

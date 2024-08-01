@@ -103,7 +103,7 @@ function UpdateMemberForm({
         });
 
         setIsOpen(false);
-      } catch (e) {
+      } catch {
         setError(true);
       }
     });
