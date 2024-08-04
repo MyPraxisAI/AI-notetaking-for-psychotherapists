@@ -31,7 +31,7 @@ export function TeamAccountSettingsContainer(props: {
   }
 }) {
   return (
-    <div className={'flex w-full flex-col space-y-6'}>
+    <div className={'flex w-full flex-col space-y-4'}>
       <Card>
         <CardHeader>
           <CardTitle>
@@ -67,7 +67,7 @@ export function TeamAccountSettingsContainer(props: {
         </CardContent>
       </Card>
 
-      <Card className={'border-destructive border-2'}>
+      <Card className={'border-destructive border'}>
         <CardHeader>
           <CardTitle>
             <Trans i18nKey={'teams:settings.dangerZone'} />

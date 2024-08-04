@@ -4,6 +4,7 @@ import { ExclamationTriangleIcon } from '@radix-ui/react-icons';
 
 import { useCaptureException } from '@kit/monitoring/hooks';
 import { Alert, AlertDescription, AlertTitle } from '@kit/ui/alert';
+import { AppBreadcrumbs } from '@kit/ui/app-breadcrumbs';
 import { Button } from '@kit/ui/button';
 import { PageBody, PageHeader } from '@kit/ui/page';
 import { Trans } from '@kit/ui/trans';
@@ -20,8 +21,8 @@ export default function BillingErrorPage({
   return (
     <>
       <PageHeader
-        title={<Trans i18nKey={'common:billingTabLabel'} />}
-        description={<Trans i18nKey={'common:billingTabDescription'} />}
+        title={<Trans i18nKey={'common:routes.billing'} />}
+        description={<AppBreadcrumbs />}
       />
 
       <PageBody>

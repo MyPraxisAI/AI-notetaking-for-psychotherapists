@@ -26,7 +26,6 @@ import {
   FormLabel,
   FormMessage,
 } from '@kit/ui/form';
-import { Heading } from '@kit/ui/heading';
 import { If } from '@kit/ui/if';
 import { Label } from '@kit/ui/label';
 import {
@@ -105,6 +104,8 @@ export function PlanPicker(
   // display the period picker if the selected plan is recurring or if no plan is selected
   const isRecurringPlan =
     selectedPlan?.paymentType === 'recurring' || !selectedPlan;
+
+  const locale = useTranslation().i18n.language;
 
   return (
     <Form {...form}>
@@ -316,10 +317,12 @@ export function PlanPicker(
                               <div>
                                 <Price key={plan.id}>
                                   <span>
-                                    {formatCurrency(
-                                      product.currency.toLowerCase(),
-                                      primaryLineItem.cost,
-                                    )}
+                                    {formatCurrency({
+                                      currencyCode:
+                                        product.currency.toLowerCase(),
+                                      value: primaryLineItem.cost,
+                                      locale,
+                                    })}
                                   </span>
                                 </Price>
 
@@ -424,7 +427,7 @@ function PlanDetails({
       }
     >
       <div className={'flex flex-col space-y-0.5'}>
-        <Heading level={5}>
+        <span className={'text-sm font-medium'}>
           <b>
             <Trans
               i18nKey={`billing:plans.${selectedProduct.id}.name`}
@@ -434,10 +437,10 @@ function PlanDetails({
           <If condition={isRecurring}>
             / <Trans i18nKey={`billing:billingInterval.${selectedInterval}`} />
           </If>
-        </Heading>
+        </span>
 
         <p>
-          <span className={'text-muted-foreground'}>
+          <span className={'text-muted-foreground text-sm'}>
             <Trans
               i18nKey={`billing:plans.${selectedProduct.id}.description`}
               defaults={selectedProduct.description}
@@ -489,7 +492,7 @@ function Price(props: React.PropsWithChildren) {
   return (
     <span
       className={
-        'animate-in slide-in-from-left-4 fade-in text-xl font-bold duration-500'
+        'animate-in slide-in-from-left-4 fade-in text-xl font-semibold tracking-tight duration-500'
       }
     >
       {props.children}

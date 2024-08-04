@@ -1,8 +1,15 @@
-import { BadgeX, Ban, ShieldPlus, VenetianMask } from 'lucide-react';
+import {
+  BadgeX,
+  Ban,
+  CreditCardIcon,
+  ShieldPlus,
+  VenetianMask,
+} from 'lucide-react';
 
 import { Database } from '@kit/supabase/database';
 import { getSupabaseServerComponentClient } from '@kit/supabase/server-component-client';
 import { Alert, AlertDescription, AlertTitle } from '@kit/ui/alert';
+import { AppBreadcrumbs } from '@kit/ui/app-breadcrumbs';
 import { Badge } from '@kit/ui/badge';
 import { Button } from '@kit/ui/button';
 import { Heading } from '@kit/ui/heading';
@@ -58,6 +65,13 @@ async function PersonalAccountPage(props: { account: Account }) {
 
   return (
     <div className={'flex flex-col space-y-4'}>
+      <AppBreadcrumbs
+        values={{
+          [props.account.id]:
+            props.account.name ?? props.account.email ?? 'Account',
+        }}
+      />
+
       <div className={'flex items-center justify-between'}>
         <div className={'flex items-center space-x-4'}>
           <div className={'flex items-center space-x-2.5'}>
@@ -66,7 +80,9 @@ async function PersonalAccountPage(props: { account: Account }) {
               displayName={props.account.name}
             />
 
-            <span>{props.account.name}</span>
+            <span className={'text-sm font-semibold capitalize'}>
+              {props.account.name}
+            </span>
           </div>
 
           <Badge variant={'outline'}>Personal Account</Badge>
@@ -115,9 +131,7 @@ async function PersonalAccountPage(props: { account: Account }) {
         <SubscriptionsTable accountId={props.account.id} />
 
         <div className={'divider-divider-x flex flex-col space-y-2.5'}>
-          <Heading className={'font-bold'} level={5}>
-            Teams
-          </Heading>
+          <Heading level={6}>Teams</Heading>
 
           <div>
             <AdminMembershipsTable memberships={memberships} />
@@ -135,6 +149,13 @@ async function TeamAccountPage(props: {
 
   return (
     <div className={'flex flex-col space-y-4'}>
+      <AppBreadcrumbs
+        values={{
+          [props.account.id]:
+            props.account.name ?? props.account.email ?? 'Account',
+        }}
+      />
+
       <div className={'flex justify-between'}>
         <div className={'flex items-center space-x-4'}>
           <div className={'flex items-center space-x-2.5'}>
@@ -143,7 +164,9 @@ async function TeamAccountPage(props: {
               displayName={props.account.name}
             />
 
-            <span>{props.account.name}</span>
+            <span className={'text-sm font-semibold capitalize'}>
+              {props.account.name}
+            </span>
           </div>
 
           <Badge variant={'outline'}>Team Account</Badge>
@@ -162,9 +185,7 @@ async function TeamAccountPage(props: {
           <SubscriptionsTable accountId={props.account.id} />
 
           <div className={'flex flex-col space-y-2.5'}>
-            <Heading className={'font-bold'} level={5}>
-              Team Members
-            </Heading>
+            <Heading level={6}>Team Members</Heading>
 
             <AdminMembersTable members={members} />
           </div>
@@ -199,14 +220,14 @@ async function SubscriptionsTable(props: { accountId: string }) {
 
   return (
     <div className={'flex flex-col space-y-2.5'}>
-      <Heading className={'font-bold'} level={5}>
-        Subscription
-      </Heading>
+      <Heading level={6}>Subscription</Heading>
 
       <If
         condition={subscription}
         fallback={
-          <Alert>
+          <Alert variant={'warning'}>
+            <CreditCardIcon className={'h-4'} />
+
             <AlertTitle>No subscription found for this account.</AlertTitle>
 
             <AlertDescription>

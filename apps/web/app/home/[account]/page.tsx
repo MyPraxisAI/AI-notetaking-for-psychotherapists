@@ -1,10 +1,8 @@
 import loadDynamic from 'next/dynamic';
 
-import { PlusCircle } from 'lucide-react';
-
-import { Button } from '@kit/ui/button';
+import { AppBreadcrumbs } from '@kit/ui/app-breadcrumbs';
+import { LoadingOverlay } from '@kit/ui/loading-overlay';
 import { PageBody } from '@kit/ui/page';
-import { Spinner } from '@kit/ui/spinner';
 import { Trans } from '@kit/ui/trans';
 
 import { createI18nServerInstance } from '~/lib/i18n/i18n.server';
@@ -21,18 +19,11 @@ const DashboardDemo = loadDynamic(
   {
     ssr: false,
     loading: () => (
-      <div
-        className={
-          'flex h-full flex-1 flex-col items-center justify-center space-y-4' +
-          ' py-24'
-        }
-      >
-        <Spinner />
-
-        <div>
+      <LoadingOverlay>
+        <span className={'text-muted-foreground'}>
           <Trans i18nKey={'common:loading'} />
-        </div>
-      </div>
+        </span>
+      </LoadingOverlay>
     ),
   },
 );
@@ -51,14 +42,9 @@ function TeamAccountHomePage({ params }: { params: Params }) {
     <>
       <TeamAccountLayoutPageHeader
         account={params.account}
-        title={<Trans i18nKey={'common:dashboardTabLabel'} />}
-        description={<Trans i18nKey={'common:dashboardTabDescription'} />}
-      >
-        <Button>
-          <PlusCircle className={'mr-1 h-4'} />
-          <span>Add Widget</span>
-        </Button>
-      </TeamAccountLayoutPageHeader>
+        title={<Trans i18nKey={'common:routes.dashboard'} />}
+        description={<AppBreadcrumbs />}
+      />
 
       <PageBody>
         <DashboardDemo />

@@ -93,6 +93,7 @@ export function PersonalAccountDropdown({
         )}
       >
         <ProfileAvatar
+          className={'border border-transparent group-hover:border-primary/10'}
           displayName={displayName ?? user?.email ?? ''}
           pictureUrl={personalAccountData?.picture_url}
         />
@@ -153,7 +154,7 @@ export function PersonalAccountDropdown({
             <Home className={'h-5'} />
 
             <span>
-              <Trans i18nKey={'common:homeTabLabel'} />
+              <Trans i18nKey={'common:routes.home'} />
             </span>
           </Link>
         </DropdownMenuItem>

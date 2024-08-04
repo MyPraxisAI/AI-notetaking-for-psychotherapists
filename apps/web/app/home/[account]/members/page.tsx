@@ -18,6 +18,7 @@ import { If } from '@kit/ui/if';
 import { PageBody } from '@kit/ui/page';
 import { Trans } from '@kit/ui/trans';
 
+import { AppBreadcrumbs } from '@kit/ui/app-breadcrumbs';
 import { createI18nServerInstance } from '~/lib/i18n/i18n.server';
 import { withI18n } from '~/lib/i18n/with-i18n';
 
@@ -55,18 +56,18 @@ async function TeamAccountMembersPage({ params }: Params) {
   return (
     <>
       <TeamAccountLayoutPageHeader
-        title={<Trans i18nKey={'common:membersTabLabel'} />}
-        description={<Trans i18nKey={'common:membersTabDescription'} />}
+        title={<Trans i18nKey={'common:routes.members'} />}
+        description={<AppBreadcrumbs />}
         account={account.slug}
       />
 
       <PageBody>
-        <div className={'flex w-full max-w-4xl flex-col space-y-6 pb-32'}>
+        <div className={'flex w-full max-w-4xl flex-col space-y-4 pb-32'}>
           <Card>
             <CardHeader className={'flex flex-row justify-between'}>
               <div className={'flex flex-col space-y-1.5'}>
                 <CardTitle>
-                  <Trans i18nKey={'common:membersTabLabel'} />
+                  <Trans i18nKey={'common:accountMembers'} />
                 </CardTitle>
 
                 <CardDescription>

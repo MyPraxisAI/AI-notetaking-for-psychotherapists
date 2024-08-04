@@ -60,7 +60,7 @@ export function SidebarContent({
   className?: string;
 }>) {
   return (
-    <div className={cn('flex w-full flex-col space-y-1.5 px-4', className)}>
+    <div className={cn('flex w-full flex-col space-y-1.5 px-4 py-1', className)}>
       {children}
     </div>
   );
@@ -167,8 +167,9 @@ export function SidebarItem({
   return (
     <Button
       asChild
-      className={cn('flex w-full text-sm shadow-none', {
+      className={cn('flex w-full text-sm shadow-none active:bg-secondary/60', {
         'justify-start space-x-2.5': !collapsed,
+        'hover:bg-initial': active,
       })}
       size={size}
       variant={variant}
@@ -196,7 +197,7 @@ function getClassNameBuilder(className: string) {
   return cva(
     [
       cn(
-        'flex box-content h-screen flex-col relative shadow-sm border-r',
+        'flex box-content h-screen flex-col relative',
         className,
       ),
     ],

@@ -7,6 +7,7 @@ export function GlobalLoader({
   fullPage = false,
   displaySpinner = true,
   displayTopLoadingBar = true,
+  children,
 }: React.PropsWithChildren<{
   displayLogo?: boolean;
   fullPage?: boolean;
@@ -26,6 +27,8 @@ export function GlobalLoader({
           }
         >
           <LoadingOverlay displayLogo={displayLogo} fullPage={fullPage} />
+
+          {children}
         </div>
       </If>
     </>
