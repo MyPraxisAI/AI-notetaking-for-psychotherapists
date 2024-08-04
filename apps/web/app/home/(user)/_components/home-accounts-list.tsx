@@ -7,7 +7,12 @@ import {
   CardButtonHeader,
   CardButtonTitle,
 } from '@kit/ui/card-button';
-import { Heading } from '@kit/ui/heading';
+import {
+  EmptyState,
+  EmptyStateButton,
+  EmptyStateHeading,
+  EmptyStateText,
+} from '@kit/ui/empty-state';
 import { Trans } from '@kit/ui/trans';
 
 import { loadUserWorkspace } from '../_lib/server/load-user-workspace';
@@ -39,21 +44,18 @@ export function HomeAccountsList() {
 
 function HomeAccountsListEmptyState() {
   return (
-    <div className="flex flex-col items-center justify-center space-y-8 py-24">
-      <div className="flex flex-col items-center space-y-1">
-        <Heading level={2}>
+    <div className={'flex flex-1'}>
+      <EmptyState>
+        <EmptyStateButton asChild>
+          <HomeAddAccountButton className={'mt-4'} />
+        </EmptyStateButton>
+        <EmptyStateHeading>
           <Trans i18nKey={'account:noTeamsYet'} />
-        </Heading>
-
-        <Heading
-          className="font-sans font-medium text-muted-foreground"
-          level={4}
-        >
+        </EmptyStateHeading>
+        <EmptyStateText>
           <Trans i18nKey={'account:createTeam'} />
-        </Heading>
-      </div>
-
-      <HomeAddAccountButton />
+        </EmptyStateText>
+      </EmptyState>
     </div>
   );
 }

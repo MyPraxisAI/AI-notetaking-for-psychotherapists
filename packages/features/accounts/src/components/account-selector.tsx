@@ -103,7 +103,7 @@ export function AccountSelector({
             role="combobox"
             aria-expanded={open}
             className={cn(
-              'dark:shadow-primary/10 group w-auto min-w-0 max-w-fit px-2',
+              'dark:shadow-primary/10 group w-full lg:w-auto min-w-0 lg:max-w-fit px-2',
               {
                 'justify-start': !collapsed,
                 'justify-center': collapsed,

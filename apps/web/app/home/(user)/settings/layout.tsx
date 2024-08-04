@@ -1,5 +1,6 @@
 import { Trans } from '@kit/ui/trans';
 
+import { AppBreadcrumbs } from '@kit/ui/app-breadcrumbs';
 import { withI18n } from '~/lib/i18n/with-i18n';
 
 // local imports
@@ -9,8 +10,8 @@ function UserSettingsLayout(props: React.PropsWithChildren) {
   return (
     <>
       <HomeLayoutPageHeader
-        title={<Trans i18nKey={'account:accountTabLabel'} />}
-        description={<Trans i18nKey={'account:accountTabDescription'} />}
+        title={<Trans i18nKey={'account:routes.settings'} />}
+        description={<AppBreadcrumbs />}
       />
 
       {props.children}

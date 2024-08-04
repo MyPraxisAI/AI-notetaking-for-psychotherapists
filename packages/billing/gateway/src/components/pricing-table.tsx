@@ -29,6 +29,8 @@ interface Paths {
   return: string;
 }
 
+type Interval = 'month' | 'year';
+
 export function PricingTable({
   config,
   paths,
@@ -48,7 +50,7 @@ export function PricingTable({
     highlighted?: boolean;
   }>;
 }) {
-  const intervals = getPlanIntervals(config).filter(Boolean) as string[];
+  const intervals = getPlanIntervals(config).filter(Boolean) as Interval[];
   const [interval, setInterval] = useState(intervals[0]!);
 
   return (
@@ -123,7 +125,7 @@ function PricingItem(
     plan: {
       id: string;
       lineItems: z.infer<typeof LineItemSchema>[];
-      interval?: string;
+      interval?: Interval;
       name?: string;
       href?: string;
       label?: string;
@@ -155,6 +157,8 @@ function PricingItem(
   const lineItemsToDisplay = props.plan.lineItems.filter((item) => {
     return item.type !== 'flat';
   });
+
+  const interval = props.plan.interval as Interval;
 
   return (
     <div
@@ -209,15 +213,14 @@ function PricingItem(
 
         <Separator />
 
-        <div className={'flex flex-col space-y-1'}>
+        <div className={'flex flex-col space-y-2'}>
           <Price>
-            {lineItem ? (
-              formatCurrency(props.product.currency, lineItem.cost)
-            ) : props.plan.label ? (
-              <Trans i18nKey={props.plan.label} defaults={props.plan.label} />
-            ) : (
-              <Trans i18nKey={'billing:custom'} />
-            )}
+            <LineItemPrice
+              plan={props.plan}
+              product={props.product}
+              interval={interval}
+              lineItem={lineItem}
+            />
           </Price>
 
           <If condition={props.plan.name}>
@@ -337,14 +340,18 @@ function FeaturesList(
 function Price({ children }: React.PropsWithChildren) {
   return (
     <div
-      className={`animate-in slide-in-from-left-4 fade-in items-center duration-500`}
+      className={`animate-in slide-in-from-left-4 fade-in flex items-end gap-2 duration-500`}
     >
       <span
         className={
-          'font-heading flex items-center text-3xl font-bold tracking-tighter lg:text-4xl'
+          'font-heading flex items-center text-3xl font-semibold tracking-tighter'
         }
       >
         {children}
+      </span>
+
+      <span className={'text-muted-foreground text-sm leading-loose'}>
+        <Trans i18nKey={'billing:perMonth'} />
       </span>
     </div>
   );
@@ -368,9 +375,9 @@ function ListItem({ children }: React.PropsWithChildren) {
 
 function PlanIntervalSwitcher(
   props: React.PropsWithChildren<{
-    intervals: string[];
-    interval: string;
-    setInterval: (interval: string) => void;
+    intervals: Interval[];
+    interval: Interval;
+    setInterval: (interval: Interval) => void;
   }>,
 ) {
   return (
@@ -469,4 +476,41 @@ function DefaultCheckoutButton(
       </Button>
     </Link>
   );
+}
+
+function LineItemPrice({
+  lineItem,
+  plan,
+  interval,
+  product,
+}: {
+  lineItem: z.infer<typeof LineItemSchema> | undefined;
+  plan: {
+    label?: string;
+  };
+  interval: Interval | undefined;
+  product: {
+    currency: string;
+  };
+}) {
+  const { i18n } = useTranslation();
+  const isYearlyPricing = interval === 'year';
+
+  const cost = lineItem
+    ? isYearlyPricing
+      ? Number(lineItem.cost / 12).toFixed(2)
+      : lineItem?.cost
+    : 0;
+
+  const costString = lineItem && formatCurrency({
+    currencyCode: product.currency,
+    locale: i18n.language,
+    value: cost,
+  });
+
+  const labelString = plan.label && (
+    <Trans i18nKey={plan.label} defaults={plan.label} />
+  );
+
+  return costString ?? labelString ?? <Trans i18nKey={'billing:custom'} />;
 }

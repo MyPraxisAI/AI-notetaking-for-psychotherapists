@@ -33,6 +33,7 @@
     "input-otp": "1.2.4",
     "lucide-react": "^0.418.0",
     "react-top-loading-bar": "2.3.1",
+    "recharts": "^2.12.7",
     "tailwind-merge": "^2.4.0"
   },
   "devDependencies": {
@@ -101,6 +102,7 @@
     "./textarea": "./src/shadcn/textarea.tsx",
     "./switch": "./src/shadcn/switch.tsx",
     "./breadcrumb": "./src/shadcn/breadcrumb.tsx",
+    "./chart": "./src/shadcn/chart.tsx",
     "./utils": "./src/utils/index.ts",
     "./if": "./src/makerkit/if.tsx",
     "./trans": "./src/makerkit/trans.tsx",
@@ -123,6 +125,8 @@
     "./card-button": "./src/makerkit/card-button.tsx",
     "./version-updater": "./src/makerkit/version-updater.tsx",
     "./multi-step-form": "./src/makerkit/multi-step-form.tsx",
+    "./app-breadcrumbs": "./src/makerkit/app-breadcrumbs.tsx",
+    "./empty-state": "./src/makerkit/empty-state.tsx",
     "./marketing": "./src/makerkit/marketing/index.tsx"
   },
   "typesVersions": {

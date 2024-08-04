@@ -20,7 +20,7 @@ function UserHomePage() {
   return (
     <>
       <HomeLayoutPageHeader
-        title={<Trans i18nKey={'common:homeTabLabel'} />}
+        title={<Trans i18nKey={'common:routes.home'} />}
         description={<Trans i18nKey={'common:homeTabDescription'} />}
       />
 
