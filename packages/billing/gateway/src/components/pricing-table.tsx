@@ -37,11 +37,12 @@ export function PricingTable({
   CheckoutButtonRenderer,
   redirectToCheckout = true,
   displayPlanDetails = true,
+  alwaysDisplayMonthlyPrice = true,
 }: {
   config: BillingConfig;
   paths: Paths;
   displayPlanDetails?: boolean;
-
+  alwaysDisplayMonthlyPrice?: boolean;
   redirectToCheckout?: boolean;
 
   CheckoutButtonRenderer?: React.ComponentType<{
@@ -100,6 +101,7 @@ export function PricingTable({
               product={product}
               paths={paths}
               displayPlanDetails={displayPlanDetails}
+              alwaysDisplayMonthlyPrice={alwaysDisplayMonthlyPrice}
               CheckoutButton={CheckoutButtonRenderer}
             />
           );
@@ -121,6 +123,7 @@ function PricingItem(
     primaryLineItem: z.infer<typeof LineItemSchema> | undefined;
 
     redirectToCheckout?: boolean;
+    alwaysDisplayMonthlyPrice?: boolean;
 
     plan: {
       id: string;
@@ -220,6 +223,7 @@ function PricingItem(
               product={props.product}
               interval={interval}
               lineItem={lineItem}
+              alwaysDisplayMonthlyPrice={props.alwaysDisplayMonthlyPrice}
             />
           </Price>
 
@@ -483,6 +487,7 @@ function LineItemPrice({
   plan,
   interval,
   product,
+  alwaysDisplayMonthlyPrice = true,
 }: {
   lineItem: z.infer<typeof LineItemSchema> | undefined;
   plan: {
@@ -492,21 +497,26 @@ function LineItemPrice({
   product: {
     currency: string;
   };
+  alwaysDisplayMonthlyPrice?: boolean;
 }) {
   const { i18n } = useTranslation();
   const isYearlyPricing = interval === 'year';
 
   const cost = lineItem
     ? isYearlyPricing
-      ? Number(lineItem.cost / 12).toFixed(2)
+      ? alwaysDisplayMonthlyPrice
+        ? Number(lineItem.cost / 12).toFixed(2)
+        : lineItem.cost
       : lineItem?.cost
     : 0;
 
-  const costString = lineItem && formatCurrency({
-    currencyCode: product.currency,
-    locale: i18n.language,
-    value: cost,
-  });
+  const costString =
+    lineItem &&
+    formatCurrency({
+      currencyCode: product.currency,
+      locale: i18n.language,
+      value: cost,
+    });
 
   const labelString = plan.label && (
     <Trans i18nKey={plan.label} defaults={plan.label} />
