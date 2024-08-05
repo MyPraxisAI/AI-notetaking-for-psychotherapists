@@ -217,7 +217,7 @@ function PricingItem(
         <Separator />
 
         <div className={'flex flex-col space-y-2'}>
-          <Price>
+          <Price isMonthlyPrice={props.alwaysDisplayMonthlyPrice}>
             <LineItemPrice
               plan={props.plan}
               product={props.product}
@@ -341,7 +341,12 @@ function FeaturesList(
   );
 }
 
-function Price({ children }: React.PropsWithChildren) {
+function Price({
+  children,
+  isMonthlyPrice = true,
+}: React.PropsWithChildren<{
+  isMonthlyPrice?: boolean;
+}>) {
   return (
     <div
       className={`animate-in slide-in-from-left-4 fade-in flex items-end gap-2 duration-500`}
@@ -354,9 +359,11 @@ function Price({ children }: React.PropsWithChildren) {
         {children}
       </span>
 
-      <span className={'text-muted-foreground text-sm leading-loose'}>
-        <Trans i18nKey={'billing:perMonth'} />
-      </span>
+      <If condition={isMonthlyPrice}>
+        <span className={'text-muted-foreground text-sm leading-loose'}>
+          <Trans i18nKey={'billing:perMonth'} />
+        </span>
+      </If>
     </div>
   );
 }
