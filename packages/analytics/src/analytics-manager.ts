@@ -37,7 +37,10 @@ export function createAnalyticsManager<T extends string, Config extends object>(
         return;
       }
 
-      activeServices.set(provider as T, factory());
+      const service = factory();
+      activeServices.set(provider as T, service);
+
+      void service.initialize();
     });
   };
 
