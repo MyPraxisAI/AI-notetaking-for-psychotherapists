@@ -77,9 +77,9 @@ export function createAnalyticsManager<T extends string, Config extends object>(
       );
     },
 
-    trackPageView: (url: string) => {
+    trackPageView: (path: string) => {
       return Promise.all(
-        getActiveServices().map((service) => service.trackPageView(url)),
+        getActiveServices().map((service) => service.trackPageView(path)),
       );
     },
 

@@ -6,7 +6,7 @@ interface TrackEvent {
 }
 
 interface TrackPageView {
-  trackPageView(url: string): Promise<unknown>;
+  trackPageView(path: string): Promise<unknown>;
 }
 
 interface Identify {
