@@ -47,6 +47,7 @@ async function getContentItems() {
   const posts = client
     .getContentItems({
       collection: 'posts',
+      limit: Infinity,
     })
     .then((response) => response.items)
     .then((posts) => posts.map((post) => `/blog/${post.slug}`));
@@ -54,6 +55,7 @@ async function getContentItems() {
   const docs = client
     .getContentItems({
       collection: 'documentation',
+      limit: Infinity,
     })
     .then((response) => response.items)
     .then((docs) => docs.map((doc) => `/docs/${doc.slug}`));
