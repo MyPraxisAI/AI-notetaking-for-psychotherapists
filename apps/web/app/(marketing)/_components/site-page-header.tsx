@@ -4,7 +4,7 @@ export function SitePageHeader({
   title,
   subtitle,
   container = true,
-  className = ''
+  className = '',
 }: {
   title: string;
   subtitle: string;
@@ -15,7 +15,9 @@ export function SitePageHeader({
 
   return (
     <div className={cn('border-b py-8 xl:py-10 2xl:py-12', className)}>
-      <div className={cn('flex flex-col space-y-2 lg:space-y-4', containerClass)}>
+      <div
+        className={cn('flex flex-col space-y-2 lg:space-y-4', containerClass)}
+      >
         <h1
           className={
             'font-heading text-3xl font-medium tracking-tighter dark:text-white xl:text-5xl'

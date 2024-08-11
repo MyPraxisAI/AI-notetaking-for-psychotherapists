@@ -1,5 +1,7 @@
 'use client';
 
+import { Fragment } from 'react';
+
 import { usePathname } from 'next/navigation';
 
 import {
@@ -12,7 +14,6 @@ import {
 } from '../shadcn/breadcrumb';
 import { If } from './if';
 import { Trans } from './trans';
-import { Fragment } from 'react';
 
 const unslugify = (slug: string) => slug.replace(/-/g, ' ');
 

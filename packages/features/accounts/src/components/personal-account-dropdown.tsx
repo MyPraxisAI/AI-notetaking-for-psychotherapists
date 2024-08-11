@@ -93,7 +93,7 @@ export function PersonalAccountDropdown({
         )}
       >
         <ProfileAvatar
-          className={'border border-transparent group-hover:border-primary/10'}
+          className={'group-hover:border-primary/10 border border-transparent'}
           displayName={displayName ?? user?.email ?? ''}
           pictureUrl={personalAccountData?.picture_url}
         />

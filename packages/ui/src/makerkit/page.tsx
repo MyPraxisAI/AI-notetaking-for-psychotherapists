@@ -59,7 +59,12 @@ export function PageMobileNavigation(
   }>,
 ) {
   return (
-    <div className={cn('w-full py-2 lg:hidden flex items-center border-b', props.className)}>
+    <div
+      className={cn(
+        'flex w-full items-center border-b py-2 lg:hidden',
+        props.className,
+      )}
+    >
       {props.children}
     </div>
   );
@@ -77,7 +82,7 @@ function PageWithHeader(props: PageProps) {
       >
         <div
           className={cn(
-            'flex h-14 items-center justify-between bg-muted/40 px-4 lg:shadow-sm dark:border-border dark:shadow-primary/10 lg:justify-start',
+            'flex h-14 items-center justify-between bg-muted/40 px-4 dark:border-border dark:shadow-primary/10 lg:justify-start lg:shadow-sm',
             {
               'sticky top-0 z-10 backdrop-blur-md': props.sticky ?? true,
             },
@@ -151,7 +156,7 @@ export function PageHeader({
   return (
     <div
       className={cn(
-        'flex items-center justify-between lg:px-4 py-4',
+        'flex items-center justify-between py-4 lg:px-4',
         className,
       )}
     >

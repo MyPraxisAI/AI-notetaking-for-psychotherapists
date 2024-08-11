@@ -60,7 +60,9 @@ export function SidebarContent({
   className?: string;
 }>) {
   return (
-    <div className={cn('flex w-full flex-col space-y-1.5 px-4 py-1', className)}>
+    <div
+      className={cn('flex w-full flex-col space-y-1.5 px-4 py-1', className)}
+    >
       {children}
     </div>
   );
@@ -194,22 +196,14 @@ export function SidebarItem({
 }
 
 function getClassNameBuilder(className: string) {
-  return cva(
-    [
-      cn(
-        'flex box-content h-screen flex-col relative',
-        className,
-      ),
-    ],
-    {
-      variants: {
-        collapsed: {
-          true: `w-[6rem]`,
-          false: `w-2/12 lg:w-[17rem]`,
-        },
+  return cva([cn('flex box-content h-screen flex-col relative', className)], {
+    variants: {
+      collapsed: {
+        true: `w-[6rem]`,
+        false: `w-2/12 lg:w-[17rem]`,
       },
     },
-  );
+  });
 }
 
 export function SidebarNavigation({

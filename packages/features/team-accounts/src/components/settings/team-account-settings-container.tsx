@@ -28,7 +28,7 @@ export function TeamAccountSettingsContainer(props: {
 
   features: {
     enableTeamDeletion: boolean;
-  }
+  };
 }) {
   return (
     <div className={'flex w-full flex-col space-y-4'}>

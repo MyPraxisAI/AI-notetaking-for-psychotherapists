@@ -14,7 +14,8 @@ const FeatureFlagsSchema = z.object({
   }),
   enableTeamDeletion: z.boolean({
     description: 'Enable team deletion.',
-    required_error: 'Provide the variable NEXT_PUBLIC_ENABLE_TEAM_ACCOUNTS_DELETION',
+    required_error:
+      'Provide the variable NEXT_PUBLIC_ENABLE_TEAM_ACCOUNTS_DELETION',
   }),
   enableTeamAccounts: z.boolean({
     description: 'Enable team accounts.',

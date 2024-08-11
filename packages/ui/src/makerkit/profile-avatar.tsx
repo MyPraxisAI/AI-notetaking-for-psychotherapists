@@ -1,5 +1,5 @@
 import { Avatar, AvatarFallback, AvatarImage } from '../shadcn/avatar';
-import {cn} from "../utils";
+import { cn } from '../utils';
 
 type SessionProps = {
   displayName: string | null;
@@ -15,7 +15,10 @@ type ProfileAvatarProps = (SessionProps | TextProps) & {
 };
 
 export function ProfileAvatar(props: ProfileAvatarProps) {
-  const avatarClassName = cn(props.className, 'mx-auto w-9 h-9 group-focus:ring-2');
+  const avatarClassName = cn(
+    props.className,
+    'mx-auto w-9 h-9 group-focus:ring-2',
+  );
 
   if ('text' in props) {
     return (
