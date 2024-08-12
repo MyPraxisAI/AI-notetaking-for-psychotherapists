@@ -113,7 +113,7 @@ importers:
         version: 0.0.8(@supabase/postgrest-js@1.16.0)(@supabase/supabase-js@2.45.1)
       '@makerkit/data-loader-supabase-nextjs':
         specifier: ^1.2.3
-        version: 1.2.3(@supabase/postgrest-js@1.16.0)(@supabase/supabase-js@2.45.1)(@tanstack/react-query@5.51.21(react@18.3.1))(next@14.2.5(@opentelemetry/api@1.9.0)(@playwright/test@1.46.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
+        version: 1.2.3(@supabase/postgrest-js@1.16.0)(@supabase/supabase-js@2.45.1)(@tanstack/react-query@5.51.23(react@18.3.1))(next@14.2.5(@opentelemetry/api@1.9.0)(@playwright/test@1.46.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
       '@marsidev/react-turnstile':
         specifier: ^0.7.2
         version: 0.7.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -124,11 +124,11 @@ importers:
         specifier: ^2.45.1
         version: 2.45.1
       '@tanstack/react-query':
-        specifier: 5.51.21
-        version: 5.51.21(react@18.3.1)
+        specifier: 5.51.23
+        version: 5.51.23(react@18.3.1)
       '@tanstack/react-query-next-experimental':
         specifier: ^5.51.23
-        version: 5.51.23(@tanstack/react-query@5.51.21(react@18.3.1))(next@14.2.5(@opentelemetry/api@1.9.0)(@playwright/test@1.46.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
+        version: 5.51.23(@tanstack/react-query@5.51.23(react@18.3.1))(next@14.2.5(@opentelemetry/api@1.9.0)(@playwright/test@1.46.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
       '@tanstack/react-table':
         specifier: ^8.20.1
         version: 8.20.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -136,8 +136,8 @@ importers:
         specifier: ^3.6.0
         version: 3.6.0
       lucide-react:
-        specifier: ^0.424.0
-        version: 0.424.0(react@18.3.1)
+        specifier: ^0.427.0
+        version: 0.427.0(react@18.3.1)
       next:
         specifier: 14.2.5
         version: 14.2.5(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(@playwright/test@1.46.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -166,8 +166,8 @@ importers:
         specifier: ^1.5.0
         version: 1.5.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       tailwind-merge:
-        specifier: ^2.4.0
-        version: 2.4.0
+        specifier: ^2.5.0
+        version: 2.5.0
       zod:
         specifier: ^3.23.8
         version: 3.23.8
@@ -201,7 +201,7 @@ importers:
         version: 18.3.0
       autoprefixer:
         specifier: ^10.4.20
-        version: 10.4.20(postcss@8.4.40)
+        version: 10.4.20(postcss@8.4.41)
       dotenv-cli:
         specifier: ^7.4.2
         version: 7.4.2
@@ -215,8 +215,8 @@ importers:
         specifier: ^1.187.10
         version: 1.187.10
       tailwindcss:
-        specifier: 3.4.7
-        version: 3.4.7(ts-node@10.9.2(@types/node@22.1.0)(typescript@5.5.4))
+        specifier: 3.4.9
+        version: 3.4.9(ts-node@10.9.2(@types/node@22.1.0)(typescript@5.5.4))
       typescript:
         specifier: ^5.5.4
         version: 5.5.4
@@ -308,8 +308,8 @@ importers:
         specifier: ^3.6.0
         version: 3.6.0
       lucide-react:
-        specifier: ^0.424.0
-        version: 0.424.0(react@18.3.1)
+        specifier: ^0.427.0
+        version: 0.427.0(react@18.3.1)
       next:
         specifier: 14.2.5
         version: 14.2.5(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(@playwright/test@1.46.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -613,8 +613,8 @@ importers:
         specifier: ^2.45.1
         version: 2.45.1
       '@tanstack/react-query':
-        specifier: 5.51.21
-        version: 5.51.21(react@18.3.1)
+        specifier: 5.51.23
+        version: 5.51.23(react@18.3.1)
       '@types/react':
         specifier: ^18.3.3
         version: 18.3.3
@@ -622,8 +622,8 @@ importers:
         specifier: ^18.3.0
         version: 18.3.0
       lucide-react:
-        specifier: ^0.424.0
-        version: 0.424.0(react@18.3.1)
+        specifier: ^0.427.0
+        version: 0.427.0(react@18.3.1)
       next:
         specifier: 14.2.5
         version: 14.2.5(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(@playwright/test@1.46.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -683,13 +683,13 @@ importers:
         version: 0.0.8(@supabase/postgrest-js@1.16.0)(@supabase/supabase-js@2.45.1)
       '@makerkit/data-loader-supabase-nextjs':
         specifier: ^1.2.3
-        version: 1.2.3(@supabase/postgrest-js@1.16.0)(@supabase/supabase-js@2.45.1)(@tanstack/react-query@5.51.21(react@18.3.1))(next@14.2.5(@opentelemetry/api@1.9.0)(@playwright/test@1.46.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
+        version: 1.2.3(@supabase/postgrest-js@1.16.0)(@supabase/supabase-js@2.45.1)(@tanstack/react-query@5.51.23(react@18.3.1))(next@14.2.5(@opentelemetry/api@1.9.0)(@playwright/test@1.46.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
       '@supabase/supabase-js':
         specifier: ^2.45.1
         version: 2.45.1
       '@tanstack/react-query':
-        specifier: 5.51.21
-        version: 5.51.21(react@18.3.1)
+        specifier: 5.51.23
+        version: 5.51.23(react@18.3.1)
       '@tanstack/react-table':
         specifier: ^8.20.1
         version: 8.20.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -697,8 +697,8 @@ importers:
         specifier: ^18.3.3
         version: 18.3.3
       lucide-react:
-        specifier: ^0.424.0
-        version: 0.424.0(react@18.3.1)
+        specifier: ^0.427.0
+        version: 0.427.0(react@18.3.1)
       next:
         specifier: 14.2.5
         version: 14.2.5(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(@playwright/test@1.46.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -751,14 +751,14 @@ importers:
         specifier: ^2.45.1
         version: 2.45.1
       '@tanstack/react-query':
-        specifier: 5.51.21
-        version: 5.51.21(react@18.3.1)
+        specifier: 5.51.23
+        version: 5.51.23(react@18.3.1)
       '@types/react':
         specifier: ^18.3.3
         version: 18.3.3
       lucide-react:
-        specifier: ^0.424.0
-        version: 0.424.0(react@18.3.1)
+        specifier: ^0.427.0
+        version: 0.427.0(react@18.3.1)
       next:
         specifier: 14.2.5
         version: 14.2.5(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(@playwright/test@1.46.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -799,14 +799,14 @@ importers:
         specifier: ^2.45.1
         version: 2.45.1
       '@tanstack/react-query':
-        specifier: 5.51.21
-        version: 5.51.21(react@18.3.1)
+        specifier: 5.51.23
+        version: 5.51.23(react@18.3.1)
       '@types/react':
         specifier: ^18.3.3
         version: 18.3.3
       lucide-react:
-        specifier: ^0.424.0
-        version: 0.424.0(react@18.3.1)
+        specifier: ^0.427.0
+        version: 0.427.0(react@18.3.1)
       react:
         specifier: 18.3.1
         version: 18.3.1
@@ -869,8 +869,8 @@ importers:
         specifier: ^2.45.1
         version: 2.45.1
       '@tanstack/react-query':
-        specifier: 5.51.21
-        version: 5.51.21(react@18.3.1)
+        specifier: 5.51.23
+        version: 5.51.23(react@18.3.1)
       '@tanstack/react-table':
         specifier: ^8.20.1
         version: 8.20.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -887,8 +887,8 @@ importers:
         specifier: ^3.6.0
         version: 3.6.0
       lucide-react:
-        specifier: ^0.424.0
-        version: 0.424.0(react@18.3.1)
+        specifier: ^0.427.0
+        version: 0.427.0(react@18.3.1)
       next:
         specifier: 14.2.5
         version: 14.2.5(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(@playwright/test@1.46.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -939,8 +939,8 @@ importers:
         specifier: workspace:*
         version: link:../../tooling/typescript
       '@tanstack/react-query':
-        specifier: 5.51.21
-        version: 5.51.21(react@18.3.1)
+        specifier: 5.51.23
+        version: 5.51.23(react@18.3.1)
       react-i18next:
         specifier: ^15.0.1
         version: 15.0.1(i18next@23.12.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1165,8 +1165,8 @@ importers:
         specifier: ^2.45.1
         version: 2.45.1
       '@tanstack/react-query':
-        specifier: 5.51.21
-        version: 5.51.21(react@18.3.1)
+        specifier: 5.51.23
+        version: 5.51.23(react@18.3.1)
       '@types/react':
         specifier: ^18.3.3
         version: 18.3.3
@@ -1252,8 +1252,8 @@ importers:
         specifier: 1.2.4
         version: 1.2.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       lucide-react:
-        specifier: ^0.424.0
-        version: 0.424.0(react@18.3.1)
+        specifier: ^0.427.0
+        version: 0.427.0(react@18.3.1)
       react-top-loading-bar:
         specifier: 2.3.1
         version: 2.3.1(react@18.3.1)
@@ -1261,8 +1261,8 @@ importers:
         specifier: ^2.12.7
         version: 2.12.7(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       tailwind-merge:
-        specifier: ^2.4.0
-        version: 2.4.0
+        specifier: ^2.5.0
+        version: 2.5.0
     devDependencies:
       '@kit/eslint-config':
         specifier: workspace:*
@@ -1280,8 +1280,8 @@ importers:
         specifier: ^1.3.0
         version: 1.3.0(react@18.3.1)
       '@tanstack/react-query':
-        specifier: 5.51.21
-        version: 5.51.21(react@18.3.1)
+        specifier: 5.51.23
+        version: 5.51.23(react@18.3.1)
       '@tanstack/react-table':
         specifier: ^8.20.1
         version: 8.20.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1322,11 +1322,11 @@ importers:
         specifier: ^1.5.0
         version: 1.5.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       tailwindcss:
-        specifier: 3.4.7
-        version: 3.4.7(ts-node@10.9.2(@types/node@22.2.0)(typescript@5.5.4))
+        specifier: 3.4.9
+        version: 3.4.9(ts-node@10.9.2(@types/node@22.2.0)(typescript@5.5.4))
       tailwindcss-animate:
         specifier: ^1.0.7
-        version: 1.0.7(tailwindcss@3.4.7(ts-node@10.9.2(@types/node@22.2.0)(typescript@5.5.4)))
+        version: 1.0.7(tailwindcss@3.4.9(ts-node@10.9.2(@types/node@22.2.0)(typescript@5.5.4)))
       typescript:
         specifier: ^5.5.4
         version: 5.5.4
@@ -1408,11 +1408,11 @@ importers:
         specifier: 8.4.41
         version: 8.4.41
       tailwindcss:
-        specifier: 3.4.7
-        version: 3.4.7(ts-node@10.9.2(@types/node@22.2.0)(typescript@5.5.4))
+        specifier: 3.4.9
+        version: 3.4.9(ts-node@10.9.2(@types/node@22.2.0)(typescript@5.5.4))
       tailwindcss-animate:
         specifier: ^1.0.7
-        version: 1.0.7(tailwindcss@3.4.7(ts-node@10.9.2(@types/node@22.2.0)(typescript@5.5.4)))
+        version: 1.0.7(tailwindcss@3.4.9(ts-node@10.9.2(@types/node@22.2.0)(typescript@5.5.4)))
     devDependencies:
       '@kit/eslint-config':
         specifier: workspace:^
@@ -3915,8 +3915,8 @@ packages:
       next: ^13 || ^14 || ^15
       react: 18.3.1
 
-  '@tanstack/react-query@5.51.21':
-    resolution: {integrity: sha512-Q/V81x3sAYgCsxjwOkfLXfrmoG+FmDhLeHH5okC/Bp8Aaw2c33lbEo/mMcMnkxUPVtB2FLpzHT0tq3c+OlZEbw==}
+  '@tanstack/react-query@5.51.23':
+    resolution: {integrity: sha512-CfJCfX45nnVIZjQBRYYtvVMIsGgWLKLYC4xcUiYEey671n1alvTZoCBaU9B85O8mF/tx9LPyrI04A6Bs2THv4A==}
     peerDependencies:
       react: 18.3.1
 
@@ -5939,8 +5939,8 @@ packages:
     resolution: {integrity: sha512-jumlc0BIUrS3qJGgIkWZsyfAM7NCWiBcCDhnd+3NNM5KbBmLTgHVfWBcg6W+rLUsIpzpERPsvwUP7CckAQSOoA==}
     engines: {node: '>=12'}
 
-  lucide-react@0.424.0:
-    resolution: {integrity: sha512-x2Nj2aytk1iOyHqt4hKenfVlySq0rYxNeEf8hE0o+Yh0iE36Rqz0rkngVdv2uQtjZ70LAE73eeplhhptYt9x4Q==}
+  lucide-react@0.427.0:
+    resolution: {integrity: sha512-lv9s6c5BDF/ccuA0EgTdskTxIe11qpwBDmzRZHJAKtp8LTewAvDvOM+pTES9IpbBuTqkjiMhOmGpJ/CB+mKjFw==}
     peerDependencies:
       react: 18.3.1
 
@@ -6595,10 +6595,6 @@ packages:
 
   postcss@8.4.31:
     resolution: {integrity: sha512-PS08Iboia9mts/2ygV3eLpY5ghnUcfLV/EXTOW1E2qYxJKGGBUtNjN76FYHnMs36RmARn41bC0AZmn+rR0OVpQ==}
-    engines: {node: ^10 || ^12 || >=14}
-
-  postcss@8.4.40:
-    resolution: {integrity: sha512-YF2kKIUzAofPMpfH6hOi2cGnv/HrUlfucspc7pDyvv7kGdqXrfj8SCl/t8owkEgKEuu8ZcRjSOxFxVLqwChZ2Q==}
     engines: {node: ^10 || ^12 || >=14}
 
   postcss@8.4.41:
@@ -7315,16 +7311,16 @@ packages:
   tabbable@6.2.0:
     resolution: {integrity: sha512-Cat63mxsVJlzYvN51JmVXIgNoUokrIaT2zLclCXjRd8boZ0004U4KCs/sToJ75C6sdlByWxpYnb5Boif1VSFew==}
 
-  tailwind-merge@2.4.0:
-    resolution: {integrity: sha512-49AwoOQNKdqKPd9CViyH5wJoSKsCDjUlzL8DxuGp3P1FsGY36NJDAa18jLZcaHAUUuTj+JB8IAo8zWgBNvBF7A==}
+  tailwind-merge@2.5.0:
+    resolution: {integrity: sha512-a6Q/isR5XAo9IR7Hjh80BQDkn8PG9ONJpSO/U3vGzdKyKG125lPHNXdiPfeQ5X0EOG0qKlS/0qnxdBYkLlD6tA==}
 
   tailwindcss-animate@1.0.7:
     resolution: {integrity: sha512-bl6mpH3T7I3UFxuvDEXLxy/VuFxBk5bbzplh7tXI68mwMokNYd1t9qPBHlnyTwfa4JGC4zP516I1hYYtQ/vspA==}
     peerDependencies:
       tailwindcss: '>=3.0.0 || insiders'
 
-  tailwindcss@3.4.7:
-    resolution: {integrity: sha512-rxWZbe87YJb4OcSopb7up2Ba4U82BoiSGUdoDr3Ydrg9ckxFS/YWsvhN323GMcddgU65QRy7JndC7ahhInhvlQ==}
+  tailwindcss@3.4.9:
+    resolution: {integrity: sha512-1SEOvRr6sSdV5IDf9iC+NU4dhwdqzF4zKKq3sAbasUWHEM6lsMhX+eNN5gkPx1BvLFEnZQEUFbXnGj8Qlp83Pg==}
     engines: {node: '>=14.0.0'}
     hasBin: true
 
@@ -8613,11 +8609,11 @@ snapshots:
       '@supabase/supabase-js': 2.45.1
       ts-case-convert: 2.0.7
 
-  '@makerkit/data-loader-supabase-nextjs@1.2.3(@supabase/postgrest-js@1.16.0)(@supabase/supabase-js@2.45.1)(@tanstack/react-query@5.51.21(react@18.3.1))(next@14.2.5(@opentelemetry/api@1.9.0)(@playwright/test@1.46.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)':
+  '@makerkit/data-loader-supabase-nextjs@1.2.3(@supabase/postgrest-js@1.16.0)(@supabase/supabase-js@2.45.1)(@tanstack/react-query@5.51.23(react@18.3.1))(next@14.2.5(@opentelemetry/api@1.9.0)(@playwright/test@1.46.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)':
     dependencies:
       '@makerkit/data-loader-supabase-core': 0.0.8(@supabase/postgrest-js@1.16.0)(@supabase/supabase-js@2.45.1)
       '@supabase/supabase-js': 2.45.1
-      '@tanstack/react-query': 5.51.21(react@18.3.1)
+      '@tanstack/react-query': 5.51.23(react@18.3.1)
       next: 14.2.5(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(@playwright/test@1.46.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react: 18.3.1
     transitivePeerDependencies:
@@ -11215,13 +11211,13 @@ snapshots:
 
   '@tanstack/query-core@5.51.21': {}
 
-  '@tanstack/react-query-next-experimental@5.51.23(@tanstack/react-query@5.51.21(react@18.3.1))(next@14.2.5(@opentelemetry/api@1.9.0)(@playwright/test@1.46.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)':
+  '@tanstack/react-query-next-experimental@5.51.23(@tanstack/react-query@5.51.23(react@18.3.1))(next@14.2.5(@opentelemetry/api@1.9.0)(@playwright/test@1.46.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)':
     dependencies:
-      '@tanstack/react-query': 5.51.21(react@18.3.1)
+      '@tanstack/react-query': 5.51.23(react@18.3.1)
       next: 14.2.5(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(@playwright/test@1.46.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react: 18.3.1
 
-  '@tanstack/react-query@5.51.21(react@18.3.1)':
+  '@tanstack/react-query@5.51.23(react@18.3.1)':
     dependencies:
       '@tanstack/query-core': 5.51.21
       react: 18.3.1
@@ -11833,16 +11829,6 @@ snapshots:
   asynckit@0.4.0: {}
 
   atomic-sleep@1.0.0: {}
-
-  autoprefixer@10.4.20(postcss@8.4.40):
-    dependencies:
-      browserslist: 4.23.3
-      caniuse-lite: 1.0.30001649
-      fraction.js: 4.3.7
-      normalize-range: 0.1.2
-      picocolors: 1.0.1
-      postcss: 8.4.40
-      postcss-value-parser: 4.2.0
 
   autoprefixer@10.4.20(postcss@8.4.41):
     dependencies:
@@ -13507,7 +13493,7 @@ snapshots:
 
   lru-cache@7.18.3: {}
 
-  lucide-react@0.424.0(react@18.3.1):
+  lucide-react@0.427.0(react@18.3.1):
     dependencies:
       react: 18.3.1
 
@@ -14395,37 +14381,37 @@ snapshots:
 
   possible-typed-array-names@1.0.0: {}
 
-  postcss-import@15.1.0(postcss@8.4.40):
+  postcss-import@15.1.0(postcss@8.4.41):
     dependencies:
-      postcss: 8.4.40
+      postcss: 8.4.41
       postcss-value-parser: 4.2.0
       read-cache: 1.0.0
       resolve: 1.22.8
 
-  postcss-js@4.0.1(postcss@8.4.40):
+  postcss-js@4.0.1(postcss@8.4.41):
     dependencies:
       camelcase-css: 2.0.1
-      postcss: 8.4.40
+      postcss: 8.4.41
 
-  postcss-load-config@4.0.2(postcss@8.4.40)(ts-node@10.9.2(@types/node@22.1.0)(typescript@5.5.4)):
+  postcss-load-config@4.0.2(postcss@8.4.41)(ts-node@10.9.2(@types/node@22.1.0)(typescript@5.5.4)):
     dependencies:
       lilconfig: 3.1.2
       yaml: 2.5.0
     optionalDependencies:
-      postcss: 8.4.40
+      postcss: 8.4.41
       ts-node: 10.9.2(@types/node@22.1.0)(typescript@5.5.4)
 
-  postcss-load-config@4.0.2(postcss@8.4.40)(ts-node@10.9.2(@types/node@22.2.0)(typescript@5.5.4)):
+  postcss-load-config@4.0.2(postcss@8.4.41)(ts-node@10.9.2(@types/node@22.2.0)(typescript@5.5.4)):
     dependencies:
       lilconfig: 3.1.2
       yaml: 2.5.0
     optionalDependencies:
-      postcss: 8.4.40
+      postcss: 8.4.41
       ts-node: 10.9.2(@types/node@22.2.0)(typescript@5.5.4)
 
-  postcss-nested@6.2.0(postcss@8.4.40):
+  postcss-nested@6.2.0(postcss@8.4.41):
     dependencies:
-      postcss: 8.4.40
+      postcss: 8.4.41
       postcss-selector-parser: 6.1.1
 
   postcss-selector-parser@6.1.1:
@@ -14436,12 +14422,6 @@ snapshots:
   postcss-value-parser@4.2.0: {}
 
   postcss@8.4.31:
-    dependencies:
-      nanoid: 3.3.7
-      picocolors: 1.0.1
-      source-map-js: 1.2.0
-
-  postcss@8.4.40:
     dependencies:
       nanoid: 3.3.7
       picocolors: 1.0.1
@@ -15198,13 +15178,13 @@ snapshots:
 
   tabbable@6.2.0: {}
 
-  tailwind-merge@2.4.0: {}
+  tailwind-merge@2.5.0: {}
 
-  tailwindcss-animate@1.0.7(tailwindcss@3.4.7(ts-node@10.9.2(@types/node@22.2.0)(typescript@5.5.4))):
+  tailwindcss-animate@1.0.7(tailwindcss@3.4.9(ts-node@10.9.2(@types/node@22.2.0)(typescript@5.5.4))):
     dependencies:
-      tailwindcss: 3.4.7(ts-node@10.9.2(@types/node@22.2.0)(typescript@5.5.4))
+      tailwindcss: 3.4.9(ts-node@10.9.2(@types/node@22.2.0)(typescript@5.5.4))
 
-  tailwindcss@3.4.7(ts-node@10.9.2(@types/node@22.1.0)(typescript@5.5.4)):
+  tailwindcss@3.4.9(ts-node@10.9.2(@types/node@22.1.0)(typescript@5.5.4)):
     dependencies:
       '@alloc/quick-lru': 5.2.0
       arg: 5.0.2
@@ -15220,18 +15200,18 @@ snapshots:
       normalize-path: 3.0.0
       object-hash: 3.0.0
       picocolors: 1.0.1
-      postcss: 8.4.40
-      postcss-import: 15.1.0(postcss@8.4.40)
-      postcss-js: 4.0.1(postcss@8.4.40)
-      postcss-load-config: 4.0.2(postcss@8.4.40)(ts-node@10.9.2(@types/node@22.1.0)(typescript@5.5.4))
-      postcss-nested: 6.2.0(postcss@8.4.40)
+      postcss: 8.4.41
+      postcss-import: 15.1.0(postcss@8.4.41)
+      postcss-js: 4.0.1(postcss@8.4.41)
+      postcss-load-config: 4.0.2(postcss@8.4.41)(ts-node@10.9.2(@types/node@22.1.0)(typescript@5.5.4))
+      postcss-nested: 6.2.0(postcss@8.4.41)
       postcss-selector-parser: 6.1.1
       resolve: 1.22.8
       sucrase: 3.35.0
     transitivePeerDependencies:
       - ts-node
 
-  tailwindcss@3.4.7(ts-node@10.9.2(@types/node@22.2.0)(typescript@5.5.4)):
+  tailwindcss@3.4.9(ts-node@10.9.2(@types/node@22.2.0)(typescript@5.5.4)):
     dependencies:
       '@alloc/quick-lru': 5.2.0
       arg: 5.0.2
@@ -15247,11 +15227,11 @@ snapshots:
       normalize-path: 3.0.0
       object-hash: 3.0.0
       picocolors: 1.0.1
-      postcss: 8.4.40
-      postcss-import: 15.1.0(postcss@8.4.40)
-      postcss-js: 4.0.1(postcss@8.4.40)
-      postcss-load-config: 4.0.2(postcss@8.4.40)(ts-node@10.9.2(@types/node@22.2.0)(typescript@5.5.4))
-      postcss-nested: 6.2.0(postcss@8.4.40)
+      postcss: 8.4.41
+      postcss-import: 15.1.0(postcss@8.4.41)
+      postcss-js: 4.0.1(postcss@8.4.41)
+      postcss-load-config: 4.0.2(postcss@8.4.41)(ts-node@10.9.2(@types/node@22.2.0)(typescript@5.5.4))
+      postcss-nested: 6.2.0(postcss@8.4.41)
       postcss-selector-parser: 6.1.1
       resolve: 1.22.8
       sucrase: 3.35.0
