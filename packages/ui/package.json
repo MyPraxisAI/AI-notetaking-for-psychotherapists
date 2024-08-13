@@ -34,7 +34,7 @@
     "lucide-react": "^0.427.0",
     "react-top-loading-bar": "2.3.1",
     "recharts": "^2.12.7",
-    "tailwind-merge": "^2.5.0"
+    "tailwind-merge": "^2.5.2"
   },
   "devDependencies": {
     "@kit/eslint-config": "workspace:*",
