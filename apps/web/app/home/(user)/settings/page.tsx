@@ -3,6 +3,7 @@ import { use } from 'react';
 import { PersonalAccountSettingsContainer } from '@kit/accounts/personal-account-settings';
 import { PageBody } from '@kit/ui/page';
 
+import authConfig from '~/config/auth.config';
 import featureFlagsConfig from '~/config/feature-flags.config';
 import pathsConfig from '~/config/paths.config';
 import { loadUserWorkspace } from '~/home/(user)/_lib/server/load-user-workspace';
@@ -11,6 +12,7 @@ import { withI18n } from '~/lib/i18n/with-i18n';
 
 const features = {
   enableAccountDeletion: featureFlagsConfig.enableAccountDeletion,
+  enablePasswordUpdate: authConfig.providers.password,
 };
 
 const paths = {
