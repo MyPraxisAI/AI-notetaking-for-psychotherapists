@@ -5,6 +5,7 @@ import { MonitoringService } from '@kit/monitoring-core';
 const apiKey = z
   .string({
     required_error: 'NEXT_PUBLIC_BASELIME_KEY is required',
+    description: 'The Baseline API key',
   })
   .parse(process.env.NEXT_PUBLIC_BASELIME_KEY);
 
@@ -98,6 +99,10 @@ export class BaselimeServerMonitoringService implements MonitoringService {
 
   identifyUser<Info extends { id: string }>(info: Info) {
     this.userId = info.id;
+  }
+
+  ready() {
+    return Promise.resolve();
   }
 }
 

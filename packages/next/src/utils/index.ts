@@ -18,6 +18,8 @@ export async function captureException(exception: unknown) {
 
   const service = await getServerMonitoringService();
 
+  await service.ready();
+
   const error =
     exception instanceof Error ? exception : new Error(exception as string);
 

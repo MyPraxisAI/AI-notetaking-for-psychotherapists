@@ -8,8 +8,19 @@ import { MonitoringService } from '@kit/monitoring-core';
  * ServerSentryMonitoringService is responsible for capturing exceptions and identifying users using the Sentry monitoring service.
  */
 export class SentryMonitoringService implements MonitoringService {
+  private readonly readyPromise: Promise<unknown>;
+  private readyResolver?: (value?: unknown) => void;
+
   constructor() {
+    this.readyPromise = new Promise(
+      (resolve) => (this.readyResolver = resolve),
+    );
+
     void this.initialize();
+  }
+
+  async ready() {
+    return this.readyPromise;
   }
 
   captureException(error: Error | null) {
@@ -27,17 +38,21 @@ export class SentryMonitoringService implements MonitoringService {
     Sentry.setUser(user);
   }
 
-  private initialize() {
-    return this.initializeIfBrowser();
-  }
-
-  private async initializeIfBrowser() {
+  private async initialize() {
     if (typeof document !== 'undefined') {
       const { initializeSentryBrowserClient } = await import(
         '../sentry.client.config'
       );
 
       initializeSentryBrowserClient();
+    } else {
+      const { initializeSentryServerClient } = await import(
+        '../sentry.server.config'
+      );
+
+      initializeSentryServerClient();
     }
+
+    this.readyResolver?.();
   }
 }
