@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
 import { enhanceAction } from '@kit/next/actions';
-import { getSupabaseServerActionClient } from '@kit/supabase/server-actions-client';
+import { getSupabaseServerAdminClient } from '@kit/supabase/server-admin-client';
 
 import { LeaveTeamAccountSchema } from '../../schema/leave-team-account.schema';
 import { createLeaveTeamAccountService } from '../services/leave-team-account.service';
@@ -15,7 +15,7 @@ export const leaveTeamAccountAction = enhanceAction(
     const params = LeaveTeamAccountSchema.parse(body);
 
     const service = createLeaveTeamAccountService(
-      getSupabaseServerActionClient({ admin: true }),
+      getSupabaseServerAdminClient(),
     );
 
     await service.leaveTeamAccount({

@@ -3,7 +3,7 @@
 import { redirect } from 'next/navigation';
 
 import { enhanceAction } from '@kit/next/actions';
-import { getSupabaseServerActionClient } from '@kit/supabase/server-actions-client';
+import { getSupabaseServerClient } from '@kit/supabase/server-client';
 
 import featureFlagsConfig from '~/config/feature-flags.config';
 
@@ -26,7 +26,7 @@ export const createPersonalAccountCheckoutSession = enhanceAction(
       throw new Error('Personal account billing is not enabled');
     }
 
-    const client = getSupabaseServerActionClient();
+    const client = getSupabaseServerClient();
     const service = createUserBillingService(client);
 
     return await service.createCheckoutSession(data);
@@ -46,7 +46,7 @@ export const createPersonalAccountBillingPortalSession = enhanceAction(
       throw new Error('Personal account billing is not enabled');
     }
 
-    const client = getSupabaseServerActionClient();
+    const client = getSupabaseServerClient();
     const service = createUserBillingService(client);
 
     // get url to billing portal

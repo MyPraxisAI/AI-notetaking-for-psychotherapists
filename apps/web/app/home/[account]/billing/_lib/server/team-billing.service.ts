@@ -8,7 +8,7 @@ import { LineItemSchema } from '@kit/billing';
 import { getBillingGatewayProvider } from '@kit/billing-gateway';
 import { getLogger } from '@kit/shared/logger';
 import { requireUser } from '@kit/supabase/require-user';
-import { getSupabaseServerActionClient } from '@kit/supabase/server-actions-client';
+import { getSupabaseServerClient } from '@kit/supabase/server-client';
 import { createTeamAccountsApi } from '@kit/team-accounts/api';
 
 import appConfig from '~/config/app.config';
@@ -150,7 +150,7 @@ class TeamBillingService {
     accountId: string;
     slug: string;
   }) {
-    const client = getSupabaseServerActionClient();
+    const client = getSupabaseServerClient();
     const logger = await getLogger();
 
     logger.info(

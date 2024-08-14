@@ -10,7 +10,7 @@ import { z } from 'zod';
 
 import { verifyCaptchaToken } from '@kit/auth/captcha/server';
 import { requireUser } from '@kit/supabase/require-user';
-import { getSupabaseRouteHandlerClient } from '@kit/supabase/route-handler-client';
+import { getSupabaseServerClient } from '@kit/supabase/server-client';
 
 import { captureException, zodParseFactory } from '../utils';
 
@@ -96,7 +96,7 @@ export const enhanceRouteHandler = <
       }
     }
 
-    const client = getSupabaseRouteHandlerClient();
+    const client = getSupabaseServerClient();
 
     const shouldVerifyAuth = params?.auth ?? true;
 

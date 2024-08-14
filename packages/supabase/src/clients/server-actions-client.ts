@@ -25,6 +25,11 @@ function createServerSupabaseClient<
   });
 }
 
+/**
+ * @name getSupabaseServerComponentClient
+ * @deprecated Use `getSupabaseServerClient` instead.
+ * @param params
+ */
 export function getSupabaseServerActionClient<
   GenericSchema extends Database = Database,
 >(params?: { admin: boolean }) {

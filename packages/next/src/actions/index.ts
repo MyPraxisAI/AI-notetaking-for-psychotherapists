@@ -9,7 +9,7 @@ import { ZodType, z } from 'zod';
 
 import { verifyCaptchaToken } from '@kit/auth/captcha/server';
 import { requireUser } from '@kit/supabase/require-user';
-import { getSupabaseServerActionClient } from '@kit/supabase/server-actions-client';
+import { getSupabaseServerClient } from '@kit/supabase/server-client';
 
 import { captureException, zodParseFactory } from '../utils';
 
@@ -63,7 +63,7 @@ export function enhanceAction<
     // verify the user is authenticated if required
     if (requireAuth) {
       // verify the user is authenticated if required
-      const auth = await requireUser(getSupabaseServerActionClient());
+      const auth = await requireUser(getSupabaseServerClient());
 
       // If the user is not authenticated, redirect to the specified URL.
       if (!auth.data) {

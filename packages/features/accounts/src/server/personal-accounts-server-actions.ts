@@ -6,15 +6,15 @@ import { redirect } from 'next/navigation';
 import { z } from 'zod';
 
 import { enhanceAction } from '@kit/next/actions';
-import { getSupabaseServerActionClient } from '@kit/supabase/server-actions-client';
-
+import { getSupabaseServerClient } from '@kit/supabase/server-client';
+import { getSupabaseServerAdminClient } from '@kit/supabase/server-admin-client';
 import { DeletePersonalAccountSchema } from '../schema/delete-personal-account.schema';
 import { createDeletePersonalAccountService } from './services/delete-personal-account.service';
 
 const emailSettings = getEmailSettingsFromEnvironment();
 
 export async function refreshAuthSession() {
-  const client = getSupabaseServerActionClient();
+  const client = getSupabaseServerClient();
 
   await client.auth.refreshSession();
 
@@ -32,7 +32,7 @@ export const deletePersonalAccountAction = enhanceAction(
       throw new Error('Invalid form data');
     }
 
-    const client = getSupabaseServerActionClient();
+    const client = getSupabaseServerClient();
 
     // create a new instance of the personal accounts service
     const service = createDeletePersonalAccountService();
@@ -42,7 +42,7 @@ export const deletePersonalAccountAction = enhanceAction(
 
     // delete the user's account and cancel all subscriptions
     await service.deletePersonalAccount({
-      adminClient: getSupabaseServerActionClient({ admin: true }),
+      adminClient: getSupabaseServerAdminClient(),
       userId: user.id,
       userEmail: user.email ?? null,
       emailSettings,

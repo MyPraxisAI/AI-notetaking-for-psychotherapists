@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 
 import { enhanceAction } from '@kit/next/actions';
 import { getLogger } from '@kit/shared/logger';
-import { getSupabaseServerActionClient } from '@kit/supabase/server-actions-client';
+import { getSupabaseServerClient } from '@kit/supabase/server-client';
 
 import { CreateTeamSchema } from '../../schema/create-team.schema';
 import { createCreateTeamAccountService } from '../services/create-team-account.service';
@@ -12,7 +12,7 @@ import { createCreateTeamAccountService } from '../services/create-team-account.
 export const createTeamAccountAction = enhanceAction(
   async ({ name }, user) => {
     const logger = await getLogger();
-    const client = getSupabaseServerActionClient();
+    const client = getSupabaseServerClient();
     const service = createCreateTeamAccountService(client);
 
     const ctx = {

@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation';
 
 import { MultiFactorChallengeContainer } from '@kit/auth/mfa';
 import { checkRequiresMultiFactorAuthentication } from '@kit/supabase/check-requires-mfa';
-import { getSupabaseServerComponentClient } from '@kit/supabase/server-component-client';
+import { getSupabaseServerClient } from '@kit/supabase/server-client';
 
 import pathsConfig from '~/config/paths.config';
 import { createI18nServerInstance } from '~/lib/i18n/i18n.server';
@@ -23,7 +23,7 @@ export const generateMetadata = async () => {
 };
 
 async function VerifyPage(props: Props) {
-  const client = getSupabaseServerComponentClient();
+  const client = getSupabaseServerClient();
 
   const {
     data: { user },

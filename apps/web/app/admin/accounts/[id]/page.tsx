@@ -2,7 +2,7 @@ import { cache } from 'react';
 
 import { AdminAccountPage } from '@kit/admin/components/admin-account-page';
 import { AdminGuard } from '@kit/admin/components/admin-guard';
-import { getSupabaseServerComponentClient } from '@kit/supabase/server-component-client';
+import { getSupabaseServerAdminClient } from '@kit/supabase/server-admin-client';
 import { PageBody } from '@kit/ui/page';
 
 interface Params {
@@ -34,9 +34,7 @@ export default AdminGuard(AccountPage);
 const loadAccount = cache(accountLoader);
 
 async function accountLoader(id: string) {
-  const client = getSupabaseServerComponentClient({
-    admin: true,
-  });
+  const client = getSupabaseServerAdminClient();
 
   const { data, error } = await client
     .from('accounts')

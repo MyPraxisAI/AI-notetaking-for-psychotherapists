@@ -3,7 +3,7 @@
 import { redirect } from 'next/navigation';
 
 import { enhanceAction } from '@kit/next/actions';
-import { getSupabaseServerActionClient } from '@kit/supabase/server-actions-client';
+import { getSupabaseServerClient } from '@kit/supabase/server-client';
 
 import featureFlagsConfig from '~/config/feature-flags.config';
 
@@ -30,7 +30,7 @@ export const createTeamAccountCheckoutSession = enhanceAction(
       throw new Error('Team account billing is not enabled');
     }
 
-    const client = getSupabaseServerActionClient();
+    const client = getSupabaseServerClient();
     const service = createTeamBillingService(client);
 
     return service.createCheckout(data);
@@ -53,7 +53,7 @@ export const createBillingPortalSession = enhanceAction(
 
     const params = TeamBillingPortalSchema.parse(Object.fromEntries(formData));
 
-    const client = getSupabaseServerActionClient();
+    const client = getSupabaseServerClient();
     const service = createTeamBillingService(client);
 
     // get url to billing portal

@@ -5,7 +5,8 @@ import { redirect } from 'next/navigation';
 
 import { enhanceAction } from '@kit/next/actions';
 import { getLogger } from '@kit/shared/logger';
-import { getSupabaseServerActionClient } from '@kit/supabase/server-actions-client';
+import { getSupabaseServerClient } from '@kit/supabase/server-client';
+import { getSupabaseServerAdminClient } from '@kit/supabase/server-admin-client';
 
 import {
   BanUserSchema,
@@ -150,14 +151,14 @@ export const deleteAccountAction = adminAction(
 );
 
 function getAdminAuthService() {
-  const client = getSupabaseServerActionClient();
-  const adminClient = getSupabaseServerActionClient({ admin: true });
+  const client = getSupabaseServerClient();
+  const adminClient = getSupabaseServerAdminClient();
 
   return createAdminAuthUserService(client, adminClient);
 }
 
 function getAdminAccountsService() {
-  const adminClient = getSupabaseServerActionClient({ admin: true });
+  const adminClient = getSupabaseServerAdminClient();
 
   return createAdminAccountsService(adminClient);
 }

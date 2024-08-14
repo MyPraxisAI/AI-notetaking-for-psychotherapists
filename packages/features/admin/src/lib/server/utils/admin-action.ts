@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 
-import { getSupabaseServerActionClient } from '@kit/supabase/server-actions-client';
+import { getSupabaseServerClient } from '@kit/supabase/server-client';
 
 import { isSuperAdmin } from './is-super-admin';
 
@@ -11,7 +11,7 @@ import { isSuperAdmin } from './is-super-admin';
  */
 export function adminAction<Args, Response>(fn: (params: Args) => Response) {
   return async (params: Args) => {
-    const isAdmin = await isSuperAdmin(getSupabaseServerActionClient());
+    const isAdmin = await isSuperAdmin(getSupabaseServerClient());
 
     if (!isAdmin) {
       notFound();

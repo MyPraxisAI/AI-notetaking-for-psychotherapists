@@ -1,7 +1,7 @@
 import { getBillingEventHandlerService } from '@kit/billing-gateway';
 import { enhanceRouteHandler } from '@kit/next/routes';
 import { getLogger } from '@kit/shared/logger';
-import { getSupabaseRouteHandlerClient } from '@kit/supabase/route-handler-client';
+import { getSupabaseServerAdminClient } from '@kit/supabase/server-admin-client';
 
 import billingConfig from '~/config/billing.config';
 
@@ -20,8 +20,7 @@ export const POST = enhanceRouteHandler(
 
     logger.info(ctx, `Received billing webhook. Processing...`);
 
-    const supabaseClientProvider = () =>
-      getSupabaseRouteHandlerClient({ admin: true });
+    const supabaseClientProvider = () => getSupabaseServerAdminClient();
 
     const service = await getBillingEventHandlerService(
       supabaseClientProvider,

@@ -1,6 +1,6 @@
 import { PlusCircle } from 'lucide-react';
 
-import { getSupabaseServerComponentClient } from '@kit/supabase/server-component-client';
+import { getSupabaseServerClient } from '@kit/supabase/server-client';
 import {
   AccountInvitationsTable,
   AccountMembersTable,
@@ -42,7 +42,7 @@ export const generateMetadata = async () => {
 };
 
 async function TeamAccountMembersPage({ params }: Params) {
-  const client = getSupabaseServerComponentClient();
+  const client = getSupabaseServerClient();
 
   const [members, invitations, canAddMember, { user, account }] =
     await loadMembersPageData(client, params.account);

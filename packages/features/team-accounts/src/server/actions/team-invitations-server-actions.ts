@@ -6,7 +6,8 @@ import { redirect } from 'next/navigation';
 import { z } from 'zod';
 
 import { enhanceAction } from '@kit/next/actions';
-import { getSupabaseServerActionClient } from '@kit/supabase/server-actions-client';
+import { getSupabaseServerAdminClient } from '@kit/supabase/server-admin-client';
+import { getSupabaseServerClient } from '@kit/supabase/server-client';
 
 import { AcceptInvitationSchema } from '../../schema/accept-invitation.schema';
 import { DeleteInvitationSchema } from '../../schema/delete-invitation.schema';
@@ -22,7 +23,7 @@ import { createAccountPerSeatBillingService } from '../services/account-per-seat
  */
 export const createInvitationsAction = enhanceAction(
   async (params) => {
-    const client = getSupabaseServerActionClient();
+    const client = getSupabaseServerClient();
 
     // Create the service
     const service = createAccountInvitationsService(client);
@@ -51,7 +52,7 @@ export const createInvitationsAction = enhanceAction(
  */
 export const deleteInvitationAction = enhanceAction(
   async (data) => {
-    const client = getSupabaseServerActionClient();
+    const client = getSupabaseServerClient();
     const service = createAccountInvitationsService(client);
 
     // Delete the invitation
@@ -74,7 +75,7 @@ export const deleteInvitationAction = enhanceAction(
  */
 export const updateInvitationAction = enhanceAction(
   async (invitation) => {
-    const client = getSupabaseServerActionClient();
+    const client = getSupabaseServerClient();
     const service = createAccountInvitationsService(client);
 
     await service.updateInvitation(invitation);
@@ -96,7 +97,7 @@ export const updateInvitationAction = enhanceAction(
  */
 export const acceptInvitationAction = enhanceAction(
   async (data: FormData, user) => {
-    const client = getSupabaseServerActionClient();
+    const client = getSupabaseServerClient();
 
     const { inviteToken, nextPath } = AcceptInvitationSchema.parse(
       Object.fromEntries(data),
@@ -106,14 +107,14 @@ export const acceptInvitationAction = enhanceAction(
     const perSeatBillingService = createAccountPerSeatBillingService(client);
     const service = createAccountInvitationsService(client);
 
+    // use admin client to accept invitation
+    const adminClient = getSupabaseServerAdminClient();
+
     // Accept the invitation
-    const accountId = await service.acceptInvitationToTeam(
-      getSupabaseServerActionClient({ admin: true }),
-      {
-        inviteToken,
-        userId: user.id,
-      },
-    );
+    const accountId = await service.acceptInvitationToTeam(adminClient, {
+      inviteToken,
+      userId: user.id,
+    });
 
     // If the account ID is not present, throw an error
     if (!accountId) {
@@ -134,7 +135,7 @@ export const acceptInvitationAction = enhanceAction(
  */
 export const renewInvitationAction = enhanceAction(
   async (params) => {
-    const client = getSupabaseServerActionClient();
+    const client = getSupabaseServerClient();
     const { invitationId } = RenewInvitationSchema.parse(params);
 
     const service = createAccountInvitationsService(client);

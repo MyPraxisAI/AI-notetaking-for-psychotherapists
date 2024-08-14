@@ -5,7 +5,8 @@ import { ArrowLeft } from 'lucide-react';
 
 import { AuthLayoutShell } from '@kit/auth/shared';
 import { requireUser } from '@kit/supabase/require-user';
-import { getSupabaseServerComponentClient } from '@kit/supabase/server-component-client';
+import { getSupabaseServerClient } from '@kit/supabase/server-client';
+import { getSupabaseServerAdminClient } from '@kit/supabase/server-admin-client';
 import { createTeamAccountsApi } from '@kit/team-accounts/api';
 import { AcceptInvitationContainer } from '@kit/team-accounts/components';
 import { Button } from '@kit/ui/button';
@@ -40,7 +41,7 @@ async function JoinTeamAccountPage({ searchParams }: Context) {
     notFound();
   }
 
-  const client = getSupabaseServerComponentClient();
+  const client = getSupabaseServerClient();
   const auth = await requireUser(client);
 
   // if the user is not logged in or there is an error
@@ -59,7 +60,7 @@ async function JoinTeamAccountPage({ searchParams }: Context) {
   }
 
   // get api to interact with team accounts
-  const adminClient = getSupabaseServerComponentClient({ admin: true });
+  const adminClient = getSupabaseServerAdminClient();
   const api = createTeamAccountsApi(client);
 
   // the user is logged in, we can now check if the token is valid

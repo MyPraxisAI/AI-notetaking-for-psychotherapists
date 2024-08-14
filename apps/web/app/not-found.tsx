@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 import { ArrowLeft } from 'lucide-react';
 
-import { getSupabaseServerComponentClient } from '@kit/supabase/server-component-client';
+import { getSupabaseServerClient } from '@kit/supabase/server-client';
 import { Button } from '@kit/ui/button';
 import { Heading } from '@kit/ui/heading';
 import { Trans } from '@kit/ui/trans';
@@ -21,7 +21,7 @@ export const generateMetadata = async () => {
 };
 
 const NotFoundPage = async () => {
-  const client = getSupabaseServerComponentClient();
+  const client = getSupabaseServerClient();
 
   const {
     data: { user },

@@ -4,13 +4,13 @@ import { redirect } from 'next/navigation';
 
 import { enhanceAction } from '@kit/next/actions';
 import { getLogger } from '@kit/shared/logger';
-import { getSupabaseServerActionClient } from '@kit/supabase/server-actions-client';
+import { getSupabaseServerClient } from '@kit/supabase/server-client';
 
 import { UpdateTeamNameSchema } from '../../schema/update-team-name.schema';
 
 export const updateTeamAccountName = enhanceAction(
   async (params) => {
-    const client = getSupabaseServerActionClient();
+    const client = getSupabaseServerClient();
     const logger = await getLogger();
     const { name, path, slug } = params;
 

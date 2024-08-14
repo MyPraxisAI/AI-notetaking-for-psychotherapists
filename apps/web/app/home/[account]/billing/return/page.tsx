@@ -4,7 +4,7 @@ import { notFound, redirect } from 'next/navigation';
 
 import { getBillingGatewayProvider } from '@kit/billing-gateway';
 import { BillingSessionStatus } from '@kit/billing-gateway/components';
-import { getSupabaseServerComponentClient } from '@kit/supabase/server-component-client';
+import { getSupabaseServerClient } from '@kit/supabase/server-client';
 
 import billingConfig from '~/config/billing.config';
 import { withI18n } from '~/lib/i18n/with-i18n';
@@ -75,7 +75,7 @@ function BlurryBackdrop() {
 async function loadCheckoutSession(sessionId: string) {
   await requireUserInServerComponent();
 
-  const client = getSupabaseServerComponentClient();
+  const client = getSupabaseServerClient();
   const gateway = await getBillingGatewayProvider(client);
 
   const session = await gateway.retrieveCheckoutSession({

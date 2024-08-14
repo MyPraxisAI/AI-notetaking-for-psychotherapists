@@ -20,6 +20,7 @@ const keys = getSupabaseClientKeys();
 
 /**
  * @name getSupabaseRouteHandlerClient
+ * @deprecated Use `getSupabaseServerClient` instead.
  * @description Get a Supabase client for use in the Route Handler Routes
  */
 export function getSupabaseRouteHandlerClient<GenericSchema = Database>(

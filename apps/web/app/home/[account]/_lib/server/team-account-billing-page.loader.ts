@@ -4,7 +4,7 @@ import { cache } from 'react';
 
 import { z } from 'zod';
 
-import { getSupabaseServerComponentClient } from '@kit/supabase/server-component-client';
+import { getSupabaseServerClient } from '@kit/supabase/server-client';
 import { createTeamAccountsApi } from '@kit/team-accounts/api';
 
 /**
@@ -29,7 +29,7 @@ const BILLING_MODE = z
 export const loadTeamAccountBillingPage = cache(teamAccountBillingPageLoader);
 
 function teamAccountBillingPageLoader(accountId: string) {
-  const client = getSupabaseServerComponentClient();
+  const client = getSupabaseServerClient();
   const api = createTeamAccountsApi(client);
 
   const data =

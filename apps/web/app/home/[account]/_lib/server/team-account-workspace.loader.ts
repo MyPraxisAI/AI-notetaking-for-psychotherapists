@@ -4,7 +4,7 @@ import { cache } from 'react';
 
 import { redirect } from 'next/navigation';
 
-import { getSupabaseServerComponentClient } from '@kit/supabase/server-component-client';
+import { getSupabaseServerClient } from '@kit/supabase/server-client';
 import { createTeamAccountsApi } from '@kit/team-accounts/api';
 
 import pathsConfig from '~/config/paths.config';
@@ -26,7 +26,7 @@ export type TeamAccountWorkspace = Awaited<
 export const loadTeamWorkspace = cache(workspaceLoader);
 
 async function workspaceLoader(accountSlug: string) {
-  const client = getSupabaseServerComponentClient();
+  const client = getSupabaseServerClient();
   const api = createTeamAccountsApi(client);
 
   const [workspace, user] = await Promise.all([

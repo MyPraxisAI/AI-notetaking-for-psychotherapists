@@ -2,7 +2,7 @@ import { ServerDataLoader } from '@makerkit/data-loader-supabase-nextjs';
 
 import { AdminAccountsTable } from '@kit/admin/components/admin-accounts-table';
 import { AdminGuard } from '@kit/admin/components/admin-guard';
-import { getSupabaseServerComponentClient } from '@kit/supabase/server-component-client';
+import { getSupabaseServerAdminClient } from '@kit/supabase/server-admin-client';
 import { PageBody, PageHeader } from '@kit/ui/page';
 
 interface SearchParams {
@@ -16,9 +16,7 @@ export const metadata = {
 };
 
 function AccountsPage({ searchParams }: { searchParams: SearchParams }) {
-  const client = getSupabaseServerComponentClient({
-    admin: true,
-  });
+  const client = getSupabaseServerAdminClient();
 
   const page = searchParams.page ? parseInt(searchParams.page) : 1;
   const filters = getFilters(searchParams);

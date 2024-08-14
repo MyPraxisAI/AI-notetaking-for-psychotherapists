@@ -1,4 +1,4 @@
-import { getSupabaseServerComponentClient } from '@kit/supabase/server-component-client';
+import { getSupabaseServerClient } from '@kit/supabase/server-client';
 import { createTeamAccountsApi } from '@kit/team-accounts/api';
 import { TeamAccountSettingsContainer } from '@kit/team-accounts/components';
 import { AppBreadcrumbs } from '@kit/ui/app-breadcrumbs';
@@ -32,7 +32,7 @@ const paths = {
 };
 
 async function TeamAccountSettingsPage(props: Props) {
-  const api = createTeamAccountsApi(getSupabaseServerComponentClient());
+  const api = createTeamAccountsApi(getSupabaseServerClient());
   const data = await api.getTeamAccount(props.params.account);
 
   const account = {
