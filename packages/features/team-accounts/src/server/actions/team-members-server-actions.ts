@@ -3,7 +3,8 @@
 import { revalidatePath } from 'next/cache';
 
 import { enhanceAction } from '@kit/next/actions';
-import { getSupabaseServerActionClient } from '@kit/supabase/server-actions-client';
+import { getSupabaseServerAdminClient } from '@kit/supabase/server-admin-client';
+import { getSupabaseServerClient } from '@kit/supabase/server-client';
 
 import { RemoveMemberSchema } from '../../schema/remove-member.schema';
 import { TransferOwnershipConfirmationSchema } from '../../schema/transfer-ownership-confirmation.schema';
@@ -16,7 +17,7 @@ import { createAccountMembersService } from '../services/account-members.service
  */
 export const removeMemberFromAccountAction = enhanceAction(
   async ({ accountId, userId }) => {
-    const client = getSupabaseServerActionClient();
+    const client = getSupabaseServerClient();
     const service = createAccountMembersService(client);
 
     await service.removeMemberFromAccount({
@@ -40,9 +41,9 @@ export const removeMemberFromAccountAction = enhanceAction(
  */
 export const updateMemberRoleAction = enhanceAction(
   async (data) => {
-    const client = getSupabaseServerActionClient();
+    const client = getSupabaseServerClient();
     const service = createAccountMembersService(client);
-    const adminClient = getSupabaseServerActionClient({ admin: true });
+    const adminClient = getSupabaseServerAdminClient();
 
     // update the role of the member
     await service.updateMemberRole(data, adminClient);
@@ -63,7 +64,7 @@ export const updateMemberRoleAction = enhanceAction(
  */
 export const transferOwnershipAction = enhanceAction(
   async (data) => {
-    const client = getSupabaseServerActionClient();
+    const client = getSupabaseServerClient();
 
     // assert that the user is the owner of the account
     const { data: isOwner, error } = await client.rpc('is_account_owner', {
@@ -80,7 +81,7 @@ export const transferOwnershipAction = enhanceAction(
 
     // at this point, the user is authenticated and is the owner of the account
     // so we proceed with the transfer of ownership with admin privileges
-    const adminClient = getSupabaseServerActionClient({ admin: true });
+    const adminClient = getSupabaseServerAdminClient();
 
     // transfer the ownership of the account
     await service.transferOwnership(data, adminClient);

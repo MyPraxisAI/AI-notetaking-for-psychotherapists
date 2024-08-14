@@ -1,7 +1,7 @@
 import 'server-only';
 
 import { getLogger } from '@kit/shared/logger';
-import { getSupabaseRouteHandlerClient } from '@kit/supabase/route-handler-client';
+import { getSupabaseServerAdminClient } from '@kit/supabase/server-admin-client';
 
 import { RecordChange, Tables } from '../record-change.type';
 import { createDatabaseWebhookRouterService } from './database-webhook-router.service';
@@ -59,16 +59,12 @@ class DatabaseWebhookHandlerService {
 
     await verifier.verifySignatureOrThrow(request);
 
-    // all good, handle the webhook
+    // all good, we can now the webhook
 
-    // create a client with admin access since we are handling webhooks
-    // and no user is authenticated
-    const client = getSupabaseRouteHandlerClient({
-      admin: true,
-    });
+    // create a client with admin access since we are handling webhooks and no user is authenticated
+    const adminClient = getSupabaseServerAdminClient();
 
-    // handle the webhook
-    const service = createDatabaseWebhookRouterService(client);
+    const service = createDatabaseWebhookRouterService(adminClient);
 
     try {
       // handle the webhook event based on the table

@@ -5,7 +5,7 @@ import { cache } from 'react';
 import { redirect } from 'next/navigation';
 
 import { requireUser } from '@kit/supabase/require-user';
-import { getSupabaseServerComponentClient } from '@kit/supabase/server-component-client';
+import { getSupabaseServerClient } from '@kit/supabase/server-client';
 
 /**
  * @name requireUserInServerComponent
@@ -14,7 +14,7 @@ import { getSupabaseServerComponentClient } from '@kit/supabase/server-component
  * Use this instead of `requireUser` in server components, so you don't need to hit the database multiple times in a single request.
  */
 export const requireUserInServerComponent = cache(async () => {
-  const client = getSupabaseServerComponentClient();
+  const client = getSupabaseServerClient();
   const result = await requireUser(client);
 
   if (result.error) {

@@ -6,7 +6,8 @@ import { SupabaseClient } from '@supabase/supabase-js';
 
 import { enhanceAction } from '@kit/next/actions';
 import { Database } from '@kit/supabase/database';
-import { getSupabaseServerActionClient } from '@kit/supabase/server-actions-client';
+import { getSupabaseServerAdminClient } from '@kit/supabase/server-admin-client';
+import { getSupabaseServerClient } from '@kit/supabase/server-client';
 
 import { DeleteTeamAccountSchema } from '../../schema/delete-team-account.schema';
 import { createDeleteTeamAccountService } from '../services/delete-team-account.service';
@@ -17,7 +18,7 @@ export const deleteTeamAccountAction = enhanceAction(
       Object.fromEntries(formData.entries()),
     );
 
-    const client = getSupabaseServerActionClient();
+    const client = getSupabaseServerClient();
     const userId = user.id;
     const accountId = params.accountId;
 
@@ -30,16 +31,14 @@ export const deleteTeamAccountAction = enhanceAction(
     // Get the Supabase client and create a new service instance.
     const service = createDeleteTeamAccountService();
 
+    // Get the Supabase admin client.
+    const adminClient = getSupabaseServerAdminClient();
+
     // Delete the team account and all associated data.
-    await service.deleteTeamAccount(
-      getSupabaseServerActionClient({
-        admin: true,
-      }),
-      {
-        accountId,
-        userId,
-      },
-    );
+    await service.deleteTeamAccount(adminClient, {
+      accountId,
+      userId,
+    });
 
     return redirect('/home');
   },
