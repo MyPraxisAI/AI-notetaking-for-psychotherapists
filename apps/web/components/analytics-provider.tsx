@@ -2,15 +2,15 @@
 
 import { useEffect } from 'react';
 
+
+
 import { usePathname, useSearchParams } from 'next/navigation';
 
+
+
 import { analytics } from '@kit/analytics';
-import {
-  AppEvent,
-  AppEventType,
-  ConsumerProvidedEventTypes,
-  useAppEvents,
-} from '@kit/shared/events';
+import { AppEvent, AppEventType, ConsumerProvidedEventTypes, useAppEvents } from '@kit/shared/events';
+
 
 type AnalyticsMapping<
   T extends ConsumerProvidedEventTypes = NonNullable<unknown>,
@@ -48,10 +48,10 @@ function useAnalyticsMapping<T extends ConsumerProvidedEventTypes>(
  */
 const analyticsMapping: AnalyticsMapping = {
   'user.signedIn': (event) => {
-    const userId = event.payload.userId;
+    const { userId, ...traits } = event.payload;
 
     if (userId) {
-      return analytics.identify(userId);
+      return analytics.identify(userId, traits);
     }
   },
   'user.signedUp': (event) => {

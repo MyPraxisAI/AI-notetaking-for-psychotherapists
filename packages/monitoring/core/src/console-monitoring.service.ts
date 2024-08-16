@@ -1,8 +1,8 @@
 import { MonitoringService } from '@kit/monitoring-core';
 
 export class ConsoleMonitoringService implements MonitoringService {
-  identifyUser() {
-    // noop
+  identifyUser(data: { id: string }) {
+    console.log(`[Console Monitoring] Identified user`, data);
   }
 
   captureException(error: Error) {
