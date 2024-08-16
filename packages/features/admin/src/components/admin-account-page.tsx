@@ -6,7 +6,7 @@ import {
   VenetianMask,
 } from 'lucide-react';
 
-import { Database } from '@kit/supabase/database';
+import { Tables } from '@kit/supabase/database';
 import { getSupabaseServerAdminClient } from '@kit/supabase/server-admin-client';
 import { Alert, AlertDescription, AlertTitle } from '@kit/ui/alert';
 import { AppBreadcrumbs } from '@kit/ui/app-breadcrumbs';
@@ -32,9 +32,8 @@ import { AdminMembersTable } from './admin-members-table';
 import { AdminMembershipsTable } from './admin-memberships-table';
 import { AdminReactivateUserDialog } from './admin-reactivate-user-dialog';
 
-type Db = Database['public']['Tables'];
-type Account = Db['accounts']['Row'];
-type Membership = Db['accounts_memberships']['Row'];
+type Account = Tables<'accounts'>;
+type Membership = Tables<'accounts_memberships'>;
 
 export function AdminAccountPage(props: {
   account: Account & { memberships: Membership[] };

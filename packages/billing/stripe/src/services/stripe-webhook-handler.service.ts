@@ -2,7 +2,7 @@ import Stripe from 'stripe';
 
 import { BillingConfig, BillingWebhookHandlerService } from '@kit/billing';
 import { getLogger } from '@kit/shared/logger';
-import { Database } from '@kit/supabase/database';
+import { Database, Enums } from '@kit/supabase/database';
 
 import { StripeServerEnvSchema } from '../schema/stripe-server-env.schema';
 import { createStripeClient } from './stripe-sdk';
@@ -29,6 +29,8 @@ interface LineItem {
 type UpsertOrderParams =
   Database['public']['Functions']['upsert_order']['Args'];
 
+type BillingProvider = Enums<'billing_provider'>;
+
 export class StripeWebhookHandlerService
   implements BillingWebhookHandlerService
 {
@@ -36,7 +38,7 @@ export class StripeWebhookHandlerService
 
   constructor(private readonly config: BillingConfig) {}
 
-  private readonly provider: Database['public']['Enums']['billing_provider'] =
+  private readonly provider: BillingProvider =
     'stripe';
 
   private readonly namespace = 'billing.stripe';

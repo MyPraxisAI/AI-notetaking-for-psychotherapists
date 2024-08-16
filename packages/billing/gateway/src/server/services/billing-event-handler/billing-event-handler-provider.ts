@@ -3,7 +3,7 @@ import 'server-only';
 import { SupabaseClient } from '@supabase/supabase-js';
 
 import { BillingConfig } from '@kit/billing';
-import { Database } from '@kit/supabase/database';
+import { Database, Enums } from '@kit/supabase/database';
 
 import { BillingEventHandlerFactoryService } from './billing-event-handler-factory.service';
 import { createBillingEventHandlerService } from './billing-event-handler.service';
@@ -12,7 +12,7 @@ import { createBillingEventHandlerService } from './billing-event-handler.servic
 type ClientProvider = () => SupabaseClient<Database>;
 
 // the billing provider from the database
-type BillingProvider = Database['public']['Enums']['billing_provider'];
+type BillingProvider = Enums<'billing_provider'>;
 
 /**
  * @name getBillingEventHandlerService

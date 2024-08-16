@@ -1,10 +1,8 @@
-import { Database } from '@kit/supabase/database';
+import { Enums } from '@kit/supabase/database';
 import { Badge } from '@kit/ui/badge';
 import { Trans } from '@kit/ui/trans';
 
-type Status =
-  | Database['public']['Enums']['subscription_status']
-  | Database['public']['Enums']['payment_status'];
+type Status = Enums<'subscription_status'> | Enums<'payment_status'>;
 
 export function CurrentPlanBadge(
   props: React.PropsWithoutRef<{
