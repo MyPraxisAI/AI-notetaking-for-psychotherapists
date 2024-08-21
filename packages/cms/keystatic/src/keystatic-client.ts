@@ -1,6 +1,12 @@
+import React from 'react';
+
 import { Cms, CmsClient } from '@kit/cms';
 
 import { createKeystaticReader } from './create-reader';
+import {
+  CustomMarkdocComponents,
+  CustomMarkdocTags,
+} from './custom-components';
 import { PostEntryProps } from './keystatic.config';
 
 export function createKeystaticClient() {
@@ -158,8 +164,14 @@ class KeystaticClient implements CmsClient {
       : new Date();
 
     const markdoc = await item.entry.content();
-    const content = transform(markdoc.node);
-    const html = renderers.html(content);
+
+    const content = transform(markdoc.node, {
+      tags: CustomMarkdocTags,
+    });
+
+    const html = renderers.react(content, React, {
+      components: CustomMarkdocComponents,
+    });
 
     return {
       id: item.slug,
@@ -168,7 +180,7 @@ class KeystaticClient implements CmsClient {
       slug: item.slug,
       description: item.entry.description,
       publishedAt: publishedAt.toISOString(),
-      content: html,
+      content: html as string,
       image: item.entry.image ?? undefined,
       status: item.entry.status,
       categories:

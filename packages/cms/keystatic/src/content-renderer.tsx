@@ -1,3 +1,3 @@
 export function KeystaticContentRenderer(props: { content: unknown }) {
-  return <div dangerouslySetInnerHTML={{ __html: props.content as string }} />;
+  return <div>{props.content as React.ReactNode}</div>;
 }
