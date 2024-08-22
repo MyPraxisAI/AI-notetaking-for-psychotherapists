@@ -1,3 +1,5 @@
+import type { Schema } from '@markdoc/markdoc';
+
 /**
  * @name CustomMarkdocComponents
  * @description Custom components for Markdoc. Please define your custom components here.
@@ -24,9 +26,10 @@ export const CustomMarkdocComponents: Record<
  * export const CustomMarkdocTags = {
  *  youtube: {
  *     render: "Youtube",
+ *     selfClosing: true,
  *  }
  * }
  */
-export const CustomMarkdocTags = {
+export const CustomMarkdocTags: Record<string, Schema> = {
   // define your custom tags here
 };
