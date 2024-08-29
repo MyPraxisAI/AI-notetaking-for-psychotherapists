@@ -20,7 +20,7 @@
     "@kit/tsconfig": "workspace:*",
     "@kit/ui": "workspace:^",
     "@types/node": "^22.1.0",
-    "wp-types": "^4.66.0"
+    "wp-types": "^4.66.1"
   },
   "eslintConfig": {
     "root": true,
