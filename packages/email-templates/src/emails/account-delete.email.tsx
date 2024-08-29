@@ -38,7 +38,7 @@ export async function renderAccountDeleteEmail(props: Props) {
     productName: props.productName,
   });
 
-  const html = render(
+  const html = await render(
     <Html>
       <Head>
         <BodyStyle />

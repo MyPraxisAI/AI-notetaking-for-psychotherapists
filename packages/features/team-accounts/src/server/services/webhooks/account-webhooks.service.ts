@@ -53,6 +53,7 @@ class AccountWebhooksService {
   }) {
     const { renderAccountDeleteEmail } = await import('@kit/email-templates');
     const { getMailer } = await import('@kit/mailers');
+
     const mailer = await getMailer();
 
     const { html, subject } = await renderAccountDeleteEmail({

@@ -63,7 +63,7 @@ export async function renderInviteEmail(props: Props) {
     teamName: props.teamName,
   });
 
-  const html = render(
+  const html = await render(
     <Html>
       <Head>
         <BodyStyle />
