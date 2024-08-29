@@ -2,7 +2,7 @@ import 'server-only';
 
 import { cache } from 'react';
 
-import { getSupabaseServerClient } from '@kit/supabase/server-client';
+import { getSupabaseServerAdminClient } from '@kit/supabase/server-admin-client';
 
 import { createAdminDashboardService } from '../services/admin-dashboard.service';
 
@@ -14,7 +14,7 @@ import { createAdminDashboardService } from '../services/admin-dashboard.service
 export const loadAdminDashboard = cache(adminDashboardLoader);
 
 function adminDashboardLoader() {
-  const client = getSupabaseServerClient();
+  const client = getSupabaseServerAdminClient();
   const service = createAdminDashboardService(client);
 
   return service.getDashboardData();
