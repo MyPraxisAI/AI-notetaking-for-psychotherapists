@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { CaretSortIcon, PersonIcon } from '@radix-ui/react-icons';
 import { CheckCircle, Plus } from 'lucide-react';
@@ -59,16 +59,11 @@ export function AccountSelector({
 }: React.PropsWithChildren<AccountSelectorProps>) {
   const [open, setOpen] = useState<boolean>(false);
   const [isCreatingAccount, setIsCreatingAccount] = useState<boolean>(false);
-
-  const [value, setValue] = useState<string>(
-    selectedAccount ?? PERSONAL_ACCOUNT_SLUG,
-  );
-
   const { t } = useTranslation('teams');
   const personalData = usePersonalAccountData(userId);
 
-  useEffect(() => {
-    setValue(selectedAccount ?? PERSONAL_ACCOUNT_SLUG);
+  const value = useMemo(() => {
+    return selectedAccount ?? PERSONAL_ACCOUNT_SLUG;
   }, [selectedAccount]);
 
   const Icon = (props: { item: string }) => {
@@ -201,7 +196,6 @@ export function AccountSelector({
                       key={account.value}
                       value={account.value ?? ''}
                       onSelect={(currentValue) => {
-                        setValue(currentValue === value ? '' : currentValue);
                         setOpen(false);
 
                         if (onAccountChange) {
