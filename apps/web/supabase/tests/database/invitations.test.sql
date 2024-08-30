@@ -8,6 +8,7 @@ select no_plan();
 select makerkit.set_identifier('test', 'test@makerkit.dev');
 select makerkit.set_identifier('member', 'member@makerkit.dev');
 select makerkit.set_identifier('custom', 'custom@makerkit.dev');
+select makerkit.set_identifier('owner', 'owner@makerkit.dev');
 
 select tests.authenticate_as('test');
 
@@ -36,6 +37,20 @@ select lives_ok(
     'member should be able to create invitations for members or lower roles'
 );
 
+-- test invite exists
+select isnt_empty(
+    $$ select * from public.invitations where account_id = makerkit.get_account_id_by_slug('makerkit') $$,
+    'invitations should be listed'
+);
+
+select tests.authenticate_as('owner');
+
+-- check the owner can invite members with lower roles
+select lives_ok(
+    $$ insert into public.invitations (email, invited_by, account_id, role, invite_token) values ('invite3@makerkit.dev', auth.uid(), makerkit.get_account_id_by_slug('makerkit'), 'member', gen_random_uuid()) $$,
+    'owner should be able to create invitations'
+);
+
 -- authenticate_as the custom role
 select tests.authenticate_as('custom');
 
@@ -54,7 +69,7 @@ insert into public.role_permissions (role, permission) values ('custom-role', 'i
 select tests.authenticate_as('custom');
 
 select lives_ok(
-    $$ insert into public.invitations (email, invited_by, account_id, role, invite_token) values ('invite3@makerkit.dev', auth.uid(), makerkit.get_account_id_by_slug('makerkit'), 'custom-role', gen_random_uuid()) $$,
+    $$ insert into public.invitations (email, invited_by, account_id, role, invite_token) values ('invite4@makerkit.dev', auth.uid(), makerkit.get_account_id_by_slug('makerkit'), 'custom-role', gen_random_uuid()) $$,
     'custom role should be able to create invitations'
 );
 

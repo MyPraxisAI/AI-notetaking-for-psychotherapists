@@ -1234,7 +1234,7 @@ select
 
 -- INSERT(invitations):
 -- Users can create invitations to users of an account they are
--- a member of  and have the 'invites.manage' permission AND the target role is not higher than the user's role
+-- a member of and have the 'invites.manage' permission AND the target role is not higher than the user's role
 create policy invitations_create_self on public.invitations for insert to authenticated
 with
   check (
@@ -1247,14 +1247,21 @@ with
       account_id,
       'invites.manage'::public.app_permissions
     )
-    and public.has_same_role_hierarchy_level (
+    and (public.has_more_elevated_role (
       (
         select
           auth.uid ()
       ),
       account_id,
       role
-    )
+    ) or public.has_same_role_hierarchy_level(
+      (
+        select
+          auth.uid ()
+      ),
+      account_id,
+      role
+    ))
   );
 
 -- UPDATE(invitations):
