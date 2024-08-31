@@ -1,4 +1,4 @@
-import type { SignInWithPasswordlessCredentials } from '@supabase/gotrue-js';
+import type { SignInWithPasswordlessCredentials } from '@supabase/supabase-js';
 
 import { useMutation } from '@tanstack/react-query';
 
