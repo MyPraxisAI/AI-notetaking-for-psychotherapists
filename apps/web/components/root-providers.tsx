@@ -4,7 +4,6 @@ import { useMemo } from 'react';
 
 import dynamic from 'next/dynamic';
 
-import { ReactQueryStreamedHydration } from '@tanstack/react-query-next-experimental';
 import { ThemeProvider } from 'next-themes';
 
 import { CaptchaProvider } from '@kit/auth/captcha/client';
@@ -53,29 +52,27 @@ export function RootProviders({
       <AppEventsProvider>
         <AnalyticsProvider>
           <ReactQueryProvider>
-            <ReactQueryStreamedHydration>
-              <I18nProvider settings={i18nSettings} resolver={i18nResolver}>
-                <CaptchaProvider>
-                  <CaptchaTokenSetter siteKey={captchaSiteKey} />
+            <I18nProvider settings={i18nSettings} resolver={i18nResolver}>
+              <CaptchaProvider>
+                <CaptchaTokenSetter siteKey={captchaSiteKey} />
 
-                  <AuthProvider>
-                    <ThemeProvider
-                      attribute="class"
-                      enableSystem
-                      disableTransitionOnChange
-                      defaultTheme={theme}
-                      enableColorScheme={false}
-                    >
-                      {children}
-                    </ThemeProvider>
-                  </AuthProvider>
-                </CaptchaProvider>
+                <AuthProvider>
+                  <ThemeProvider
+                    attribute="class"
+                    enableSystem
+                    disableTransitionOnChange
+                    defaultTheme={theme}
+                    enableColorScheme={false}
+                  >
+                    {children}
+                  </ThemeProvider>
+                </AuthProvider>
+              </CaptchaProvider>
 
-                <If condition={featuresFlagConfig.enableVersionUpdater}>
-                  <VersionUpdater />
-                </If>
-              </I18nProvider>
-            </ReactQueryStreamedHydration>
+              <If condition={featuresFlagConfig.enableVersionUpdater}>
+                <VersionUpdater />
+              </If>
+            </I18nProvider>
           </ReactQueryProvider>
         </AnalyticsProvider>
       </AppEventsProvider>
