@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Cms, CmsClient } from '@kit/cms';
+import { Cms, CmsClient } from '@kit/cms-types';
 
 import { createKeystaticReader } from './create-reader';
 import {

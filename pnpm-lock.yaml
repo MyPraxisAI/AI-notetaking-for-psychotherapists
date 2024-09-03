@@ -420,15 +420,24 @@ importers:
 
   packages/cms/core:
     devDependencies:
+      '@kit/cms-types':
+        specifier: workspace:^
+        version: link:../types
       '@kit/eslint-config':
         specifier: workspace:*
         version: link:../../../tooling/eslint
+      '@kit/keystatic':
+        specifier: workspace:^
+        version: link:../keystatic
       '@kit/prettier-config':
         specifier: workspace:*
         version: link:../../../tooling/prettier
       '@kit/tsconfig':
         specifier: workspace:*
         version: link:../../../tooling/typescript
+      '@kit/wordpress':
+        specifier: workspace:^
+        version: link:../wordpress
       '@types/node':
         specifier: ^22.5.2
         version: 22.5.2
@@ -445,9 +454,9 @@ importers:
         specifier: ^0.4.0
         version: 0.4.0(@types/react@18.3.5)(react@18.3.1)
     devDependencies:
-      '@kit/cms':
+      '@kit/cms-types':
         specifier: workspace:^
-        version: link:../core
+        version: link:../types
       '@kit/eslint-config':
         specifier: workspace:*
         version: link:../../../tooling/eslint
@@ -473,11 +482,23 @@ importers:
         specifier: ^3.23.8
         version: 3.23.8
 
+  packages/cms/types:
+    devDependencies:
+      '@kit/eslint-config':
+        specifier: workspace:*
+        version: link:../../../tooling/eslint
+      '@kit/prettier-config':
+        specifier: workspace:*
+        version: link:../../../tooling/prettier
+      '@kit/tsconfig':
+        specifier: workspace:*
+        version: link:../../../tooling/typescript
+
   packages/cms/wordpress:
     devDependencies:
-      '@kit/cms':
+      '@kit/cms-types':
         specifier: workspace:^
-        version: link:../core
+        version: link:../types
       '@kit/eslint-config':
         specifier: workspace:*
         version: link:../../../tooling/eslint
@@ -493,6 +514,9 @@ importers:
       '@types/node':
         specifier: ^22.5.2
         version: 22.5.2
+      '@types/react':
+        specifier: ^18.3.5
+        version: 18.3.5
       wp-types:
         specifier: ^4.66.1
         version: 4.66.1

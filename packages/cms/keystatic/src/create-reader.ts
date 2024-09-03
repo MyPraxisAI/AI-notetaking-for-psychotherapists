@@ -1,18 +1,22 @@
 import { z } from 'zod';
 
+import { keyStaticConfig } from './keystatic.config';
+
+/**
+ * The kind of storage to use for the Keystatic reader.
+ */
 const STORAGE_KIND = process.env.KEYSTATIC_STORAGE_KIND ?? 'local';
 
 /**
- * Create a KeyStatic reader based on the storage kind.
+ * Creates a new Keystatic reader instance.
  */
 export async function createKeystaticReader() {
   switch (STORAGE_KIND) {
     case 'local': {
       if (process.env.NEXT_RUNTIME === 'nodejs') {
-        const { default: config } = await import('./keystatic.config');
         const { createReader } = await import('@keystatic/core/reader');
 
-        return createReader(process.cwd(), config);
+        return createReader(process.cwd(), keyStaticConfig);
       } else {
         // we should never get here but the compiler requires the check
         // to ensure we don't parse the package at build time
@@ -22,11 +26,11 @@ export async function createKeystaticReader() {
 
     case 'github':
     case 'cloud': {
-      const { default: config } = await import('./keystatic.config');
-
       const githubConfig = z
         .object({
-          token: z.string(),
+          token: z.string({
+            description: 'The GitHub token to use for authentication.',
+          }),
           repo: z.custom<`${string}/${string}`>(),
           pathPrefix: z.string().optional(),
         })
@@ -40,7 +44,7 @@ export async function createKeystaticReader() {
         '@keystatic/core/reader/github'
       );
 
-      return createGitHubReader(config, githubConfig);
+      return createGitHubReader(keyStaticConfig, githubConfig);
     }
 
     default:

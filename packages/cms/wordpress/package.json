@@ -11,15 +11,17 @@
   },
   "prettier": "@kit/prettier-config",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./renderer": "./src/content-renderer.tsx"
   },
   "devDependencies": {
-    "@kit/cms": "workspace:^",
+    "@kit/cms-types": "workspace:^",
     "@kit/eslint-config": "workspace:*",
     "@kit/prettier-config": "workspace:*",
     "@kit/tsconfig": "workspace:*",
     "@kit/ui": "workspace:^",
     "@types/node": "^22.5.2",
+    "@types/react": "^18.3.5",
     "wp-types": "^4.66.1"
   },
   "eslintConfig": {

@@ -43,11 +43,9 @@ const storage = z.union([local, cloud, github]).parse({
   pathPrefix: process.env.KEYSTATIC_PATH_PREFIX,
 });
 
-const keyStaticConfig = createKeyStaticConfig(
+export const keyStaticConfig = createKeyStaticConfig(
   process.env.NEXT_PUBLIC_KEYSTATIC_CONTENT_PATH ?? '',
 );
-
-export default keyStaticConfig;
 
 function getContentField() {
   return fields.markdoc({

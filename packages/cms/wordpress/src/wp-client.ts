@@ -5,10 +5,16 @@ import type {
   WP_REST_API_Tag,
 } from 'wp-types';
 
-import { Cms, CmsClient } from '@kit/cms';
+import { Cms, CmsClient } from '@kit/cms-types';
 
 import GetTagsOptions = Cms.GetTagsOptions;
 
+/**
+ * Creates a new WordpressClient instance.
+ *
+ * @param {string} apiUrl - The URL of the Wordpress API.
+ * @returns {WordpressClient} A new WordpressClient instance.
+ */
 export function createWordpressClient(
   apiUrl = process.env.WORDPRESS_API_URL as string,
 ) {

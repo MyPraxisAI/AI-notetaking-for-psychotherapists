@@ -1,9 +1,9 @@
 import { makeRouteHandler } from '@keystatic/next/route-handler';
 
-import config from './keystatic.config';
+import { keyStaticConfig } from './keystatic.config';
 
 const handlers = makeRouteHandler({
-  config,
+  config: keyStaticConfig,
 });
 
 /**
