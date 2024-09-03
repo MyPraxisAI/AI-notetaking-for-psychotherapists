@@ -25,6 +25,7 @@ export async function registerInstrumentation() {
     const sdk = new BaselimeSDK({
       serverless: true,
       service: serviceName,
+      baselimeKey: process.env.NEXT_PUBLIC_BASELIME_KEY,
       instrumentations: [
         new BetterHttpInstrumentation({
           plugins: [new VercelPlugin()],
