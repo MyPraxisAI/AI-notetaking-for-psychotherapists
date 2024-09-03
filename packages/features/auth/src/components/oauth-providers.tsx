@@ -12,6 +12,20 @@ import { Trans } from '@kit/ui/trans';
 import { AuthErrorAlert } from './auth-error-alert';
 import { AuthProviderButton } from './auth-provider-button';
 
+/**
+ * @name OAUTH_SCOPES
+ * @description
+ * The OAuth scopes are used to specify the permissions that the application is requesting from the user.
+ *
+ * Please add your OAuth providers here and the scopes you want to use.
+ *
+ * @see https://supabase.com/docs/guides/auth/social-login
+ */
+const OAUTH_SCOPES: Partial<Record<Provider, string>> = {
+  azure: 'email',
+  // add your OAuth providers here
+};
+
 export function OauthProviders(props: {
   inviteToken?: string;
   shouldCreateUser: boolean;
@@ -75,13 +89,7 @@ export function OauthProviders(props: {
                   ].join('?');
 
                   const redirectTo = [origin, redirectPath].join('');
-
-                  const scopesOpts =
-                    provider === 'azure'
-                      ? {
-                          scopes: 'email',
-                        }
-                      : {};
+                  const scopesOpts = OAUTH_SCOPES[provider] ?? {};
 
                   const credentials = {
                     provider,
