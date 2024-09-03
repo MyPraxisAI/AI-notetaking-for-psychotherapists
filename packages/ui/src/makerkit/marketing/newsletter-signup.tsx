@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
+import { cn } from '../../lib/utils';
 import { Button } from '../../shadcn/button';
 import {
   Form,
@@ -13,7 +14,6 @@ import {
   FormMessage,
 } from '../../shadcn/form';
 import { Input } from '../../shadcn/input';
-import { cn } from '../../utils';
 
 const NewsletterFormSchema = z.object({
   email: z.string().email('Please enter a valid email address'),

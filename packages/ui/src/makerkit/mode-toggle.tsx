@@ -5,6 +5,7 @@ import { useMemo } from 'react';
 import { Computer, Moon, Sun } from 'lucide-react';
 import { useTheme } from 'next-themes';
 
+import { cn } from '../lib/utils';
 import { Button } from '../shadcn/button';
 import {
   DropdownMenu,
@@ -16,7 +17,6 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '../shadcn/dropdown-menu';
-import { cn } from '../utils';
 import { Trans } from './trans';
 
 const MODES = ['light', 'dark', 'system'];

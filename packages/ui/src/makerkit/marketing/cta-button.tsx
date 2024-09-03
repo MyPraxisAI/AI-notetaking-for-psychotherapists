@@ -1,7 +1,7 @@
 import { forwardRef } from 'react';
 
+import { cn } from '../../lib/utils';
 import { Button } from '../../shadcn/button';
-import { cn } from '../../utils';
 
 export const CtaButton = forwardRef<
   HTMLButtonElement,

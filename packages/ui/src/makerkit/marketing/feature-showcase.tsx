@@ -1,6 +1,6 @@
 import React, { forwardRef } from 'react';
 
-import { cn } from '../../utils';
+import { cn } from '../../lib/utils';
 
 interface FeatureShowcaseProps extends React.HTMLAttributes<HTMLDivElement> {
   heading: React.ReactNode;

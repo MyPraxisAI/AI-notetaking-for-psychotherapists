@@ -3,13 +3,13 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
+import { cn, isRouteActive } from '../lib/utils';
 import { Button } from '../shadcn/button';
 import {
   NavigationMenu,
   NavigationMenuItem,
   NavigationMenuList,
 } from '../shadcn/navigation-menu';
-import { cn, isRouteActive } from '../utils';
 import { Trans } from './trans';
 
 export function BorderedNavigationMenu(props: React.PropsWithChildren) {

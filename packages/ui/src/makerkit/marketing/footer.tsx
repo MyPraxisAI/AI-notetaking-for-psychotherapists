@@ -1,6 +1,6 @@
 import { forwardRef } from 'react';
 
-import { cn } from '../../utils';
+import { cn } from '../../lib/utils';
 
 interface FooterSection {
   heading: React.ReactNode;

@@ -3,7 +3,7 @@ import * as React from 'react';
 import { Slot, Slottable } from '@radix-ui/react-slot';
 import { ChevronRight } from 'lucide-react';
 
-import { cn } from '../utils';
+import { cn } from '../lib/utils';
 
 export const CardButton = React.forwardRef<
   HTMLButtonElement,

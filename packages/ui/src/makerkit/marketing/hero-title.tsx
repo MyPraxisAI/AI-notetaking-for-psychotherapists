@@ -2,7 +2,7 @@ import { forwardRef } from 'react';
 
 import { Slot, Slottable } from '@radix-ui/react-slot';
 
-import { cn } from '../../utils';
+import { cn } from '../../lib/utils';
 
 export const HeroTitle = forwardRef<
   HTMLHeadingElement,

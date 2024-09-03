@@ -1,12 +1,12 @@
 import React, { forwardRef } from 'react';
 
+import { cn } from '../../lib/utils';
 import {
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
 } from '../../shadcn/card';
-import { cn } from '../../utils';
 
 interface FeatureCardProps extends React.HTMLAttributes<HTMLDivElement> {
   label: string;

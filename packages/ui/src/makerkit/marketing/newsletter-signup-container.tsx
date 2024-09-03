@@ -2,9 +2,9 @@
 
 import { useCallback, useState } from 'react';
 
+import { cn } from '../../lib/utils';
 import { Alert, AlertDescription, AlertTitle } from '../../shadcn/alert';
 import { Heading } from '../../shadcn/heading';
-import { cn } from '../../utils';
 import { Spinner } from '../spinner';
 import { NewsletterSignup } from './newsletter-signup';
 
