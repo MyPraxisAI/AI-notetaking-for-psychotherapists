@@ -86,7 +86,7 @@ importers:
         version: link:../../packages/i18n
       '@kit/mailers':
         specifier: workspace:^
-        version: link:../../packages/mailers
+        version: link:../../packages/mailers/core
       '@kit/monitoring':
         specifier: workspace:^
         version: link:../../packages/monitoring/api
@@ -602,7 +602,7 @@ importers:
         version: link:../../../tooling/eslint
       '@kit/mailers':
         specifier: workspace:^
-        version: link:../../mailers
+        version: link:../../mailers/core
       '@kit/monitoring':
         specifier: workspace:^
         version: link:../../monitoring/api
@@ -861,7 +861,7 @@ importers:
         version: link:../../../tooling/eslint
       '@kit/mailers':
         specifier: workspace:^
-        version: link:../../mailers
+        version: link:../../mailers/core
       '@kit/monitoring':
         specifier: workspace:*
         version: link:../../monitoring/api
@@ -966,30 +966,99 @@ importers:
         specifier: ^15.0.1
         version: 15.0.1(i18next@23.14.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
 
-  packages/mailers:
+  packages/mailers/core:
+    devDependencies:
+      '@kit/eslint-config':
+        specifier: workspace:*
+        version: link:../../../tooling/eslint
+      '@kit/nodemailer':
+        specifier: workspace:^
+        version: link:../nodemailer
+      '@kit/prettier-config':
+        specifier: workspace:*
+        version: link:../../../tooling/prettier
+      '@kit/resend':
+        specifier: workspace:^
+        version: link:../resend
+      '@kit/tailwind-config':
+        specifier: workspace:*
+        version: link:../../../tooling/tailwind
+      '@kit/tsconfig':
+        specifier: workspace:*
+        version: link:../../../tooling/typescript
+      '@types/node':
+        specifier: ^22.5.2
+        version: 22.5.2
+      zod:
+        specifier: ^3.23.8
+        version: 3.23.8
+
+  packages/mailers/nodemailer:
     dependencies:
       nodemailer:
         specifier: ^6.9.15
         version: 6.9.15
-      vercel-email:
-        specifier: 0.0.6
-        version: 0.0.6
     devDependencies:
       '@kit/eslint-config':
         specifier: workspace:*
-        version: link:../../tooling/eslint
+        version: link:../../../tooling/eslint
+      '@kit/mailers-shared':
+        specifier: workspace:^
+        version: link:../shared
       '@kit/prettier-config':
         specifier: workspace:*
-        version: link:../../tooling/prettier
+        version: link:../../../tooling/prettier
       '@kit/tailwind-config':
         specifier: workspace:*
-        version: link:../../tooling/tailwind
+        version: link:../../../tooling/tailwind
       '@kit/tsconfig':
         specifier: workspace:*
-        version: link:../../tooling/typescript
+        version: link:../../../tooling/typescript
       '@types/nodemailer':
         specifier: 6.4.15
         version: 6.4.15
+      zod:
+        specifier: ^3.23.8
+        version: 3.23.8
+
+  packages/mailers/resend:
+    devDependencies:
+      '@kit/eslint-config':
+        specifier: workspace:*
+        version: link:../../../tooling/eslint
+      '@kit/mailers-shared':
+        specifier: workspace:^
+        version: link:../shared
+      '@kit/prettier-config':
+        specifier: workspace:*
+        version: link:../../../tooling/prettier
+      '@kit/tailwind-config':
+        specifier: workspace:*
+        version: link:../../../tooling/tailwind
+      '@kit/tsconfig':
+        specifier: workspace:*
+        version: link:../../../tooling/typescript
+      '@types/node':
+        specifier: ^22.5.2
+        version: 22.5.2
+      zod:
+        specifier: ^3.23.8
+        version: 3.23.8
+
+  packages/mailers/shared:
+    devDependencies:
+      '@kit/eslint-config':
+        specifier: workspace:*
+        version: link:../../../tooling/eslint
+      '@kit/prettier-config':
+        specifier: workspace:*
+        version: link:../../../tooling/prettier
+      '@kit/tailwind-config':
+        specifier: workspace:*
+        version: link:../../../tooling/tailwind
+      '@kit/tsconfig':
+        specifier: workspace:*
+        version: link:../../../tooling/typescript
       zod:
         specifier: ^3.23.8
         version: 3.23.8
@@ -7654,9 +7723,6 @@ packages:
   validate-npm-package-name@5.0.1:
     resolution: {integrity: sha512-OljLrQ9SQdOUqTaQxqL5dEfZWrXExyyWsozYlAWFawPVNuD83igl7uJD2RTkNMbniIYgt8l81eCJGIdQF7avLQ==}
     engines: {node: ^14.17.0 || ^16.13.0 || >=18.0.0}
-
-  vercel-email@0.0.6:
-    resolution: {integrity: sha512-lpELZ8/B6qyLMUOzmvZiU5evo1Hv5jfSpI/rrzny5UYfOAUKFYycraXNT+fT/cC6ewUKQVJDg8/v3LwyX3cCzA==}
 
   vfile-message@4.0.2:
     resolution: {integrity: sha512-jRDZ1IMLttGj41KcZvlrYAaI3CfqpLpfpf+Mfig13viT6NKvRzWZ+lXz0Y5D60w6uJIBAOGq9mSHf0gktF0duw==}
@@ -15543,8 +15609,6 @@ snapshots:
       builtins: 1.0.3
 
   validate-npm-package-name@5.0.1: {}
-
-  vercel-email@0.0.6: {}
 
   vfile-message@4.0.2:
     dependencies:

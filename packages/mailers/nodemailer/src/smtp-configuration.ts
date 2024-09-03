@@ -1,4 +1,4 @@
-import { SmtpConfigSchema } from './schema/smtp-config.schema';
+import { SmtpConfigSchema } from '@kit/mailers-shared';
 
 export function getSMTPConfiguration() {
   const data = SmtpConfigSchema.parse({

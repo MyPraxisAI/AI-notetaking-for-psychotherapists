@@ -2,8 +2,7 @@ import 'server-only';
 
 import { z } from 'zod';
 
-import { Mailer } from '../../mailer';
-import type { MailerSchema } from '../../schema/mailer.schema';
+import { Mailer, MailerSchema } from '@kit/mailers-shared';
 
 type Config = z.infer<typeof MailerSchema>;
 
@@ -14,11 +13,15 @@ const RESEND_API_KEY = z
   })
   .parse(process.env.RESEND_API_KEY);
 
+export function createResendMailer() {
+  return new ResendMailer();
+}
+
 /**
  * A class representing a mailer using the Resend HTTP API.
  * @implements {Mailer}
  */
-export class ResendMailer implements Mailer {
+class ResendMailer implements Mailer {
   async sendEmail(config: Config) {
     const contentObject =
       'text' in config

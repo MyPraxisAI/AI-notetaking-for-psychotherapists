@@ -13,8 +13,11 @@ export async function getMailer() {
     case 'nodemailer':
       return getNodemailer();
 
-    case 'resend':
-      return getResendMailer();
+    case 'resend': {
+      const { createResendMailer } = await import('@kit/resend');
+
+      return createResendMailer();
+    }
 
     default:
       throw new Error(`Invalid mailer: ${MAILER_PROVIDER as string}`);
@@ -23,18 +26,12 @@ export async function getMailer() {
 
 async function getNodemailer() {
   if (process.env.NEXT_RUNTIME === 'nodejs') {
-    const { Nodemailer } = await import('./impl/nodemailer');
+    const { createNodemailerService } = await import('@kit/nodemailer');
 
-    return new Nodemailer();
+    return createNodemailerService();
   } else {
     throw new Error(
       'Nodemailer is not available on the edge runtime. Please use another mailer.',
     );
   }
-}
-
-async function getResendMailer() {
-  const { ResendMailer } = await import('./impl/resend');
-
-  return new ResendMailer();
 }

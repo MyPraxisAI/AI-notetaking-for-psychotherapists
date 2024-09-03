@@ -2,17 +2,21 @@ import 'server-only';
 
 import { z } from 'zod';
 
-import { Mailer } from '../../mailer';
-import type { MailerSchema } from '../../schema/mailer.schema';
-import { getSMTPConfiguration } from '../../smtp-configuration';
+import { Mailer, MailerSchema } from '@kit/mailers-shared';
+
+import { getSMTPConfiguration } from './smtp-configuration';
 
 type Config = z.infer<typeof MailerSchema>;
+
+export function createNodemailerService() {
+  return new Nodemailer();
+}
 
 /**
  * A class representing a mailer using Nodemailer library.
  * @implements {Mailer}
  */
-export class Nodemailer implements Mailer {
+class Nodemailer implements Mailer {
   async sendEmail(config: Config) {
     const { createTransport } = await import('nodemailer');
     const transporter = createTransport(getSMTPConfiguration());
