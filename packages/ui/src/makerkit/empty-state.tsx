@@ -1,7 +1,7 @@
 import React from 'react';
 
+import { cn } from '../lib/utils';
 import { Button } from '../shadcn/button';
-import { cn } from '../utils';
 
 const EmptyStateHeading = React.forwardRef<
   HTMLHeadingElement,

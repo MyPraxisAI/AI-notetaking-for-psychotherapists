@@ -2,7 +2,7 @@ import { forwardRef } from 'react';
 
 import { Slot, Slottable } from '@radix-ui/react-slot';
 
-import { cn } from '../../utils';
+import { cn } from '../../lib/utils';
 import { GradientSecondaryText } from './gradient-secondary-text';
 
 export const Pill = forwardRef<

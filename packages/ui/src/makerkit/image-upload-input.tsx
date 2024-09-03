@@ -7,9 +7,9 @@ import Image from 'next/image';
 
 import { UploadCloud, X } from 'lucide-react';
 
+import { cn } from '../lib/utils';
 import { Button } from '../shadcn/button';
 import { Label } from '../shadcn/label';
-import { cn } from '../utils';
 import { If } from './if';
 
 type Props = Omit<React.InputHTMLAttributes<unknown>, 'value'> & {

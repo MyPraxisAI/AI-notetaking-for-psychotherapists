@@ -16,7 +16,7 @@ import { useMutation } from '@tanstack/react-query';
 import { Path, UseFormReturn } from 'react-hook-form';
 import { z } from 'zod';
 
-import { cn } from '../utils';
+import { cn } from '../lib/utils';
 
 interface MultiStepFormProps<T extends z.ZodType> {
   schema: T;

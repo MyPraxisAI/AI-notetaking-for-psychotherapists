@@ -1,6 +1,6 @@
 import React, { forwardRef } from 'react';
 
-import { cn } from '../../utils';
+import { cn } from '../../lib/utils';
 
 export const GradientText = forwardRef<
   HTMLSpanElement,

@@ -9,6 +9,7 @@ import { cva } from 'class-variance-authority';
 import { ChevronDown } from 'lucide-react';
 import { z } from 'zod';
 
+import { cn, isRouteActive } from '../lib/utils';
 import { Button } from '../shadcn/button';
 import {
   Tooltip,
@@ -16,7 +17,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '../shadcn/tooltip';
-import { cn, isRouteActive } from '../utils';
 import { SidebarContext } from './context/sidebar.context';
 import { If } from './if';
 import type { NavigationConfigSchema } from './navigation-config.schema';
