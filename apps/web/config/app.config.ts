@@ -49,7 +49,7 @@ const AppConfigSchema = z
       return !schema.url.startsWith('http:');
     },
     {
-      message: `Please use a valid HTTPS URL in production.`,
+      message: `Please provide a valid HTTPS URL. Set the variable NEXT_PUBLIC_SITE_URL with a valid URL, such as: 'https://example.com'`,
       path: ['url'],
     },
   )
