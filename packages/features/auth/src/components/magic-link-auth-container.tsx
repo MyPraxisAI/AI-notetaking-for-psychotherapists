@@ -77,12 +77,14 @@ export function MagicLinkAuthContainer({
         },
       });
 
-      appEvents.emit({
-        type: 'user.signedUp',
-        payload: {
-          method: 'magiclink',
-        },
-      });
+      if (shouldCreateUser) {
+        appEvents.emit({
+          type: 'user.signedUp',
+          payload: {
+            method: 'magiclink',
+          },
+        });
+      }
     };
 
     toast.promise(promise, {
