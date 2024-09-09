@@ -16,10 +16,18 @@ const STORAGE_KIND = process.env.NEXT_PUBLIC_KEYSTATIC_STORAGE_KIND ??
     process.env.KEYSTATIC_STORAGE_KIND ??
     'local';
 
-const PROJECT = process.env.KEYSTATIC_STORAGE_PROJECT;
-const REPO = process.env.KEYSTATIC_STORAGE_REPO;
+/**
+ * @name REPO
+ * @description The repository to use for the GitHub storage.
+ * This can be provided through the `NEXT_PUBLIC_KEYSTATIC_STORAGE_REPO` environment variable. The previous environment variable `KEYSTATIC_STORAGE_REPO` is deprecated.
+ */
+const REPO = process.env.NEXT_PUBLIC_KEYSTATIC_STORAGE_REPO ??
+    /* @deprecated */
+    process.env.KEYSTATIC_STORAGE_REPO;
+
 const BRANCH_PREFIX = process.env.KEYSTATIC_STORAGE_BRANCH_PREFIX;
 const PATH_PREFIX = process.env.KEYSTATIC_PATH_PREFIX;
+const PROJECT = process.env.KEYSTATIC_STORAGE_PROJECT;
 
 /**
  * @name local
