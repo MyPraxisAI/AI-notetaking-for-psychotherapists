@@ -136,17 +136,19 @@ export function LineItemDetails(
                 <span>
                   <Trans i18nKey={'billing:perTeamMember'} />
                 </span>
-              </span>
 
-              <If condition={!item.tiers?.length}>
-                <span className={'font-semibold'}>
-                  {formatCurrency({
-                    currencyCode,
-                    value: item.cost,
-                    locale,
-                  })}
-                </span>
-              </If>
+                <span>-</span>
+
+                <If condition={!item.tiers?.length}>
+                  <span className={'font-semibold'}>
+                    {formatCurrency({
+                      currencyCode,
+                      value: item.cost,
+                      locale,
+                    })}
+                  </span>
+                </If>
+              </span>
             </div>
 
             <SetupFee />

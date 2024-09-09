@@ -31,7 +31,7 @@ export default createBillingSchema({
           lineItems: [
             {
               id: 'price_1NNwYHI1i3VnbZTqI2UzaHIe',
-              name: 'Addon 2',
+              name: 'Starter',
               cost: 9.99,
               type: 'flat' as const,
             },
