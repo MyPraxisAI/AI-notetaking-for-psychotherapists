@@ -1,47 +1,7 @@
-import {
-  CloudConfig,
-  GitHubConfig,
-  LocalConfig,
-  collection,
-  config,
-  fields,
-} from '@keystatic/core';
+import { collection, config, fields } from '@keystatic/core';
 import { Entry } from '@keystatic/core/reader';
-import { z } from 'zod';
 
-type ZodOutputFor<T> = z.ZodType<T, z.ZodTypeDef, unknown>;
-
-const local = z.object({
-  kind: z.literal('local'),
-}) satisfies ZodOutputFor<LocalConfig['storage']>;
-
-const cloud = z.object({
-  kind: z.literal('cloud'),
-  project: z.string().min(1),
-  branchPrefix: z.string().optional(),
-  pathPrefix: z.string().optional(),
-}) satisfies ZodOutputFor<CloudConfig['storage']>;
-
-const github = z.object({
-  kind: z.literal('github'),
-  repo: z.custom<`${string}/${string}`>(),
-  branchPrefix: z.string().optional(),
-  pathPrefix: z.string().optional(),
-  githubToken: z.string({
-    description:
-      'The GitHub token to use for authentication with the GitHub API',
-    required_error: 'Please provide a GitHub token',
-  }),
-}) satisfies ZodOutputFor<GitHubConfig['storage']>;
-
-const storage = z.union([local, cloud, github]).parse({
-  kind: process.env.KEYSTATIC_STORAGE_KIND ?? 'local',
-  project: process.env.KEYSTATIC_STORAGE_PROJECT,
-  repo: process.env.KEYSTATIC_STORAGE_REPO,
-  branchPrefix: process.env.KEYSTATIC_STORAGE_BRANCH_PREFIX,
-  githubToken: process.env.KEYSTATIC_GITHUB_TOKEN,
-  pathPrefix: process.env.KEYSTATIC_PATH_PREFIX,
-});
+import { KeystaticStorage } from './keystatic-storage';
 
 export const keyStaticConfig = createKeyStaticConfig(
   process.env.NEXT_PUBLIC_KEYSTATIC_CONTENT_PATH ?? '',
@@ -85,13 +45,13 @@ function createKeyStaticConfig(path = '') {
   }
 
   const cloud = {
-    project: storage.kind === 'cloud' ? storage.project : '',
+    project: KeystaticStorage.kind === 'cloud' ? KeystaticStorage.project : '',
   };
 
   const collections = getKeystaticCollections(path);
 
   return config({
-    storage,
+    storage: KeystaticStorage,
     cloud,
     collections,
   });
