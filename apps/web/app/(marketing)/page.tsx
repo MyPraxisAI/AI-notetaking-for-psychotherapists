@@ -47,7 +47,7 @@ function Home() {
           <Image
             priority
             className={
-              'delay-250 rounded-2xl border border-gray-200 duration-1000 ease-out animate-in fade-in zoom-in-50 fill-mode-both dark:border-primary/10'
+              'rounded-2xl border border-gray-200 dark:border-primary/10'
             }
             width={3558}
             height={2222}

@@ -23,11 +23,7 @@ export const SecondaryHero = forwardRef<HTMLDivElement, SecondaryHeroProps>(
         )}
         {...props}
       >
-        {pill && (
-          <div className="delay-300 duration-700 animate-in fade-in">
-            {pill}
-          </div>
-        )}
+        {pill}
 
         <div className="flex flex-col">
           <Heading level={2} className="tracking-tighter">
