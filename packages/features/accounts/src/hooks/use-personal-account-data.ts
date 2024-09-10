@@ -12,7 +12,6 @@ export function usePersonalAccountData(
         name: string | null;
         picture_url: string | null;
       }
-    | undefined,
 ) {
   const client = useSupabase();
   const queryKey = ['account:data', userId];

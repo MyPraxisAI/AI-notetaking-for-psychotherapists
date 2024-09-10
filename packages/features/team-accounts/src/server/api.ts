@@ -223,7 +223,7 @@ export class TeamAccountsApi {
       .gte('expires_at', new Date().toISOString())
       .single();
 
-    if (!invitation ?? error) {
+    if (error ?? !invitation) {
       return null;
     }
 

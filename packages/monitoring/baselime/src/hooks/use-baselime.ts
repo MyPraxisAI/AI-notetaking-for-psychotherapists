@@ -13,7 +13,7 @@ export function useBaselime(): MonitoringService {
 
   return useMemo(() => {
     return {
-      captureException(error: Error, extra?: React.ErrorInfo | undefined) {
+      captureException(error: Error, extra?: React.ErrorInfo) {
         void captureException(error, extra);
       },
       identifyUser(params) {

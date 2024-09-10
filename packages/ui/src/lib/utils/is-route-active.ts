@@ -10,7 +10,7 @@ const ROOT_PATH = '/';
 export function isRouteActive(
   path: string,
   currentPath: string,
-  end?: boolean | ((path: string) => boolean) | undefined,
+  end?: boolean | ((path: string) => boolean),
 ) {
   // if the path is the same as the current path, we return true
   if (path === currentPath) {

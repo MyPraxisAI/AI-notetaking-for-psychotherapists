@@ -171,6 +171,7 @@ const ChartTooltipContent = React.forwardRef<
       labelKey,
     ]);
 
+    /* @ts-expect-error: TS issue */
     if (!active ?? !payload?.length) {
       return null;
     }
