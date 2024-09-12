@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@baselime/node-opentelemetry": "^0.5.8",
-    "@baselime/react-rum": "^0.2.9",
+    "@baselime/react-rum": "^0.3.1",
     "@kit/monitoring-core": "workspace:*"
   },
   "devDependencies": {
