@@ -157,5 +157,6 @@
   "joinTeamAccount": "Join Team",
   "joiningTeam": "Joining team...",
   "leaveTeamInputLabel": "Please type LEAVE to confirm leaving the team.",
-  "leaveTeamInputDescription": "By leaving the team, you will no longer have access to it."
+  "leaveTeamInputDescription": "By leaving the team, you will no longer have access to it.",
+  "reservedNameError": "This name is reserved. Please choose a different one."
 }
