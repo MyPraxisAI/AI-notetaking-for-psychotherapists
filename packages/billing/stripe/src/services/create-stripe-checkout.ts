@@ -36,6 +36,7 @@ export async function createStripeCheckout(
         trial_period_days: params.plan.trialDays,
         metadata: {
           accountId: params.accountId,
+          ...(params.metadata ?? {}),
         },
       }
     : {};
