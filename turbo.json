@@ -94,7 +94,7 @@
       "cache": false
     },
     "license#dev": {
-      "outputLogs": "none"
+      "outputLogs": "errors-only"
     }
   }
 }
