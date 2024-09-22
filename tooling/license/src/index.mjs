@@ -6,15 +6,16 @@ async function checkLicense() {
   let gitUser, gitEmail;
 
   try {
-    gitUser = execSync('git config user.name').toString().trim();
+    gitUser =
+      execSync('git config user.username').toString().trim() ||
+      execSync('git config user.name').toString().trim();
   } catch (error) {
-    console.error('Error getting git config:', error.message);
-    process.exit(1);
+    return;
   }
 
-  if (!gitUser) {
+  if (!gitUser && !gitEmail) {
     throw new Error(
-        "Please set the git user name with the command 'git config user.name <username>'. The username needs to match the username in your Makerkit organization.",
+      "Please set the git user name with the command 'git config user.username <username>'. The username needs to match the GitHub username in your Makerkit organization.",
     );
   }
 
@@ -22,6 +23,12 @@ async function checkLicense() {
     gitEmail = execSync('git config user.email').toString().trim();
   } catch (error) {
     console.info('Error getting git config:', error.message);
+
+    if (!gitUser) {
+      throw new Error(
+        "Please set the git user name with the command 'git config user.username <username>'. The username needs to match the GitHub username in your Makerkit organization.",
+      );
+    }
   }
 
   const searchParams = new URLSearchParams();
@@ -32,15 +39,13 @@ async function checkLicense() {
     searchParams.append('email', gitEmail);
   }
 
-  const res = await fetch(
-    `${endpoint}?${searchParams.toString()}`,
-  );
+  const res = await fetch(`${endpoint}?${searchParams.toString()}`);
 
   if (res.status === 200) {
     return Promise.resolve();
   } else {
     return Promise.reject(
-      new Error(`License check failed with status code: ${res.status}`),
+      new Error(`License check failed. Please set the git user name with the command 'git config user.username <username>'. The username needs to match the GitHub username in your Makerkit organization.`),
     );
   }
 }
