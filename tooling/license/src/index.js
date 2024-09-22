@@ -39,8 +39,7 @@ function checkVisibility() {
       .toString()
       .trim();
   } catch (error) {
-    console.error('Error getting git remote URL:', error.message);
-    process.exit(1);
+    return;
   }
 
   if (!remoteUrl.includes('github.com')) {
@@ -48,13 +47,13 @@ function checkVisibility() {
   }
 
   let ownerRepo;
+
   if (remoteUrl.startsWith('https://github.com/')) {
     ownerRepo = remoteUrl.slice('https://github.com/'.length);
   } else if (remoteUrl.startsWith('git@github.com:')) {
     ownerRepo = remoteUrl.slice('git@github.com:'.length);
   } else {
-    console.error('Unsupported GitHub URL format');
-    process.exit(1);
+    return;
   }
 
   ownerRepo = ownerRepo.replace(/\.git$/, '');
