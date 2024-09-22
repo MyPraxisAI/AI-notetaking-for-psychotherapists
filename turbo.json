@@ -92,6 +92,9 @@
     },
     "//#clean": {
       "cache": false
+    },
+    "license#dev": {
+      "outputLogs": "none"
     }
   }
 }
