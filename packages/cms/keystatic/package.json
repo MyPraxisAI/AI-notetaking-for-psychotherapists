@@ -27,7 +27,7 @@
     "@kit/tsconfig": "workspace:*",
     "@kit/ui": "workspace:^",
     "@types/node": "^22.5.5",
-    "@types/react": "^18.3.8",
+    "@types/react": "^18.3.10",
     "react": "18.3.1",
     "zod": "^3.23.8"
   },
