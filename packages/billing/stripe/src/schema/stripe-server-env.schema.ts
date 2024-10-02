@@ -15,11 +15,17 @@ export const StripeServerEnvSchema = z
   })
   .refine(
     (schema) => {
-      return schema.secretKey.startsWith('sk_');
+      const key = schema.secretKey;
+      const secretKeyPrefix = 'sk_';
+      const restrictKeyPrefix = 'rk_';
+
+      return (
+        key.startsWith(secretKeyPrefix) || key.startsWith(restrictKeyPrefix)
+      );
     },
     {
       path: ['STRIPE_SECRET_KEY'],
-      message: `Stripe secret key must start with 'sk_'`,
+      message: `Stripe secret key must start with 'sk_' or 'rk_'`,
     },
   )
   .refine(
