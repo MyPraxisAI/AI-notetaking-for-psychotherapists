@@ -78,7 +78,12 @@ export function AccountMembersTable({
   const filteredMembers = members
     .filter((member) => {
       const searchString = search.toLowerCase();
-      const displayName = member.name ?? member.email.split('@')[0];
+
+      const displayName = (
+        member.name ??
+        member.email.split('@')[0] ??
+        ''
+      ).toLowerCase();
 
       return (
         displayName.includes(searchString) ||

@@ -49,7 +49,10 @@ export function AccountInvitationsTable({
 
   const filteredInvitations = invitations.filter((member) => {
     const searchString = search.toLowerCase();
-    const email = member.email.split('@')[0]?.toLowerCase() ?? '';
+
+    const email = (
+      member.email.split('@')[0]?.toLowerCase() ?? ''
+    ).toLowerCase();
 
     return (
       email.includes(searchString) ||
