@@ -37,13 +37,13 @@ function checkMakerkitVersion() {
   const count = parseInt(behindCount, 10);
   const { severity } = getSeveriyLevel(count);
 
-  if (severity.critical) {
+  if (severity === 'critical') {
     // error emoji: ❌
     console.log(
       '\x1b[31m%s\x1b[0m',
       '❌  Your Makerkit version is outdated. Please update to the latest version.',
     );
-  } else if (severity.warning) {
+  } else if (severity === 'warning') {
     console.log(
       '\x1b[33m%s\x1b[0m',
       '⚠️  Your Makerkit version is outdated! Best to update to the latest version.',
