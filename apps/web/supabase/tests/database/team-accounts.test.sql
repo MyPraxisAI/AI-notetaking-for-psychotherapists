@@ -118,6 +118,34 @@ select
         $$ select
             public.create_team_account('Test2') $$, 'User can only own 1 account');
 
+-- Test Delete Team Account
+select
+    tests.authenticate_as('test2');
+
+-- deletion don't throw an error
+select lives_ok(
+    $$ delete from public.accounts where id = (select id from makerkit.get_account_by_slug('test')) $$,
+    'permission denied for function delete_team_account'
+);
+
+select tests.authenticate_as('test1');
+
+select isnt_empty(
+    $$ select * from public.accounts where id = (select id from makerkit.get_account_by_slug('test')) $$,
+    'The account should still exist'
+);
+
+-- delete as primary owner
+select lives_ok(
+    $$ delete from public.accounts where id = (select id from makerkit.get_account_by_slug('test')) $$,
+    'The primary owner should be able to delete the team account'
+);
+
+select is_empty(
+    $$ select * from public.accounts where id = (select id from makerkit.get_account_by_slug('test')) $$,
+    'The account should be deleted'
+);
+
 select
     *
 from

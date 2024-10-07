@@ -2,8 +2,10 @@
 
 import { redirect } from 'next/navigation';
 
+import type { SupabaseClient } from '@supabase/supabase-js';
+
 import { enhanceAction } from '@kit/next/actions';
-import { getSupabaseServerAdminClient } from '@kit/supabase/server-admin-client';
+import type { Database } from '@kit/supabase/database';
 import { getSupabaseServerClient } from '@kit/supabase/server-client';
 
 import { DeleteTeamAccountSchema } from '../../schema/delete-team-account.schema';
@@ -15,25 +17,9 @@ export const deleteTeamAccountAction = enhanceAction(
       Object.fromEntries(formData.entries()),
     );
 
-    const userId = user.id;
-    const accountId = params.accountId;
-
-    // Check if the user has the necessary permissions to delete the team account
-    await assertUserPermissionsToDeleteTeamAccount({
-      accountId,
-      userId,
-    });
-
-    // Get the Supabase client and create a new service instance.
-    const service = createDeleteTeamAccountService();
-
-    // Get the Supabase admin client.
-    const adminClient = getSupabaseServerAdminClient();
-
-    // Delete the team account and all associated data.
-    await service.deleteTeamAccount(adminClient, {
-      accountId,
-      userId,
+    await deleteTeamAccount({
+      accountId: params.accountId,
+      userId: user.id,
     });
 
     return redirect('/home');
@@ -41,12 +27,27 @@ export const deleteTeamAccountAction = enhanceAction(
   {},
 );
 
-async function assertUserPermissionsToDeleteTeamAccount(params: {
+async function deleteTeamAccount(params: {
   accountId: string;
   userId: string;
 }) {
   const client = getSupabaseServerClient();
+  const service = createDeleteTeamAccountService();
 
+  // verify that the user has the necessary permissions to delete the team account
+  await assertUserPermissionsToDeleteTeamAccount(client, params);
+
+  // delete the team account
+  await service.deleteTeamAccount(client, params);
+}
+
+async function assertUserPermissionsToDeleteTeamAccount(
+  client: SupabaseClient<Database>,
+  params: {
+    accountId: string;
+    userId: string;
+  },
+) {
   const { data, error } = await client
     .from('accounts')
     .select('id')
