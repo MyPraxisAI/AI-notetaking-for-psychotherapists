@@ -1,4 +1,5 @@
 import { execSync } from 'node:child_process';
+import { checkPendingMigrations } from './migrations.mjs';
 
 function runGitCommand(command) {
   try {
@@ -53,3 +54,4 @@ function checkMakerkitVersion() {
 }
 
 checkMakerkitVersion();
+checkPendingMigrations();
