@@ -2,10 +2,7 @@
 
 import { redirect } from 'next/navigation';
 
-import { SupabaseClient } from '@supabase/supabase-js';
-
 import { enhanceAction } from '@kit/next/actions';
-import { Database } from '@kit/supabase/database';
 import { getSupabaseServerAdminClient } from '@kit/supabase/server-admin-client';
 import { getSupabaseServerClient } from '@kit/supabase/server-client';
 
@@ -18,12 +15,11 @@ export const deleteTeamAccountAction = enhanceAction(
       Object.fromEntries(formData.entries()),
     );
 
-    const client = getSupabaseServerClient();
     const userId = user.id;
     const accountId = params.accountId;
 
     // Check if the user has the necessary permissions to delete the team account
-    await assertUserPermissionsToDeleteTeamAccount(client, {
+    await assertUserPermissionsToDeleteTeamAccount({
       accountId,
       userId,
     });
@@ -45,19 +41,19 @@ export const deleteTeamAccountAction = enhanceAction(
   {},
 );
 
-async function assertUserPermissionsToDeleteTeamAccount(
-  client: SupabaseClient<Database>,
-  params: {
-    accountId: string;
-    userId: string;
-  },
-) {
+async function assertUserPermissionsToDeleteTeamAccount(params: {
+  accountId: string;
+  userId: string;
+}) {
+  const client = getSupabaseServerClient();
+
   const { data, error } = await client
     .from('accounts')
     .select('id')
     .eq('primary_owner_user_id', params.userId)
     .eq('is_personal_account', false)
-    .eq('id', params.accountId);
+    .eq('id', params.accountId)
+    .single();
 
   if (error ?? !data) {
     throw new Error('Account not found');
