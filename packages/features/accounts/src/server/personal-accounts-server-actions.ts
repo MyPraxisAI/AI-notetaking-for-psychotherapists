@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation';
 import { z } from 'zod';
 
 import { enhanceAction } from '@kit/next/actions';
+import { getLogger } from '@kit/shared/logger';
 import { getSupabaseServerAdminClient } from '@kit/supabase/server-admin-client';
 import { getSupabaseServerClient } from '@kit/supabase/server-client';
 
@@ -13,6 +14,9 @@ import { DeletePersonalAccountSchema } from '../schema/delete-personal-account.s
 import { createDeletePersonalAccountService } from './services/delete-personal-account.service';
 
 const emailSettings = getEmailSettingsFromEnvironment();
+
+const enableAccountDeletion =
+  process.env.NEXT_PUBLIC_ENABLE_PERSONAL_ACCOUNT_DELETION === 'true';
 
 export async function refreshAuthSession() {
   const client = getSupabaseServerClient();
@@ -24,6 +28,8 @@ export async function refreshAuthSession() {
 
 export const deletePersonalAccountAction = enhanceAction(
   async (formData: FormData, user) => {
+    const logger = await getLogger();
+
     // validate the form data
     const { success } = DeletePersonalAccountSchema.safeParse(
       Object.fromEntries(formData.entries()),
@@ -32,6 +38,19 @@ export const deletePersonalAccountAction = enhanceAction(
     if (!success) {
       throw new Error('Invalid form data');
     }
+
+    const ctx = {
+      name: 'account.delete',
+      userId: user.id,
+    };
+
+    if (!enableAccountDeletion) {
+      logger.warn(ctx, `Account deletion is not enabled`);
+
+      throw new Error('Account deletion is not enabled');
+    }
+
+    logger.info(ctx, `Deleting account...`);
 
     const client = getSupabaseServerClient();
 
@@ -48,6 +67,8 @@ export const deletePersonalAccountAction = enhanceAction(
       userEmail: user.email ?? null,
       emailSettings,
     });
+
+    logger.info(ctx, `Account request successfully sent`);
 
     // clear the cache for all pages
     revalidatePath('/', 'layout');
