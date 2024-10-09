@@ -227,7 +227,7 @@ class BillingEventHandlerService {
         const { error } = await client
           .from('orders')
           .update({ status: 'succeeded' })
-          .match({ session_id: sessionId });
+          .match({ id: sessionId });
 
         // handle the error
         if (error) {
@@ -259,7 +259,7 @@ class BillingEventHandlerService {
         const { error } = await client
           .from('orders')
           .update({ status: 'failed' })
-          .match({ session_id: sessionId });
+          .match({ id: sessionId });
 
         if (error) {
           logger.error({ error, ...ctx }, 'Failed to update payment status');
