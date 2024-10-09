@@ -7,7 +7,8 @@
       "~/utils": ["./src/lib/utils"],
       "~/lib/*": ["./src/lib/*"],
       "~/hooks": ["./src/hooks"],
-      "~/ui": ["./src/shadcn/*"]
+      "~/ui": ["./src/shadcn/*"],
+      "~/ui/*": ["./src/shadcn/*"]
     }
   },
   "include": ["*.ts", "src"],
