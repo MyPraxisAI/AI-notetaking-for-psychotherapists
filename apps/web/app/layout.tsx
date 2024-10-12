@@ -26,7 +26,7 @@ export default async function RootLayout({
           {children}
         </RootProviders>
 
-        <Toaster richColors={false} />
+        <Toaster richColors={true} theme={theme} position="top-center" />
       </body>
     </html>
   );
@@ -52,7 +52,7 @@ function getClassName(theme?: string) {
 }
 
 function getTheme() {
-  return cookies().get('theme')?.value;
+  return cookies().get('theme')?.value as 'light' | 'dark' | 'system';
 }
 
 export const generateMetadata = generateRootMetadata;

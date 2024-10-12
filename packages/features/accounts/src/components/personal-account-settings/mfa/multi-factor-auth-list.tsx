@@ -150,14 +150,25 @@ function ConfirmUnenrollFactorModal(
     (factorId: string) => {
       if (unEnroll.isPending) return;
 
-      const promise = unEnroll.mutateAsync(factorId).then(() => {
+      const promise = unEnroll.mutateAsync(factorId).then((response) => {
         props.setIsModalOpen(false);
+
+        if (!response.success) {
+          const errorCode = response.data;
+
+          throw t(`auth:errors.${errorCode}`, {
+            defaultValue: t(`account:unenrollFactorError`)
+          });
+        }
       });
 
       toast.promise(promise, {
         loading: t(`account:unenrollingFactor`),
         success: t(`account:unenrollFactorSuccess`),
-        error: t(`account:unenrollFactorError`),
+        error: (error: string) => {
+          return error;
+        },
+        duration: Infinity
       });
     },
     [props, t, unEnroll],
@@ -279,16 +290,22 @@ function useUnenrollFactor(userId: string) {
     });
 
     if (error) {
-      throw error;
+      return {
+        success: false as const,
+        data: error.code as string,
+      }
     }
 
-    return data;
+    return {
+      success: true as const,
+      data,
+    }
   };
 
   return useMutation({
     mutationFn,
     mutationKey,
-    onSuccess: async () => {
+    onSuccess: () => {
       return queryClient.refetchQueries({
         queryKey: mutationKey,
       });
