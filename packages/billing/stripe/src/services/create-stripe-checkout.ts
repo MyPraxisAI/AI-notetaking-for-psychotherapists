@@ -4,6 +4,12 @@ import { z } from 'zod';
 import type { CreateBillingCheckoutSchema } from '@kit/billing/schema';
 
 /**
+ * @description If set to true, users can start a trial without entering their credit card details
+ */
+const enableTrialWithoutCreditCard =
+  process.env.STRIPE_ENABLE_TRIAL_WITHOUT_CC === 'true';
+
+/**
  * @name createStripeCheckout
  * @description Creates a Stripe Checkout session, and returns an Object
  * containing the session, which you can use to redirect the user to the
@@ -28,6 +34,14 @@ export async function createStripeCheckout(
 
   const isSubscription = mode === 'subscription';
 
+  const trialSettings = params.plan.trialDays && enableTrialWithoutCreditCard ? {
+    trial_settings: {
+      end_behavior: {
+        missing_payment_method: 'cancel' as const,
+      },
+    },
+  } : {};
+
   // this should only be set if the mode is 'subscription'
   const subscriptionData:
     | Stripe.Checkout.SessionCreateParams.SubscriptionData
@@ -38,6 +52,7 @@ export async function createStripeCheckout(
           accountId: params.accountId,
           ...(params.metadata ?? {}),
         },
+        ...trialSettings,
       }
     : {};
 
@@ -81,6 +96,12 @@ export async function createStripeCheckout(
     };
   });
 
+  const paymentCollectionMethod = enableTrialWithoutCreditCard && params.plan.trialDays
+    ? {
+        payment_method_collection: 'if_required' as const,
+      }
+    : {};
+
   return stripe.checkout.sessions.create({
     mode,
     allow_promotion_codes: params.enableDiscountField,
@@ -91,6 +112,7 @@ export async function createStripeCheckout(
     ...customerCreation,
     ...customerData,
     ...urls,
+    ...paymentCollectionMethod,
   });
 }
 
