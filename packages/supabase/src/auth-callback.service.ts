@@ -48,11 +48,12 @@ class AuthCallbackService {
 
     const token_hash = searchParams.get('token_hash');
     const type = searchParams.get('type') as EmailOtpType | null;
-    const callbackParam = searchParams.get('callback');
+    const callbackParam = searchParams.get('next') ?? searchParams.get('callback');
 
     let nextPath: string | null = null;
     const callbackUrl = callbackParam ? new URL(callbackParam) : null;
 
+    // if we have a callback url, we check if it has a next path
     if (callbackUrl) {
       // if we have a callback url, we check if it has a next path
       const callbackNextPath = callbackUrl.searchParams.get('next');

@@ -20,6 +20,7 @@ import { If } from '@kit/ui/if';
 import { Input } from '@kit/ui/input';
 import { Trans } from '@kit/ui/trans';
 
+import { useCaptchaToken } from '../captcha/client';
 import { AuthErrorAlert } from './auth-error-alert';
 
 const PasswordResetSchema = z.object({
@@ -31,6 +32,8 @@ export function PasswordResetRequestContainer(params: {
 }) {
   const { t } = useTranslation('auth');
   const resetPasswordMutation = useRequestResetPassword();
+  const { captchaToken, resetCaptchaToken } = useCaptchaToken();
+
   const error = resetPasswordMutation.error;
   const success = resetPasswordMutation.data;
 
@@ -55,11 +58,20 @@ export function PasswordResetRequestContainer(params: {
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(({ email }) => {
-              return resetPasswordMutation.mutateAsync({
-                email,
-                redirectTo: new URL(params.redirectPath, window.location.origin)
-                  .href,
-              });
+              const redirectTo = new URL(
+                params.redirectPath,
+                window.location.origin,
+              ).href;
+
+              return resetPasswordMutation
+                .mutateAsync({
+                  email,
+                  redirectTo,
+                  captchaToken,
+                })
+                .catch(() => {
+                  resetCaptchaToken();
+                });
             })}
             className={'w-full'}
           >

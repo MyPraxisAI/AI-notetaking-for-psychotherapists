@@ -80,4 +80,10 @@ export class AuthPageObject {
 
     await this.visitConfirmEmailLink(email);
   }
+
+  async updatePassword(password: string) {
+    await this.page.fill('[name="password"]', password);
+    await this.page.fill('[name="repeatPassword"]', password);
+    await this.page.click('[type="submit"]');
+  }
 }
