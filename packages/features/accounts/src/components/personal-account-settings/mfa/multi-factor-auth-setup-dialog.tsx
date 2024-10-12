@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ExclamationTriangleIcon } from '@radix-ui/react-icons';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { ArrowLeftIcon } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
@@ -43,7 +44,6 @@ import {
 import { Trans } from '@kit/ui/trans';
 
 import { refreshAuthSession } from '../../../server/personal-accounts-server-actions';
-import {ArrowLeftIcon} from "lucide-react";
 
 export function MultiFactorAuthSetupDialog(props: { userId: string }) {
   const { t } = useTranslation();
@@ -282,7 +282,10 @@ function FactorQrCode({
           </AlertTitle>
 
           <AlertDescription>
-            <Trans i18nKey={`auth:errors.${error}`} defaults={t('account:qrCodeErrorDescription')} />
+            <Trans
+              i18nKey={`auth:errors.${error}`}
+              defaults={t('account:qrCodeErrorDescription')}
+            />
           </AlertDescription>
         </Alert>
 
@@ -419,13 +422,13 @@ function useEnrollFactor(userId: string) {
       return {
         success: false as const,
         data: response.error.code,
-      }
+      };
     }
 
     return {
       success: true as const,
       data: response.data,
-    }
+    };
   };
 
   return useMutation({

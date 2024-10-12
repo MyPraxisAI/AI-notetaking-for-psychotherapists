@@ -39,7 +39,7 @@ const authConfig = AuthConfigSchema.parse({
   // in your production project
   providers: {
     password: process.env.NEXT_PUBLIC_AUTH_PASSWORD === 'true',
-    magicLink: true,
+    magicLink: process.env.NEXT_PUBLIC_AUTH_MAGIC_LINK === 'true',
     oAuth: ['google'],
   },
 } satisfies z.infer<typeof AuthConfigSchema>);
