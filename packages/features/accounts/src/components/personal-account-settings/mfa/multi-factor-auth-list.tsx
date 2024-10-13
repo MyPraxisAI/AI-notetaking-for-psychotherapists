@@ -168,7 +168,6 @@ function ConfirmUnenrollFactorModal(
         error: (error: string) => {
           return error;
         },
-        duration: Infinity
       });
     },
     [props, t, unEnroll],
@@ -245,9 +244,8 @@ function FactorsTable({
 
             <td>
               <Badge
-                variant={'info'}
                 className={'inline-flex capitalize'}
-                color={factor.status === 'verified' ? 'success' : 'normal'}
+                variant={factor.status === 'verified' ? 'success' : 'outline'}
               >
                 {factor.status}
               </Badge>

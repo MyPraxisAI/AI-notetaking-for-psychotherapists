@@ -23,6 +23,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from '@kit/ui/dialog';
 import {
   Form,
@@ -56,36 +57,36 @@ export function MultiFactorAuthSetupDialog(props: { userId: string }) {
   }, [t]);
 
   return (
-    <>
-      <Button onClick={() => setIsOpen(true)}>
-        <Trans i18nKey={'account:setupMfaButtonLabel'} />
-      </Button>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        <Button>
+          <Trans i18nKey={'account:setupMfaButtonLabel'} />
+        </Button>
+      </DialogTrigger>
 
-      <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent
-          onInteractOutside={(e) => e.preventDefault()}
-          onEscapeKeyDown={(e) => e.preventDefault()}
-        >
-          <DialogHeader>
-            <DialogTitle>
-              <Trans i18nKey={'account:setupMfaButtonLabel'} />
-            </DialogTitle>
+      <DialogContent
+        onInteractOutside={(e) => e.preventDefault()}
+        onEscapeKeyDown={(e) => e.preventDefault()}
+      >
+        <DialogHeader>
+          <DialogTitle>
+            <Trans i18nKey={'account:setupMfaButtonLabel'} />
+          </DialogTitle>
 
-            <DialogDescription>
-              <Trans i18nKey={'account:multiFactorAuthDescription'} />
-            </DialogDescription>
-          </DialogHeader>
+          <DialogDescription>
+            <Trans i18nKey={'account:multiFactorAuthDescription'} />
+          </DialogDescription>
+        </DialogHeader>
 
-          <div>
-            <MultiFactorAuthSetupForm
-              userId={props.userId}
-              onCancel={() => setIsOpen(false)}
-              onEnrolled={onEnrollSuccess}
-            />
-          </div>
-        </DialogContent>
-      </Dialog>
-    </>
+        <div>
+          <MultiFactorAuthSetupForm
+            userId={props.userId}
+            onCancel={() => setIsOpen(false)}
+            onEnrolled={onEnrollSuccess}
+          />
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
