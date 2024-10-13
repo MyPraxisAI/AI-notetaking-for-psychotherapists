@@ -53,7 +53,7 @@ export function MultiFactorAuthSetupDialog(props: { userId: string }) {
   const onEnrollSuccess = useCallback(() => {
     setIsOpen(false);
 
-    return toast.success(t(`multiFactorSetupSuccess`));
+    return toast.success(t(`account:multiFactorSetupSuccess`));
   }, [t]);
 
   return (
