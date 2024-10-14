@@ -21,7 +21,7 @@ import { TeamAccountLayoutSidebar } from './_components/team-account-layout-side
 import { TeamAccountNavigationMenu } from './_components/team-account-navigation-menu';
 import { loadTeamWorkspace } from './_lib/server/team-account-workspace.loader';
 
-interface Params {
+interface TeamWorkspaceLayoutParams {
   account: string;
 }
 
@@ -29,7 +29,7 @@ function TeamWorkspaceLayout({
   children,
   params,
 }: React.PropsWithChildren<{
-  params: Params;
+  params: TeamWorkspaceLayoutParams;
 }>) {
   const data = use(loadTeamWorkspace(params.account));
   const style = getLayoutStyle(params.account);
@@ -45,7 +45,6 @@ function TeamWorkspaceLayout({
       <PageNavigation>
         <If condition={style === 'sidebar'}>
           <TeamAccountLayoutSidebar
-            collapsed={false}
             account={params.account}
             accountId={data.account.id}
             accounts={accounts}

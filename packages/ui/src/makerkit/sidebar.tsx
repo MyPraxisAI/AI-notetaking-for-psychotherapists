@@ -1,6 +1,6 @@
 'use client';
 
-import { useContext, useId, useState } from 'react';
+import { useContext, useId, useRef, useState } from 'react';
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -24,8 +24,11 @@ import { Trans } from './trans';
 
 export type SidebarConfig = z.infer<typeof NavigationConfigSchema>;
 
+export { SidebarContext };
+
 export function Sidebar(props: {
   collapsed?: boolean;
+  expandOnHover?: boolean;
   className?: string;
   children:
     | React.ReactNode
@@ -35,19 +38,62 @@ export function Sidebar(props: {
       }) => React.ReactNode);
 }) {
   const [collapsed, setCollapsed] = useState(props.collapsed ?? false);
+  const isExpandedRef = useRef<boolean>(false);
 
-  const className = getClassNameBuilder(props.className ?? '')({
+  const expandOnHover =
+    props.expandOnHover ??
+    process.env.NEXT_PUBLIC_EXPAND_SIDEBAR_ON_HOVER === 'true';
+
+  const sidebarSizeClassName = getSidebarSizeClassName(
     collapsed,
+    isExpandedRef.current,
+  );
+
+  const className = getClassNameBuilder(
+    cn(props.className ?? '', sidebarSizeClassName, {}),
+  )();
+
+  const containerClassName = cn(sidebarSizeClassName, 'bg-inherit', {
+    'max-w-[4rem]': expandOnHover && isExpandedRef.current,
   });
 
   const ctx = { collapsed, setCollapsed };
 
+  const onMouseEnter =
+    props.collapsed && expandOnHover
+      ? () => {
+          setCollapsed(false);
+          isExpandedRef.current = true;
+        }
+      : undefined;
+
+  const onMouseLeave =
+    props.collapsed && expandOnHover
+      ? () => {
+          if (!isRadixPopupOpen()) {
+            setCollapsed(true);
+            isExpandedRef.current = false;
+          } else {
+            onRadixPopupClose(() => {
+              setCollapsed(true);
+              isExpandedRef.current = false;
+            });
+          }
+        }
+      : undefined;
+
   return (
     <SidebarContext.Provider value={ctx}>
-      <div className={className}>
-        {typeof props.children === 'function'
-          ? props.children(ctx)
-          : props.children}
+      <div
+        className={containerClassName}
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+      >
+        <div aria-expanded={!collapsed} className={className}>
+          {typeof props.children === 'function'
+            ? props.children(ctx)
+            : props.children}
+        </div>
       </div>
     </SidebarContext.Provider>
   );
@@ -55,17 +101,22 @@ export function Sidebar(props: {
 
 export function SidebarContent({
   children,
-  className,
+  className: customClassName,
 }: React.PropsWithChildren<{
   className?: string;
 }>) {
-  return (
-    <div
-      className={cn('flex w-full flex-col space-y-1.5 px-4 py-1', className)}
-    >
-      {children}
-    </div>
+  const { collapsed } = useContext(SidebarContext);
+
+  const className = cn(
+    'flex w-full flex-col space-y-1.5 py-1',
+    customClassName,
+    {
+      'px-4': !collapsed,
+      'px-2': collapsed,
+    },
   );
+
+  return <div className={className}>{children}</div>;
 }
 
 export function SidebarGroup({
@@ -96,7 +147,7 @@ export function SidebarGroup({
 
   const Wrapper = () => {
     const className = cn(
-      'group flex items-center justify-between px-container space-x-2.5',
+      'px-container group flex items-center justify-between space-x-2.5',
       {
         'py-2.5': !sidebarCollapsed,
       },
@@ -131,7 +182,11 @@ export function SidebarGroup({
   };
 
   return (
-    <div className={'flex flex-col space-y-1 py-1'}>
+    <div
+      className={cn('flex flex-col', {
+        'space-y-1 py-1': !collapsed,
+      })}
+    >
       <Wrapper />
 
       <If condition={collapsible ? !isGroupCollapsed : true}>
@@ -164,46 +219,82 @@ export function SidebarItem({
 
   const active = isRouteActive(path, currentPath, end ?? false);
   const variant = active ? 'secondary' : 'ghost';
-  const size = collapsed ? 'icon' : 'sm';
 
   return (
-    <Button
-      asChild
-      className={cn('flex w-full text-sm shadow-none active:bg-secondary/60', {
-        'justify-start space-x-2.5': !collapsed,
-        'hover:bg-initial': active,
-      })}
-      size={size}
-      variant={variant}
-    >
-      <Link key={path} href={path}>
-        <If condition={collapsed} fallback={Icon}>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>{Icon}</TooltipTrigger>
+    <TooltipProvider delayDuration={0}>
+      <Tooltip disableHoverableContent>
+        <TooltipTrigger asChild>
+          <Button
+            asChild
+            className={cn(
+              'flex w-full text-sm shadow-none active:bg-secondary/60',
+              {
+                'justify-start space-x-2.5': !collapsed,
+                'hover:bg-initial': active,
+              },
+            )}
+            size={'sm'}
+            variant={variant}
+          >
+            <Link key={path} href={path}>
+              {Icon}
+              <span className={cn({ hidden: collapsed })}>{children}</span>
+            </Link>
+          </Button>
+        </TooltipTrigger>
 
-              <TooltipContent side={'right'} sideOffset={20}>
-                {children}
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+        <If condition={collapsed}>
+          <TooltipContent side={'right'} sideOffset={10}>
+            {children}
+          </TooltipContent>
         </If>
-
-        <span className={cn({ hidden: collapsed })}>{children}</span>
-      </Link>
-    </Button>
+      </Tooltip>
+    </TooltipProvider>
   );
 }
 
 function getClassNameBuilder(className: string) {
-  return cva([cn('flex box-content h-screen flex-col relative', className)], {
-    variants: {
-      collapsed: {
-        true: `w-[6rem]`,
-        false: `w-2/12 lg:w-[17rem]`,
-      },
-    },
+  return cva([
+    cn(
+      'group/sidebar transition-width fixed box-content flex h-screen w-2/12 flex-col bg-inherit backdrop-blur-sm duration-100',
+      className,
+    ),
+  ]);
+}
+
+function getSidebarSizeClassName(collapsed: boolean, isExpanded: boolean) {
+  return cn(['z-10 flex w-full flex-col'], {
+    'dark:shadow-primary/20 lg:w-[17rem]': !collapsed,
+    'lg:w-[4rem]': collapsed,
+    shadow: isExpanded,
   });
+}
+
+function getRadixPopup() {
+  return document.querySelector('[data-radix-popper-content-wrapper]');
+}
+
+function isRadixPopupOpen() {
+  return getRadixPopup() !== null;
+}
+
+function onRadixPopupClose(callback: () => void) {
+  const element = getRadixPopup();
+
+  if (element) {
+    const observer = new MutationObserver(() => {
+      if (!getRadixPopup()) {
+        callback();
+
+        observer.disconnect();
+      }
+    });
+
+    observer.observe(element.parentElement!, {
+      childList: true,
+      subtree: true,
+    });
+  }
 }
 
 export function SidebarNavigation({

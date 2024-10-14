@@ -1,8 +1,14 @@
-import { User } from '@supabase/supabase-js';
+'use client';
 
-import { Sidebar, SidebarContent } from '@kit/ui/sidebar';
+import { useContext } from 'react';
+
+import type { User } from '@supabase/supabase-js';
+
+import { Sidebar, SidebarContent, SidebarContext } from '@kit/ui/sidebar';
+import { cn } from '@kit/ui/utils';
 
 import { ProfileAccountDropdownContainer } from '~/components//personal-account-dropdown-container';
+import { getTeamAccountSidebarConfig } from '~/config/team-account-navigation.config';
 import { TeamAccountNotifications } from '~/home/[account]/_components/team-account-notifications';
 
 import { TeamAccountAccountsSelector } from '../_components/team-account-accounts-selector';
@@ -18,11 +24,12 @@ export function TeamAccountLayoutSidebar(props: {
   account: string;
   accountId: string;
   accounts: AccountModel[];
-  collapsed: boolean;
   user: User;
 }) {
+  const collapsed = getTeamAccountSidebarConfig(props.account).sidebarCollapsed;
+
   return (
-    <Sidebar>
+    <Sidebar collapsed={collapsed}>
       <SidebarContainer
         account={props.account}
         accountId={props.accountId}
@@ -37,28 +44,40 @@ function SidebarContainer(props: {
   account: string;
   accountId: string;
   accounts: AccountModel[];
-  collapsible?: boolean;
   user: User;
 }) {
   const { account, accounts, user } = props;
   const userId = user.id;
+  const { collapsed } = useContext(SidebarContext);
+
+  const className = cn(
+    'flex max-w-full items-center justify-between space-x-4',
+    {
+      'w-full justify-start space-x-0': collapsed,
+    },
+  );
 
   return (
     <>
       <SidebarContent className={'h-16 justify-center'}>
-        <div
-          className={'flex max-w-full items-center justify-between space-x-4'}
-        >
+        <div className={className}>
           <TeamAccountAccountsSelector
             userId={userId}
             selectedAccount={account}
             accounts={accounts}
+            collapsed={collapsed}
           />
 
-          <TeamAccountNotifications
-            userId={userId}
-            accountId={props.accountId}
-          />
+          <div
+            className={cn({
+              hidden: collapsed,
+            })}
+          >
+            <TeamAccountNotifications
+              userId={userId}
+              accountId={props.accountId}
+            />
+          </div>
         </div>
       </SidebarContent>
 
@@ -70,7 +89,6 @@ function SidebarContainer(props: {
         <SidebarContent>
           <ProfileAccountDropdownContainer
             user={props.user}
-            collapsed={false}
           />
         </SidebarContent>
       </div>

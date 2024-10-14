@@ -20,6 +20,8 @@ export function TeamAccountAccountsSelector(params: {
     value: string | null;
     image: string | null;
   }>;
+
+  collapsed?: boolean;
 }) {
   const router = useRouter();
 
@@ -28,7 +30,7 @@ export function TeamAccountAccountsSelector(params: {
       selectedAccount={params.selectedAccount}
       accounts={params.accounts}
       userId={params.userId}
-      collapsed={false}
+      collapsed={params.collapsed}
       features={features}
       onAccountChange={(value) => {
         const path = value

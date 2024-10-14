@@ -20,7 +20,7 @@ export function AdminSidebar(props: { user: User }) {
       </SidebarContent>
 
       <SidebarContent className={'mt-5'}>
-        <SidebarGroup label={'Admin'} collapsible={false}>
+        <SidebarGroup label={'Admin'}>
           <SidebarItem end path={'/admin'} Icon={<Home className={'h-4'} />}>
             Home
           </SidebarItem>
@@ -35,7 +35,7 @@ export function AdminSidebar(props: { user: User }) {
       </SidebarContent>
 
       <SidebarContent className={'absolute bottom-4'}>
-        <ProfileAccountDropdownContainer user={props.user} collapsed={false} />
+        <ProfileAccountDropdownContainer user={props.user} />
       </SidebarContent>
     </Sidebar>
   );

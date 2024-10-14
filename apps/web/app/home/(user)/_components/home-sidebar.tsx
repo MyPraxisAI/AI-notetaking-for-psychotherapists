@@ -11,25 +11,28 @@ import { UserNotifications } from '~/home/(user)/_components/user-notifications'
 import type { UserWorkspace } from '../_lib/server/load-user-workspace';
 import { HomeAccountSelector } from './home-account-selector';
 
-export function HomeSidebar(props: { workspace: UserWorkspace }) {
+interface HomeSidebarProps {
+  workspace: UserWorkspace;
+}
+
+export function HomeSidebar(props: HomeSidebarProps) {
   const { workspace, user, accounts } = props.workspace;
+  const collapsed = personalAccountNavigationConfig.sidebarCollapsed;
 
   return (
-    <Sidebar>
+    <Sidebar collapsed={collapsed}>
       <SidebarContent className={'h-16 justify-center'}>
         <div className={'flex items-center justify-between space-x-2'}>
           <If
             condition={featuresFlagConfig.enableTeamAccounts}
             fallback={<AppLogo className={'py-2'} />}
           >
-            <HomeAccountSelector
-              userId={user.id}
-              collapsed={false}
-              accounts={accounts}
-            />
+            <HomeAccountSelector userId={user.id} accounts={accounts} />
           </If>
 
-          <UserNotifications userId={user.id} />
+          <div className={'hidden group-aria-[expanded=true]/sidebar:block'}>
+            <UserNotifications userId={user.id} />
+          </div>
         </div>
       </SidebarContent>
 
@@ -40,7 +43,6 @@ export function HomeSidebar(props: { workspace: UserWorkspace }) {
       <div className={'absolute bottom-4 left-0 w-full'}>
         <SidebarContent>
           <ProfileAccountDropdownContainer
-            collapsed={false}
             user={user}
             account={workspace}
           />

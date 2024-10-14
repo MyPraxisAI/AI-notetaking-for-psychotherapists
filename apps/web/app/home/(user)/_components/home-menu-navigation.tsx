@@ -53,14 +53,12 @@ export function HomeMenuNavigation(props: { workspace: UserWorkspace }) {
           <HomeAccountSelector
             userId={user.id}
             accounts={accounts}
-            collapsed={false}
           />
         </If>
 
         <UserNotifications userId={user.id} />
 
         <ProfileAccountDropdownContainer
-          collapsed={true}
           user={user}
           account={workspace}
         />

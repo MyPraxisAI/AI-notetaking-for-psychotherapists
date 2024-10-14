@@ -52,6 +52,7 @@ function SuspendedPersonalAccountDropdown(props: { user: User | null }) {
   if (userData) {
     return (
       <PersonalAccountDropdown
+        showProfileName={false}
         paths={paths}
         features={features}
         user={userData}

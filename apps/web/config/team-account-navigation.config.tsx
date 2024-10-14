@@ -43,6 +43,7 @@ export function getTeamAccountSidebarConfig(account: string) {
   return NavigationConfigSchema.parse({
     routes: getRoutes(account),
     style: process.env.NEXT_PUBLIC_TEAM_NAVIGATION_STYLE,
+    sidebarCollapsed: process.env.NEXT_PUBLIC_TEAM_SIDEBAR_COLLAPSED,
   });
 }
 

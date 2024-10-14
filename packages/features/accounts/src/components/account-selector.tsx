@@ -101,7 +101,7 @@ export function AccountSelector({
               'dark:shadow-primary/10 group w-full min-w-0 px-2 lg:w-auto lg:max-w-fit',
               {
                 'justify-start': !collapsed,
-                'justify-center': collapsed,
+                'm-auto justify-center px-4 lg:w-full': collapsed,
               },
               className,
             )}
@@ -143,7 +143,11 @@ export function AccountSelector({
               )}
             </If>
 
-            <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            <CaretSortIcon
+              className={cn('ml-2 h-4 w-4 shrink-0 opacity-50', {
+                hidden: collapsed,
+              })}
+            />
           </Button>
         </PopoverTrigger>
 

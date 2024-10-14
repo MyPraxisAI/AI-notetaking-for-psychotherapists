@@ -18,7 +18,6 @@ const features = {
 };
 
 export function ProfileAccountDropdownContainer(props: {
-  collapsed: boolean;
   user: User;
 
   account?: {
@@ -32,16 +31,13 @@ export function ProfileAccountDropdownContainer(props: {
   const userData = user.data as User;
 
   return (
-    <div className={props.collapsed ? '' : 'w-full'}>
-      <PersonalAccountDropdown
-        className={'w-full'}
-        paths={paths}
-        features={features}
-        showProfileName={!props.collapsed}
-        user={userData}
-        account={props.account}
-        signOutRequested={() => signOut.mutateAsync()}
-      />
-    </div>
+    <PersonalAccountDropdown
+      className={'w-full'}
+      paths={paths}
+      features={features}
+      user={userData}
+      account={props.account}
+      signOutRequested={() => signOut.mutateAsync()}
+    />
   );
 }
