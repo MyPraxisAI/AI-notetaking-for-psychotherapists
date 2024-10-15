@@ -236,9 +236,15 @@ export function SidebarItem({
             size={'sm'}
             variant={variant}
           >
-            <Link key={path} href={path}>
+            <Link href={path}>
               {Icon}
-              <span className={cn({ hidden: collapsed })}>{children}</span>
+              <span
+                className={cn('w-auto transition-opacity duration-300', {
+                  'w-0 opacity-0': collapsed,
+                })}
+              >
+                {children}
+              </span>
             </Link>
           </Button>
         </TooltipTrigger>
@@ -256,14 +262,14 @@ export function SidebarItem({
 function getClassNameBuilder(className: string) {
   return cva([
     cn(
-      'group/sidebar transition-width fixed box-content flex h-screen w-2/12 flex-col bg-inherit backdrop-blur-sm duration-100',
+      'group/sidebar transition-width fixed box-content flex h-screen w-2/12 flex-col bg-inherit backdrop-blur-sm duration-200',
       className,
     ),
   ]);
 }
 
 function getSidebarSizeClassName(collapsed: boolean, isExpanded: boolean) {
-  return cn(['z-10 flex w-full flex-col'], {
+  return cn(['z-50 flex w-full flex-col'], {
     'dark:shadow-primary/20 lg:w-[17rem]': !collapsed,
     'lg:w-[4rem]': collapsed,
     shadow: isExpanded,
