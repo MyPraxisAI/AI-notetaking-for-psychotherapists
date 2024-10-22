@@ -72,7 +72,7 @@ export const enhanceRouteHandler = <
   return async function routeHandler(
     request: NextRequest,
     routeParams: {
-      params: Record<string, string>;
+      params: Promise<Record<string, string>>;
     },
   ) {
     type UserParam = Params['auth'] extends false ? undefined : User;
@@ -126,7 +126,7 @@ export const enhanceRouteHandler = <
       request,
       body,
       user,
-      params: routeParams.params,
+      params: await routeParams.params,
     });
   };
 };
