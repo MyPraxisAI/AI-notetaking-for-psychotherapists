@@ -14,20 +14,19 @@ import { DocsCards } from '../_components/docs-cards';
 
 const getPageBySlug = cache(pageLoader);
 
+interface DocumentationPageProps {
+  params: Promise<{ slug: string[] }>;
+}
+
 async function pageLoader(slug: string) {
   const client = await createCmsClient();
 
   return client.getContentItemBySlug({ slug, collection: 'documentation' });
 }
 
-interface PageParams {
-  params: {
-    slug: string[];
-  };
-}
-
-export const generateMetadata = async ({ params }: PageParams) => {
-  const page = await getPageBySlug(params.slug.join('/'));
+export const generateMetadata = async ({ params }: DocumentationPageProps) => {
+  const slug = (await params).slug.join('/');
+  const page = await getPageBySlug(slug);
 
   if (!page) {
     notFound();
@@ -41,8 +40,9 @@ export const generateMetadata = async ({ params }: PageParams) => {
   };
 };
 
-async function DocumentationPage({ params }: PageParams) {
-  const page = await getPageBySlug(params.slug.join('/'));
+async function DocumentationPage({ params }: DocumentationPageProps) {
+  const slug = (await params).slug.join('/');
+  const page = await getPageBySlug(slug);
 
   if (!page) {
     notFound();

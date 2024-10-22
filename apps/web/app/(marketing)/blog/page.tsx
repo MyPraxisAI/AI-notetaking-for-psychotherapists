@@ -13,6 +13,10 @@ import { SitePageHeader } from '../_components/site-page-header';
 import { BlogPagination } from './_components/blog-pagination';
 import { PostPreview } from './_components/post-preview';
 
+interface BlogPageProps {
+  searchParams: Promise<{ page?: string }>;
+}
+
 export const generateMetadata = async () => {
   const { t } = await createI18nServerInstance();
 
@@ -44,8 +48,9 @@ const getContentItems = cache(
   },
 );
 
-async function BlogPage({ searchParams }: { searchParams: { page: string } }) {
+async function BlogPage(props: BlogPageProps) {
   const { t, resolvedLanguage: language } = await createI18nServerInstance();
+  const searchParams = await props.searchParams;
 
   const page = searchParams.page ? parseInt(searchParams.page) : 0;
   const limit = 10;

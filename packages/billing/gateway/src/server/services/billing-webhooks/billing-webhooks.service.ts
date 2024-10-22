@@ -4,7 +4,7 @@ import { Tables } from '@kit/supabase/database';
 
 import { createBillingGatewayService } from '../billing-gateway/billing-gateway.service';
 
-type Subscription = Tables<'subscriptions'>
+type Subscription = Tables<'subscriptions'>;
 
 export function createBillingWebhooksService() {
   return new BillingWebhooksService();

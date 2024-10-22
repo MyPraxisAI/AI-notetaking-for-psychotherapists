@@ -34,7 +34,7 @@ export const ImageUploadInput = forwardRef<React.ElementRef<'input'>, Props>(
     },
     forwardedRef,
   ) {
-    const localRef = useRef<HTMLInputElement>();
+    const localRef = useRef<HTMLInputElement>(null);
 
     const [state, setState] = useState({
       image,

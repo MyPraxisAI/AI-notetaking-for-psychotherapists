@@ -34,13 +34,16 @@ export async function createStripeCheckout(
 
   const isSubscription = mode === 'subscription';
 
-  const trialSettings = params.plan.trialDays && enableTrialWithoutCreditCard ? {
-    trial_settings: {
-      end_behavior: {
-        missing_payment_method: 'cancel' as const,
-      },
-    },
-  } : {};
+  const trialSettings =
+    params.plan.trialDays && enableTrialWithoutCreditCard
+      ? {
+          trial_settings: {
+            end_behavior: {
+              missing_payment_method: 'cancel' as const,
+            },
+          },
+        }
+      : {};
 
   // this should only be set if the mode is 'subscription'
   const subscriptionData:
@@ -96,11 +99,12 @@ export async function createStripeCheckout(
     };
   });
 
-  const paymentCollectionMethod = enableTrialWithoutCreditCard && params.plan.trialDays
-    ? {
-        payment_method_collection: 'if_required' as const,
-      }
-    : {};
+  const paymentCollectionMethod =
+    enableTrialWithoutCreditCard && params.plan.trialDays
+      ? {
+          payment_method_collection: 'if_required' as const,
+        }
+      : {};
 
   return stripe.checkout.sessions.create({
     mode,

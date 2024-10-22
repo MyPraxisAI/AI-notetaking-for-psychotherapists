@@ -175,7 +175,6 @@ function Home() {
   );
 }
 
-
 export default withI18n(Home);
 
 function MainCallToActionButton() {

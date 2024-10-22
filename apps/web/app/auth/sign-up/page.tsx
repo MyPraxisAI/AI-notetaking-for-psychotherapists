@@ -19,9 +19,9 @@ export const generateMetadata = async () => {
 };
 
 interface Props {
-  searchParams: {
+  searchParams: Promise<{
     invite_token?: string;
-  };
+  }>;
 }
 
 const paths = {
@@ -29,8 +29,8 @@ const paths = {
   appHome: pathsConfig.app.home,
 };
 
-function SignUpPage({ searchParams }: Props) {
-  const inviteToken = searchParams.invite_token;
+async function SignUpPage({ searchParams }: Props) {
+  const inviteToken = (await searchParams).invite_token;
 
   const signInPath =
     pathsConfig.auth.signIn +

@@ -1,32 +1,18 @@
-import loadDynamic from 'next/dynamic';
+import { use } from 'react';
 
 import { AppBreadcrumbs } from '@kit/ui/app-breadcrumbs';
-import { LoadingOverlay } from '@kit/ui/loading-overlay';
 import { PageBody } from '@kit/ui/page';
 import { Trans } from '@kit/ui/trans';
 
 import { createI18nServerInstance } from '~/lib/i18n/i18n.server';
 import { withI18n } from '~/lib/i18n/with-i18n';
 
+import { DashboardDemo } from './_components/dashboard-demo';
 import { TeamAccountLayoutPageHeader } from './_components/team-account-layout-page-header';
 
-interface Params {
-  account: string;
+interface TeamAccountHomePageProps {
+  params: Promise<{ account: string }>;
 }
-
-const DashboardDemo = loadDynamic(
-  () => import('./_components/dashboard-demo'),
-  {
-    ssr: false,
-    loading: () => (
-      <LoadingOverlay>
-        <span className={'text-muted-foreground'}>
-          <Trans i18nKey={'common:loading'} />
-        </span>
-      </LoadingOverlay>
-    ),
-  },
-);
 
 export const generateMetadata = async () => {
   const i18n = await createI18nServerInstance();
@@ -37,11 +23,13 @@ export const generateMetadata = async () => {
   };
 };
 
-function TeamAccountHomePage({ params }: { params: Params }) {
+function TeamAccountHomePage({ params }: TeamAccountHomePageProps) {
+  const account = use(params).account;
+
   return (
     <>
       <TeamAccountLayoutPageHeader
-        account={params.account}
+        account={account}
         title={<Trans i18nKey={'common:routes.dashboard'} />}
         description={<AppBreadcrumbs />}
       />

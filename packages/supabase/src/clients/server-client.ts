@@ -1,6 +1,5 @@
 import 'server-only';
 
-import { unstable_noStore as noStore } from 'next/cache';
 import { cookies } from 'next/headers';
 
 import { createServerClient } from '@supabase/ssr';
@@ -13,17 +12,18 @@ import { getSupabaseClientKeys } from '../get-supabase-client-keys';
  * @description Creates a Supabase client for use in the Server.
  */
 export function getSupabaseServerClient<GenericSchema = Database>() {
-  noStore();
-
-  const cookieStore = cookies();
   const keys = getSupabaseClientKeys();
 
   return createServerClient<GenericSchema>(keys.url, keys.anonKey, {
     cookies: {
-      getAll() {
+      async getAll() {
+        const cookieStore = await cookies();
+
         return cookieStore.getAll();
       },
-      setAll(cookiesToSet) {
+      async setAll(cookiesToSet) {
+        const cookieStore = await cookies();
+
         try {
           cookiesToSet.forEach(({ name, value, options }) =>
             cookieStore.set(name, value, options),

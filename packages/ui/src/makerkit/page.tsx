@@ -30,21 +30,24 @@ function PageWithSidebar(props: PageProps) {
 
   return (
     <div
-      className={cn('flex bg-gray-50/95 dark:bg-background/85', props.className)}
+      className={cn(
+        'flex bg-gray-50/95 dark:bg-background/85',
+        props.className,
+      )}
     >
       {Navigation}
 
       <div
         className={
           props.contentContainerClassName ??
-          'mx-auto flex h-screen w-full flex-col overflow-y-auto px-4 lg:px-0 bg-inherit'
+          'mx-auto flex h-screen w-full flex-col overflow-y-auto bg-inherit'
         }
       >
         {MobileNavigation}
 
         <div
           className={
-            'flex flex-1 flex-col overflow-y-auto bg-background lg:m-1.5 lg:ml-0 lg:rounded-lg lg:border'
+            'flex flex-1 flex-col overflow-y-auto bg-background px-4 lg:m-1.5 lg:ml-0 lg:rounded-lg lg:border lg:px-0'
           }
         >
           {Children}
@@ -62,7 +65,7 @@ export function PageMobileNavigation(
   return (
     <div
       className={cn(
-        'flex w-full items-center border-b py-2 lg:hidden',
+        'flex w-full items-center border-b px-4 py-2 lg:hidden lg:px-0',
         props.className,
       )}
     >
@@ -115,7 +118,9 @@ export function PageBody(
 }
 
 export function PageNavigation(props: React.PropsWithChildren) {
-  return <div className={'hidden flex-1 lg:flex bg-inherit'}>{props.children}</div>;
+  return (
+    <div className={'hidden flex-1 bg-inherit lg:flex'}>{props.children}</div>
+  );
 }
 
 export function PageDescription(props: React.PropsWithChildren) {

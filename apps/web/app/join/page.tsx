@@ -18,11 +18,11 @@ import pathsConfig from '~/config/paths.config';
 import { createI18nServerInstance } from '~/lib/i18n/i18n.server';
 import { withI18n } from '~/lib/i18n/with-i18n';
 
-interface Context {
-  searchParams: {
+interface JoinTeamAccountPageProps {
+  searchParams: Promise<{
     invite_token?: string;
     email?: string;
-  };
+  }>;
 }
 
 export const generateMetadata = async () => {
@@ -33,7 +33,8 @@ export const generateMetadata = async () => {
   };
 };
 
-async function JoinTeamAccountPage({ searchParams }: Context) {
+async function JoinTeamAccountPage(props: JoinTeamAccountPageProps) {
+  const searchParams = await props.searchParams;
   const token = searchParams.invite_token;
 
   // no token, redirect to 404

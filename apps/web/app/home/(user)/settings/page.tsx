@@ -6,17 +6,20 @@ import { PageBody } from '@kit/ui/page';
 import authConfig from '~/config/auth.config';
 import featureFlagsConfig from '~/config/feature-flags.config';
 import pathsConfig from '~/config/paths.config';
-import { loadUserWorkspace } from '~/home/(user)/_lib/server/load-user-workspace';
 import { createI18nServerInstance } from '~/lib/i18n/i18n.server';
 import { withI18n } from '~/lib/i18n/with-i18n';
+import { requireUserInServerComponent } from '~/lib/server/require-user-in-server-component';
 
 const features = {
   enableAccountDeletion: featureFlagsConfig.enableAccountDeletion,
   enablePasswordUpdate: authConfig.providers.password,
 };
 
+const callbackPath = pathsConfig.auth.callback;
+const accountHomePath = pathsConfig.app.accountHome;
+
 const paths = {
-  callback: pathsConfig.auth.callback + `?next=${pathsConfig.app.accountHome}`,
+  callback: callbackPath + `?next=${accountHomePath}`,
 };
 
 export const generateMetadata = async () => {
@@ -29,7 +32,7 @@ export const generateMetadata = async () => {
 };
 
 function PersonalAccountSettingsPage() {
-  const { user } = use(loadUserWorkspace());
+  const user = use(requireUserInServerComponent());
 
   return (
     <PageBody>

@@ -99,7 +99,7 @@ export function PersonalAccountCheckoutForm(props: {
                     });
 
                   setCheckoutToken(checkoutToken);
-                } catch (e) {
+                } catch {
                   setError(true);
                 }
               });

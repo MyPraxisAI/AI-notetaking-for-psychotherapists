@@ -1,5 +1,3 @@
-import { PageBody } from '@kit/ui/page';
-
 import { SitePageHeader } from '~/(marketing)/_components/site-page-header';
 import { createI18nServerInstance } from '~/lib/i18n/i18n.server';
 import { withI18n } from '~/lib/i18n/with-i18n';

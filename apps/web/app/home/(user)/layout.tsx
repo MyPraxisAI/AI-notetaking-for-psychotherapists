@@ -23,7 +23,7 @@ import { loadUserWorkspace } from './_lib/server/load-user-workspace';
 
 function UserHomeLayout({ children }: React.PropsWithChildren) {
   const workspace = use(loadUserWorkspace());
-  const style = getLayoutStyle();
+  const style = use(getLayoutStyle());
 
   return (
     <Page style={style}>
@@ -52,9 +52,11 @@ function UserHomeLayout({ children }: React.PropsWithChildren) {
 
 export default withI18n(UserHomeLayout);
 
-function getLayoutStyle() {
+async function getLayoutStyle() {
+  const cookieStore = await cookies();
+
   return (
-    (cookies().get('layout-style')?.value as PageLayoutStyle) ??
+    (cookieStore.get('layout-style')?.value as PageLayoutStyle) ??
     personalAccountNavigationConfig.style
   );
 }

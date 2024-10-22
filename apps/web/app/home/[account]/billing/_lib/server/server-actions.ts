@@ -25,7 +25,7 @@ const enabled = featureFlagsConfig.enableTeamAccountBilling;
  * @description Creates a checkout session for a team account.
  */
 export const createTeamAccountCheckoutSession = enhanceAction(
-  (data) => {
+  async (data) => {
     if (!enabled) {
       throw new Error('Team account billing is not enabled');
     }

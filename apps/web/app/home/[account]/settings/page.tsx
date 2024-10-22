@@ -21,19 +21,18 @@ export const generateMetadata = async () => {
   };
 };
 
-interface Props {
-  params: {
-    account: string;
-  };
+interface TeamAccountSettingsPageProps {
+  params: Promise<{ account: string }>;
 }
 
 const paths = {
   teamAccountSettings: pathsConfig.app.accountSettings,
 };
 
-async function TeamAccountSettingsPage(props: Props) {
+async function TeamAccountSettingsPage(props: TeamAccountSettingsPageProps) {
   const api = createTeamAccountsApi(getSupabaseServerClient());
-  const data = await api.getTeamAccount(props.params.account);
+  const slug = (await props.params).account;
+  const data = await api.getTeamAccount(slug);
 
   const account = {
     id: data.id,

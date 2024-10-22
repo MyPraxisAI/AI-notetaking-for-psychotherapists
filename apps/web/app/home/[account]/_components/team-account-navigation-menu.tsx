@@ -61,10 +61,7 @@ export function TeamAccountNavigationMenu(props: {
 
         <TeamAccountNotifications accountId={account.id} userId={user.id} />
 
-        <ProfileAccountDropdownContainer
-          user={user}
-          account={account}
-        />
+        <ProfileAccountDropdownContainer user={user} account={account} />
       </div>
     </div>
   );

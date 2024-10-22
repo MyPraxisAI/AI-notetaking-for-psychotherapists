@@ -166,6 +166,7 @@ function TeamAccountsModal(props: { accounts: Accounts; userId: string }) {
         <div className={'py-16'}>
           <AccountSelector
             className={'w-full max-w-full'}
+            collisionPadding={0}
             userId={props.userId}
             onAccountChange={(value) => {
               const path = value

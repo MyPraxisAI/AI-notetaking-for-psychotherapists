@@ -57,7 +57,7 @@ export function ContactForm() {
               await sendContactEmail(data);
 
               setState({ success: true, error: false });
-            } catch (error) {
+            } catch {
               setState({ error: true, success: false });
             }
           });

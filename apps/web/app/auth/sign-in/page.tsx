@@ -11,9 +11,9 @@ import { createI18nServerInstance } from '~/lib/i18n/i18n.server';
 import { withI18n } from '~/lib/i18n/with-i18n';
 
 interface SignInPageProps {
-  searchParams: {
+  searchParams: Promise<{
     invite_token?: string;
-  };
+  }>;
 }
 
 export const generateMetadata = async () => {
@@ -30,8 +30,8 @@ const paths = {
   joinTeam: pathsConfig.app.joinTeam,
 };
 
-function SignInPage({ searchParams }: SignInPageProps) {
-  const inviteToken = searchParams.invite_token;
+async function SignInPage({ searchParams }: SignInPageProps) {
+  const inviteToken = (await searchParams).invite_token;
 
   const signUpPath =
     pathsConfig.auth.signUp +

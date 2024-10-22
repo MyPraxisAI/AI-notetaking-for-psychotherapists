@@ -1,6 +1,5 @@
 import 'server-only';
 
-import { unstable_noStore as noStore } from 'next/cache';
 import { cookies } from 'next/headers';
 
 import { createClient } from '@supabase/supabase-js';
@@ -26,9 +25,6 @@ export function getSupabaseServerComponentClient<GenericSchema = Database>(
     admin: false,
   },
 ) {
-  // prevent any caching (to be removed in Next v15)
-  noStore();
-
   if (params.admin) {
     warnServiceRoleKeyUsage();
 
@@ -47,10 +43,10 @@ export function getSupabaseServerComponentClient<GenericSchema = Database>(
 }
 
 function getCookiesStrategy() {
-  const cookieStore = cookies();
-
   return {
-    get: (name: string) => {
+    get: async (name: string) => {
+      const cookieStore = await cookies();
+
       return cookieStore.get(name)?.value;
     },
   };

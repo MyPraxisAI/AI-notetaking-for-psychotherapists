@@ -1,7 +1,5 @@
 import 'server-only';
 
-import { unstable_noStore as noStore } from 'next/cache';
-
 import { createClient } from '@supabase/supabase-js';
 
 import { Database } from '../database.types';
@@ -16,7 +14,6 @@ import { getSupabaseClientKeys } from '../get-supabase-client-keys';
  * @description Get a Supabase client for use in the Server with admin access to the database.
  */
 export function getSupabaseServerAdminClient<GenericSchema = Database>() {
-  noStore();
   warnServiceRoleKeyUsage();
 
   const url = getSupabaseClientKeys().url;

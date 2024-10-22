@@ -11,19 +11,21 @@ type ZodOutputFor<T> = z.ZodType<T, z.ZodTypeDef, unknown>;
  * The previous environment variable `KEYSTATIC_STORAGE_KIND` is deprecated - as Keystatic may need this to be available in the client-side.
  *
  */
-const STORAGE_KIND = process.env.NEXT_PUBLIC_KEYSTATIC_STORAGE_KIND ??
-    /* @deprecated */
-    process.env.KEYSTATIC_STORAGE_KIND ??
-    'local';
+const STORAGE_KIND =
+  process.env.NEXT_PUBLIC_KEYSTATIC_STORAGE_KIND ??
+  /* @deprecated */
+  process.env.KEYSTATIC_STORAGE_KIND ??
+  'local';
 
 /**
  * @name REPO
  * @description The repository to use for the GitHub storage.
  * This can be provided through the `NEXT_PUBLIC_KEYSTATIC_STORAGE_REPO` environment variable. The previous environment variable `KEYSTATIC_STORAGE_REPO` is deprecated.
  */
-const REPO = process.env.NEXT_PUBLIC_KEYSTATIC_STORAGE_REPO ??
-    /* @deprecated */
-    process.env.KEYSTATIC_STORAGE_REPO;
+const REPO =
+  process.env.NEXT_PUBLIC_KEYSTATIC_STORAGE_REPO ??
+  /* @deprecated */
+  process.env.KEYSTATIC_STORAGE_REPO;
 
 const BRANCH_PREFIX = process.env.KEYSTATIC_STORAGE_BRANCH_PREFIX;
 const PATH_PREFIX = process.env.KEYSTATIC_PATH_PREFIX;
@@ -43,9 +45,11 @@ const local = z.object({
  */
 const cloud = z.object({
   kind: z.literal('cloud'),
-  project: z.string({
-    description: `The Keystatic Cloud project. Please provide the value through the "KEYSTATIC_STORAGE_PROJECT" environment variable.`,
-  }).min(1),
+  project: z
+    .string({
+      description: `The Keystatic Cloud project. Please provide the value through the "KEYSTATIC_STORAGE_PROJECT" environment variable.`,
+    })
+    .min(1),
   branchPrefix: z.string().optional(),
   pathPrefix: z.string().optional(),
 }) satisfies ZodOutputFor<CloudConfig['storage']>;

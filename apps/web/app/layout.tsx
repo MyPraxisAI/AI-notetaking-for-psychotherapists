@@ -16,7 +16,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const { language } = await createI18nServerInstance();
-  const theme = getTheme();
+  const theme = await getTheme();
   const className = getClassName(theme);
 
   return (
@@ -51,8 +51,9 @@ function getClassName(theme?: string) {
   });
 }
 
-function getTheme() {
-  return cookies().get('theme')?.value as 'light' | 'dark' | 'system';
+async function getTheme() {
+  const cookiesStore = await cookies();
+  return cookiesStore.get('theme')?.value as 'light' | 'dark' | 'system';
 }
 
 export const generateMetadata = generateRootMetadata;

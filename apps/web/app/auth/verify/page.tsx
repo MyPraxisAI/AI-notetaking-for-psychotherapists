@@ -9,9 +9,9 @@ import { createI18nServerInstance } from '~/lib/i18n/i18n.server';
 import { withI18n } from '~/lib/i18n/with-i18n';
 
 interface Props {
-  searchParams: {
+  searchParams: Promise<{
     next?: string;
-  };
+  }>;
 }
 
 export const generateMetadata = async () => {
@@ -39,7 +39,8 @@ async function VerifyPage(props: Props) {
     redirect(pathsConfig.auth.signIn);
   }
 
-  const redirectPath = props.searchParams.next ?? pathsConfig.app.home;
+  const nextPath = (await props.searchParams).next;
+  const redirectPath = nextPath ?? pathsConfig.app.home;
 
   return (
     <MultiFactorChallengeContainer

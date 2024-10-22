@@ -42,7 +42,7 @@ export function Stepper(props: {
       const isDotsVariant = variant === 'dots';
 
       const labelClassName = cn({
-        ['text-xs px-1.5 py-2']: !isNumberVariant,
+        ['px-1.5 py-2 text-xs']: !isNumberVariant,
         ['hidden']: isDotsVariant,
       });
 
@@ -182,15 +182,15 @@ function StepDivider({
   selected: boolean;
   complete: boolean;
 }>) {
-  const spanClassName = cn('font-medium text-sm min-w-max', {
-    ['text-muted-foreground hidden sm:flex']: !selected,
+  const spanClassName = cn('min-w-max text-sm font-medium', {
+    ['hidden text-muted-foreground sm:flex']: !selected,
     ['text-secondary-foreground']: selected || complete,
     ['font-medium']: selected,
   });
 
   const className = cn(
-    'flex flex-1 last:flex-[0_0_0] items-center h-9 justify-center' +
-      ' items-center w-full group px-3 flex space-x-3',
+    'flex h-9 flex-1 items-center justify-center last:flex-[0_0_0]' +
+      ' group flex w-full items-center space-x-3 px-3',
   );
 
   return (

@@ -14,7 +14,7 @@ import { Trans } from '@kit/ui/trans';
 import { CurrentPlanBadge } from './current-plan-badge';
 import { LineItemDetails } from './line-item-details';
 
-type Order = Tables<'orders'>
+type Order = Tables<'orders'>;
 type LineItem = Tables<'order_items'>;
 
 interface Props {

@@ -71,6 +71,7 @@ export function HomeMobileNavigation(props: { workspace: UserWorkspace }) {
             <HomeAccountSelector
               userId={props.workspace.user.id}
               accounts={props.workspace.accounts}
+              collisionPadding={0}
             />
           </DropdownMenuGroup>
 

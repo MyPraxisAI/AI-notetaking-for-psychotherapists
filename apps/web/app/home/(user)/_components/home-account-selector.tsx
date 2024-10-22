@@ -22,6 +22,7 @@ export function HomeAccountSelector(props: {
   }>;
 
   userId: string;
+  collisionPadding?: number;
 }) {
   const router = useRouter();
   const { collapsed } = useContext(SidebarContext);
@@ -29,6 +30,7 @@ export function HomeAccountSelector(props: {
   return (
     <AccountSelector
       collapsed={collapsed}
+      collisionPadding={props.collisionPadding ?? 20}
       accounts={props.accounts}
       features={features}
       userId={props.userId}

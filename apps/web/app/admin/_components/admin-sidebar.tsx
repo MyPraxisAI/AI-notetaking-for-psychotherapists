@@ -1,5 +1,3 @@
-import { User } from '@supabase/supabase-js';
-
 import { Home, Users } from 'lucide-react';
 
 import {
@@ -12,7 +10,7 @@ import {
 import { AppLogo } from '~/components/app-logo';
 import { ProfileAccountDropdownContainer } from '~/components/personal-account-dropdown-container';
 
-export function AdminSidebar(props: { user: User }) {
+export function AdminSidebar() {
   return (
     <Sidebar>
       <SidebarContent className={'py-4'}>
@@ -35,7 +33,7 @@ export function AdminSidebar(props: { user: User }) {
       </SidebarContent>
 
       <SidebarContent className={'absolute bottom-4'}>
-        <ProfileAccountDropdownContainer user={props.user} />
+        <ProfileAccountDropdownContainer />
       </SidebarContent>
     </Sidebar>
   );

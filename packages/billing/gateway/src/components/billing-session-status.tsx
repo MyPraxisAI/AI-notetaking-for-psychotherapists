@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 import { Check, ChevronRight } from 'lucide-react';
 
 import { Button } from '@kit/ui/button';
@@ -11,10 +13,10 @@ import { Trans } from '@kit/ui/trans';
  **/
 export function BillingSessionStatus({
   customerEmail,
-  onRedirect,
+  redirectPath,
 }: React.PropsWithChildren<{
   customerEmail: string;
-  onRedirect: () => void;
+  redirectPath: string;
 }>) {
   return (
     <section
@@ -53,18 +55,17 @@ export function BillingSessionStatus({
           </p>
         </div>
 
-        <form>
-          <Button
-            data-test={'checkout-success-back-link'}
-            formAction={onRedirect}
-          >
-            <span>
-              <Trans i18nKey={'billing:checkoutSuccessBackButton'} />
-            </span>
+        <div>
+          <Button data-test={'checkout-success-back-link'} asChild>
+            <Link href={redirectPath}>
+              <span>
+                <Trans i18nKey={'billing:checkoutSuccessBackButton'} />
+              </span>
 
-            <ChevronRight className={'h-4'} />
+              <ChevronRight className={'h-4'} />
+            </Link>
           </Button>
-        </form>
+        </div>
       </div>
     </section>
   );

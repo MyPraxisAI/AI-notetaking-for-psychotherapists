@@ -21,18 +21,14 @@ import { TeamAccountLayoutSidebar } from './_components/team-account-layout-side
 import { TeamAccountNavigationMenu } from './_components/team-account-navigation-menu';
 import { loadTeamWorkspace } from './_lib/server/team-account-workspace.loader';
 
-interface TeamWorkspaceLayoutParams {
-  account: string;
-}
+type TeamWorkspaceLayoutProps = React.PropsWithChildren<{
+  params: Promise<{ account: string }>;
+}>;
 
-function TeamWorkspaceLayout({
-  children,
-  params,
-}: React.PropsWithChildren<{
-  params: TeamWorkspaceLayoutParams;
-}>) {
-  const data = use(loadTeamWorkspace(params.account));
-  const style = getLayoutStyle(params.account);
+function TeamWorkspaceLayout({ children, params }: TeamWorkspaceLayoutProps) {
+  const account = use(params).account;
+  const data = use(loadTeamWorkspace(account));
+  const style = use(getLayoutStyle(account));
 
   const accounts = data.accounts.map(({ name, slug, picture_url }) => ({
     label: name,
@@ -45,7 +41,7 @@ function TeamWorkspaceLayout({
       <PageNavigation>
         <If condition={style === 'sidebar'}>
           <TeamAccountLayoutSidebar
-            account={params.account}
+            account={account}
             accountId={data.account.id}
             accounts={accounts}
             user={data.user}
@@ -64,7 +60,7 @@ function TeamWorkspaceLayout({
           <TeamAccountLayoutMobileNavigation
             userId={data.user.id}
             accounts={accounts}
-            account={params.account}
+            account={account}
           />
         </div>
       </PageMobileNavigation>
@@ -76,9 +72,11 @@ function TeamWorkspaceLayout({
   );
 }
 
-function getLayoutStyle(account: string) {
+async function getLayoutStyle(account: string) {
+  const cookieStore = await cookies();
+
   return (
-    (cookies().get('layout-style')?.value as PageLayoutStyle) ??
+    (cookieStore.get('layout-style')?.value as PageLayoutStyle) ??
     getTeamAccountSidebarConfig(account).style
   );
 }

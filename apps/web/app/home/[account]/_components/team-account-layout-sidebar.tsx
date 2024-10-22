@@ -87,9 +87,7 @@ function SidebarContainer(props: {
 
       <div className={'absolute bottom-4 left-0 w-full'}>
         <SidebarContent>
-          <ProfileAccountDropdownContainer
-            user={props.user}
-          />
+          <ProfileAccountDropdownContainer user={props.user} />
         </SidebarContent>
       </div>
     </>

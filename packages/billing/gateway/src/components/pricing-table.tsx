@@ -397,12 +397,12 @@ function PlanIntervalSwitcher(
         const selected = plan === props.interval;
 
         const className = cn(
-          'focus:!ring-0 !outline-none animate-in transition-all fade-in',
+          'animate-in fade-in !outline-none transition-all focus:!ring-0',
           {
             'rounded-r-none border-r-transparent': index === 0,
             'rounded-l-none': index === props.intervals.length - 1,
-            ['hover:text-primary border text-muted-foreground']: !selected,
-            ['font-semibold cursor-default hover:text-initial hover:bg-background']:
+            ['hover:text-primary text-muted-foreground border']: !selected,
+            ['hover:text-initial hover:bg-background cursor-default font-semibold']:
               selected,
           },
         );

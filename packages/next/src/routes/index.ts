@@ -1,6 +1,5 @@
 import 'server-only';
 
-import { isRedirectError } from 'next/dist/client/components/redirect';
 import { redirect } from 'next/navigation';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -12,12 +11,11 @@ import { verifyCaptchaToken } from '@kit/auth/captcha/server';
 import { requireUser } from '@kit/supabase/require-user';
 import { getSupabaseServerClient } from '@kit/supabase/server-client';
 
-import { captureException, zodParseFactory } from '../utils';
+import { zodParseFactory } from '../utils';
 
 interface Config<Schema> {
   auth?: boolean;
   captcha?: boolean;
-  captureException?: boolean;
   schema?: Schema;
 }
 
@@ -124,35 +122,12 @@ export const enhanceRouteHandler = <
       body = zodParseFactory(params.schema)(json);
     }
 
-    const shouldCaptureException = params?.captureException ?? true;
-
-    if (shouldCaptureException) {
-      try {
-        return await handler({
-          request,
-          body,
-          user,
-          params: routeParams.params,
-        });
-      } catch (error) {
-        if (isRedirectError(error)) {
-          throw error;
-        }
-
-        // capture the exception
-        await captureException(error);
-
-        throw error;
-      }
-    } else {
-      // all good, call the handler with the request, body and user
-      return handler({
-        request,
-        body,
-        user,
-        params: routeParams.params,
-      });
-    }
+    return handler({
+      request,
+      body,
+      user,
+      params: routeParams.params,
+    });
   };
 };
 

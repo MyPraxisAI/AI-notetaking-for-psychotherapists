@@ -1,6 +1,5 @@
 import 'server-only';
 
-import { unstable_noStore as noStore } from 'next/cache';
 import { cookies } from 'next/headers';
 
 import { createClient } from '@supabase/supabase-js';
@@ -28,9 +27,6 @@ export function getSupabaseRouteHandlerClient<GenericSchema = Database>(
     admin: false,
   },
 ) {
-  // prevent any caching (to be removed in Next v15)
-  noStore();
-
   if (params.admin) {
     warnServiceRoleKeyUsage();
 
@@ -49,16 +45,20 @@ export function getSupabaseRouteHandlerClient<GenericSchema = Database>(
 }
 
 function getCookiesStrategy() {
-  const cookieStore = cookies();
-
   return {
-    set: (name: string, value: string, options: CookieOptions) => {
+    set: async (name: string, value: string, options: CookieOptions) => {
+      const cookieStore = await cookies();
+
       cookieStore.set({ name, value, ...options });
     },
-    get: (name: string) => {
+    get: async (name: string) => {
+      const cookieStore = await cookies();
+
       return cookieStore.get(name)?.value;
     },
-    remove: (name: string, options: CookieOptions) => {
+    remove: async (name: string, options: CookieOptions) => {
+      const cookieStore = await cookies();
+
       cookieStore.set({ name, value: '', ...options });
     },
   };

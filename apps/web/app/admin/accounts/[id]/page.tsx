@@ -6,12 +6,13 @@ import { getSupabaseServerAdminClient } from '@kit/supabase/server-admin-client'
 import { PageBody } from '@kit/ui/page';
 
 interface Params {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
-export const generateMetadata = async ({ params }: Params) => {
+export const generateMetadata = async (props: Params) => {
+  const params = await props.params;
   const account = await loadAccount(params.id);
 
   return {
@@ -19,7 +20,8 @@ export const generateMetadata = async ({ params }: Params) => {
   };
 };
 
-async function AccountPage({ params }: Params) {
+async function AccountPage(props: Params) {
+  const params = await props.params;
   const account = await loadAccount(params.id);
 
   return (

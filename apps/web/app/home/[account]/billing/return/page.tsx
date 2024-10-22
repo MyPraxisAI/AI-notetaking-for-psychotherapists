@@ -1,5 +1,3 @@
-import { revalidatePath } from 'next/cache';
-import dynamic from 'next/dynamic';
 import { notFound, redirect } from 'next/navigation';
 
 import { getBillingGatewayProvider } from '@kit/billing-gateway';
@@ -10,25 +8,16 @@ import billingConfig from '~/config/billing.config';
 import { withI18n } from '~/lib/i18n/with-i18n';
 import { requireUserInServerComponent } from '~/lib/server/require-user-in-server-component';
 
+import { EmbeddedCheckoutForm } from '../_components/embedded-checkout-form';
+
 interface SessionPageProps {
-  searchParams: {
+  searchParams: Promise<{
     session_id: string;
-  };
+  }>;
 }
 
-const LazyEmbeddedCheckout = dynamic(
-  async () => {
-    const { EmbeddedCheckout } = await import('@kit/billing-gateway/checkout');
-
-    return EmbeddedCheckout;
-  },
-  {
-    ssr: false,
-  },
-);
-
 async function ReturnCheckoutSessionPage({ searchParams }: SessionPageProps) {
-  const sessionId = searchParams.session_id;
+  const sessionId = (await searchParams).session_id;
 
   if (!sessionId) {
     redirect('../');
@@ -38,7 +27,7 @@ async function ReturnCheckoutSessionPage({ searchParams }: SessionPageProps) {
 
   if (checkoutToken) {
     return (
-      <LazyEmbeddedCheckout
+      <EmbeddedCheckoutForm
         checkoutToken={checkoutToken}
         provider={billingConfig.provider}
       />
@@ -49,7 +38,7 @@ async function ReturnCheckoutSessionPage({ searchParams }: SessionPageProps) {
     <>
       <div className={'fixed left-0 top-48 z-50 mx-auto w-full'}>
         <BillingSessionStatus
-          onRedirect={onRedirect}
+          redirectPath={'../billing'}
           customerEmail={customerEmail ?? ''}
         />
       </div>
@@ -95,20 +84,4 @@ async function loadCheckoutSession(sessionId: string) {
     customerEmail: session.customer.email,
     checkoutToken,
   };
-}
-
-/**
- * Revalidates the layout to update cached pages
- * and redirects back to the home page.
- */
-// eslint-disable-next-line @typescript-eslint/require-await
-async function onRedirect() {
-  'use server';
-
-  // revalidate the home page to update cached pages
-  // which may have changed due to the billing session
-  revalidatePath('/home', 'layout');
-
-  // redirect back to billing page
-  redirect('../billing');
 }

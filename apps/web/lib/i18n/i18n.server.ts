@@ -30,8 +30,9 @@ const priority = featuresFlagConfig.languagePriority;
  *
  * Initialize the i18n instance for every RSC server request (eg. each page/layout)
  */
-function createInstance() {
-  const cookie = cookies().get(I18N_COOKIE_NAME)?.value;
+async function createInstance() {
+  const cookieStore = await cookies();
+  const cookie = cookieStore.get(I18N_COOKIE_NAME)?.value;
 
   let selectedLanguage: string | undefined = undefined;
 
@@ -43,7 +44,7 @@ function createInstance() {
   // if not, check if the language priority is set to user and
   // use the user's preferred language
   if (!selectedLanguage && priority === 'user') {
-    const userPreferredLanguage = getPreferredLanguageFromBrowser();
+    const userPreferredLanguage = await getPreferredLanguageFromBrowser();
 
     selectedLanguage = getLanguageOrFallback(userPreferredLanguage);
   }
@@ -55,8 +56,9 @@ function createInstance() {
 
 export const createI18nServerInstance = cache(createInstance);
 
-function getPreferredLanguageFromBrowser() {
-  const acceptLanguage = headers().get('accept-language');
+async function getPreferredLanguageFromBrowser() {
+  const headersStore = await headers();
+  const acceptLanguage = headersStore.get('accept-language');
 
   if (!acceptLanguage) {
     return;

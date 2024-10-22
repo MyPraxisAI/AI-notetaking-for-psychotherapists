@@ -8,15 +8,15 @@ import { Trans } from '@kit/ui/trans';
 import pathsConfig from '~/config/paths.config';
 import { withI18n } from '~/lib/i18n/with-i18n';
 
-interface Params {
-  searchParams: {
+interface AuthCallbackErrorPageProps {
+  searchParams: Promise<{
     error: string;
     invite_token: string;
-  };
+  }>;
 }
 
-function AuthCallbackErrorPage({ searchParams }: Params) {
-  const { error, invite_token } = searchParams;
+async function AuthCallbackErrorPage(props: AuthCallbackErrorPageProps) {
+  const { error, invite_token } = await props.searchParams;
   const queryParam = invite_token ? `?invite_token=${invite_token}` : '';
   const signInPath = pathsConfig.auth.signIn + queryParam;
 

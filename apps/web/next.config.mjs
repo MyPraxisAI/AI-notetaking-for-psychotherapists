@@ -1,7 +1,6 @@
-import withBundleAnalyzer from '@next/bundle-analyzer';
-
 const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const ENABLE_REACT_COMPILER = process.env.ENABLE_REACT_COMPILER === 'true';
 
 const INTERNAL_PACKAGES = [
   '@kit/ui',
@@ -35,15 +34,17 @@ const config = {
       fullUrl: true,
     },
   },
+  serverExternalPackages: [],
+  // needed for supporting dynamic imports for local content
+  outputFileTracingIncludes: {
+    '/*': ['./content/**/*'],
+  },
   experimental: {
     mdxRs: true,
-    instrumentationHook: true,
+    reactCompiler: ENABLE_REACT_COMPILER,
     turbo: {
       resolveExtensions: ['.ts', '.tsx', '.js', '.jsx'],
-    },
-    // needed for supporting dynamic imports for local content
-    outputFileTracingIncludes: {
-      '/*': ['./content/**/*'],
+      resolveAlias: getModulesAliases(),
     },
     optimizePackageImports: [
       'recharts',
@@ -65,13 +66,10 @@ const config = {
   typescript: { ignoreBuildErrors: true },
 };
 
-export default withBundleAnalyzer({
-  enabled: process.env.ANALYZE === 'true',
-})(config);
+export default config;
 
 function getRemotePatterns() {
   /** @type {import('next').NextConfig['remotePatterns']} */
-  // add here the remote patterns for your images
   const remotePatterns = [];
 
   if (SUPABASE_URL) {
@@ -95,4 +93,56 @@ function getRemotePatterns() {
           hostname: 'localhost',
         },
       ];
+}
+
+/**
+ * @description Aliases modules based on the environment variables
+ * This will speed up the development server by not loading the modules that are not needed
+ * @returns {Record<string, string>}
+ */
+function getModulesAliases() {
+  if (process.env.NODE_ENV === 'production') {
+    return {};
+  }
+
+  const monitoringProvider = process.env.NEXT_PUBLIC_MONITORING_PROVIDER;
+  const billingProvider = process.env.NEXT_PUBLIC_BILLING_PROVIDER;
+  const mailerProvider = process.env.MAILER_PROVIDER;
+  const captchaProvider = process.env.NEXT_PUBLIC_CAPTCHA_SITE_KEY;
+
+  // exclude the modules that are not needed
+  const excludeSentry = monitoringProvider !== 'sentry';
+  const excludeBaselime = monitoringProvider !== 'baselime';
+  const excludeStripe = billingProvider !== 'stripe';
+  const excludeNodemailer = mailerProvider !== 'nodemailer';
+  const excludeTurnstile = !captchaProvider;
+
+  /** @type {Record<string, string>} */
+  const aliases = {};
+
+  // the path to the noop module
+  const noopPath = '~/lib/dev-mock-modules';
+
+  if (excludeSentry) {
+    aliases['@sentry/nextjs'] = noopPath;
+  }
+
+  if (excludeBaselime) {
+    aliases['@baselime/react-rum'] = noopPath;
+  }
+
+  if (excludeStripe) {
+    aliases['stripe'] = noopPath;
+    aliases['@stripe/stripe-js'] = noopPath;
+  }
+
+  if (excludeNodemailer) {
+    aliases['nodemailer'] = noopPath;
+  }
+
+  if (excludeTurnstile) {
+    aliases['@marsidev/react-turnstile'] = noopPath;
+  }
+
+  return aliases;
 }

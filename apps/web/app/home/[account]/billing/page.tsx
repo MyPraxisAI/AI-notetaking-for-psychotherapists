@@ -23,10 +23,8 @@ import { loadTeamWorkspace } from '../_lib/server/team-account-workspace.loader'
 import { TeamAccountCheckoutForm } from './_components/team-account-checkout-form';
 import { createBillingPortalSession } from './_lib/server/server-actions';
 
-interface Params {
-  params: {
-    account: string;
-  };
+interface TeamAccountBillingPageProps {
+  params: Promise<{ account: string }>;
 }
 
 export const generateMetadata = async () => {
@@ -38,8 +36,9 @@ export const generateMetadata = async () => {
   };
 };
 
-async function TeamAccountBillingPage({ params }: Params) {
-  const workspace = await loadTeamWorkspace(params.account);
+async function TeamAccountBillingPage({ params }: TeamAccountBillingPageProps) {
+  const account = (await params).account;
+  const workspace = await loadTeamWorkspace(account);
   const accountId = workspace.account.id;
 
   const [data, customerId] = await loadTeamAccountBillingPage(accountId);
@@ -65,7 +64,7 @@ async function TeamAccountBillingPage({ params }: Params) {
     return (
       <form action={createBillingPortalSession}>
         <input type="hidden" name={'accountId'} value={accountId} />
-        <input type="hidden" name={'slug'} value={params.account} />
+        <input type="hidden" name={'slug'} value={account} />
 
         <BillingPortalCard />
       </form>
@@ -75,7 +74,7 @@ async function TeamAccountBillingPage({ params }: Params) {
   return (
     <>
       <TeamAccountLayoutPageHeader
-        account={params.account}
+        account={account}
         title={<Trans i18nKey={'common:routes.billing'} />}
         description={<AppBreadcrumbs />}
       />

@@ -10,6 +10,10 @@ import { withI18n } from '~/lib/i18n/with-i18n';
 
 import { Post } from '../../blog/_components/post';
 
+interface BlogPageProps {
+  params: Promise<{ slug: string }>;
+}
+
 const getPostBySlug = cache(postLoader);
 
 async function postLoader(slug: string) {
@@ -20,10 +24,9 @@ async function postLoader(slug: string) {
 
 export async function generateMetadata({
   params,
-}: {
-  params: { slug: string };
-}): Promise<Metadata | undefined> {
-  const post = await getPostBySlug(params.slug);
+}: BlogPageProps): Promise<Metadata> {
+  const slug = (await params).slug;
+  const post = await getPostBySlug(slug);
 
   if (!post) {
     notFound();
@@ -57,8 +60,9 @@ export async function generateMetadata({
   });
 }
 
-async function BlogPost({ params }: { params: { slug: string } }) {
-  const post = await getPostBySlug(params.slug);
+async function BlogPost({ params }: BlogPageProps) {
+  const slug = (await params).slug;
+  const post = await getPostBySlug(slug);
 
   if (!post) {
     notFound();

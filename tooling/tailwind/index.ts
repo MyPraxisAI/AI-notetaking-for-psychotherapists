@@ -5,10 +5,14 @@ import { fontFamily } from 'tailwindcss/defaultTheme';
 export default {
   darkMode: ['class'],
   content: [
-    '../../packages/**/src/**/*.tsx',
-    '../../apps/**/*.tsx',
-    '!../../packages/**/node_modules',
-    '!../../apps/**/node_modules',
+    '../../packages/ui/src/**/*.tsx',
+    '../../packages/billing/gateway/src/**/*.tsx',
+    '../../packages/features/auth/src/**/*.tsx',
+    '../../packages/features/notifications/src/**/*.tsx',
+    '../../packages/features/admin/src/**/*.tsx',
+    '../../packages/features/accounts/src/**/*.tsx',
+    '../../packages/features/team-accounts/src/**/*.tsx',
+    '!**/node_modules',
   ],
   theme: {
     container: {

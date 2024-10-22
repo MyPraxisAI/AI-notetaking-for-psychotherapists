@@ -5,7 +5,7 @@
   "scripts": {
     "clean": "git clean -xdf .turbo node_modules",
     "format": "prettier --check \"**/*.{ts,tsx}\"",
-    "lint": "eslint ",
+    "lint": "eslint .",
     "typecheck": "tsc --noEmit"
   },
   "prettier": "@kit/prettier-config",
@@ -21,15 +21,15 @@
     "@kit/ui": "workspace:^",
     "@makerkit/data-loader-supabase-core": "^0.0.8",
     "@makerkit/data-loader-supabase-nextjs": "^1.2.3",
-    "@supabase/supabase-js": "^2.45.4",
-    "@tanstack/react-query": "5.56.2",
+    "@supabase/supabase-js": "^2.45.6",
+    "@tanstack/react-query": "5.59.15",
     "@tanstack/react-table": "^8.20.5",
-    "@types/react": "^18.3.10",
-    "lucide-react": "^0.446.0",
-    "next": "14.2.13",
-    "react": "18.3.1",
-    "react-dom": "18.3.1",
-    "react-hook-form": "^7.53.0",
+    "@types/react": "^18.3.11",
+    "lucide-react": "^0.453.0",
+    "next": "15.0.0",
+    "react": "19.0.0-rc-69d4b800-20241021",
+    "react-dom": "19.0.0-rc-69d4b800-20241021",
+    "react-hook-form": "^7.53.1",
     "zod": "^3.23.8"
   },
   "exports": {

@@ -50,18 +50,12 @@ export function HomeMenuNavigation(props: { workspace: UserWorkspace }) {
 
       <div className={'flex justify-end space-x-2.5'}>
         <If condition={featuresFlagConfig.enableTeamAccounts}>
-          <HomeAccountSelector
-            userId={user.id}
-            accounts={accounts}
-          />
+          <HomeAccountSelector userId={user.id} accounts={accounts} />
         </If>
 
         <UserNotifications userId={user.id} />
 
-        <ProfileAccountDropdownContainer
-          user={user}
-          account={workspace}
-        />
+        <ProfileAccountDropdownContainer user={user} account={workspace} />
       </div>
     </div>
   );

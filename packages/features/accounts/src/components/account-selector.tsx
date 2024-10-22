@@ -40,6 +40,7 @@ interface AccountSelectorProps {
   selectedAccount?: string;
   collapsed?: boolean;
   className?: string;
+  collisionPadding?: number;
 
   onAccountChange: (value: string | undefined) => void;
 }
@@ -56,6 +57,7 @@ export function AccountSelector({
     enableTeamCreation: true,
   },
   collapsed = false,
+  collisionPadding = 20,
 }: React.PropsWithChildren<AccountSelectorProps>) {
   const [open, setOpen] = useState<boolean>(false);
   const [isCreatingAccount, setIsCreatingAccount] = useState<boolean>(false);
@@ -154,7 +156,7 @@ export function AccountSelector({
         <PopoverContent
           data-test={'account-selector-content'}
           className="w-full p-0"
-          collisionPadding={20}
+          collisionPadding={collisionPadding}
         >
           <Command>
             <CommandInput placeholder={t('searchAccount')} className="h-9" />

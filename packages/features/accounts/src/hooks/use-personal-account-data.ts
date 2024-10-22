@@ -6,12 +6,11 @@ import { useSupabase } from '@kit/supabase/hooks/use-supabase';
 
 export function usePersonalAccountData(
   userId: string,
-  partialAccount?:
-    | {
-        id: string | null;
-        name: string | null;
-        picture_url: string | null;
-      }
+  partialAccount?: {
+    id: string | null;
+    name: string | null;
+    picture_url: string | null;
+  },
 ) {
   const client = useSupabase();
   const queryKey = ['account:data', userId];
