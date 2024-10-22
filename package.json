@@ -11,7 +11,6 @@
   },
   "scripts": {
     "postinstall": "manypkg fix",
-    "run-script": "pnpm dlx tsx --tsconfig ./tsconfig.json apps/web/script.ts",
     "build": "turbo build --cache-dir=.turbo",
     "clean": "git clean -xdf node_modules dist .next",
     "clean:workspaces": "turbo clean",
