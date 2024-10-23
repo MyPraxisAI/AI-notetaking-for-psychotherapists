@@ -25,5 +25,6 @@ export const onRequestError: Instrumentation.onRequestError = async (err) => {
 
   const service = await getServerMonitoringService();
 
+  await service.ready();
   await service.captureException(err as Error);
 };
