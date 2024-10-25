@@ -7,7 +7,7 @@ import Link from 'next/link';
 import type { User } from '@supabase/supabase-js';
 
 import {
-  EllipsisVertical,
+  ChevronsUpDown,
   Home,
   LogOut,
   MessageCircleQuestion,
@@ -85,16 +85,17 @@ export function PersonalAccountDropdown({
         aria-label="Open your profile menu"
         data-test={'account-dropdown-trigger'}
         className={cn(
-          'animate-in fade-in group flex cursor-pointer items-center focus:outline-none',
+          'animate-in fade-in focus:outline-primary flex cursor-pointer items-center duration-500 group-data-[minimized=true]:px-0',
           className ?? '',
           {
-            ['active:bg-secondary/50 items-center space-x-2.5 rounded-md' +
+            ['active:bg-secondary/50 items-center space-x-4 rounded-md' +
             ' hover:bg-secondary p-2 transition-colors']: showProfileName,
           },
         )}
       >
         <ProfileAvatar
-          className={'group-hover:border-primary/10 border border-transparent'}
+          className={'rounded-md'}
+          fallbackClassName={'rounded-md border'}
           displayName={displayName ?? user?.email ?? ''}
           pictureUrl={personalAccountData?.picture_url}
         />
@@ -102,7 +103,7 @@ export function PersonalAccountDropdown({
         <If condition={showProfileName}>
           <div
             className={
-              'fade-in animate-in flex w-full flex-col truncate text-left'
+              'fade-in animate-in flex w-full flex-col truncate text-left group-data-[minimized=true]:hidden'
             }
           >
             <span
@@ -120,17 +121,15 @@ export function PersonalAccountDropdown({
             </span>
           </div>
 
-          <EllipsisVertical
-            className={'text-muted-foreground mr-1 hidden h-8 group-hover:flex'}
+          <ChevronsUpDown
+            className={
+              'text-muted-foreground mr-1 h-8 group-data-[minimized=true]:hidden'
+            }
           />
         </If>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent
-        className={'xl:!min-w-[15rem]'}
-        collisionPadding={{ right: 20, left: 20 }}
-        sideOffset={10}
-      >
+      <DropdownMenuContent className={'xl:!min-w-[15rem]'}>
         <DropdownMenuItem className={'!h-10 rounded-none'}>
           <div
             className={'flex flex-col justify-start truncate text-left text-xs'}

@@ -62,7 +62,8 @@
     "billing": "Billing",
     "dashboard": "Dashboard",
     "settings": "Settings",
-    "profile": "Profile"
+    "profile": "Profile",
+    "application": "Application"
   },
   "roles": {
     "owner": {

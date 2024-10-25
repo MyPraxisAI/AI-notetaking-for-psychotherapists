@@ -1,40 +1,70 @@
-import { Home, Users } from 'lucide-react';
+'use client';
+
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+
+import { LayoutDashboard, Users } from 'lucide-react';
 
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
-  SidebarItem,
-} from '@kit/ui/sidebar';
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarProvider,
+} from '@kit/ui/shadcn-sidebar';
 
 import { AppLogo } from '~/components/app-logo';
 import { ProfileAccountDropdownContainer } from '~/components/personal-account-dropdown-container';
 
 export function AdminSidebar() {
+  const path = usePathname();
+
   return (
-    <Sidebar>
-      <SidebarContent className={'py-4'}>
-        <AppLogo href={'/admin'} />
-      </SidebarContent>
+    <SidebarProvider>
+      <Sidebar>
+        <SidebarHeader className={'m-2'}>
+          <AppLogo href={'/admin'} />
+        </SidebarHeader>
 
-      <SidebarContent className={'mt-5'}>
-        <SidebarGroup label={'Admin'}>
-          <SidebarItem end path={'/admin'} Icon={<Home className={'h-4'} />}>
-            Home
-          </SidebarItem>
+        <SidebarContent>
+          <SidebarGroup>
+            <SidebarGroupLabel>Admin</SidebarGroupLabel>
 
-          <SidebarItem
-            path={'/admin/accounts'}
-            Icon={<Users className={'h-4'} />}
-          >
-            Accounts
-          </SidebarItem>
-        </SidebarGroup>
-      </SidebarContent>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuButton isActive={path === '/admin'} asChild>
+                  <Link className={'flex gap-2.5'} href={'/admin'}>
+                    <LayoutDashboard className={'h-4'} />
+                    <span>Dashboard</span>
+                  </Link>
+                </SidebarMenuButton>
 
-      <SidebarContent className={'absolute bottom-4'}>
-        <ProfileAccountDropdownContainer />
-      </SidebarContent>
-    </Sidebar>
+                <SidebarMenuButton
+                  isActive={path.includes('/admin/accounts')}
+                  asChild
+                >
+                  <Link
+                    className={'flex size-full gap-2.5'}
+                    href={'/admin/accounts'}
+                  >
+                    <Users className={'h-4'} />
+                    <span>Accounts</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </SidebarContent>
+
+        <SidebarFooter>
+          <ProfileAccountDropdownContainer />
+        </SidebarFooter>
+      </Sidebar>
+    </SidebarProvider>
   );
 }

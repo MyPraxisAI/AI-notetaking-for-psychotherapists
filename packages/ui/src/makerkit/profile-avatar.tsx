@@ -12,6 +12,7 @@ type TextProps = {
 
 type ProfileAvatarProps = (SessionProps | TextProps) & {
   className?: string;
+  fallbackClassName?: string;
 };
 
 export function ProfileAvatar(props: ProfileAvatarProps) {
@@ -23,8 +24,13 @@ export function ProfileAvatar(props: ProfileAvatarProps) {
   if ('text' in props) {
     return (
       <Avatar className={avatarClassName}>
-        <AvatarFallback>
-          <span className={'uppercase'}>{props.text.slice(0, 1)}</span>
+        <AvatarFallback
+          className={cn(
+            props.fallbackClassName,
+            'uppercase animate-in fade-in',
+          )}
+        >
+          {props.text.slice(0, 1)}
         </AvatarFallback>
       </Avatar>
     );
@@ -36,7 +42,9 @@ export function ProfileAvatar(props: ProfileAvatarProps) {
     <Avatar className={avatarClassName}>
       <AvatarImage src={props.pictureUrl ?? undefined} />
 
-      <AvatarFallback className={'animate-in fade-in'}>
+      <AvatarFallback
+        className={cn(props.fallbackClassName, 'animate-in fade-in')}
+      >
         <span suppressHydrationWarning className={'uppercase'}>
           {initials}
         </span>

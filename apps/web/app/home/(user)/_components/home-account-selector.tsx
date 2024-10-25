@@ -5,7 +5,7 @@ import { useContext } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { AccountSelector } from '@kit/accounts/account-selector';
-import { SidebarContext } from '@kit/ui/sidebar';
+import { SidebarContext } from '@kit/ui/shadcn-sidebar';
 
 import featureFlagsConfig from '~/config/feature-flags.config';
 import pathsConfig from '~/config/paths.config';
@@ -25,11 +25,11 @@ export function HomeAccountSelector(props: {
   collisionPadding?: number;
 }) {
   const router = useRouter();
-  const { collapsed } = useContext(SidebarContext);
+  const context = useContext(SidebarContext);
 
   return (
     <AccountSelector
-      collapsed={collapsed}
+      collapsed={context?.minimized}
       collisionPadding={props.collisionPadding ?? 20}
       accounts={props.accounts}
       features={features}

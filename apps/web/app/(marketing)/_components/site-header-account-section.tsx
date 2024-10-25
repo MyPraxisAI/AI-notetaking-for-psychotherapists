@@ -22,9 +22,6 @@ const ModeToggle = dynamic(
     import('@kit/ui/mode-toggle').then((mod) => ({
       default: mod.ModeToggle,
     })),
-  {
-    ssr: false,
-  },
 );
 
 const paths = {

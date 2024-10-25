@@ -23,7 +23,7 @@ const config = {
     '^~/(.*)$', // app-specific imports
     '^[./]', // relative imports
   ],
-  tailwindFunctions: ['tw', 'clsx', 'cn'],
+  tailwindFunctions: ['tw', 'clsx', 'cn', 'cva'],
   importOrderSeparation: true,
   importOrderSortSpecifiers: true,
   plugins: [

@@ -1,5 +1,12 @@
 import { If } from '@kit/ui/if';
-import { Sidebar, SidebarContent, SidebarNavigation } from '@kit/ui/sidebar';
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarHeader,
+  SidebarNavigation,
+  SidebarProvider,
+} from '@kit/ui/shadcn-sidebar';
 import { cn } from '@kit/ui/utils';
 
 import { AppLogo } from '~/components/app-logo';
@@ -16,43 +23,44 @@ interface HomeSidebarProps {
   workspace: UserWorkspace;
 }
 
+const minimized = personalAccountNavigationConfig.sidebarCollapsed;
+
 export function HomeSidebar(props: HomeSidebarProps) {
   const { workspace, user, accounts } = props.workspace;
-  const collapsed = personalAccountNavigationConfig.sidebarCollapsed;
 
   return (
-    <Sidebar collapsed={collapsed}>
-      <SidebarContent className={'h-16 justify-center'}>
-        <div className={'flex items-center justify-between space-x-2'}>
-          <If
-            condition={featuresFlagConfig.enableTeamAccounts}
-            fallback={
-              <AppLogo
-                className={cn({
-                  'max-w-full': collapsed,
-                  'py-2': !collapsed,
-                })}
-              />
-            }
-          >
-            <HomeAccountSelector userId={user.id} accounts={accounts} />
-          </If>
+    <SidebarProvider minimized={minimized}>
+      <Sidebar>
+        <SidebarHeader className={'h-16 justify-center'}>
+          <div className={'flex items-center justify-between space-x-2'}>
+            <If
+              condition={featuresFlagConfig.enableTeamAccounts}
+              fallback={
+                <AppLogo
+                  className={cn({
+                    'max-w-full': minimized,
+                    'py-2': !minimized,
+                  })}
+                />
+              }
+            >
+              <HomeAccountSelector userId={user.id} accounts={accounts} />
+            </If>
 
-          <div className={'hidden group-aria-[expanded=true]/sidebar:block'}>
-            <UserNotifications userId={user.id} />
+            <div className={'group-data-[minimized=true]:hidden'}>
+              <UserNotifications userId={user.id} />
+            </div>
           </div>
-        </div>
-      </SidebarContent>
+        </SidebarHeader>
 
-      <SidebarContent className={`mt-5 h-[calc(100%-160px)] overflow-y-auto`}>
-        <SidebarNavigation config={personalAccountNavigationConfig} />
-      </SidebarContent>
-
-      <div className={'absolute bottom-4 left-0 w-full'}>
         <SidebarContent>
-          <ProfileAccountDropdownContainer user={user} account={workspace} />
+          <SidebarNavigation config={personalAccountNavigationConfig} />
         </SidebarContent>
-      </div>
-    </Sidebar>
+
+        <SidebarFooter>
+          <ProfileAccountDropdownContainer user={user} account={workspace} />
+        </SidebarFooter>
+      </Sidebar>
+    </SidebarProvider>
   );
 }

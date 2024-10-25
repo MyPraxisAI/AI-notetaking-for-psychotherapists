@@ -29,12 +29,7 @@ function PageWithSidebar(props: PageProps) {
   const { Navigation, Children, MobileNavigation } = getSlotsFromPage(props);
 
   return (
-    <div
-      className={cn(
-        'flex bg-gray-50/95 dark:bg-background/85',
-        props.className,
-      )}
-    >
+    <div className={cn('flex', props.className)}>
       {Navigation}
 
       <div
@@ -47,7 +42,7 @@ function PageWithSidebar(props: PageProps) {
 
         <div
           className={
-            'flex flex-1 flex-col overflow-y-auto bg-background px-4 lg:m-1.5 lg:ml-0 lg:rounded-lg lg:border lg:px-0'
+            'flex flex-1 flex-col overflow-y-auto bg-background px-4 lg:px-0'
           }
         >
           {Children}

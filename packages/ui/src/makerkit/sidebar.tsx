@@ -26,6 +26,11 @@ export type SidebarConfig = z.infer<typeof NavigationConfigSchema>;
 
 export { SidebarContext };
 
+/**
+ * @deprecated
+ * This component is deprecated and will be removed in a future version.
+ * Please use the Shadcn Sidebar component instead.
+ */
 export function Sidebar(props: {
   collapsed?: boolean;
   expandOnHover?: boolean;
@@ -338,17 +343,6 @@ export function SidebarNavigation({
             </SidebarGroup>
           );
         }
-
-        return (
-          <SidebarItem
-            key={item.path}
-            end={item.end}
-            path={item.path}
-            Icon={item.Icon}
-          >
-            <Trans i18nKey={item.label} defaults={item.label} />
-          </SidebarItem>
-        );
       })}
     </>
   );
