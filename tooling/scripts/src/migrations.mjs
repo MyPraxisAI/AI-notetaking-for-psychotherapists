@@ -2,7 +2,7 @@ import { execSync } from 'node:child_process';
 
 export function checkPendingMigrations() {
   try {
-    console.log('\nChecking for pending migrations...');
+    console.info('\x1b[34m%s\x1b[0m', 'Checking for pending migrations...');
 
     const output = execSync('pnpm --filter web supabase migration list', { encoding: 'utf-8', stdio: 'pipe' });
     const lines = output.split('\n');
@@ -25,6 +25,6 @@ export function checkPendingMigrations() {
       console.log('\x1b[32m%s\x1b[0m', '✅ All migrations are up to date.');
     }
   } catch (error) {
-    console.log('\x1b[33m%s\x1b[0m', '⚠️  No remote Supabase project found. You may not yet have linked your Supabase project. Feel free to ignore this message.');
+    console.log('\x1b[33m%s\x1b[0m', '⚠️  Migrations: No remote Supabase project found, we could not check pending migrations. This is normal if you have not yet have linked your Supabase project. Feel free to ignore this message.');
   }
 }
