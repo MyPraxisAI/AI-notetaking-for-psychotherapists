@@ -156,7 +156,7 @@ importers:
         version: 7.53.1(react@19.0.0-rc-69d4b800-20241021)
       react-i18next:
         specifier: ^15.1.0
-        version: 15.1.0(i18next@23.16.2)(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021)
+        version: 15.1.0(i18next@23.16.3)(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021)
       recharts:
         specifier: 2.13.0
         version: 2.13.0(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021)
@@ -328,7 +328,7 @@ importers:
         version: 7.53.1(react@19.0.0-rc-69d4b800-20241021)
       react-i18next:
         specifier: ^15.1.0
-        version: 15.1.0(i18next@23.16.2)(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021)
+        version: 15.1.0(i18next@23.16.3)(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021)
       zod:
         specifier: ^3.23.8
         version: 3.23.8
@@ -672,7 +672,7 @@ importers:
         version: 7.53.1(react@19.0.0-rc-69d4b800-20241021)
       react-i18next:
         specifier: ^15.1.0
-        version: 15.1.0(i18next@23.16.2)(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021)
+        version: 15.1.0(i18next@23.16.3)(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021)
       sonner:
         specifier: ^1.5.0
         version: 1.5.0(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021)
@@ -798,7 +798,7 @@ importers:
         version: 7.53.1(react@19.0.0-rc-69d4b800-20241021)
       react-i18next:
         specifier: ^15.1.0
-        version: 15.1.0(i18next@23.16.2)(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021)
+        version: 15.1.0(i18next@23.16.3)(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021)
       sonner:
         specifier: ^1.5.0
         version: 1.5.0(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021)
@@ -846,7 +846,7 @@ importers:
         version: 19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021)
       react-i18next:
         specifier: ^15.1.0
-        version: 15.1.0(i18next@23.16.2)(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021)
+        version: 15.1.0(i18next@23.16.3)(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021)
 
   packages/features/team-accounts:
     dependencies:
@@ -934,7 +934,7 @@ importers:
         version: 7.53.1(react@19.0.0-rc-69d4b800-20241021)
       react-i18next:
         specifier: ^15.1.0
-        version: 15.1.0(i18next@23.16.2)(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021)
+        version: 15.1.0(i18next@23.16.3)(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021)
       sonner:
         specifier: ^1.5.0
         version: 1.5.0(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021)
@@ -945,23 +945,14 @@ importers:
   packages/i18n:
     dependencies:
       i18next:
-        specifier: ^23.16.2
-        version: 23.16.2
+        specifier: ^23.16.3
+        version: 23.16.3
       i18next-browser-languagedetector:
         specifier: 8.0.0
         version: 8.0.0
       i18next-resources-to-backend:
         specifier: ^1.2.1
         version: 1.2.1
-      next:
-        specifier: 15.0.1
-        version: 15.0.1(@opentelemetry/api@1.9.0)(@playwright/test@1.48.1)(babel-plugin-react-compiler@19.0.0-beta-8a03594-20241020)(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021)
-      react:
-        specifier: 19.0.0-rc-69d4b800-20241021
-        version: 19.0.0-rc-69d4b800-20241021
-      react-dom:
-        specifier: 19.0.0-rc-69d4b800-20241021
-        version: 19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021)
     devDependencies:
       '@kit/eslint-config':
         specifier: workspace:*
@@ -981,9 +972,18 @@ importers:
       '@tanstack/react-query':
         specifier: 5.59.16
         version: 5.59.16(react@19.0.0-rc-69d4b800-20241021)
+      next:
+        specifier: 15.0.1
+        version: 15.0.1(@opentelemetry/api@1.9.0)(@playwright/test@1.48.1)(babel-plugin-react-compiler@19.0.0-beta-8a03594-20241020)(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021)
+      react:
+        specifier: 19.0.0-rc-69d4b800-20241021
+        version: 19.0.0-rc-69d4b800-20241021
+      react-dom:
+        specifier: 19.0.0-rc-69d4b800-20241021
+        version: 19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021)
       react-i18next:
         specifier: ^15.1.0
-        version: 15.1.0(i18next@23.16.2)(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021)
+        version: 15.1.0(i18next@23.16.3)(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021)
 
   packages/mailers/core:
     devDependencies:
@@ -1426,7 +1426,7 @@ importers:
         version: 7.53.1(react@19.0.0-rc-69d4b800-20241021)
       react-i18next:
         specifier: ^15.1.0
-        version: 15.1.0(i18next@23.16.2)(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021)
+        version: 15.1.0(i18next@23.16.3)(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021)
       sonner:
         specifier: ^1.5.0
         version: 1.5.0(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021)
@@ -1446,8 +1446,8 @@ importers:
   tooling/eslint:
     dependencies:
       '@next/eslint-plugin-next':
-        specifier: 15.0.0
-        version: 15.0.0
+        specifier: 15.0.1
+        version: 15.0.1
       '@types/eslint':
         specifier: ^8.56.10
         version: 8.56.10
@@ -1486,8 +1486,6 @@ importers:
         specifier: ^5.6.3
         version: 5.6.3
 
-  tooling/license: {}
-
   tooling/prettier:
     dependencies:
       '@trivago/prettier-plugin-sort-imports':
@@ -1506,6 +1504,8 @@ importers:
       typescript:
         specifier: ^5.6.3
         version: 5.6.3
+
+  tooling/scripts: {}
 
   tooling/tailwind:
     dependencies:
@@ -1542,8 +1542,6 @@ importers:
         version: 5.6.3
 
   tooling/typescript: {}
-
-  tooling/version: {}
 
 packages:
 
@@ -2182,8 +2180,8 @@ packages:
   '@next/env@15.0.1':
     resolution: {integrity: sha512-lc4HeDUKO9gxxlM5G2knTRifqhsY6yYpwuHspBZdboZe0Gp+rZHBNNSIjmQKDJIdRXiXGyVnSD6gafrbQPvILQ==}
 
-  '@next/eslint-plugin-next@15.0.0':
-    resolution: {integrity: sha512-UG/Gnsq6Sc4wRhO9qk+vc/2v4OfRXH7GEH6/TGlNF5eU/vI9PIO7q+kgd65X2DxJ+qIpHWpzWwlPLmqMi1FE9A==}
+  '@next/eslint-plugin-next@15.0.1':
+    resolution: {integrity: sha512-bKWsMaGPbiFAaGqrDJvbE8b4Z0uKicGVcgOI77YM2ui3UfjHMr4emFPrZTLeZVchi7fT1mooG2LxREfUUClIKw==}
 
   '@next/swc-darwin-arm64@15.0.1':
     resolution: {integrity: sha512-C9k/Xv4sxkQRTA37Z6MzNq3Yb1BJMmSqjmwowoWEpbXTkAdfOwnoKOpAb71ItSzoA26yUTIo6ZhN8rKGu4ExQw==}
@@ -5737,8 +5735,8 @@ packages:
   i18next-resources-to-backend@1.2.1:
     resolution: {integrity: sha512-okHbVA+HZ7n1/76MsfhPqDou0fptl2dAlhRDu2ideXloRRduzHsqDOznJBef+R3DFZnbvWoBW+KxJ7fnFjd6Yw==}
 
-  i18next@23.16.2:
-    resolution: {integrity: sha512-dFyxwLXxEQK32f6tITBMaRht25mZPJhQ0WbC0p3bO2mWBal9lABTMqSka5k+GLSRWLzeJBKDpH7BeIA9TZI7Jg==}
+  i18next@23.16.3:
+    resolution: {integrity: sha512-e8q9gFyjrou5v/hBXgRwtWVK7Gp5So19Kf42spJlijGDfkin5abYFHlblonmD2GFYcsf9XIT7MpVuveJq/VCcA==}
 
   iconv-lite@0.4.24:
     resolution: {integrity: sha512-v3MXnZAcvnywkTUEZomIActle7RXXeedOR31wwl7VlyoXO4Qi9arvSenNQWne1TcRwhCL1HwLI21bEqdpj8/rA==}
@@ -8957,7 +8955,7 @@ snapshots:
 
   '@next/env@15.0.1': {}
 
-  '@next/eslint-plugin-next@15.0.0':
+  '@next/eslint-plugin-next@15.0.1':
     dependencies:
       fast-glob: 3.3.1
 
@@ -12628,7 +12626,7 @@ snapshots:
 
   dom-helpers@5.2.1:
     dependencies:
-      '@babel/runtime': 7.25.7
+      '@babel/runtime': 7.25.9
       csstype: 3.1.3
 
   dom-serializer@2.0.0:
@@ -13339,9 +13337,9 @@ snapshots:
     dependencies:
       '@babel/runtime': 7.24.7
 
-  i18next@23.16.2:
+  i18next@23.16.3:
     dependencies:
-      '@babel/runtime': 7.25.7
+      '@babel/runtime': 7.25.9
 
   iconv-lite@0.4.24:
     dependencies:
@@ -14796,11 +14794,11 @@ snapshots:
     dependencies:
       react: 19.0.0-rc-69d4b800-20241021
 
-  react-i18next@15.1.0(i18next@23.16.2)(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021):
+  react-i18next@15.1.0(i18next@23.16.3)(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021):
     dependencies:
       '@babel/runtime': 7.25.7
       html-parse-stringify: 3.0.1
-      i18next: 23.16.2
+      i18next: 23.16.3
       react: 19.0.0-rc-69d4b800-20241021
     optionalDependencies:
       react-dom: 19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021)
@@ -14864,7 +14862,7 @@ snapshots:
 
   react-transition-group@4.4.5(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021):
     dependencies:
-      '@babel/runtime': 7.25.7
+      '@babel/runtime': 7.25.9
       dom-helpers: 5.2.1
       loose-envify: 1.4.0
       prop-types: 15.8.1
