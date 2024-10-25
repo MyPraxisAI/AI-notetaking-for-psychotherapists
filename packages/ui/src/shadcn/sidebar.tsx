@@ -17,7 +17,11 @@ import { If } from '../makerkit/if';
 import type { SidebarConfig } from '../makerkit/sidebar';
 import { Trans } from '../makerkit/trans';
 import { Button } from './button';
-import { CollapsibleTrigger } from './collapsible';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from './collapsible';
 import { Input } from './input';
 import { Separator } from './separator';
 import { Sheet, SheetContent } from './sheet';
@@ -842,8 +846,17 @@ export function SidebarNavigation({
         }
 
         if ('children' in item) {
+          const Container = item.collapsible ? Collapsible : Fragment;
+          const ContentContainer = item.collapsible
+            ? CollapsibleContent
+            : Fragment;
+
           return (
-            <Fragment key={item.label}>
+            <Container
+              defaultOpen={!item.collapsed}
+              className={'group/collapsible'}
+              key={`collapsible-${index}`}
+            >
               <SidebarGroup key={item.label}>
                 <If
                   condition={item.collapsible}
@@ -870,107 +883,108 @@ export function SidebarNavigation({
                   </SidebarGroupAction>
                 </If>
 
-                <SidebarGroupContent>
-                  <SidebarMenu>
-                    {item.children.map((child) => {
-                      const isActive = isRouteActive(
-                        child.path,
-                        currentPath,
-                        child.end,
-                      );
+                <ContentContainer>
+                  <SidebarGroupContent>
+                    <SidebarMenu>
+                      {item.children.map((child) => {
+                        const isActive = isRouteActive(
+                          child.path,
+                          currentPath,
+                          child.end,
+                        );
 
-                      return (
-                        <SidebarMenuItem key={child.path}>
-                          <SidebarMenuButton
-                            asChild
-                            isActive={isActive}
-                            tooltip={child.label}
-                          >
-                            <Link
-                              className={cn('flex items-center', {
-                                'mx-auto w-full !gap-0 [&>svg]:flex-1':
-                                  minimized,
-                              })}
-                              href={child.path}
+                        return (
+                          <SidebarMenuItem key={child.path}>
+                            <SidebarMenuButton
+                              asChild
+                              isActive={isActive}
+                              tooltip={child.label}
                             >
-                              {child.Icon}
-
-                              <span
-                                className={cn(
-                                  'w-auto transition-opacity duration-300',
-                                  {
-                                    'w-0 opacity-0': minimized,
-                                  },
-                                )}
-                              >
-                                <Trans
-                                  i18nKey={child.label}
-                                  defaults={child.label}
-                                />
-                              </span>
-                            </Link>
-                          </SidebarMenuButton>
-
-                          <If condition={child.children}>
-                            {(children) => (
-                              <SidebarMenuSub
-                                className={cn({ 'mx-0 px-1.5': minimized })}
-                              >
-                                {children.map((child) => {
-                                  const isActive = isRouteActive(
-                                    child.path,
-                                    currentPath,
-                                    child.end,
-                                  );
-
-                                  return (
-                                    <SidebarMenuSubItem key={child.path}>
-                                      <SidebarMenuSubButton
-                                        isActive={isActive}
-                                        asChild
-                                      >
-                                        <Link
-                                          className={cn('flex items-center', {
-                                            'mx-auto w-full !gap-0 [&>svg]:flex-1':
-                                              minimized,
-                                          })}
-                                          href={child.path}
-                                        >
-                                          {child.Icon}
-
-                                          <span
-                                            className={cn(
-                                              'w-auto transition-opacity duration-300',
-                                              {
-                                                'w-0 opacity-0':
-                                                  minimized,
-                                              },
-                                            )}
-                                          >
-                                            <Trans
-                                              i18nKey={child.label}
-                                              defaults={child.label}
-                                            />
-                                          </span>
-                                        </Link>
-                                      </SidebarMenuSubButton>
-                                    </SidebarMenuSubItem>
-                                  );
+                              <Link
+                                className={cn('flex items-center', {
+                                  'mx-auto w-full !gap-0 [&>svg]:flex-1':
+                                    minimized,
                                 })}
-                              </SidebarMenuSub>
-                            )}
-                          </If>
-                        </SidebarMenuItem>
-                      );
-                    })}
-                  </SidebarMenu>
-                </SidebarGroupContent>
+                                href={child.path}
+                              >
+                                {child.Icon}
+
+                                <span
+                                  className={cn(
+                                    'w-auto transition-opacity duration-300',
+                                    {
+                                      'w-0 opacity-0': minimized,
+                                    },
+                                  )}
+                                >
+                                  <Trans
+                                    i18nKey={child.label}
+                                    defaults={child.label}
+                                  />
+                                </span>
+                              </Link>
+                            </SidebarMenuButton>
+
+                            <If condition={child.children}>
+                              {(children) => (
+                                <SidebarMenuSub
+                                  className={cn({ 'mx-0 px-1.5': minimized })}
+                                >
+                                  {children.map((child) => {
+                                    const isActive = isRouteActive(
+                                      child.path,
+                                      currentPath,
+                                      child.end,
+                                    );
+
+                                    return (
+                                      <SidebarMenuSubItem key={child.path}>
+                                        <SidebarMenuSubButton
+                                          isActive={isActive}
+                                          asChild
+                                        >
+                                          <Link
+                                            className={cn('flex items-center', {
+                                              'mx-auto w-full !gap-0 [&>svg]:flex-1':
+                                                minimized,
+                                            })}
+                                            href={child.path}
+                                          >
+                                            {child.Icon}
+
+                                            <span
+                                              className={cn(
+                                                'w-auto transition-opacity duration-300',
+                                                {
+                                                  'w-0 opacity-0': minimized,
+                                                },
+                                              )}
+                                            >
+                                              <Trans
+                                                i18nKey={child.label}
+                                                defaults={child.label}
+                                              />
+                                            </span>
+                                          </Link>
+                                        </SidebarMenuSubButton>
+                                      </SidebarMenuSubItem>
+                                    );
+                                  })}
+                                </SidebarMenuSub>
+                              )}
+                            </If>
+                          </SidebarMenuItem>
+                        );
+                      })}
+                    </SidebarMenu>
+                  </SidebarGroupContent>
+                </ContentContainer>
               </SidebarGroup>
 
               <If condition={minimized && !isLast}>
                 <SidebarSeparator />
               </If>
-            </Fragment>
+            </Container>
           );
         }
       })}
