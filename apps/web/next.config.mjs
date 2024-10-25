@@ -39,6 +39,7 @@ const config = {
   outputFileTracingIncludes: {
     '/*': ['./content/**/*'],
   },
+  redirects: getRedirects,
   experimental: {
     mdxRs: true,
     reactCompiler: ENABLE_REACT_COMPILER,
@@ -93,6 +94,16 @@ function getRemotePatterns() {
           hostname: 'localhost',
         },
       ];
+}
+
+async function getRedirects() {
+  return [
+    {
+      source: '/server-sitemap.xml',
+      destination: '/sitemap.xml',
+      permanent: true,
+    },
+  ];
 }
 
 /**
