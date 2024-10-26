@@ -56,58 +56,58 @@ importers:
         specifier: ^3.9.0
         version: 3.9.0(react-hook-form@7.53.1(react@19.0.0-rc-69d4b800-20241021))
       '@kit/accounts':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../packages/features/accounts
       '@kit/admin':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../packages/features/admin
       '@kit/analytics':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../packages/analytics
       '@kit/auth':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../packages/features/auth
       '@kit/billing':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../packages/billing/core
       '@kit/billing-gateway':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../packages/billing/gateway
       '@kit/cms':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../packages/cms/core
       '@kit/database-webhooks':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../packages/database-webhooks
       '@kit/email-templates':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../packages/email-templates
       '@kit/i18n':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../packages/i18n
       '@kit/mailers':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../packages/mailers/core
       '@kit/monitoring':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../packages/monitoring/api
       '@kit/next':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../packages/next
       '@kit/notifications':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../packages/features/notifications
       '@kit/shared':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../packages/shared
       '@kit/supabase':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../packages/supabase
       '@kit/team-accounts':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../packages/features/team-accounts
       '@kit/ui':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../packages/ui
       '@makerkit/data-loader-supabase-core':
         specifier: ^0.0.8
@@ -156,7 +156,7 @@ importers:
         version: 7.53.1(react@19.0.0-rc-69d4b800-20241021)
       react-i18next:
         specifier: ^15.1.0
-        version: 15.1.0(i18next@23.16.3)(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021)
+        version: 15.1.0(i18next@23.16.4)(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021)
       recharts:
         specifier: 2.13.0
         version: 2.13.0(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021)
@@ -171,16 +171,16 @@ importers:
         version: 3.23.8
     devDependencies:
       '@kit/eslint-config':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../tooling/eslint
       '@kit/prettier-config':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../tooling/prettier
       '@kit/tailwind-config':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../tooling/tailwind
       '@kit/tsconfig':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../tooling/typescript
       '@next/bundle-analyzer':
         specifier: 15.0.1
@@ -276,25 +276,25 @@ importers:
         specifier: ^3.9.0
         version: 3.9.0(react-hook-form@7.53.1(react@19.0.0-rc-69d4b800-20241021))
       '@kit/billing':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../core
       '@kit/eslint-config':
         specifier: workspace:*
         version: link:../../../tooling/eslint
       '@kit/lemon-squeezy':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../lemon-squeezy
       '@kit/prettier-config':
         specifier: workspace:*
         version: link:../../../tooling/prettier
       '@kit/shared':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../shared
       '@kit/stripe':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../stripe
       '@kit/supabase':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../supabase
       '@kit/tailwind-config':
         specifier: workspace:*
@@ -303,7 +303,7 @@ importers:
         specifier: workspace:*
         version: link:../../../tooling/typescript
       '@kit/ui':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../ui
       '@supabase/supabase-js':
         specifier: ^2.45.6
@@ -328,7 +328,7 @@ importers:
         version: 7.53.1(react@19.0.0-rc-69d4b800-20241021)
       react-i18next:
         specifier: ^15.1.0
-        version: 15.1.0(i18next@23.16.3)(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021)
+        version: 15.1.0(i18next@23.16.4)(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021)
       zod:
         specifier: ^3.23.8
         version: 3.23.8
@@ -340,7 +340,7 @@ importers:
         version: 3.3.1
     devDependencies:
       '@kit/billing':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../core
       '@kit/eslint-config':
         specifier: workspace:*
@@ -349,10 +349,10 @@ importers:
         specifier: workspace:*
         version: link:../../../tooling/prettier
       '@kit/shared':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../shared
       '@kit/supabase':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../supabase
       '@kit/tailwind-config':
         specifier: workspace:*
@@ -361,7 +361,7 @@ importers:
         specifier: workspace:*
         version: link:../../../tooling/typescript
       '@kit/ui':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../ui
       '@types/react':
         specifier: npm:types-react@19.0.0-rc.1
@@ -389,7 +389,7 @@ importers:
         version: 17.2.1
     devDependencies:
       '@kit/billing':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../core
       '@kit/eslint-config':
         specifier: workspace:*
@@ -398,10 +398,10 @@ importers:
         specifier: workspace:*
         version: link:../../../tooling/prettier
       '@kit/shared':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../shared
       '@kit/supabase':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../supabase
       '@kit/tailwind-config':
         specifier: workspace:*
@@ -410,7 +410,7 @@ importers:
         specifier: workspace:*
         version: link:../../../tooling/typescript
       '@kit/ui':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../ui
       '@types/react':
         specifier: npm:types-react@19.0.0-rc.1
@@ -431,13 +431,13 @@ importers:
   packages/cms/core:
     devDependencies:
       '@kit/cms-types':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../types
       '@kit/eslint-config':
         specifier: workspace:*
         version: link:../../../tooling/eslint
       '@kit/keystatic':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../keystatic
       '@kit/prettier-config':
         specifier: workspace:*
@@ -446,7 +446,7 @@ importers:
         specifier: workspace:*
         version: link:../../../tooling/typescript
       '@kit/wordpress':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../wordpress
       '@types/node':
         specifier: ^22.7.9
@@ -465,7 +465,7 @@ importers:
         version: 0.4.0(react@19.0.0-rc-69d4b800-20241021)(types-react@19.0.0-rc.1)
     devDependencies:
       '@kit/cms-types':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../types
       '@kit/eslint-config':
         specifier: workspace:*
@@ -477,7 +477,7 @@ importers:
         specifier: workspace:*
         version: link:../../../tooling/typescript
       '@kit/ui':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../ui
       '@types/node':
         specifier: ^22.7.9
@@ -507,7 +507,7 @@ importers:
   packages/cms/wordpress:
     devDependencies:
       '@kit/cms-types':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../types
       '@kit/eslint-config':
         specifier: workspace:*
@@ -519,7 +519,7 @@ importers:
         specifier: workspace:*
         version: link:../../../tooling/typescript
       '@kit/ui':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../ui
       '@types/node':
         specifier: ^22.7.9
@@ -534,10 +534,10 @@ importers:
   packages/database-webhooks:
     devDependencies:
       '@kit/billing':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../billing/core
       '@kit/billing-gateway':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../billing/gateway
       '@kit/eslint-config':
         specifier: workspace:*
@@ -546,19 +546,19 @@ importers:
         specifier: workspace:*
         version: link:../../tooling/prettier
       '@kit/shared':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../shared
       '@kit/stripe':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../billing/stripe
       '@kit/supabase':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../supabase
       '@kit/tailwind-config':
         specifier: workspace:*
         version: link:../../tooling/tailwind
       '@kit/team-accounts':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../features/team-accounts
       '@kit/tsconfig':
         specifier: workspace:*
@@ -602,31 +602,31 @@ importers:
         specifier: ^3.9.0
         version: 3.9.0(react-hook-form@7.53.1(react@19.0.0-rc-69d4b800-20241021))
       '@kit/billing-gateway':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../billing/gateway
       '@kit/email-templates':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../email-templates
       '@kit/eslint-config':
         specifier: workspace:*
         version: link:../../../tooling/eslint
       '@kit/mailers':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../mailers/core
       '@kit/monitoring':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../monitoring/api
       '@kit/next':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../next
       '@kit/prettier-config':
         specifier: workspace:*
         version: link:../../../tooling/prettier
       '@kit/shared':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../shared
       '@kit/supabase':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../supabase
       '@kit/tailwind-config':
         specifier: workspace:*
@@ -635,7 +635,7 @@ importers:
         specifier: workspace:*
         version: link:../../../tooling/typescript
       '@kit/ui':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../ui
       '@radix-ui/react-icons':
         specifier: ^1.3.0
@@ -672,7 +672,7 @@ importers:
         version: 7.53.1(react@19.0.0-rc-69d4b800-20241021)
       react-i18next:
         specifier: ^15.1.0
-        version: 15.1.0(i18next@23.16.3)(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021)
+        version: 15.1.0(i18next@23.16.4)(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021)
       sonner:
         specifier: ^1.5.0
         version: 1.5.0(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021)
@@ -689,16 +689,16 @@ importers:
         specifier: workspace:*
         version: link:../../../tooling/eslint
       '@kit/next':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../next
       '@kit/prettier-config':
         specifier: workspace:*
         version: link:../../../tooling/prettier
       '@kit/shared':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../shared
       '@kit/supabase':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../supabase
       '@kit/tailwind-config':
         specifier: workspace:*
@@ -707,7 +707,7 @@ importers:
         specifier: workspace:*
         version: link:../../../tooling/typescript
       '@kit/ui':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../ui
       '@makerkit/data-loader-supabase-core':
         specifier: ^0.0.8
@@ -758,10 +758,10 @@ importers:
         specifier: workspace:*
         version: link:../../../tooling/prettier
       '@kit/shared':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../shared
       '@kit/supabase':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../supabase
       '@kit/tailwind-config':
         specifier: workspace:*
@@ -770,7 +770,7 @@ importers:
         specifier: workspace:*
         version: link:../../../tooling/typescript
       '@kit/ui':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../ui
       '@marsidev/react-turnstile':
         specifier: ^1.0.2
@@ -798,7 +798,7 @@ importers:
         version: 7.53.1(react@19.0.0-rc-69d4b800-20241021)
       react-i18next:
         specifier: ^15.1.0
-        version: 15.1.0(i18next@23.16.3)(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021)
+        version: 15.1.0(i18next@23.16.4)(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021)
       sonner:
         specifier: ^1.5.0
         version: 1.5.0(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021)
@@ -846,7 +846,7 @@ importers:
         version: 19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021)
       react-i18next:
         specifier: ^15.1.0
-        version: 15.1.0(i18next@23.16.3)(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021)
+        version: 15.1.0(i18next@23.16.4)(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021)
 
   packages/features/team-accounts:
     dependencies:
@@ -858,34 +858,34 @@ importers:
         specifier: ^3.9.0
         version: 3.9.0(react-hook-form@7.53.1(react@19.0.0-rc-69d4b800-20241021))
       '@kit/accounts':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../accounts
       '@kit/billing-gateway':
         specifier: workspace:*
         version: link:../../billing/gateway
       '@kit/email-templates':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../email-templates
       '@kit/eslint-config':
         specifier: workspace:*
         version: link:../../../tooling/eslint
       '@kit/mailers':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../mailers/core
       '@kit/monitoring':
         specifier: workspace:*
         version: link:../../monitoring/api
       '@kit/next':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../next
       '@kit/prettier-config':
         specifier: workspace:*
         version: link:../../../tooling/prettier
       '@kit/shared':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../shared
       '@kit/supabase':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../supabase
       '@kit/tailwind-config':
         specifier: workspace:*
@@ -894,7 +894,7 @@ importers:
         specifier: workspace:*
         version: link:../../../tooling/typescript
       '@kit/ui':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../ui
       '@supabase/supabase-js':
         specifier: ^2.45.6
@@ -934,7 +934,7 @@ importers:
         version: 7.53.1(react@19.0.0-rc-69d4b800-20241021)
       react-i18next:
         specifier: ^15.1.0
-        version: 15.1.0(i18next@23.16.3)(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021)
+        version: 15.1.0(i18next@23.16.4)(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021)
       sonner:
         specifier: ^1.5.0
         version: 1.5.0(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021)
@@ -946,7 +946,7 @@ importers:
     dependencies:
       i18next:
         specifier: ^23.16.3
-        version: 23.16.3
+        version: 23.16.4
       i18next-browser-languagedetector:
         specifier: 8.0.0
         version: 8.0.0
@@ -961,7 +961,7 @@ importers:
         specifier: workspace:*
         version: link:../../tooling/prettier
       '@kit/shared':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../shared
       '@kit/tailwind-config':
         specifier: workspace:*
@@ -983,7 +983,7 @@ importers:
         version: 19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021)
       react-i18next:
         specifier: ^15.1.0
-        version: 15.1.0(i18next@23.16.3)(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021)
+        version: 15.1.0(i18next@23.16.4)(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021)
 
   packages/mailers/core:
     devDependencies:
@@ -991,13 +991,13 @@ importers:
         specifier: workspace:*
         version: link:../../../tooling/eslint
       '@kit/nodemailer':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../nodemailer
       '@kit/prettier-config':
         specifier: workspace:*
         version: link:../../../tooling/prettier
       '@kit/resend':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../resend
       '@kit/tailwind-config':
         specifier: workspace:*
@@ -1022,7 +1022,7 @@ importers:
         specifier: workspace:*
         version: link:../../../tooling/eslint
       '@kit/mailers-shared':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../shared
       '@kit/prettier-config':
         specifier: workspace:*
@@ -1046,7 +1046,7 @@ importers:
         specifier: workspace:*
         version: link:../../../tooling/eslint
       '@kit/mailers-shared':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../shared
       '@kit/prettier-config':
         specifier: workspace:*
@@ -1198,7 +1198,7 @@ importers:
   packages/next:
     devDependencies:
       '@kit/auth':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../features/auth
       '@kit/eslint-config':
         specifier: workspace:*
@@ -1210,7 +1210,7 @@ importers:
         specifier: workspace:*
         version: link:../../tooling/prettier
       '@kit/supabase':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../supabase
       '@kit/tailwind-config':
         specifier: workspace:*
@@ -1426,7 +1426,7 @@ importers:
         version: 7.53.1(react@19.0.0-rc-69d4b800-20241021)
       react-i18next:
         specifier: ^15.1.0
-        version: 15.1.0(i18next@23.16.3)(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021)
+        version: 15.1.0(i18next@23.16.4)(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021)
       sonner:
         specifier: ^1.5.0
         version: 1.5.0(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021)
@@ -1474,10 +1474,10 @@ importers:
         version: 5.0.0(eslint@8.57.0)
     devDependencies:
       '@kit/prettier-config':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../prettier
       '@kit/tsconfig':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../typescript
       eslint:
         specifier: ^8.57.0
@@ -1499,7 +1499,7 @@ importers:
         version: 0.6.8(@ianvs/prettier-plugin-sort-imports@4.3.1(prettier@3.3.3))(@trivago/prettier-plugin-sort-imports@4.3.0(prettier@3.3.3))(prettier-plugin-astro@0.14.1)(prettier@3.3.3)
     devDependencies:
       '@kit/tsconfig':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../typescript
       typescript:
         specifier: ^5.6.3
@@ -1523,13 +1523,13 @@ importers:
         version: 1.0.7(tailwindcss@3.4.14(ts-node@10.9.2(@types/node@22.7.9)(typescript@5.6.3)))
     devDependencies:
       '@kit/eslint-config':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../eslint
       '@kit/prettier-config':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../prettier
       '@kit/tsconfig':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../typescript
       eslint:
         specifier: ^8.57.0
@@ -5735,8 +5735,8 @@ packages:
   i18next-resources-to-backend@1.2.1:
     resolution: {integrity: sha512-okHbVA+HZ7n1/76MsfhPqDou0fptl2dAlhRDu2ideXloRRduzHsqDOznJBef+R3DFZnbvWoBW+KxJ7fnFjd6Yw==}
 
-  i18next@23.16.3:
-    resolution: {integrity: sha512-e8q9gFyjrou5v/hBXgRwtWVK7Gp5So19Kf42spJlijGDfkin5abYFHlblonmD2GFYcsf9XIT7MpVuveJq/VCcA==}
+  i18next@23.16.4:
+    resolution: {integrity: sha512-9NIYBVy9cs4wIqzurf7nLXPyf3R78xYbxExVqHLK9od3038rjpyOEzW+XB130kZ1N4PZ9inTtJ471CRJ4Ituyg==}
 
   iconv-lite@0.4.24:
     resolution: {integrity: sha512-v3MXnZAcvnywkTUEZomIActle7RXXeedOR31wwl7VlyoXO4Qi9arvSenNQWne1TcRwhCL1HwLI21bEqdpj8/rA==}
@@ -6987,8 +6987,8 @@ packages:
       react-native:
         optional: true
 
-  react-is@19.0.0-rc-1631855f-20241023:
-    resolution: {integrity: sha512-ClpckyCujNN+qUjlBvgtxKIQAR/XKITlWYwngLTaZT01u81yDG/g0lIVzpDegjCyLK7T2h69KOf63pIahK8h/w==}
+  react-is@19.0.0-rc-cae764ce-20241025:
+    resolution: {integrity: sha512-pbbteJfkGIPl/thVxTp/599pCiodCUy2zn7bZlvxsDYYVYDGJzu+UUn9ELubkFJrVMMOc1L2azCcoCPe4UTf7w==}
 
   react-promise-suspense@0.3.4:
     resolution: {integrity: sha512-I42jl7L3Ze6kZaq+7zXWSunBa3b1on5yfvUW6Eo/3fFOj6dZ5Bqmcd264nJbTK/gn1HjjILAjSwnZbV4RpSaNQ==}
@@ -13283,7 +13283,7 @@ snapshots:
 
   hoist-non-react-statics@3.3.2:
     dependencies:
-      react-is: 19.0.0-rc-1631855f-20241023
+      react-is: 19.0.0-rc-cae764ce-20241025
 
   html-escaper@2.0.2: {}
 
@@ -13337,7 +13337,7 @@ snapshots:
     dependencies:
       '@babel/runtime': 7.24.7
 
-  i18next@23.16.3:
+  i18next@23.16.4:
     dependencies:
       '@babel/runtime': 7.25.9
 
@@ -14660,7 +14660,7 @@ snapshots:
       '@jest/types': 24.9.0
       ansi-regex: 4.1.1
       ansi-styles: 3.2.1
-      react-is: 19.0.0-rc-1631855f-20241023
+      react-is: 19.0.0-rc-cae764ce-20241025
 
   prismjs@1.29.0: {}
 
@@ -14674,7 +14674,7 @@ snapshots:
     dependencies:
       loose-envify: 1.4.0
       object-assign: 4.1.1
-      react-is: 19.0.0-rc-1631855f-20241023
+      react-is: 19.0.0-rc-cae764ce-20241025
 
   prosemirror-commands@1.6.1:
     dependencies:
@@ -14794,16 +14794,16 @@ snapshots:
     dependencies:
       react: 19.0.0-rc-69d4b800-20241021
 
-  react-i18next@15.1.0(i18next@23.16.3)(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021):
+  react-i18next@15.1.0(i18next@23.16.4)(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021):
     dependencies:
       '@babel/runtime': 7.25.7
       html-parse-stringify: 3.0.1
-      i18next: 23.16.3
+      i18next: 23.16.4
       react: 19.0.0-rc-69d4b800-20241021
     optionalDependencies:
       react-dom: 19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021)
 
-  react-is@19.0.0-rc-1631855f-20241023: {}
+  react-is@19.0.0-rc-cae764ce-20241025: {}
 
   react-promise-suspense@0.3.4:
     dependencies:
@@ -14900,7 +14900,7 @@ snapshots:
       lodash: 4.17.21
       react: 19.0.0-rc-69d4b800-20241021
       react-dom: 19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021)
-      react-is: 19.0.0-rc-1631855f-20241023
+      react-is: 19.0.0-rc-cae764ce-20241025
       react-smooth: 4.0.1(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021)
       recharts-scale: 0.4.5
       tiny-invariant: 1.3.3

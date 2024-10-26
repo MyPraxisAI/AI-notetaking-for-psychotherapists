@@ -15,13 +15,13 @@
     "./renderer": "./src/content-renderer.tsx"
   },
   "devDependencies": {
-    "@kit/cms-types": "workspace:^",
+    "@kit/cms-types": "workspace:*",
     "@kit/eslint-config": "workspace:*",
     "@kit/prettier-config": "workspace:*",
     "@kit/tsconfig": "workspace:*",
-    "@kit/ui": "workspace:^",
+    "@kit/ui": "workspace:*",
     "@types/node": "^22.7.9",
-    "@types/react": "^18.3.11",
+    "@types/react": "npm:types-react@19.0.0-rc.1",
     "wp-types": "^4.66.1"
   },
   "eslintConfig": {
