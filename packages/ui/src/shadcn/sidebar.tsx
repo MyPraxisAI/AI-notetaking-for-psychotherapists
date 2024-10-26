@@ -1,7 +1,6 @@
 'use client';
 
 import * as React from 'react';
-import { Fragment } from 'react';
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -846,17 +845,35 @@ export function SidebarNavigation({
         }
 
         if ('children' in item) {
-          const Container = item.collapsible ? Collapsible : Fragment;
-          const ContentContainer = item.collapsible
-            ? CollapsibleContent
-            : Fragment;
+          const Container = (props: React.PropsWithChildren) => {
+            if (item.collapsible) {
+              return (
+                <Collapsible
+                  defaultOpen={!item.collapsed}
+                  className={'group/collapsible'}
+                >
+                  {props.children}
+                </Collapsible>
+              );
+            }
+
+            return props.children;
+          };
+
+          const ContentContainer = (props: React.PropsWithChildren) => {
+            if (item.collapsible) {
+              return (
+                <CollapsibleContent>
+                  {props.children}
+                </CollapsibleContent>
+              );
+            }
+
+            return props.children;
+          };
 
           return (
-            <Container
-              defaultOpen={!item.collapsed}
-              className={'group/collapsible'}
-              key={`collapsible-${index}`}
-            >
+            <Container key={`collapsible-${index}`}>
               <SidebarGroup key={item.label}>
                 <If
                   condition={item.collapsible}
