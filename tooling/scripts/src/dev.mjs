@@ -1,4 +1,2 @@
-import { checkPendingMigrations } from './migrations.mjs';
+import './version.mjs';
 import './license.mjs';
-
-checkPendingMigrations();
