@@ -26,6 +26,9 @@ export function DataTable<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
+  // TODO: remove when https://github.com/TanStack/table/issues/5567 gets fixed
+  'use no memo';
+
   const table = useReactTable({
     data,
     columns,
