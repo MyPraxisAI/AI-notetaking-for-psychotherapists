@@ -5,7 +5,7 @@ import { useEffect } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ExclamationTriangleIcon } from '@radix-ui/react-icons';
 import { useMutation } from '@tanstack/react-query';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { z } from 'zod';
 
 import { useFetchAuthFactors } from '@kit/supabase/hooks/use-fetch-mfa-factors';
@@ -59,7 +59,10 @@ export function MultiFactorChallengeContainer({
     },
   });
 
-  const factorId = verificationCodeForm.watch('factorId');
+  const factorId = useWatch({
+    name: 'factorId',
+    control: verificationCodeForm.control,
+  });
 
   if (!factorId) {
     return (

@@ -2,13 +2,11 @@
 
 import { useCallback, useState } from 'react';
 
-import Image from 'next/image';
-
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ExclamationTriangleIcon } from '@radix-ui/react-icons';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeftIcon } from 'lucide-react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -119,6 +117,11 @@ function MultiFactorAuthSetupForm({
     error: '',
   });
 
+  const factorId = useWatch({
+    name: 'factorId',
+    control: verificationCodeForm.control,
+  });
+
   const onSubmit = useCallback(
     async ({
       verificationCode,
@@ -174,7 +177,7 @@ function MultiFactorAuthSetupForm({
         />
       </div>
 
-      <If condition={verificationCodeForm.watch('factorId')}>
+      <If condition={factorId}>
         <Form {...verificationCodeForm}>
           <form
             onSubmit={verificationCodeForm.handleSubmit(onSubmit)}
@@ -270,7 +273,7 @@ function FactorQrCode({
     },
   });
 
-  const factorName = form.watch('factorName');
+  const factorName = useWatch({ name: 'factorName', control: form.control });
 
   if (error) {
     return (
@@ -405,7 +408,7 @@ function FactorNameForm(
 }
 
 function QrImage({ src }: { src: string }) {
-  return <Image alt={'QR Code'} src={src} width={160} height={160} />;
+  return <img alt={'QR Code'} src={src} width={160} height={160} />;
 }
 
 function useEnrollFactor(userId: string) {

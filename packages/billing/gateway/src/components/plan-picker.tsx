@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ArrowRight, CheckCircle } from 'lucide-react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
 
@@ -87,7 +87,10 @@ export function PlanPicker(
     },
   });
 
-  const { interval: selectedInterval } = form.watch();
+  const selectedInterval = useWatch({
+    name: 'interval',
+    control: form.control,
+  });
   const planId = form.getValues('planId');
 
   const { plan: selectedPlan, product: selectedProduct } = useMemo(() => {
