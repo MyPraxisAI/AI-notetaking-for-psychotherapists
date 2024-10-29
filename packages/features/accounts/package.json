@@ -17,10 +17,10 @@
     "./api": "./src/server/api.ts"
   },
   "dependencies": {
-    "nanoid": "^5.0.7"
+    "nanoid": "^5.0.8"
   },
   "devDependencies": {
-    "@hookform/resolvers": "^3.9.0",
+    "@hookform/resolvers": "^3.9.1",
     "@kit/billing-gateway": "workspace:*",
     "@kit/email-templates": "workspace:*",
     "@kit/eslint-config": "workspace:*",
