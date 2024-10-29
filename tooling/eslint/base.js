@@ -51,6 +51,7 @@ const config = {
     '**/*.config.js',
     '**/*.config.cjs',
     '**/node_modules',
+    'database.types.ts',
     '.next',
     'dist',
     'pnpm-lock.yaml',
