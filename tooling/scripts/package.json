@@ -4,6 +4,7 @@
   "version": "0.1.0",
   "scripts": {
     "dev": "node ./src/dev.mjs",
-    "checks": "node ./src/checks.mjs"
+    "checks": "node ./src/checks.mjs",
+    "requirements": "node ./src/requirements.mjs"
   }
 }

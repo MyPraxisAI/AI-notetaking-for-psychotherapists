@@ -10,6 +10,7 @@
     "name": "MakerKit"
   },
   "scripts": {
+    "preinstall": "pnpm run --filter scripts requirements",
     "postinstall": "manypkg fix",
     "build": "turbo build --cache-dir=.turbo",
     "clean": "git clean -xdf node_modules dist .next",
