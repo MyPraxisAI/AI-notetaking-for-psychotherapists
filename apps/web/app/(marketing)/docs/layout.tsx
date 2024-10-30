@@ -13,7 +13,10 @@ async function DocsLayout({ children }: React.PropsWithChildren) {
   const tree = buildDocumentationTree(docs);
 
   return (
-    <SidebarProvider className={'lg:container'}>
+    <SidebarProvider
+      style={{ '--sidebar-width': '20em' } as React.CSSProperties}
+      className={'lg:container'}
+    >
       <DocsNavigation pages={tree} />
 
       {children}
