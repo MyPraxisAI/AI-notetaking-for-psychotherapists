@@ -209,7 +209,7 @@ const Sidebar = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<'div'> & {
     side?: 'left' | 'right';
-    variant?: 'sidebar' | 'floating' | 'inset';
+    variant?: 'sidebar' | 'floating' | 'inset' | 'ghost';
     collapsible?: 'offcanvas' | 'icon' | 'none';
   }
 >(
@@ -285,7 +285,13 @@ const Sidebar = React.forwardRef<
           <SheetContent
             data-sidebar="sidebar"
             data-mobile="true"
-            className="w-[--sidebar-width] bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
+            className={cn(
+              'w-[--sidebar-width] p-0 text-sidebar-foreground [&>button]:hidden',
+              {
+                'bg-background': variant === 'ghost',
+                'bg-sidebar': variant !== 'ghost',
+              },
+            )}
             style={
               {
                 '--sidebar-width': SIDEBAR_WIDTH_MOBILE,
@@ -313,12 +319,15 @@ const Sidebar = React.forwardRef<
         {/* This is what handles the sidebar gap on desktop */}
         <div
           className={cn(
-            'relative h-svh w-[--sidebar-width] bg-transparent transition-[width] duration-200 ease-linear',
+            'relative w-[--sidebar-width] bg-transparent transition-[width] duration-200 ease-linear',
             'group-data-[collapsible=offcanvas]:w-0',
             'group-data-[side=right]:rotate-180',
             variant === 'floating' || variant === 'inset'
               ? 'group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4))]'
               : 'group-data-[collapsible=icon]:w-[--sidebar-width-icon]',
+            {
+              'h-svh': variant !== 'ghost',
+            },
           )}
         />
         <div
@@ -337,7 +346,12 @@ const Sidebar = React.forwardRef<
         >
           <div
             data-sidebar="sidebar"
-            className="flex h-full w-full flex-col bg-sidebar group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:border-sidebar-border group-data-[variant=floating]:shadow"
+            className={cn(
+              'flex h-full w-full flex-col bg-sidebar group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:border-sidebar-border group-data-[variant=floating]:shadow',
+              {
+                'bg-background': variant === 'ghost',
+              },
+            )}
           >
             {children}
           </div>
@@ -862,11 +876,7 @@ export function SidebarNavigation({
 
           const ContentContainer = (props: React.PropsWithChildren) => {
             if (item.collapsible) {
-              return (
-                <CollapsibleContent>
-                  {props.children}
-                </CollapsibleContent>
-              );
+              return <CollapsibleContent>{props.children}</CollapsibleContent>;
             }
 
             return props.children;

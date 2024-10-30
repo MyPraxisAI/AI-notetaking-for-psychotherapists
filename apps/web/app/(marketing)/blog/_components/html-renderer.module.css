@@ -1,25 +1,29 @@
+.HTML {
+  @apply text-secondary-foreground;
+}
+
 .HTML h1 {
-  @apply mt-14 text-4xl font-bold font-heading;
+  @apply mt-14 text-4xl font-semibold font-heading tracking-tight ;
 }
 
 .HTML h2 {
-  @apply mb-4 mt-12 text-2xl font-semibold lg:text-3xl font-heading;
+  @apply mb-4 mt-12 font-semibold text-2xl font-heading tracking-tight;
 }
 
 .HTML h3 {
-  @apply mt-10 text-2xl font-bold font-heading;
+  @apply mt-10 text-xl font-semibold font-heading tracking-tight;
 }
 
 .HTML h4 {
-  @apply mt-8 text-xl font-bold;
+  @apply mt-8 text-lg font-medium tracking-tight;
 }
 
 .HTML h5 {
-  @apply mt-6 text-lg font-semibold;
+  @apply mt-6 text-base font-medium tracking-tight;
 }
 
 .HTML h6 {
-  @apply mt-2 text-base font-medium;
+  @apply mt-2 text-sm font-normal tracking-tight;
 }
 
 /**
@@ -37,11 +41,11 @@ For more info: https://github.com/tailwindlabs/tailwindcss/issues/3258#issuecomm
 }
 
 .HTML p {
-  @apply mb-4 mt-2 text-base leading-7 text-muted-foreground;
+  @apply mb-4 mt-2 text-base leading-7;
 }
 
 .HTML li {
-  @apply relative my-1.5 text-base leading-7 text-muted-foreground;
+  @apply relative my-1.5 text-base leading-7;
 }
 
 .HTML ul > li:before {
@@ -93,5 +97,5 @@ For more info: https://github.com/tailwindlabs/tailwindcss/issues/3258#issuecomm
 }
 
 .HTML pre {
-  @apply my-6 text-sm text-current border p-6 rounded-lg;
+  @apply my-6 text-sm text-current border p-6 rounded-lg overflow-x-scroll;
 }

@@ -5,12 +5,17 @@ import { notFound } from 'next/navigation';
 import { ContentRenderer, createCmsClient } from '@kit/cms';
 import { If } from '@kit/ui/if';
 import { Separator } from '@kit/ui/separator';
+import { cn } from '@kit/ui/utils';
 
 import { withI18n } from '~/lib/i18n/with-i18n';
 
-import { SitePageHeader } from '../../_components/site-page-header';
+// styles
 import styles from '../../blog/_components/html-renderer.module.css';
+
+// local imports
 import { DocsCards } from '../_components/docs-cards';
+import { DocsTableOfContents } from '../_components/docs-table-of-contents';
+import { extractHeadingsFromJSX } from '../_lib/utils';
 
 const getPageBySlug = cache(pageLoader);
 
@@ -50,26 +55,35 @@ async function DocumentationPage({ params }: DocumentationPageProps) {
 
   const description = page?.description ?? '';
 
-  return (
-    <div className={'flex flex-1 flex-col'}>
-      <SitePageHeader
-        className={'lg:px-8'}
-        container={false}
-        title={page.title}
-        subtitle={description}
-      />
+  const headings = extractHeadingsFromJSX(
+    page.content as {
+      props: { children: React.ReactElement[] };
+    },
+  );
 
-      <div className={'flex flex-col space-y-4 py-6 lg:px-8'}>
-        <article className={styles.HTML}>
+  return (
+    <div className={'flex flex-col flex-1 space-y-4'}>
+      <div className={'flex'}>
+        <article className={cn(styles.HTML, 'space-y-12 container')}>
+          <section className={'flex flex-col space-y-4 pt-6'}>
+            <h1 className={'!my-0'}>{page.title}</h1>
+
+            <h2 className={'!mb-0 !font-normal text-muted-foreground'}>
+              {description}
+            </h2>
+          </section>
+
           <ContentRenderer content={page.content} />
         </article>
 
-        <If condition={page.children.length > 0}>
-          <Separator />
-
-          <DocsCards cards={page.children ?? []} />
-        </If>
+        <DocsTableOfContents data={headings} />
       </div>
+
+      <If condition={page.children.length > 0}>
+        <Separator />
+
+        <DocsCards cards={page.children ?? []} />
+      </If>
     </div>
   );
 }

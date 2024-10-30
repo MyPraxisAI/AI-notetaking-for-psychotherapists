@@ -139,6 +139,7 @@ class WordpressClient implements CmsClient {
         return {
           id: item.id.toString(),
           title: item.title.rendered,
+          label: item.title.rendered,
           content: item.content.rendered,
           description: item.excerpt.rendered,
           image,
@@ -217,6 +218,7 @@ class WordpressClient implements CmsClient {
       description: item.excerpt.rendered,
       children: [],
       title: item.title.rendered,
+      label: item.title.rendered,
       content: item.content.rendered,
       slug: item.slug,
       publishedAt: item.date,

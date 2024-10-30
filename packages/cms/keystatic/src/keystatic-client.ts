@@ -1,13 +1,8 @@
-import React from 'react';
-
 import { Cms, CmsClient } from '@kit/cms-types';
 
 import { createKeystaticReader } from './create-reader';
-import {
-  CustomMarkdocComponents,
-  CustomMarkdocTags,
-} from './custom-components';
 import { PostEntryProps } from './keystatic.config';
+import { renderMarkdoc } from './markdoc';
 
 export function createKeystaticClient() {
   return new KeystaticClient();
@@ -85,12 +80,78 @@ class KeystaticClient implements CmsClient {
         return right - left;
       });
 
-    const items = await Promise.all(
-      filtered.slice(startOffset, endOffset).map(async (item) => {
-        const children = docs.filter((item) => item.entry.parent === item.slug);
+    function processItems(items: typeof docs) {
+      const result: typeof docs = [...items];
 
-        return this.mapPost(item, children);
-      }),
+      const indexFiles = items.filter((item) => {
+        const parts = item.slug.split('/');
+
+        return (
+          parts.length > 1 &&
+          parts[parts.length - 1] === parts[parts.length - 2]
+        );
+      });
+
+      function findParentIndex(pathParts: string[]): string | null {
+        // Try each level up from the current path until we find an index file
+        for (let i = pathParts.length - 1; i > 0; i--) {
+          const currentPath = pathParts.slice(0, i).join('/');
+
+          const possibleParent = indexFiles.find((indexFile) => {
+            const indexParts = indexFile.slug.split('/');
+            const indexFolderPath = indexParts.slice(0, -1).join('/');
+
+            return indexFolderPath === currentPath;
+          });
+
+          if (possibleParent) {
+            return possibleParent.slug;
+          }
+        }
+        return null;
+      }
+
+      result.forEach((item) => {
+        const pathParts = item.slug.split('/');
+
+        // Skip if this is a root level index file (e.g., "authentication/authentication")
+        if (pathParts.length === 2 && pathParts[0] === pathParts[1]) {
+          item.entry.parent = null;
+          return;
+        }
+
+        // Check if current item is an index file
+        const isIndexFile =
+          pathParts[pathParts.length - 1] === pathParts[pathParts.length - 2];
+
+        if (isIndexFile) {
+          // For index files, find parent in the level above
+          const parentPath = pathParts.slice(0, -2);
+          if (parentPath.length > 0) {
+            item.entry.parent = findParentIndex(
+              parentPath.concat(parentPath[parentPath.length - 1]!),
+            );
+          } else {
+            item.entry.parent = null;
+          }
+        } else {
+          // For regular files, find parent in the current folder
+          item.entry.parent = findParentIndex(pathParts);
+        }
+      });
+
+      return result;
+    }
+
+    const itemsWithParents = processItems(filtered);
+
+    const items = await Promise.all(
+      itemsWithParents
+        .slice(startOffset, endOffset)
+        .sort((a, b) => {
+          return (a.entry.order ?? 0) - (b.entry.order ?? 0);
+        })
+        .map((item) => this.mapPost(item)),
     );
 
     return {
@@ -157,25 +218,17 @@ class KeystaticClient implements CmsClient {
       slug: string;
     },
   >(item: Type, children: Type[] = []): Promise<Cms.ContentItem> {
-    const { transform, renderers } = await import('@markdoc/markdoc');
-
     const publishedAt = item.entry.publishedAt
       ? new Date(item.entry.publishedAt)
       : new Date();
 
-    const markdoc = await item.entry.content();
-
-    const content = transform(markdoc.node, {
-      tags: CustomMarkdocTags,
-    });
-
-    const html = renderers.react(content, React, {
-      components: CustomMarkdocComponents,
-    });
+    const content = await item.entry.content();
+    const html = await renderMarkdoc(content.node);
 
     return {
       id: item.slug,
       title: item.entry.title,
+      label: item.entry.label,
       url: item.slug,
       slug: item.slug,
       description: item.entry.description,
@@ -201,7 +254,7 @@ class KeystaticClient implements CmsClient {
       parentId: item.entry.parent ?? undefined,
       order: item.entry.order ?? 1,
       children: await Promise.all(
-        children.map(async (child) => this.mapPost(child, [])),
+        children.map((child) => this.mapPost(child, [])),
       ),
     };
   }

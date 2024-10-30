@@ -3,6 +3,7 @@ export namespace Cms {
   export interface ContentItem {
     id: string;
     title: string;
+    label: string | undefined;
     url: string;
     description: string | undefined;
     content: unknown;
