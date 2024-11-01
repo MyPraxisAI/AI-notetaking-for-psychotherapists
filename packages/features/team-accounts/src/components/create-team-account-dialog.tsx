@@ -76,9 +76,9 @@ function CreateOrganizationAccountForm(props: { onClose: () => void }) {
         data-test={'create-team-form'}
         onSubmit={form.handleSubmit((data) => {
           startTransition(async () => {
-            try {
-              await createTeamAccountAction(data);
-            } catch {
+            const { error } = await createTeamAccountAction(data);
+
+            if (error) {
               setError(true);
             }
           });

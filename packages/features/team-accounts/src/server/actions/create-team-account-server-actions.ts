@@ -31,7 +31,9 @@ export const createTeamAccountAction = enhanceAction(
     if (error) {
       logger.error({ ...ctx, error }, `Failed to create team account`);
 
-      throw new Error('Error creating team account');
+      return {
+        error: true,
+      };
     }
 
     logger.info(ctx, `Team account created`);
