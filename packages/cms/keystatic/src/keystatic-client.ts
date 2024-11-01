@@ -112,6 +112,11 @@ class KeystaticClient implements CmsClient {
       }
 
       result.forEach((item) => {
+        // never override the parent if it's already set in the config
+        if (item.entry.parent) {
+          return;
+        }
+
         const pathParts = item.slug.split('/');
 
         // Skip if this is a root level index file (e.g., "authentication/authentication")
