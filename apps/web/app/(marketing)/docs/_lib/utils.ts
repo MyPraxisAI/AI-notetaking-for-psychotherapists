@@ -53,79 +53,89 @@ export function extractHeadingsFromJSX(jsx: {
   function getTextContent(
     children: React.ReactElement[] | string | React.ReactElement,
   ): string {
-    if (typeof children === 'string') {
-      return children;
-    }
+    try {
+      if (typeof children === 'string') {
+        return children;
+      }
 
-    if (Array.isArray(children)) {
-      return children.map((child) => getTextContent(child)).join('');
-    }
+      if (Array.isArray(children)) {
+        return children.map((child) => getTextContent(child)).join('');
+      }
 
-    if (
-      (
-        children.props as {
-          children: React.ReactElement;
-        }
-      ).children
-    ) {
-      return getTextContent((children.props as { children: React.ReactElement }).children);
-    }
+      if (
+        (
+          children.props as {
+            children: React.ReactElement;
+          }
+        ).children
+      ) {
+        return getTextContent(
+          (children.props as { children: React.ReactElement }).children,
+        );
+      }
 
-    return '';
+      return '';
+    } catch {
+      return '';
+    }
   }
 
-  jsx.props.children.forEach((node) => {
-    if (!node || typeof node !== 'object' || !('type' in node)) {
-      return;
-    }
-
-    const nodeType = node.type as string;
-
-    const text = getTextContent(
-      (
-        node.props as {
-          children: React.ReactElement[];
-        }
-      ).children,
-    );
-
-    if (nodeType === 'h1') {
-      const slug = generateSlug(text);
-
-      headings.push({
-        text,
-        level: 1,
-        href: `#${slug}`,
-        children: [],
-      });
-    } else if (nodeType === 'h2') {
-      const slug = generateSlug(text);
-
-      currentH2 = {
-        text,
-        level: 2,
-        href: `#${slug}`,
-        children: [],
-      };
-
-      if (headings.length > 0) {
-        headings[headings.length - 1]!.children.push(currentH2);
-      } else {
-        headings.push(currentH2);
+  try {
+    jsx.props.children.forEach((node) => {
+      if (!node || typeof node !== 'object' || !('type' in node)) {
+        return;
       }
-    } else if (nodeType === 'h3' && currentH2) {
-      const slug = generateSlug(text);
 
-      currentH2.children.push({
-        text,
-        level: 3,
-        href: `#${slug}`,
-        children: [],
-      });
-    }
-  });
+      const nodeType = node.type as string;
 
-  return headings;
+      const text = getTextContent(
+        (
+          node.props as {
+            children: React.ReactElement[];
+          }
+        ).children,
+      );
+
+      if (nodeType === 'h1') {
+        const slug = generateSlug(text);
+
+        headings.push({
+          text,
+          level: 1,
+          href: `#${slug}`,
+          children: [],
+        });
+      } else if (nodeType === 'h2') {
+        const slug = generateSlug(text);
+
+        currentH2 = {
+          text,
+          level: 2,
+          href: `#${slug}`,
+          children: [],
+        };
+
+        if (headings.length > 0) {
+          headings[headings.length - 1]!.children.push(currentH2);
+        } else {
+          headings.push(currentH2);
+        }
+      } else if (nodeType === 'h3' && currentH2) {
+        const slug = generateSlug(text);
+
+        currentH2.children.push({
+          text,
+          level: 3,
+          href: `#${slug}`,
+          children: [],
+        });
+      }
+    });
+
+    return headings;
+  } catch {
+    return [];
+  }
 }
 
 function generateSlug(text: string): string {
