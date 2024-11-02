@@ -87,7 +87,7 @@
     "dotenv-cli": "^7.4.2",
     "eslint": "^8.57.0",
     "import-in-the-middle": "1.11.2",
-    "pino-pretty": "^10.3.1",
+    "pino-pretty": "^11.3.0",
     "prettier": "^3.3.3",
     "require-in-the-middle": "7.4.0",
     "supabase": "^1.207.9",
