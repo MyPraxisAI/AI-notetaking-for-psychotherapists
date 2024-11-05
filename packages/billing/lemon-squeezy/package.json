@@ -27,7 +27,7 @@
     "@kit/ui": "workspace:*",
     "@types/react": "npm:types-react@19.0.0-rc.1",
     "next": "15.0.2",
-    "react": "19.0.0-rc-69d4b800-20241021",
+    "react": "19.0.0-rc-45804af1-20241021",
     "zod": "^3.23.8"
   },
   "eslintConfig": {
