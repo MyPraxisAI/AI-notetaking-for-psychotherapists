@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import {
   flexRender,
   getCoreRowModel,
+  getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table';
 import type {
@@ -45,6 +46,8 @@ interface ReactTableProps<T extends object> {
   pageSize?: number;
   pageCount?: number;
   onPaginationChange?: (pagination: PaginationState) => void;
+  manualPagination?: boolean;
+  manualSorting?: boolean;
   tableProps?: React.ComponentProps<typeof Table> &
     Record<`data-${string}`, string>;
 }
@@ -57,6 +60,8 @@ export function DataTable<T extends object>({
   pageCount,
   onPaginationChange,
   tableProps,
+  manualPagination = true,
+  manualSorting = false,
 }: ReactTableProps<T>) {
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: pageIndex ?? 0,
@@ -74,7 +79,9 @@ export function DataTable<T extends object>({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
-    manualPagination: true,
+    getSortedRowModel: getSortedRowModel(),
+    manualPagination,
+    manualSorting,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,

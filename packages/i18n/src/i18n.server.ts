@@ -15,26 +15,52 @@ export async function initializeServerI18n(
   const i18nInstance = createInstance();
   const loadedNamespaces = new Set<string>();
 
-  await i18nInstance
-    .use(
-      resourcesToBackend(async (language, namespace, callback) => {
-        try {
-          const data = await resolver(language, namespace);
-          loadedNamespaces.add(namespace);
+  await new Promise((resolve) => {
+    void i18nInstance
+      .use(
+        resourcesToBackend(async (language, namespace, callback) => {
+          try {
+            const data = await resolver(language, namespace);
+            loadedNamespaces.add(namespace);
 
-          return callback(null, data);
-        } catch (error) {
-          console.log(
-            `Error loading i18n file: locales/${language}/${namespace}.json`,
-            error,
-          );
+            return callback(null, data);
+          } catch (error) {
+            console.log(
+              `Error loading i18n file: locales/${language}/${namespace}.json`,
+              error,
+            );
 
-          return callback(null, {});
-        }
-      }),
-    )
-    .use(initReactI18next)
-    .init(settings);
+            return callback(null, {});
+          }
+        }),
+      )
+      .use({
+        type: '3rdParty',
+        init: async (i18next: typeof i18nInstance) => {
+          let iterations = 0;
+          const maxIterations = 100;
+
+          // do not bind this to the i18next instance until it's initialized
+          while (i18next.isInitializing) {
+            iterations++;
+
+            if (iterations > maxIterations) {
+              console.error(
+                `i18next is not initialized after ${maxIterations} iterations`,
+              );
+
+              break;
+            }
+
+            await new Promise((resolve) => setTimeout(resolve, 1));
+          }
+
+          initReactI18next.init(i18next);
+          resolve(i18next);
+        },
+      })
+      .init(settings);
+  });
 
   const namespaces = settings.ns as string[];
 

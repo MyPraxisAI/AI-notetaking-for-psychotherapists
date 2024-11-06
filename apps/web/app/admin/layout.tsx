@@ -7,6 +7,8 @@ export const metadata = {
   title: `Super Admin`,
 };
 
+export const dynamic = 'force-dynamic';
+
 export default function AdminLayout(props: React.PropsWithChildren) {
   return (
     <Page style={'sidebar'}>

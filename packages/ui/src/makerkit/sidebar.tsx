@@ -329,16 +329,24 @@ export function SidebarNavigation({
               collapsed={item.collapsed}
             >
               {item.children.map((child) => {
-                return (
-                  <SidebarItem
-                    key={child.path}
-                    end={child.end}
-                    path={child.path}
-                    Icon={child.Icon}
-                  >
-                    <Trans i18nKey={child.label} defaults={child.label} />
-                  </SidebarItem>
-                );
+                if ('collapsible' in child && child.collapsible) {
+                  throw new Error(
+                    'Collapsible groups are not supported in the old Sidebar. Please migrate to the new Sidebar.',
+                  );
+                }
+
+                if ('path' in child) {
+                  return (
+                    <SidebarItem
+                      key={child.path}
+                      end={child.end}
+                      path={child.path}
+                      Icon={child.Icon}
+                    >
+                      <Trans i18nKey={child.label} defaults={child.label} />
+                    </SidebarItem>
+                  );
+                }
               })}
             </SidebarGroup>
           );

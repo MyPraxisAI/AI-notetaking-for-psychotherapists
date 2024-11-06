@@ -11,6 +11,7 @@ import {
   ConsumerProvidedEventTypes,
   useAppEvents,
 } from '@kit/shared/events';
+import { isBrowser } from '@kit/shared/utils';
 
 type AnalyticsMapping<
   T extends ConsumerProvidedEventTypes = NonNullable<unknown>,
@@ -65,10 +66,7 @@ const analyticsMapping: AnalyticsMapping = {
   },
 };
 
-/**
- * Provider for the analytics service
- */
-export function AnalyticsProvider(props: React.PropsWithChildren) {
+function AnalyticsProviderBrowser(props: React.PropsWithChildren) {
   // Subscribe to app events and map them to analytics actions
   useAnalyticsMapping(analyticsMapping);
 
@@ -77,6 +75,17 @@ export function AnalyticsProvider(props: React.PropsWithChildren) {
 
   // Render children
   return props.children;
+}
+
+/**
+ * Provider for the analytics service
+ */
+export function AnalyticsProvider(props: React.PropsWithChildren) {
+  if (!isBrowser()) {
+    return props.children;
+  }
+
+  return <AnalyticsProviderBrowser>{props.children}</AnalyticsProviderBrowser>;
 }
 
 /**

@@ -15,6 +15,12 @@ import { useSupabase } from './use-supabase';
 const PRIVATE_PATH_PREFIXES = ['/home', '/admin', '/join', '/update-password'];
 
 /**
+ * @name AUTH_PATHS
+ * @description A list of auth paths
+ */
+const AUTH_PATHS = ['/auth'];
+
+/**
  * @name useAuthChangeListener
  * @param privatePathPrefixes - A list of private path prefixes
  * @param appHomePath - The path to redirect to when the user is signed out
@@ -53,6 +59,12 @@ export function useAuthChangeListener({
 
       // revalidate user session when user signs in or out
       if (event === 'SIGNED_OUT') {
+        // sometimes Supabase sends SIGNED_OUT event
+        // but in the auth path, so we ignore it
+        if (AUTH_PATHS.some((path) => pathName.startsWith(path))) {
+          return;
+        }
+
         window.location.reload();
       }
     });
