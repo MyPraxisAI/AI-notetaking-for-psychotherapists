@@ -51,7 +51,7 @@
       "@types/react": "npm:types-react@19.0.0-rc.1",
       "@types/react-dom": "npm:types-react-dom@19.0.0-rc.1",
       "i18next": "23.16.4",
-      "react-i18next": "^15.1.0"
+      "react-i18next": "15.1.0"
     }
   }
 }
