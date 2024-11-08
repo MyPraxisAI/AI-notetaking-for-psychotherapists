@@ -35,7 +35,7 @@ const routes = [
             Icon: <CreditCard className={iconClasses} />,
           }
         : undefined,
-    ].filter(route => !!route),
+    ].filter((route) => !!route),
   },
 ] satisfies z.infer<typeof NavigationConfigSchema>['routes'];
 

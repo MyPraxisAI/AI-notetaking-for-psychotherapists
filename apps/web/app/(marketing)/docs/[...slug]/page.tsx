@@ -11,7 +11,6 @@ import { withI18n } from '~/lib/i18n/with-i18n';
 
 // styles
 import styles from '../../blog/_components/html-renderer.module.css';
-
 // local imports
 import { DocsCards } from '../_components/docs-cards';
 import { DocsTableOfContents } from '../_components/docs-table-of-contents';
@@ -62,9 +61,9 @@ async function DocumentationPage({ params }: DocumentationPageProps) {
   );
 
   return (
-    <div className={'flex flex-col flex-1 space-y-4'}>
+    <div className={'flex flex-1 flex-col space-y-4'}>
       <div className={'flex'}>
-        <article className={cn(styles.HTML, 'space-y-12 container')}>
+        <article className={cn(styles.HTML, 'container space-y-12')}>
           <section className={'flex flex-col space-y-4 pt-6'}>
             <h1 className={'!my-0'}>{page.title}</h1>
 

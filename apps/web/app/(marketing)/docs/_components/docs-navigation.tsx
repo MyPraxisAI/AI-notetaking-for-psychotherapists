@@ -53,7 +53,7 @@ export function DocsNavigation({ pages }: { pages: Cms.ContentItem[] }) {
     <>
       <Sidebar
         variant={'ghost'}
-        className={'sticky z-1 max-h-full overflow-y-auto'}
+        className={'z-1 sticky max-h-full overflow-y-auto'}
       >
         <Tree pages={pages} level={0} />
       </Sidebar>

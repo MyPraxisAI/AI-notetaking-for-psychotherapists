@@ -89,10 +89,10 @@ function getClassNameBuilder() {
   return cva(``, {
     variants: {
       variant: {
-        default: `flex flex-col h-[2.5px] w-full transition-all duration-500`,
+        default: `flex h-[2.5px] w-full flex-col transition-all duration-500`,
         numbers:
-          'w-9 h-9 font-bold rounded-full flex items-center justify-center text-sm border',
-        dots: 'w-2.5 h-2.5 rounded-full bg-muted transition-colors',
+          'flex h-9 w-9 items-center justify-center rounded-full border text-sm font-bold',
+        dots: 'h-2.5 w-2.5 rounded-full bg-muted transition-colors',
       },
       selected: {
         true: '',

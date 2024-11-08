@@ -129,7 +129,9 @@ export function AccountSelector({
                   <Avatar className={'h-6 w-6 rounded-sm'}>
                     <AvatarImage src={account.image ?? undefined} />
 
-                    <AvatarFallback className={'group-hover:bg-background rounded-sm'}>
+                    <AvatarFallback
+                      className={'group-hover:bg-background rounded-sm'}
+                    >
                       {account.label ? account.label[0] : ''}
                     </AvatarFallback>
                   </Avatar>
