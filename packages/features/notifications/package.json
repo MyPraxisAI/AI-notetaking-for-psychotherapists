@@ -26,7 +26,7 @@
     "lucide-react": "^0.454.0",
     "react": "19.0.0-rc-45804af1-20241021",
     "react-dom": "19.0.0-rc-45804af1-20241021",
-    "react-i18next": "^15.1.0"
+    "react-i18next": "^15.1.1"
   },
   "prettier": "@kit/prettier-config",
   "eslintConfig": {
