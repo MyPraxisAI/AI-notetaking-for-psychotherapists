@@ -30,10 +30,10 @@
     "@supabase/supabase-js": "^2.46.1",
     "@types/react": "npm:types-react@19.0.0-rc.1",
     "date-fns": "^4.1.0",
-    "lucide-react": "^0.454.0",
+    "lucide-react": "^0.456.0",
     "next": "15.0.3",
     "react": "19.0.0-rc-45804af1-20241021",
-    "react-hook-form": "^7.53.1",
+    "react-hook-form": "^7.53.2",
     "react-i18next": "^15.1.1",
     "zod": "^3.23.8"
   },
