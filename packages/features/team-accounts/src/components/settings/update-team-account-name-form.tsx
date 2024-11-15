@@ -2,6 +2,8 @@
 
 import { useTransition } from 'react';
 
+import { isRedirectError } from 'next/dist/client/components/redirect';
+
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -46,18 +48,36 @@ export const UpdateTeamAccountNameForm = (props: {
           data-test={'update-team-account-name-form'}
           className={'flex flex-col space-y-4'}
           onSubmit={form.handleSubmit((data) => {
-            startTransition(() => {
-              const promise = updateTeamAccountName({
-                slug: props.account.slug,
-                name: data.name,
-                path: props.path,
-              });
+            startTransition(async () => {
+              const toastId = toast.loading(t('updateTeamLoadingMessage'));
 
-              toast.promise(promise, {
-                loading: t('updateTeamLoadingMessage'),
-                success: t('updateTeamSuccessMessage'),
-                error: t('updateTeamErrorMessage'),
-              });
+              try {
+                const result = await updateTeamAccountName({
+                  slug: props.account.slug,
+                  name: data.name,
+                  path: props.path,
+                });
+
+                if (result.success) {
+                  toast.success(t('updateTeamSuccessMessage'), {
+                    id: toastId,
+                  });
+                } else {
+                  toast.error(t('updateTeamErrorMessage'), {
+                    id: toastId,
+                  });
+                }
+              } catch (error) {
+                if (!isRedirectError(error)) {
+                  toast.error(t('updateTeamErrorMessage'), {
+                    id: toastId,
+                  });
+                } else {
+                  toast.success(t('updateTeamSuccessMessage'), {
+                    id: toastId,
+                  });
+                }
+              }
             });
           })}
         >
