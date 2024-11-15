@@ -22,7 +22,7 @@
     "@kit/ui": "workspace:*",
     "@types/node": "^22.8.7",
     "@types/react": "npm:types-react@19.0.0-rc.1",
-    "wp-types": "^4.66.1"
+    "wp-types": "^4.67.0"
   },
   "eslintConfig": {
     "root": true,
