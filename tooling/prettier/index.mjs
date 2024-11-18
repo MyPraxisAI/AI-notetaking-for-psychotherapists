@@ -1,7 +1,6 @@
 /** @typedef  {import("prettier").Config} PrettierConfig */
-/** @typedef  {import("@trivago/prettier-plugin-sort-imports").PluginConfig} SortImportsConfig */
 
-/** @type { PrettierConfig | SortImportsConfig } */
+/** @type { PrettierConfig } */
 const config = {
   tabWidth: 2,
   useTabs: false,
