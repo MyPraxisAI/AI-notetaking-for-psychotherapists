@@ -19,6 +19,7 @@ const features = {
 
 export function ProfileAccountDropdownContainer(props: {
   user?: User;
+  showProfileName?: boolean;
 
   account?: {
     id: string | null;
@@ -42,6 +43,7 @@ export function ProfileAccountDropdownContainer(props: {
       user={userData}
       account={props.account}
       signOutRequested={() => signOut.mutateAsync()}
+      showProfileName={props.showProfileName}
     />
   );
 }
