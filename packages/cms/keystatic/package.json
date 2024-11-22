@@ -16,7 +16,7 @@
     "./route-handler": "./src/keystatic-route-handler.ts"
   },
   "dependencies": {
-    "@keystatic/core": "0.5.39",
+    "@keystatic/core": "0.5.41",
     "@keystatic/next": "^5.0.1",
     "@markdoc/markdoc": "^0.4.0"
   },
@@ -26,7 +26,7 @@
     "@kit/prettier-config": "workspace:*",
     "@kit/tsconfig": "workspace:*",
     "@kit/ui": "workspace:*",
-    "@types/node": "^22.8.7",
+    "@types/node": "^22.9.1",
     "@types/react": "npm:types-react@19.0.0-rc.1",
     "react": "19.0.0-rc-45804af1-20241021",
     "zod": "^3.23.8"

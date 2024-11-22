@@ -37,7 +37,7 @@ const RouteGroup = z.object({
 });
 
 export const NavigationConfigSchema = z.object({
-  style: z.enum(['custom', 'sidebar', 'header']).default('header'),
+  style: z.enum(['custom', 'sidebar', 'header']).default('sidebar'),
   sidebarCollapsed: z
     .enum(['false', 'true'])
     .default('false')
