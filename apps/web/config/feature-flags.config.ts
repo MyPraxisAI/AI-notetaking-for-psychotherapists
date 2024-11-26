@@ -19,8 +19,7 @@ const FeatureFlagsSchema = z.object({
   }),
   enableTeamAccounts: z.boolean({
     description: 'Enable team accounts.',
-    required_error:
-      'Provide the variable NEXT_PUBLIC_ENABLE_TEAM_ACCOUNTS',
+    required_error: 'Provide the variable NEXT_PUBLIC_ENABLE_TEAM_ACCOUNTS',
   }),
   enableTeamCreation: z.boolean({
     description: 'Enable team creation.',

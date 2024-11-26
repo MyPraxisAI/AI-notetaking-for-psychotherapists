@@ -48,7 +48,7 @@ export function TeamAccountNavigationMenu(props: {
         </BorderedNavigationMenu>
       </div>
 
-      <div className={'flex justify-end space-x-2.5 items-center'}>
+      <div className={'flex items-center justify-end space-x-2.5'}>
         <TeamAccountNotifications accountId={account.id} userId={user.id} />
 
         <TeamAccountAccountsSelector
@@ -62,7 +62,11 @@ export function TeamAccountNavigationMenu(props: {
         />
 
         <div>
-          <ProfileAccountDropdownContainer user={user} account={account} showProfileName={false} />
+          <ProfileAccountDropdownContainer
+            user={user}
+            account={account}
+            showProfileName={false}
+          />
         </div>
       </div>
     </div>

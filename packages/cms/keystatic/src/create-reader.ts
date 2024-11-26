@@ -45,9 +45,9 @@ function getKeystaticGithubConfiguration() {
    * This can be provided through the `NEXT_PUBLIC_KEYSTATIC_STORAGE_REPO` environment variable. The previous environment variable `KEYSTATIC_STORAGE_REPO` is deprecated.
    */
   const repo =
-      process.env.NEXT_PUBLIC_KEYSTATIC_STORAGE_REPO ??
-      /* @deprecated */
-      process.env.KEYSTATIC_STORAGE_REPO;
+    process.env.NEXT_PUBLIC_KEYSTATIC_STORAGE_REPO ??
+    /* @deprecated */
+    process.env.KEYSTATIC_STORAGE_REPO;
 
   return z
     .object({

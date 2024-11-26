@@ -113,9 +113,7 @@ export function PageBody(
 }
 
 export function PageNavigation(props: React.PropsWithChildren) {
-  return (
-    <div className={'flex-1 bg-inherit'}>{props.children}</div>
-  );
+  return <div className={'flex-1 bg-inherit'}>{props.children}</div>;
 }
 
 export function PageDescription(props: React.PropsWithChildren) {
