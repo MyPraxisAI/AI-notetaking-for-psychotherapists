@@ -25,7 +25,7 @@
     "@kit/tailwind-config": "workspace:*",
     "@kit/tsconfig": "workspace:*",
     "@types/react": "npm:types-react@19.0.0-rc.1",
-    "react": "19.0.0-rc-45804af1-20241021"
+    "react": "19.0.0"
   },
   "eslintConfig": {
     "root": true,
