@@ -30,9 +30,7 @@ export const SecondaryHero = forwardRef<HTMLDivElement, SecondaryHeroProps>(
             {heading}
           </Heading>
 
-          <h3
-            className="font-sans font-normal text-xl tracking-tight text-muted-foreground"
-          >
+          <h3 className="font-sans text-xl font-normal tracking-tight text-muted-foreground">
             {subheading}
           </h3>
         </div>

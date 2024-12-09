@@ -402,7 +402,7 @@ function PlanIntervalSwitcher(
             'border-r-transparent': index === 0,
             ['hover:text-primary text-muted-foreground']: !selected,
             ['cursor-default font-semibold']: selected,
-            ['hover:bg-initial']: !selected
+            ['hover:bg-initial']: !selected,
           },
         );
 
