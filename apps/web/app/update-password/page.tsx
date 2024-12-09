@@ -17,12 +17,21 @@ export const generateMetadata = async () => {
 
 const Logo = () => <AppLogo href={''} />;
 
-async function UpdatePasswordPage() {
+interface UpdatePasswordPageProps {
+  searchParams: Promise<{
+    callback?: string;
+  }>;
+}
+
+async function UpdatePasswordPage(props: UpdatePasswordPageProps) {
   await requireUserInServerComponent();
+
+  const { callback } = await props.searchParams;
+  const redirectTo = callback ?? pathsConfig.app.home;
 
   return (
     <AuthLayoutShell Logo={Logo}>
-      <UpdatePasswordForm redirectTo={pathsConfig.app.home} />
+      <UpdatePasswordForm redirectTo={redirectTo} />
     </AuthLayoutShell>
   );
 }
