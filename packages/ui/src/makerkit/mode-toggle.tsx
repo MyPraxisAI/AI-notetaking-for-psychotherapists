@@ -74,7 +74,7 @@ export function SubMenuModeToggle() {
 
         return (
           <DropdownMenuItem
-            className={cn('flex items-center space-x-2', {
+            className={cn('flex items-center space-x-2 cursor-pointer', {
               'bg-muted': isSelected,
             })}
             key={mode}

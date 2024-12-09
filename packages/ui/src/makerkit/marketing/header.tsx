@@ -24,7 +24,7 @@ export const Header = forwardRef<HTMLDivElement, HeaderProps>(
       >
         <div className="container">
           <div className="grid h-14 grid-cols-3 items-center">
-            <div>{logo}</div>
+            <div className={'mx-auto lg:mx-0'}>{logo}</div>
             <div className="order-first md:order-none">{navigation}</div>
             <div className="flex items-center justify-end space-x-1">
               {actions}

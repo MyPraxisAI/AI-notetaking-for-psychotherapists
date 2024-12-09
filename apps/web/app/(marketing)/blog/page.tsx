@@ -37,6 +37,7 @@ const getContentItems = cache(
         limit,
         offset,
         language,
+        content: false,
         sortBy: 'publishedAt',
         sortDirection: 'desc',
       });

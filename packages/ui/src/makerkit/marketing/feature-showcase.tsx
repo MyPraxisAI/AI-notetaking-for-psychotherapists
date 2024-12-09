@@ -20,7 +20,7 @@ export const FeatureShowcase = forwardRef<HTMLDivElement, FeatureShowcaseProps>(
       >
         <div className="flex w-full max-w-5xl flex-col space-y-4">
           {icon && <div className="flex">{icon}</div>}
-          <h3 className="text-3xl font-normal tracking-tighter xl:text-5xl">
+          <h3 className="text-3xl font-normal tracking-tight xl:text-5xl">
             {heading}
           </h3>
         </div>

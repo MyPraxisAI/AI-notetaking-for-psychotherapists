@@ -3,7 +3,6 @@ import { forwardRef } from 'react';
 import { Slot, Slottable } from '@radix-ui/react-slot';
 
 import { cn } from '../../lib/utils';
-import { GradientSecondaryText } from './gradient-secondary-text';
 
 export const Pill = forwardRef<
   HTMLHeadingElement,
@@ -33,7 +32,7 @@ export const Pill = forwardRef<
         </span>
       )}
       <Slottable>
-        <GradientSecondaryText>{props.children}</GradientSecondaryText>
+        <span className={'text-secondary-foreground'}>{props.children}</span>
       </Slottable>
     </Comp>
   );

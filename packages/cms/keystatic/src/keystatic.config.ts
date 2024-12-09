@@ -39,6 +39,10 @@ export type PostEntryProps = Entry<
   (typeof keyStaticConfig)['collections']['posts']
 >;
 
+export type DocumentationEntryProps = Entry<
+  (typeof keyStaticConfig)['collections']['documentation']
+>;
+
 function createKeyStaticConfig(path = '') {
   if (path && !path.endsWith('/')) {
     path += '/';
@@ -134,6 +138,14 @@ function getKeystaticCollections(path: string) {
             { label: 'Review', value: 'review' },
             { label: 'Pending', value: 'pending' },
           ],
+        }),
+        collapsible: fields.checkbox({
+          label: 'Collapsible',
+          defaultValue: false,
+        }),
+        collapsed: fields.checkbox({
+          label: 'Collapsed',
+          defaultValue: false,
         }),
       },
     }),

@@ -1,7 +1,6 @@
 import React from 'react';
 
 import { cn } from '../../lib/utils';
-import { Heading } from '../../shadcn/heading';
 import { HeroTitle } from './hero-title';
 
 interface HeroProps {
@@ -53,12 +52,11 @@ export function Hero({
 
             {subtitle && (
               <div className="flex max-w-2xl flex-col space-y-1">
-                <Heading
-                  level={3}
-                  className="p-0 text-center font-sans text-base font-normal"
+                <h3
+                  className="p-0 text-center text-xl font-sans font-normal text-muted-foreground tracking-tight"
                 >
                   {subtitle}
-                </Heading>
+                </h3>
               </div>
             )}
           </div>
@@ -78,8 +76,11 @@ export function Hero({
 
       {image && (
         <div
-          className={cn('mx-auto flex max-w-[85rem] justify-center py-8', {
-            ['delay-300 duration-1000 animate-in fade-in zoom-in-95 slide-in-from-top-32 fill-mode-both']:
+          style={{
+            MozAnimationDuration: '100ms',
+          }}
+          className={cn('mx-auto container flex justify-center py-8', {
+            ['delay-1000 duration-1000 animate-in fade-in zoom-in-95 slide-in-from-top-32 fill-mode-both']:
               animate,
           })}
         >

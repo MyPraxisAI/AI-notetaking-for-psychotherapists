@@ -61,13 +61,15 @@ async function DocumentationPage({ params }: DocumentationPageProps) {
   );
 
   return (
-    <div className={'flex flex-1 flex-col space-y-4'}>
-      <div className={'flex'}>
-        <article className={cn(styles.HTML, 'container space-y-12')}>
+    <div className={'flex flex-1 flex-col space-y-4 overflow-y-hidden'}>
+      <div className={'flex overflow-y-hidden'}>
+        <article
+          className={cn(styles.HTML, 'container space-y-12 overflow-y-auto')}
+        >
           <section className={'flex flex-col space-y-4 pt-6'}>
             <h1 className={'!my-0'}>{page.title}</h1>
 
-            <h2 className={'!mb-0 !font-normal text-muted-foreground'}>
+            <h2 className={'!mb-0 !font-normal !text-muted-foreground'}>
               {description}
             </h2>
           </section>

@@ -18,7 +18,7 @@ export const SecondaryHero = forwardRef<HTMLDivElement, SecondaryHeroProps>(
       <div
         ref={ref}
         className={cn(
-          'flex flex-col items-center space-y-4 text-center',
+          'flex flex-col items-center space-y-6 text-center',
           className,
         )}
         {...props}
@@ -30,12 +30,11 @@ export const SecondaryHero = forwardRef<HTMLDivElement, SecondaryHeroProps>(
             {heading}
           </Heading>
 
-          <Heading
-            level={3}
-            className="font-sans font-normal tracking-tight text-muted-foreground"
+          <h3
+            className="font-sans font-normal text-xl tracking-tight text-muted-foreground"
           >
             {subheading}
-          </Heading>
+          </h3>
         </div>
 
         {children}

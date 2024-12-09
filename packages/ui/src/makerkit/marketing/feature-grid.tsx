@@ -10,7 +10,7 @@ export const FeatureGrid = forwardRef<
     <div
       ref={ref}
       className={cn(
-        'grid w-full grid-cols-1 gap-6 space-y-0 lg:grid-cols-3',
+        'grid w-full grid-cols-1 gap-4 space-y-0 lg:grid-cols-3',
         className,
       )}
       {...props}

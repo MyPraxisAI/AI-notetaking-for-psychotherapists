@@ -16,7 +16,7 @@ export const HeroTitle = forwardRef<
     <Comp
       ref={ref}
       className={cn(
-        'hero-title flex flex-col space-y-1 text-center font-sans text-4xl font-semibold tracking-tighter dark:text-white sm:text-6xl lg:max-w-5xl lg:text-7xl xl:text-[5.125rem]',
+        'hero-title flex flex-col text-center font-sans text-4xl font-semibold tracking-tighter dark:text-white sm:text-6xl lg:max-w-5xl lg:text-7xl xl:text-[4.85rem]',
         className,
       )}
       {...props}

@@ -15,7 +15,7 @@ async function DocsLayout({ children }: React.PropsWithChildren) {
   return (
     <SidebarProvider
       style={{ '--sidebar-width': '20em' } as React.CSSProperties}
-      className={'lg:container'}
+      className={'h-[calc(100vh-72px)] overflow-y-hidden lg:container'}
     >
       <DocsNavigation pages={tree} />
 

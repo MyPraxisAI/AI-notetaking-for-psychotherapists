@@ -392,32 +392,36 @@ function PlanIntervalSwitcher(
   }>,
 ) {
   return (
-    <div className={'flex'}>
+    <div className={'flex gap-x-1 rounded-full border p-1.5'}>
       {props.intervals.map((plan, index) => {
         const selected = plan === props.interval;
 
         const className = cn(
-          'animate-in fade-in !outline-none transition-all focus:!ring-0',
+          'animate-in fade-in rounded-full !outline-none transition-all focus:!ring-0',
           {
-            'rounded-r-none border-r-transparent': index === 0,
-            'rounded-l-none': index === props.intervals.length - 1,
-            ['hover:text-primary text-muted-foreground border']: !selected,
-            ['hover:text-initial hover:bg-background cursor-default font-semibold']:
-              selected,
+            'border-r-transparent': index === 0,
+            ['hover:text-primary text-muted-foreground']: !selected,
+            ['cursor-default font-semibold']: selected,
+            ['hover:bg-initial']: !selected
           },
         );
 
         return (
           <Button
             key={plan}
-            variant={'outline'}
+            size={'sm'}
+            variant={selected ? 'default' : 'ghost'}
             className={className}
             onClick={() => props.setInterval(plan)}
           >
-            <span className={'flex items-center space-x-1'}>
-              <If condition={selected}>
-                <CheckCircle className={'animate-in fade-in zoom-in-90 h-4'} />
-              </If>
+            <span className={'flex items-center'}>
+              <CheckCircle
+                className={cn('animate-in fade-in zoom-in-95 h-3.5', {
+                  hidden: !selected,
+                  'slide-in-from-left-4': index === 0,
+                  'slide-in-from-right-4': index === props.intervals.length - 1,
+                })}
+              />
 
               <span className={'capitalize'}>
                 <Trans i18nKey={`common:billingInterval.${plan}`} />

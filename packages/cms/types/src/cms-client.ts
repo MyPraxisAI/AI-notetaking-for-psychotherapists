@@ -16,6 +16,8 @@ export namespace Cms {
     order: number;
     children: ContentItem[];
     parentId: string | undefined;
+    collapsible?: boolean;
+    collapsed?: boolean;
   }
 
   export type ContentItemStatus = 'draft' | 'published' | 'review' | 'pending';
@@ -38,6 +40,7 @@ export namespace Cms {
     offset?: number;
     categories?: string[];
     tags?: string[];
+    content?: boolean;
     parentIds?: string[];
     language?: string | undefined;
     sortDirection?: 'asc' | 'desc';

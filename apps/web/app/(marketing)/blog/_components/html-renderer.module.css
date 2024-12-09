@@ -3,15 +3,15 @@
 }
 
 .HTML h1 {
-  @apply mt-14 text-4xl font-semibold font-heading tracking-tight ;
+  @apply mt-14 text-4xl font-semibold font-heading tracking-tight;
 }
 
 .HTML h2 {
-  @apply mb-4 mt-12 font-semibold text-2xl font-heading tracking-tight;
+  @apply mb-6 mt-12 font-semibold text-2xl font-heading tracking-tight;
 }
 
 .HTML h3 {
-  @apply mt-10 text-xl font-semibold font-heading tracking-tight;
+  @apply mt-12 text-xl font-semibold font-heading tracking-tight;
 }
 
 .HTML h4 {
@@ -41,11 +41,11 @@ For more info: https://github.com/tailwindlabs/tailwindcss/issues/3258#issuecomm
 }
 
 .HTML p {
-  @apply mb-4 mt-2 text-base leading-7;
+  @apply mb-6 mt-4 text-base leading-7 text-muted-foreground;
 }
 
 .HTML li {
-  @apply relative my-1.5 text-base leading-7;
+  @apply relative my-1.5 text-base leading-7 text-muted-foreground;
 }
 
 .HTML ul > li:before {
@@ -55,7 +55,7 @@ For more info: https://github.com/tailwindlabs/tailwindcss/issues/3258#issuecomm
 }
 
 .HTML ol > li:before {
-  @apply inline-flex font-medium;
+  @apply inline-flex font-medium text-muted-foreground;
 
   content: counters(counts, '.') '. ';
   font-feature-settings: 'tnum';
@@ -63,7 +63,7 @@ For more info: https://github.com/tailwindlabs/tailwindcss/issues/3258#issuecomm
 
 .HTML b,
 .HTML strong {
-  @apply font-bold;
+  @apply font-semibold text-secondary-foreground;
 }
 
 :global(.dark) .HTML b,
@@ -92,10 +92,35 @@ For more info: https://github.com/tailwindlabs/tailwindcss/issues/3258#issuecomm
   font-feature-settings: 'tnum';
 }
 
+.HTML p > code, .HTML li > code {
+  @apply p-0.5 text-sm font-semibold bg-muted/50 border font-mono text-secondary-foreground;
+}
+
 .HTML blockquote {
   @apply my-4 border-l-8 border border-primary px-6 py-4 text-lg font-medium text-muted-foreground;
 }
 
-.HTML pre {
-  @apply my-6 text-sm text-current border p-6 rounded-lg overflow-x-scroll;
+.HTML a {
+  @apply border-b-black border-b hover:border-b-2 pb-0.5 text-secondary-foreground font-semibold;
+}
+
+:global(.dark) .HTML a {
+  @apply border-yellow-300;
+}
+
+.HTML hr {
+  @apply mt-8 mb-6 border-border;
+}
+
+.HTML [role='alert'] {
+  @apply py-4 m-0 my-8;
+}
+
+.HTML [role='alert'] * {
+  color: inherit;
+  @apply m-0 p-0 text-sm;
+}
+
+.HTML [role='alert'] h5 {
+  color: inherit;
 }

@@ -30,7 +30,7 @@ export const FeatureCard = forwardRef<HTMLDivElement, FeatureCardProps>(
       >
         <CardHeader>
           <CardTitle className="text-xl font-semibold">{label}</CardTitle>
-          <CardDescription className="max-w-xs text-sm font-semibold tracking-tight text-current">
+          <CardDescription className="max-w-xs text-sm font-semibold tracking-tight text-muted-foreground">
             {description}
           </CardDescription>
         </CardHeader>

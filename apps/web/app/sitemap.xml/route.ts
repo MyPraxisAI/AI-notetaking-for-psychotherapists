@@ -54,6 +54,7 @@ async function getContentItems() {
   const posts = client
     .getContentItems({
       collection: 'posts',
+      content: false,
       limit,
     })
     .then((response) => response.items)
@@ -69,6 +70,7 @@ async function getContentItems() {
   const docs = client
     .getContentItems({
       collection: 'documentation',
+      content: false,
       limit,
     })
     .then((response) => response.items)

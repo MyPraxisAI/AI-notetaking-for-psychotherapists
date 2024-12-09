@@ -18,7 +18,8 @@ async function docsLoader(language: string | undefined) {
     const data = await cms.getContentItems({
       collection: 'documentation',
       language,
-      limit: 500,
+      limit: Infinity,
+      content: false,
     });
 
     return data.items;

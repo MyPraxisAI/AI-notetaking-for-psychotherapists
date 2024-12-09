@@ -148,7 +148,7 @@ export function PersonalAccountDropdown({
 
         <DropdownMenuItem asChild>
           <Link
-            className={'s-full flex items-center space-x-2'}
+            className={'s-full flex items-center space-x-2 cursor-pointer'}
             href={paths.home}
           >
             <Home className={'h-5'} />
@@ -162,7 +162,7 @@ export function PersonalAccountDropdown({
         <DropdownMenuSeparator />
 
         <DropdownMenuItem asChild>
-          <Link className={'s-full flex items-center space-x-2'} href={'/docs'}>
+          <Link className={'s-full flex items-center space-x-2 cursor-pointer'} href={'/docs'}>
             <MessageCircleQuestion className={'h-5'} />
 
             <span>
@@ -176,7 +176,7 @@ export function PersonalAccountDropdown({
 
           <DropdownMenuItem asChild>
             <Link
-              className={'s-full flex items-center space-x-2'}
+              className={'s-full flex items-center space-x-2 cursor-pointer'}
               href={'/admin'}
             >
               <Shield className={'h-5'} />

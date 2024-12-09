@@ -31,10 +31,14 @@ export function AppLogo({
   label,
   className,
 }: {
-  href?: string;
+  href?: string | null;
   className?: string;
   label?: string;
 }) {
+  if (href === null) {
+    return <LogoImage className={className} />;
+  }
+
   return (
     <Link aria-label={label ?? 'Home Page'} href={href ?? '/'}>
       <LogoImage className={className} />
