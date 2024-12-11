@@ -22,7 +22,7 @@
     "@kit/tailwind-config": "workspace:*",
     "@kit/tsconfig": "workspace:*",
     "@types/nodemailer": "6.4.17",
-    "zod": "^3.23.8"
+    "zod": "^3.24.1"
   },
   "eslintConfig": {
     "root": true,

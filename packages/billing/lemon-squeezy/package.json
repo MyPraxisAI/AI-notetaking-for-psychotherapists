@@ -26,9 +26,9 @@
     "@kit/tsconfig": "workspace:*",
     "@kit/ui": "workspace:*",
     "@types/react": "npm:types-react@19.0.0-rc.1",
-    "next": "15.0.4",
+    "next": "15.1.0",
     "react": "19.0.0",
-    "zod": "^3.23.8"
+    "zod": "^3.24.1"
   },
   "eslintConfig": {
     "root": true,
