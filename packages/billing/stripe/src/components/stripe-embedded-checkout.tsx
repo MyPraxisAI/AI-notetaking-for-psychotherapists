@@ -44,7 +44,7 @@ function EmbeddedCheckoutPopup({
   onClose?: () => void;
 }>) {
   const [open, setOpen] = useState(true);
-  const className = `bg-white p-4 max-h-[98vh] overflow-y-auto shadow-transparent border`;
+  const className = `bg-white p-4 overflow-y-auto shadow-transparent border`;
 
   return (
     <Dialog
@@ -59,6 +59,9 @@ function EmbeddedCheckoutPopup({
       }}
     >
       <DialogContent
+        style={{
+          maxHeight: '98vh',
+        }}
         className={className}
         onOpenAutoFocus={(e) => e.preventDefault()}
         onInteractOutside={(e) => e.preventDefault()}
