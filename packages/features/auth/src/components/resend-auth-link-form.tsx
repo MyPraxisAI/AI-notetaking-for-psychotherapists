@@ -1,60 +1,105 @@
 'use client';
 
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
 
 import { useSupabase } from '@kit/supabase/hooks/use-supabase';
-import { Alert, AlertDescription } from '@kit/ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '@kit/ui/alert';
 import { Button } from '@kit/ui/button';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+} from '@kit/ui/form';
 import { Input } from '@kit/ui/input';
-import { Label } from '@kit/ui/label';
 import { Trans } from '@kit/ui/trans';
 
-function ResendAuthLinkForm() {
+import { useCaptchaToken } from '../captcha/client';
+
+export function ResendAuthLinkForm(props: {
+  redirectPath?: string;
+}) {
   const resendLink = useResendLink();
+
+  const form = useForm({
+    resolver: zodResolver(z.object({ email: z.string().email() })),
+    defaultValues: {
+      email: '',
+    },
+  });
 
   if (resendLink.data && !resendLink.isPending) {
     return (
       <Alert variant={'success'}>
+        <AlertTitle>
+          <Trans i18nKey={'auth:resendLinkSuccess'} />
+        </AlertTitle>
+
         <AlertDescription>
-          <Trans i18nKey={'auth:resendLinkSuccess'} defaults={'Success!'} />
+          <Trans
+            i18nKey={'auth:resendLinkSuccessDescription'}
+            defaults={'Success!'}
+          />
         </AlertDescription>
       </Alert>
     );
   }
 
   return (
-    <form
-      className={'flex flex-col space-y-2'}
-      onSubmit={(data) => {
-        data.preventDefault();
+    <Form {...form}>
+      <form
+        className={'flex flex-col space-y-2'}
+        onSubmit={form.handleSubmit((data) => {
+          return resendLink.mutate({
+            email: data.email,
+            redirectPath: props.redirectPath,
+          });
+        })}
+      >
+        <FormField
+          render={({ field }) => {
+            return (
+              <FormItem>
+                <FormLabel>
+                  <Trans i18nKey={'common:emailAddress'} />
+                </FormLabel>
 
-        const email = new FormData(data.currentTarget).get('email') as string;
+                <FormControl>
+                  <Input type="email" required {...field} />
+                </FormControl>
+              </FormItem>
+            );
+          }}
+          name={'email'}
+        />
 
-        return resendLink.mutateAsync(email);
-      }}
-    >
-      <Label>
-        <Trans i18nKey={'common:emailAddress'} />
-        <Input name={'email'} required placeholder={''} />
-      </Label>
-
-      <Button disabled={resendLink.isPending}>
-        <Trans i18nKey={'auth:resendLink'} defaults={'Resend Link'} />
-      </Button>
-    </form>
+        <Button disabled={resendLink.isPending}>
+          <Trans i18nKey={'auth:resendLink'} defaults={'Resend Link'} />
+        </Button>
+      </form>
+    </Form>
   );
 }
 
-export default ResendAuthLinkForm;
-
 function useResendLink() {
   const supabase = useSupabase();
+  const { captchaToken } = useCaptchaToken();
 
-  const mutationKey = ['resend-link'];
-  const mutationFn = async (email: string) => {
+  const mutationFn = async (props: {
+    email: string;
+    redirectPath?: string;
+  }) => {
     const response = await supabase.auth.resend({
-      email,
+      email: props.email,
       type: 'signup',
+      options: {
+        emailRedirectTo: props.redirectPath,
+        captchaToken,
+      },
     });
 
     if (response.error) {
@@ -65,7 +110,6 @@ function useResendLink() {
   };
 
   return useMutation({
-    mutationKey,
     mutationFn,
   });
 }

@@ -1,6 +1,8 @@
 import Link from 'next/link';
-import { redirect } from 'next/navigation';
 
+import type { AuthError } from '@supabase/supabase-js';
+
+import { ResendAuthLinkForm } from '@kit/auth/resend-email-link';
 import { Alert, AlertDescription, AlertTitle } from '@kit/ui/alert';
 import { Button } from '@kit/ui/button';
 import { Trans } from '@kit/ui/trans';
@@ -11,40 +13,58 @@ import { withI18n } from '~/lib/i18n/with-i18n';
 interface AuthCallbackErrorPageProps {
   searchParams: Promise<{
     error: string;
-    invite_token: string;
+    callback?: string;
+    email?: string;
+    code?: AuthError['code'];
   }>;
 }
 
 async function AuthCallbackErrorPage(props: AuthCallbackErrorPageProps) {
-  const { error, invite_token } = await props.searchParams;
-  const queryParam = invite_token ? `?invite_token=${invite_token}` : '';
-  const signInPath = pathsConfig.auth.signIn + queryParam;
-
-  // if there is no error, redirect the user to the sign-in page
-  if (!error) {
-    redirect(signInPath);
-  }
+  const { error, callback, code } = await props.searchParams;
+  const signInPath = pathsConfig.auth.signIn;
+  const redirectPath = callback ?? pathsConfig.auth.callback;
 
   return (
     <div className={'flex flex-col space-y-4 py-4'}>
-      <div>
-        <Alert variant={'destructive'}>
-          <AlertTitle>
-            <Trans i18nKey={'auth:authenticationErrorAlertHeading'} />
-          </AlertTitle>
+      <Alert variant={'warning'}>
+        <AlertTitle>
+          <Trans i18nKey={'auth:authenticationErrorAlertHeading'} />
+        </AlertTitle>
 
-          <AlertDescription>
-            <Trans i18nKey={error} />
-          </AlertDescription>
-        </Alert>
-      </div>
+        <AlertDescription>
+          <Trans i18nKey={error ?? 'auth:authenticationErrorAlertBody'} />
+        </AlertDescription>
+      </Alert>
 
-      <Button asChild>
-        <Link href={signInPath}>
-          <Trans i18nKey={'auth:signIn'} />
-        </Link>
-      </Button>
+      <AuthCallbackForm
+        code={code}
+        signInPath={signInPath}
+        redirectPath={redirectPath}
+      />
     </div>
+  );
+}
+
+function AuthCallbackForm(props: {
+  signInPath: string;
+  redirectPath?: string;
+  code?: AuthError['code'];
+}) {
+  switch (props.code) {
+    case 'otp_expired':
+      return <ResendAuthLinkForm redirectPath={props.redirectPath} />;
+    default:
+      return <SignInButton signInPath={props.signInPath} />;
+  }
+}
+
+function SignInButton(props: { signInPath: string }) {
+  return (
+    <Button className={'w-full'} asChild>
+      <Link href={props.signInPath}>
+        <Trans i18nKey={'auth:signIn'} />
+      </Link>
+    </Button>
   );
 }
 

@@ -57,11 +57,15 @@ export class InvitationsPageObject {
   }
 
   navigateToMembers() {
-    return this.page
-      .locator('a', {
-        hasText: 'Members',
-      })
-      .click();
+    return expect(async () => {
+      await this.page
+          .locator('a', {
+            hasText: 'Members',
+          })
+          .click();
+
+      return expect(this.page.url()).toContain('members');
+    }).toPass()
   }
 
   async openInviteForm() {

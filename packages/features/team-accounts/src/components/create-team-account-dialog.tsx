@@ -2,6 +2,8 @@
 
 import { useState, useTransition } from 'react';
 
+import { isRedirectError } from 'next/dist/client/components/redirect-error';
+
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -76,10 +78,16 @@ function CreateOrganizationAccountForm(props: { onClose: () => void }) {
         data-test={'create-team-form'}
         onSubmit={form.handleSubmit((data) => {
           startTransition(async () => {
-            const { error } = await createTeamAccountAction(data);
+            try {
+              const { error } = await createTeamAccountAction(data);
 
-            if (error) {
-              setError(true);
+              if (error) {
+                setError(true);
+              }
+            } catch (error) {
+              if (!isRedirectError(error)) {
+                setError(true);
+              }
             }
           });
         })}

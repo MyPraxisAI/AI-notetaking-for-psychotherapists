@@ -1,6 +1,9 @@
 import 'server-only';
 
-import { type EmailOtpType, SupabaseClient } from '@supabase/supabase-js';
+
+
+import {AuthError, type EmailOtpType, SupabaseClient} from '@supabase/supabase-js';
+
 
 /**
  * @name createAuthCallbackService
@@ -105,6 +108,14 @@ class AuthCallbackService {
       if (!error) {
         return url;
       }
+
+      if (error.code) {
+        url.searchParams.set('code', error.code);
+      }
+
+      const errorMessage = getAuthErrorMessage({ error: error.message, code: error.code });
+
+      url.searchParams.set('error', errorMessage);
     }
 
     // return the user to an error page with some instructions
@@ -163,6 +174,7 @@ class AuthCallbackService {
         // if we have an error, we redirect to the error page
         if (error) {
           return onError({
+            code: error.code,
             error: error.message,
             path: errorPath,
           });
@@ -179,6 +191,7 @@ class AuthCallbackService {
         const message = error instanceof Error ? error.message : error;
 
         return onError({
+          code: (error as AuthError)?.code,
           error: message as string,
           path: errorPath,
         });
@@ -198,8 +211,16 @@ class AuthCallbackService {
   }
 }
 
-function onError({ error, path }: { error: string; path: string }) {
-  const errorMessage = getAuthErrorMessage(error);
+function onError({
+  error,
+  path,
+  code,
+}: {
+  error: string;
+  path: string;
+  code?: string;
+}) {
+  const errorMessage = getAuthErrorMessage({ error, code });
 
   console.error(
     {
@@ -209,7 +230,12 @@ function onError({ error, path }: { error: string; path: string }) {
     `An error occurred while signing user in`,
   );
 
-  const nextPath = `${path}?error=${errorMessage}`;
+  const searchParams = new URLSearchParams({
+    error: errorMessage,
+    code: code ?? '',
+  });
+
+  const nextPath = `${path}?${searchParams.toString()}`;
 
   return {
     nextPath,
@@ -227,8 +253,23 @@ function isVerifierError(error: string) {
   return error.includes('both auth code and code verifier should be non-empty');
 }
 
-function getAuthErrorMessage(error: string) {
-  return isVerifierError(error)
-    ? `auth:errors.codeVerifierMismatch`
-    : `auth:authenticationErrorAlertBody`;
+function getAuthErrorMessage(params: {
+  error: string;
+  code?: string;
+}) {
+  // this error arises when the user tries to sign in with an expired email link
+  if (params.code) {
+    if (params.code === 'otp_expired') {
+      return 'auth:errors.otp_expired';
+    }
+  }
+
+  // this error arises when the user is trying to sign in with a different
+  // browser than the one they used to request the sign in link
+  if (isVerifierError(params.error)) {
+    return 'auth:errors.codeVerifierMismatch';
+  }
+
+  // fallback to the default error message
+  return `auth:authenticationErrorAlertBody`;
 }

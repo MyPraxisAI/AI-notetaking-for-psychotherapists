@@ -15,7 +15,8 @@
     "./shared": "./src/shared.ts",
     "./mfa": "./src/mfa.ts",
     "./captcha/client": "./src/captcha/client/index.ts",
-    "./captcha/server": "./src/captcha/server/index.ts"
+    "./captcha/server": "./src/captcha/server/index.ts",
+    "./resend-email-link": "./src/components/resend-auth-link-form.tsx"
   },
   "devDependencies": {
     "@hookform/resolvers": "^3.9.1",

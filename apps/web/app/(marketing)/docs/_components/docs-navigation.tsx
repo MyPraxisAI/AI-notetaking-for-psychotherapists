@@ -92,6 +92,10 @@ function Tree({
     ));
   }
 
+  if (pages.length === 0) {
+    return null;
+  }
+
   return (
     <SidebarMenuSub>
       {pages.map((treeNode, index) => (

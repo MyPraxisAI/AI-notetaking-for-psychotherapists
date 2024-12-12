@@ -101,6 +101,30 @@ class AccountInvitationsService {
     return data;
   }
 
+  async validateInvitation(
+    invitation: z.infer<typeof InviteMembersSchema>['invitations'][number],
+    accountSlug: string,
+  ) {
+    const { data: members, error } = await this.client.rpc(
+      'get_account_members',
+      {
+        account_slug: accountSlug,
+      },
+    );
+
+    if (error) {
+      throw error;
+    }
+
+    const isUserAlreadyMember = members.find((member) => {
+      return member.email === invitation.email;
+    });
+
+    if (isUserAlreadyMember) {
+      throw new Error('User already member of the team');
+    }
+  }
+
   /**
    * @name sendInvitations
    * @description Sends invitations to join a team.
@@ -122,6 +146,24 @@ class AccountInvitationsService {
     };
 
     logger.info(ctx, 'Storing invitations...');
+
+    try {
+      await Promise.all(
+        invitations.map((invitation) =>
+          this.validateInvitation(invitation, accountSlug),
+        ),
+      );
+    } catch (error) {
+      logger.error(
+        {
+          ...ctx,
+          error: (error as Error).message,
+        },
+        'Error validating invitations',
+      );
+
+      throw error;
+    }
 
     const accountResponse = await this.client
       .from('accounts')

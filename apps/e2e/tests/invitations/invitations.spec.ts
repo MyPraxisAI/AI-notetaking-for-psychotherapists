@@ -60,6 +60,31 @@ test.describe('Invitations', () => {
       'Owner',
     );
   });
+
+  test('user cannot invite a member of the team again', async ({ page }) => {
+    await invitations.navigateToMembers();
+
+    const email = invitations.auth.createRandomEmail();
+
+    const invites = [
+      {
+        email,
+        role: 'member',
+      },
+    ];
+
+    await invitations.openInviteForm();
+    await invitations.inviteMembers(invites);
+
+    await expect(invitations.getInvitations()).toHaveCount(1);
+
+    // Try to invite the same member again
+    // This should fail
+    await invitations.openInviteForm();
+    await invitations.inviteMembers(invites);
+    await page.waitForTimeout(500);
+    await expect(invitations.getInvitations()).toHaveCount(1);
+  });
 });
 
 test.describe('Full Invitation Flow', () => {

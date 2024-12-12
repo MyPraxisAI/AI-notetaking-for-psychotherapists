@@ -146,6 +146,11 @@ class KeystaticClient implements CmsClient {
           continue;
         }
 
+        // If the parent is already set, we don't need to do anything
+        if (item.entry.parent !== null) {
+          continue;
+        }
+
         if (isIndexFile(item.slug)) {
           item.entry.parent = null;
           results[i] = item;
@@ -167,6 +172,7 @@ class KeystaticClient implements CmsClient {
             item.entry.parent = findClosestValidParent(pathParts);
           }
         }
+
         results[i] = item;
       }
 
