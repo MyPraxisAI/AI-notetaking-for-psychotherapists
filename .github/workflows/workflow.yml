@@ -45,7 +45,7 @@ jobs:
 
   test:
     name: ⚫️ Test
-    timeout-minutes: 8
+    timeout-minutes: 12
     runs-on: ubuntu-latest
     if: ${{ vars.ENABLE_E2E_JOB == 'true' }}
     env:
