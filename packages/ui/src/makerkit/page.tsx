@@ -29,7 +29,7 @@ function PageWithSidebar(props: PageProps) {
   const { Navigation, Children, MobileNavigation } = getSlotsFromPage(props);
 
   return (
-    <div className={cn('flex', props.className)}>
+    <div className={cn('flex flex-1', props.className)}>
       {Navigation}
 
       <div
