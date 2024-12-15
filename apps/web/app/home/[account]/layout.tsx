@@ -3,13 +3,13 @@ import { use } from 'react';
 import { cookies } from 'next/headers';
 
 import { TeamAccountWorkspaceContextProvider } from '@kit/team-accounts/components';
-import { If } from '@kit/ui/if';
 import {
   Page,
   PageLayoutStyle,
   PageMobileNavigation,
   PageNavigation,
 } from '@kit/ui/page';
+import { SidebarProvider } from '@kit/ui/shadcn-sidebar';
 
 import { AppLogo } from '~/components/app-logo';
 import { getTeamAccountSidebarConfig } from '~/config/team-account-navigation.config';
@@ -27,8 +27,70 @@ type TeamWorkspaceLayoutProps = React.PropsWithChildren<{
 
 function TeamWorkspaceLayout({ children, params }: TeamWorkspaceLayoutProps) {
   const account = use(params).account;
-  const data = use(loadTeamWorkspace(account));
   const style = use(getLayoutStyle(account));
+
+  if (style === 'sidebar') {
+    return <SidebarLayout account={account}>{children}</SidebarLayout>;
+  }
+
+  return <HeaderLayout account={account}>{children}</HeaderLayout>;
+}
+
+function SidebarLayout({
+  account,
+  children,
+}: React.PropsWithChildren<{
+  account: string;
+}>) {
+  const data = use(loadTeamWorkspace(account));
+
+  const accounts = data.accounts.map(({ name, slug, picture_url }) => ({
+    label: name,
+    value: slug,
+    image: picture_url,
+  }));
+
+  const minimized = getTeamAccountSidebarConfig(account).sidebarCollapsed;
+
+  return (
+    <TeamAccountWorkspaceContextProvider value={data}>
+      <SidebarProvider minimized={minimized}>
+        <Page style={'sidebar'}>
+          <PageNavigation>
+            <TeamAccountLayoutSidebar
+              account={account}
+              accountId={data.account.id}
+              accounts={accounts}
+              user={data.user}
+            />
+          </PageNavigation>
+
+          <PageMobileNavigation className={'flex items-center justify-between'}>
+            <AppLogo />
+
+            <div className={'flex space-x-4'}>
+              <TeamAccountLayoutMobileNavigation
+                userId={data.user.id}
+                accounts={accounts}
+                account={account}
+              />
+            </div>
+          </PageMobileNavigation>
+
+          {children}
+        </Page>
+      </SidebarProvider>
+    </TeamAccountWorkspaceContextProvider>
+  );
+}
+
+function HeaderLayout({
+  account,
+  children,
+}: React.PropsWithChildren<{
+  account: string;
+}>) {
+  const data = use(loadTeamWorkspace(account));
 
   const accounts = data.accounts.map(({ name, slug, picture_url }) => ({
     label: name,
@@ -37,38 +99,27 @@ function TeamWorkspaceLayout({ children, params }: TeamWorkspaceLayoutProps) {
   }));
 
   return (
-    <Page style={style}>
-      <PageNavigation>
-        <If condition={style === 'sidebar'}>
-          <TeamAccountLayoutSidebar
-            account={account}
-            accountId={data.account.id}
-            accounts={accounts}
-            user={data.user}
-          />
-        </If>
-
-        <If condition={style === 'header'}>
+    <TeamAccountWorkspaceContextProvider value={data}>
+      <Page style={'header'}>
+        <PageNavigation>
           <TeamAccountNavigationMenu workspace={data} />
-        </If>
-      </PageNavigation>
+        </PageNavigation>
 
-      <PageMobileNavigation className={'flex items-center justify-between'}>
-        <AppLogo />
+        <PageMobileNavigation className={'flex items-center justify-between'}>
+          <AppLogo />
 
-        <div className={'flex space-x-4'}>
-          <TeamAccountLayoutMobileNavigation
-            userId={data.user.id}
-            accounts={accounts}
-            account={account}
-          />
-        </div>
-      </PageMobileNavigation>
+          <div className={'group-data-[mobile:hidden]'}>
+            <TeamAccountLayoutMobileNavigation
+              userId={data.user.id}
+              accounts={accounts}
+              account={account}
+            />
+          </div>
+        </PageMobileNavigation>
 
-      <TeamAccountWorkspaceContextProvider value={data}>
         {children}
-      </TeamAccountWorkspaceContextProvider>
-    </Page>
+      </Page>
+    </TeamAccountWorkspaceContextProvider>
   );
 }
 

@@ -5,7 +5,6 @@ import {
   SidebarFooter,
   SidebarHeader,
   SidebarNavigation,
-  SidebarProvider,
 } from '@kit/ui/shadcn-sidebar';
 import { cn } from '@kit/ui/utils';
 
@@ -21,46 +20,43 @@ import { HomeAccountSelector } from './home-account-selector';
 
 interface HomeSidebarProps {
   workspace: UserWorkspace;
+  minimized: boolean;
 }
-
-const minimized = personalAccountNavigationConfig.sidebarCollapsed;
 
 export function HomeSidebar(props: HomeSidebarProps) {
   const { workspace, user, accounts } = props.workspace;
 
   return (
-    <SidebarProvider minimized={minimized}>
-      <Sidebar>
-        <SidebarHeader className={'h-16 justify-center'}>
-          <div className={'flex items-center justify-between space-x-2'}>
-            <If
-              condition={featuresFlagConfig.enableTeamAccounts}
-              fallback={
-                <AppLogo
-                  className={cn({
-                    'max-w-full': minimized,
-                    'py-2': !minimized,
-                  })}
-                />
-              }
-            >
-              <HomeAccountSelector userId={user.id} accounts={accounts} />
-            </If>
+    <Sidebar>
+      <SidebarHeader className={'h-16 justify-center'}>
+        <div className={'flex items-center justify-between space-x-2'}>
+          <If
+            condition={featuresFlagConfig.enableTeamAccounts}
+            fallback={
+              <AppLogo
+                className={cn({
+                  'max-w-full': props.minimized,
+                  'py-2': !props.minimized,
+                })}
+              />
+            }
+          >
+            <HomeAccountSelector userId={user.id} accounts={accounts} />
+          </If>
 
-            <div className={'group-data-[minimized=true]:hidden'}>
-              <UserNotifications userId={user.id} />
-            </div>
+          <div className={'group-data-[minimized=true]:hidden'}>
+            <UserNotifications userId={user.id} />
           </div>
-        </SidebarHeader>
+        </div>
+      </SidebarHeader>
 
-        <SidebarContent>
-          <SidebarNavigation config={personalAccountNavigationConfig} />
-        </SidebarContent>
+      <SidebarContent>
+        <SidebarNavigation config={personalAccountNavigationConfig} />
+      </SidebarContent>
 
-        <SidebarFooter>
-          <ProfileAccountDropdownContainer user={user} account={workspace} />
-        </SidebarFooter>
-      </Sidebar>
-    </SidebarProvider>
+      <SidebarFooter>
+        <ProfileAccountDropdownContainer user={user} account={workspace} />
+      </SidebarFooter>
+    </Sidebar>
   );
 }

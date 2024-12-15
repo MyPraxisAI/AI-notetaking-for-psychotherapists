@@ -7,13 +7,11 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
-  SidebarProvider,
   useSidebar,
 } from '@kit/ui/shadcn-sidebar';
 import { cn } from '@kit/ui/utils';
 
 import { ProfileAccountDropdownContainer } from '~/components//personal-account-dropdown-container';
-import { getTeamAccountSidebarConfig } from '~/config/team-account-navigation.config';
 import { TeamAccountNotifications } from '~/home/[account]/_components/team-account-notifications';
 
 import { TeamAccountAccountsSelector } from '../_components/team-account-accounts-selector';
@@ -31,17 +29,13 @@ export function TeamAccountLayoutSidebar(props: {
   accounts: AccountModel[];
   user: User;
 }) {
-  const minimized = getTeamAccountSidebarConfig(props.account).sidebarCollapsed;
-
   return (
-    <SidebarProvider minimized={minimized}>
-      <SidebarContainer
-        account={props.account}
-        accountId={props.accountId}
-        accounts={props.accounts}
-        user={props.user}
-      />
-    </SidebarProvider>
+    <SidebarContainer
+      account={props.account}
+      accountId={props.accountId}
+      accounts={props.accounts}
+      user={props.user}
+    />
   );
 }
 
