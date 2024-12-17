@@ -37,7 +37,7 @@
   "packageManager": "pnpm@9.12.0",
   "pnpm": {
     "overrides": {
-      "react-is": "rc"
+      "react-is": "19.0.0"
     }
   },
   "devDependencies": {

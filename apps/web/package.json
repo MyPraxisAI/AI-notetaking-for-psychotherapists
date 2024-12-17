@@ -55,7 +55,7 @@
     "@makerkit/data-loader-supabase-nextjs": "^1.2.3",
     "@marsidev/react-turnstile": "^1.1.0",
     "@radix-ui/react-icons": "^1.3.2",
-    "@supabase/supabase-js": "2.47.7",
+    "@supabase/supabase-js": "2.47.8",
     "@tanstack/react-query": "5.62.7",
     "@tanstack/react-table": "^8.20.6",
     "date-fns": "^4.1.0",
@@ -90,7 +90,7 @@
     "pino-pretty": "^13.0.0",
     "prettier": "^3.4.2",
     "require-in-the-middle": "7.4.0",
-    "supabase": "^2.0.0",
+    "supabase": "^2.1.1",
     "tailwindcss": "3.4.16",
     "typescript": "^5.7.2"
   },

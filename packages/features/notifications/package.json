@@ -20,7 +20,7 @@
     "@kit/tailwind-config": "workspace:*",
     "@kit/tsconfig": "workspace:*",
     "@kit/ui": "workspace:*",
-    "@supabase/supabase-js": "2.47.7",
+    "@supabase/supabase-js": "2.47.8",
     "@tanstack/react-query": "5.62.7",
     "@types/react": "npm:types-react@19.0.0-rc.1",
     "lucide-react": "^0.468.0",
