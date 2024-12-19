@@ -10,7 +10,7 @@ async function checkLicense() {
       execSync('git config user.username').toString().trim() ||
       execSync('git config user.name').toString().trim();
   } catch (error) {
-    return;
+    console.warn(`Error checking git user: ${error.message}`);
   }
 
   if (!gitUser && !gitEmail) {
@@ -105,7 +105,10 @@ function checkVisibility() {
 async function main() {
   try {
     await checkVisibility();
-    await checkLicense();
+    await checkLicense().catch((error) => {
+      console.error(`Check failed with error: ${error.message}`);
+      process.exit(1);
+    });
   } catch (error) {
     console.error(`Check failed with error: ${error.message}`);
 
