@@ -22,13 +22,13 @@
     "@kit/tailwind-config": "workspace:*",
     "@kit/tsconfig": "workspace:*",
     "@tanstack/react-query": "5.62.8",
-    "next": "15.1.1",
+    "next": "15.1.2",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "react-i18next": "^15.2.0"
   },
   "dependencies": {
-    "i18next": "24.1.2",
+    "i18next": "24.2.0",
     "i18next-browser-languagedetector": "8.0.2",
     "i18next-resources-to-backend": "^1.2.1"
   },
