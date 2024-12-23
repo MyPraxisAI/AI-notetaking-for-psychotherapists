@@ -6,7 +6,7 @@ interface LemonSqueezyWindow extends Window {
   createLemonSqueezy: () => void;
   LemonSqueezy: {
     Setup: (options: {
-      eventHandler: (event: { event: string }) => void;
+      eventHandler: (event: { event: string } | string) => void;
     }) => void;
     Refresh: () => void;
     Url: {
@@ -43,6 +43,14 @@ function useLoadScript(
       if (onClose) {
         win.LemonSqueezy.Setup({
           eventHandler: (event) => {
+            if (typeof event === 'string') {
+              if (event === 'close') {
+                onClose();
+              }
+
+              return;
+            }
+
             if (event.event === 'PaymentMethodUpdate.Closed') {
               onClose();
             }
