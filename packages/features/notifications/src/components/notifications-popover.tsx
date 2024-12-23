@@ -7,9 +7,9 @@ import { useTranslation } from 'react-i18next';
 
 import { Database } from '@kit/supabase/database';
 import { Button } from '@kit/ui/button';
-import { Divider } from '@kit/ui/divider';
 import { If } from '@kit/ui/if';
 import { Popover, PopoverContent, PopoverTrigger } from '@kit/ui/popover';
+import { Separator } from '@kit/ui/separator';
 import { cn } from '@kit/ui/utils';
 
 import { useDismissNotification, useFetchNotifications } from '../hooks';
@@ -147,7 +147,7 @@ export function NotificationsPopover(params: {
           {t('common:notifications')}
         </div>
 
-        <Divider />
+        <Separator />
 
         <If condition={!notifications.length}>
           <div className={'px-3 py-2 text-sm'}>

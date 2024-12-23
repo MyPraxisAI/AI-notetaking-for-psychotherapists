@@ -1,21 +1,18 @@
-import React, { forwardRef } from 'react';
+import React from 'react';
 
 import { cn } from '../../lib/utils';
 
-export const GradientText = forwardRef<
-  HTMLSpanElement,
-  React.HTMLAttributes<HTMLSpanElement>
->(function GradientTextComponent({ className, children, ...props }, ref) {
-  return (
-    <span
-      ref={ref}
-      className={cn(
-        'bg-gradient-to-r bg-clip-text text-transparent',
-        className,
-      )}
-      {...props}
-    >
-      {children}
-    </span>
-  );
-});
+export const GradientText: React.FC<React.HTMLAttributes<HTMLSpanElement>> =
+  function GradientTextComponent({ className, children, ...props }) {
+    return (
+      <span
+        className={cn(
+          'bg-gradient-to-r bg-clip-text text-transparent',
+          className,
+        )}
+        {...props}
+      >
+        {children}
+      </span>
+    );
+  };

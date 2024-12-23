@@ -1,7 +1,7 @@
 'use client';
 
 import type { FormEvent, MouseEventHandler } from 'react';
-import { forwardRef, useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import Image from 'next/image';
 
@@ -17,23 +17,21 @@ type Props = Omit<React.InputHTMLAttributes<unknown>, 'value'> & {
   onClear?: () => void;
   onValueChange?: (props: { image: string; file: File }) => void;
   visible?: boolean;
-};
+} & React.ComponentPropsWithRef<'input'>;
 
 const IMAGE_SIZE = 22;
 
-export const ImageUploadInput = forwardRef<React.ElementRef<'input'>, Props>(
-  function ImageUploadInputComponent(
-    {
-      children,
-      image,
-      onClear,
-      onInput,
-      onValueChange,
-      visible = true,
-      ...props
-    },
-    forwardedRef,
-  ) {
+export const ImageUploadInput: React.FC<Props> =
+  function ImageUploadInputComponent({
+    children,
+    image,
+    onClear,
+    onInput,
+    onValueChange,
+    ref: forwardedRef,
+    visible = true,
+    ...props
+  }) {
     const localRef = useRef<HTMLInputElement>(null);
 
     const [state, setState] = useState({
@@ -199,5 +197,4 @@ export const ImageUploadInput = forwardRef<React.ElementRef<'input'>, Props>(
         </div>
       </label>
     );
-  },
-);
+  };

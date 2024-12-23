@@ -3,8 +3,6 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
-import { z } from 'zod';
-
 import { enhanceAction } from '@kit/next/actions';
 import { getLogger } from '@kit/shared/logger';
 import { getSupabaseServerAdminClient } from '@kit/supabase/server-admin-client';
@@ -12,8 +10,6 @@ import { getSupabaseServerClient } from '@kit/supabase/server-client';
 
 import { DeletePersonalAccountSchema } from '../schema/delete-personal-account.schema';
 import { createDeletePersonalAccountService } from './services/delete-personal-account.service';
-
-const emailSettings = getEmailSettingsFromEnvironment();
 
 const enableAccountDeletion =
   process.env.NEXT_PUBLIC_ENABLE_PERSONAL_ACCOUNT_DELETION === 'true';
@@ -65,7 +61,6 @@ export const deletePersonalAccountAction = enhanceAction(
       adminClient: getSupabaseServerAdminClient(),
       userId: user.id,
       userEmail: user.email ?? null,
-      emailSettings,
     });
 
     logger.info(ctx, `Account request successfully sent`);
@@ -78,23 +73,3 @@ export const deletePersonalAccountAction = enhanceAction(
   },
   {},
 );
-
-function getEmailSettingsFromEnvironment() {
-  return z
-    .object({
-      fromEmail: z
-        .string({
-          required_error: 'Provide the variable EMAIL_SENDER',
-        })
-        .email(),
-      productName: z
-        .string({
-          required_error: 'Provide the variable NEXT_PUBLIC_PRODUCT_NAME',
-        })
-        .min(1),
-    })
-    .parse({
-      fromEmail: process.env.EMAIL_SENDER,
-      productName: process.env.NEXT_PUBLIC_PRODUCT_NAME,
-    });
-}

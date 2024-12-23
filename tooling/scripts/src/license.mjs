@@ -105,6 +105,7 @@ function checkVisibility() {
 async function main() {
   try {
     await checkVisibility();
+
     await checkLicense().catch((error) => {
       console.error(`Check failed with error: ${error.message}`);
       process.exit(1);

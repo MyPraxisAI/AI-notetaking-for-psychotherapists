@@ -45,7 +45,9 @@ function SidebarLayout({ children }: React.PropsWithChildren) {
             <HomeSidebar workspace={workspace} minimized={sidebarMinimized} />
           </PageNavigation>
 
-          <MobileNavigation workspace={workspace} />
+          <PageMobileNavigation className={'flex items-center justify-between'}>
+            <MobileNavigation workspace={workspace} />
+          </PageMobileNavigation>
 
           {children}
         </Page>
@@ -64,7 +66,9 @@ function HeaderLayout({ children }: React.PropsWithChildren) {
           <HomeMenuNavigation workspace={workspace} />
         </PageNavigation>
 
-        <MobileNavigation workspace={workspace} />
+        <PageMobileNavigation className={'flex items-center justify-between'}>
+          <MobileNavigation workspace={workspace} />
+        </PageMobileNavigation>
 
         {children}
       </Page>
@@ -78,11 +82,11 @@ function MobileNavigation({
   workspace: Awaited<ReturnType<typeof loadUserWorkspace>>;
 }) {
   return (
-    <PageMobileNavigation className={'flex items-center justify-between'}>
+    <>
       <AppLogo />
 
       <HomeMobileNavigation workspace={workspace} />
-    </PageMobileNavigation>
+    </>
   );
 }
 

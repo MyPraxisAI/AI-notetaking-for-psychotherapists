@@ -1,9 +1,10 @@
 import 'server-only';
 
-
-
-import {AuthError, type EmailOtpType, SupabaseClient} from '@supabase/supabase-js';
-
+import {
+  AuthError,
+  type EmailOtpType,
+  SupabaseClient,
+} from '@supabase/supabase-js';
 
 /**
  * @name createAuthCallbackService
@@ -113,7 +114,10 @@ class AuthCallbackService {
         url.searchParams.set('code', error.code);
       }
 
-      const errorMessage = getAuthErrorMessage({ error: error.message, code: error.code });
+      const errorMessage = getAuthErrorMessage({
+        error: error.message,
+        code: error.code,
+      });
 
       url.searchParams.set('error', errorMessage);
     }
@@ -253,10 +257,7 @@ function isVerifierError(error: string) {
   return error.includes('both auth code and code verifier should be non-empty');
 }
 
-function getAuthErrorMessage(params: {
-  error: string;
-  code?: string;
-}) {
+function getAuthErrorMessage(params: { error: string; code?: string }) {
   // this error arises when the user tries to sign in with an expired email link
   if (params.code) {
     if (params.code === 'otp_expired') {

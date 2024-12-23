@@ -31,6 +31,7 @@ export function CookieBanner() {
   return (
     <DialogPrimitive.Root open modal={false}>
       <DialogPrimitive.Content
+        onOpenAutoFocus={(e) => e.preventDefault()}
         className={`dark:shadow-primary-500/40 fixed bottom-0 w-full max-w-lg border bg-background p-6 shadow-2xl delay-1000 duration-1000 animate-in fade-in zoom-in-95 slide-in-from-bottom-16 fill-mode-both lg:bottom-[2rem] lg:left-[2rem] lg:h-48 lg:rounded-lg`}
       >
         <div className={'flex flex-col space-y-4'}>

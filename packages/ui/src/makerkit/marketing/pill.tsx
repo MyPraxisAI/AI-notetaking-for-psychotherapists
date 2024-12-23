@@ -1,21 +1,17 @@
-import { forwardRef } from 'react';
-
 import { Slot, Slottable } from '@radix-ui/react-slot';
 
 import { cn } from '../../lib/utils';
 
-export const Pill = forwardRef<
-  HTMLHeadingElement,
+export const Pill: React.FC<
   React.HTMLAttributes<HTMLHeadingElement> & {
     label?: string;
     asChild?: boolean;
   }
->(function PillComponent({ className, asChild, ...props }, ref) {
+> = function PillComponent({ className, asChild, ...props }) {
   const Comp = asChild ? Slot : 'h3';
 
   return (
     <Comp
-      ref={ref}
       className={cn(
         'space-x-2.5 rounded-full border border-gray-100 px-2 py-2.5 text-center text-sm font-medium text-transparent dark:border-primary/10',
         className,
@@ -36,4 +32,4 @@ export const Pill = forwardRef<
       </Slottable>
     </Comp>
   );
-});
+};

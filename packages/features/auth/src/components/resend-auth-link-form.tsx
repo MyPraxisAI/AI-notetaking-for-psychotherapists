@@ -20,9 +20,7 @@ import { Trans } from '@kit/ui/trans';
 
 import { useCaptchaToken } from '../captcha/client';
 
-export function ResendAuthLinkForm(props: {
-  redirectPath?: string;
-}) {
+export function ResendAuthLinkForm(props: { redirectPath?: string }) {
   const resendLink = useResendLink();
 
   const form = useForm({

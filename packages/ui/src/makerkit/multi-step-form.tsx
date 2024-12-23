@@ -128,22 +128,22 @@ export function MultiStepFormContextProvider(props: {
   return props.children(ctx);
 }
 
-export const MultiStepFormStep = React.forwardRef<
-  HTMLDivElement,
+export const MultiStepFormStep: React.FC<
   React.PropsWithChildren<
     {
       asChild?: boolean;
+      ref?: React.Ref<HTMLDivElement>;
     } & HTMLProps<HTMLDivElement>
   >
->(function MultiStepFormStep({ children, asChild, ...props }, ref) {
+> = function MultiStepFormStep({ children, asChild, ...props }) {
   const Cmp = asChild ? Slot : 'div';
 
   return (
-    <Cmp ref={ref} {...props}>
+    <Cmp {...props}>
       <Slottable>{children}</Slottable>
     </Cmp>
   );
-});
+};
 
 export function useMultiStepFormContext<Schema extends z.ZodType>() {
   const context = useContext(MultiStepFormContext) as ReturnType<
@@ -165,6 +165,7 @@ export function useMultiStepFormContext<Schema extends z.ZodType>() {
  * @param schema
  * @param form
  * @param stepNames
+ * @param onSubmit
  */
 export function useMultiStepForm<Schema extends z.ZodType>(
   schema: Schema,
@@ -323,39 +324,37 @@ export function useMultiStepForm<Schema extends z.ZodType>(
   );
 }
 
-export const MultiStepFormHeader = React.forwardRef<
-  HTMLDivElement,
+export const MultiStepFormHeader: React.FC<
   React.PropsWithChildren<
     {
       asChild?: boolean;
     } & HTMLProps<HTMLDivElement>
   >
->(function MultiStepFormHeader({ children, asChild, ...props }, ref) {
+> = function MultiStepFormHeader({ children, asChild, ...props }) {
   const Cmp = asChild ? Slot : 'div';
 
   return (
-    <Cmp ref={ref} {...props}>
+    <Cmp {...props}>
       <Slottable>{children}</Slottable>
     </Cmp>
   );
-});
+};
 
-export const MultiStepFormFooter = React.forwardRef<
-  HTMLDivElement,
+export const MultiStepFormFooter: React.FC<
   React.PropsWithChildren<
     {
       asChild?: boolean;
     } & HTMLProps<HTMLDivElement>
   >
->(function MultiStepFormFooter({ children, asChild, ...props }, ref) {
+> = function MultiStepFormFooter({ children, asChild, ...props }) {
   const Cmp = asChild ? Slot : 'div';
 
   return (
-    <Cmp ref={ref} {...props}>
+    <Cmp {...props}>
       <Slottable>{children}</Slottable>
     </Cmp>
   );
-});
+};
 
 /**
  * @name createStepSchema

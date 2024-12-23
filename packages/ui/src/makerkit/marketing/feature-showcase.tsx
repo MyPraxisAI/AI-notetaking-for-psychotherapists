@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import React from 'react';
 
 import { cn } from '../../lib/utils';
 
@@ -7,14 +7,16 @@ interface FeatureShowcaseProps extends React.HTMLAttributes<HTMLDivElement> {
   icon?: React.ReactNode;
 }
 
-export const FeatureShowcase = forwardRef<HTMLDivElement, FeatureShowcaseProps>(
-  function FeatureShowcaseComponent(
-    { className, heading, icon, children, ...props },
-    ref,
-  ) {
+export const FeatureShowcase: React.FC<FeatureShowcaseProps> =
+  function FeatureShowcaseComponent({
+    className,
+    heading,
+    icon,
+    children,
+    ...props
+  }) {
     return (
       <div
-        ref={ref}
         className={cn('flex flex-col justify-between space-y-8', className)}
         {...props}
       >
@@ -27,8 +29,7 @@ export const FeatureShowcase = forwardRef<HTMLDivElement, FeatureShowcaseProps>(
         {children}
       </div>
     );
-  },
-);
+  };
 
 export function FeatureShowcaseIconContainer(
   props: React.PropsWithChildren<{

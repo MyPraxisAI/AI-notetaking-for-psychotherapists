@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import React from 'react';
 
 import { Button } from '@kit/ui/button';
 import { cn } from '@kit/ui/utils';
@@ -7,38 +7,36 @@ import { CtaButton } from './cta-button';
 import { GradientSecondaryText } from './gradient-secondary-text';
 import { HeroTitle } from './hero-title';
 
-const ComingSoonHeading = React.forwardRef<
-  HTMLHeadingElement,
-  React.HTMLAttributes<HTMLHeadingElement>
->(({ className, ...props }, ref) => (
-  <HeroTitle ref={ref} className={cn(className)} {...props} />
-));
+const ComingSoonHeading: React.FC<React.HTMLAttributes<HTMLHeadingElement>> = ({
+  className,
+  ...props
+}) => <HeroTitle className={cn(className)} {...props} />;
+
 ComingSoonHeading.displayName = 'ComingSoonHeading';
 
-const ComingSoonText = React.forwardRef<
-  HTMLParagraphElement,
-  React.HTMLAttributes<HTMLParagraphElement>
->(({ className, ...props }, ref) => (
+const ComingSoonText: React.FC<React.HTMLAttributes<HTMLParagraphElement>> = ({
+  className,
+  ...props
+}) => (
   <GradientSecondaryText
-    ref={ref}
     className={cn('text-lg text-muted-foreground md:text-xl', className)}
     {...props}
   />
-));
+);
 ComingSoonText.displayName = 'ComingSoonText';
 
-const ComingSoonButton = React.forwardRef<
-  HTMLButtonElement,
+const ComingSoonButton: React.FC<
   React.ComponentPropsWithoutRef<typeof Button>
->(({ className, ...props }, ref) => (
-  <CtaButton ref={ref} className={cn('mt-8', className)} {...props} />
-));
+> = ({ className, ...props }) => (
+  <CtaButton className={cn('mt-8', className)} {...props} />
+);
 ComingSoonButton.displayName = 'ComingSoonButton';
 
-const ComingSoon = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ children, className, ...props }, ref) => {
+const ComingSoon: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
+  children,
+  className,
+  ...props
+}) => {
   const childrenArray = React.Children.toArray(children);
 
   const logo = childrenArray.find(
@@ -72,7 +70,6 @@ const ComingSoon = React.forwardRef<
 
   return (
     <div
-      ref={ref}
       className={cn(
         'container flex min-h-screen flex-col items-center justify-center space-y-12 p-4',
         className,
@@ -92,15 +89,13 @@ const ComingSoon = React.forwardRef<
       </div>
     </div>
   );
-});
+};
 ComingSoon.displayName = 'ComingSoon';
 
-const ComingSoonLogo = forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLImageElement>
->(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn(className, 'fixed left-8 top-8')} {...props} />
-));
+const ComingSoonLogo: React.FC<React.HTMLAttributes<HTMLImageElement>> = ({
+  className,
+  ...props
+}) => <div className={cn(className, 'fixed left-8 top-8')} {...props} />;
 ComingSoonLogo.displayName = 'ComingSoonLogo';
 
 export {

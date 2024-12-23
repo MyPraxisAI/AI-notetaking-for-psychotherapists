@@ -33,11 +33,6 @@ class DeletePersonalAccountService {
 
     userId: string;
     userEmail: string | null;
-
-    emailSettings: {
-      fromEmail: string;
-      productName: string;
-    };
   }) {
     const logger = await getLogger();
 
