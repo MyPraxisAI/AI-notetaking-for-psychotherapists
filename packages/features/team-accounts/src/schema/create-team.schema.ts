@@ -15,7 +15,7 @@ const RESERVED_NAMES_ARRAY = [
 /**
  * @name TeamNameSchema
  */
-const TeamNameSchema = z
+export const TeamNameSchema = z
   .string({
     description: 'The name of the team account',
   })
@@ -23,7 +23,7 @@ const TeamNameSchema = z
   .max(50)
   .refine(
     (name) => {
-      return !RESERVED_NAMES_ARRAY.includes(name);
+      return !RESERVED_NAMES_ARRAY.includes(name.toLowerCase());
     },
     {
       message: 'teams:reservedNameError',
