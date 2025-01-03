@@ -151,7 +151,7 @@ function DeleteTeamConfirmationForm({
       }),
     ),
     defaultValues: {
-      name: '',
+      confirm: '',
     },
   });
 
