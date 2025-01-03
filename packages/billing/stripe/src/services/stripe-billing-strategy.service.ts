@@ -373,9 +373,7 @@ export class StripeBillingStrategyService
       createStripeSubscriptionPayloadBuilderService();
 
     try {
-      const subscription = await stripe.subscriptions.retrieve(subscriptionId, {
-        expand: ['line_items'],
-      });
+      const subscription = await stripe.subscriptions.retrieve(subscriptionId);
 
       logger.info(ctx, 'Subscription retrieved successfully');
 
