@@ -129,10 +129,10 @@ export function createEnvironmentVariablesGenerator(
       },
       {
         type: 'confirm',
-        name: 'values.NEXT_PUBLIC_ENABLE_TEAM_ACCOUNT_DELETION',
-        message: `Do you want to enable team account deletion? \nFor more info: ${getUrlToDocs('NEXT_PUBLIC_ENABLE_TEAM_ACCOUNT_DELETION')}\n`,
+        name: 'values.NEXT_PUBLIC_ENABLE_TEAM_ACCOUNTS_DELETION',
+        message: `Do you want to enable team account deletion? \nFor more info: ${getUrlToDocs('NEXT_PUBLIC_ENABLE_TEAM_ACCOUNTS_DELETION')}\n`,
         default: getBoolean(
-          allVariables.NEXT_PUBLIC_ENABLE_TEAM_ACCOUNT_DELETION,
+          allVariables.NEXT_PUBLIC_ENABLE_TEAM_ACCOUNTS_DELETION,
           true,
         ),
       },
