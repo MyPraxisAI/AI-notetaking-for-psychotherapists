@@ -10,7 +10,7 @@ type Theme = 'light' | 'dark' | 'system';
 export async function getRootTheme() {
   const cookiesStore = await cookies();
 
-  const themeCookie = cookiesStore.get('theme')?.value as Theme
+  const themeCookie = cookiesStore.get('theme')?.value as Theme;
 
   return themeCookie ?? process.env.NEXT_PUBLIC_DEFAULT_THEME_MODE ?? 'light';
 }
