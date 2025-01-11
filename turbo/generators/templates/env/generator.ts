@@ -275,7 +275,6 @@ export function createEnvironmentVariablesGenerator(
         message: `What is the Resend API key?\nFor more info: ${getUrlToDocs('RESEND_API_KEY')}\n`,
       },
       {
-        when: (answers) => answers.values.MAILER_PROVIDER === 'nodemailer',
         type: 'input',
         name: 'values.EMAIL_SENDER',
         message: `What is the email sender? (ex. info@makerkit.dev).\nFor more info: ${getUrlToDocs('EMAIL_SENDER')}\n`,
