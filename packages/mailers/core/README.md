@@ -1,3 +1,3 @@
-# Nodemailer - @kit/nodemailer
+# Mailers - @kit/mailers
 
-This package provides a simple and easy to use mailer for sending emails using nodemailer.
+This package provides a proxy to use the registered mailer in the application.
