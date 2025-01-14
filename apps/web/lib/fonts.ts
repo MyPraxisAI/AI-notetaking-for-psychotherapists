@@ -25,7 +25,7 @@ const heading = sans;
 export { sans, heading };
 
 /**
- * @name getClassName
+ * @name getFontsClassName
  * @description Get the class name for the root layout.
  * @param theme
  */
