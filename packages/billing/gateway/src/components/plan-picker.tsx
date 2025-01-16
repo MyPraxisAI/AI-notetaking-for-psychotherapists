@@ -239,6 +239,28 @@ export function PlanPicker(
                         throw new Error(`Base line item was not found`);
                       }
 
+                      const shouldDisplayTier =
+                        primaryLineItem.type === 'metered' &&
+                        Array.isArray(primaryLineItem.tiers) &&
+                        primaryLineItem.tiers.length > 0;
+
+                      const isMultiTier =
+                        Array.isArray(primaryLineItem.tiers) &&
+                        primaryLineItem.tiers.length > 1;
+
+                      const lowestTier = primaryLineItem.tiers?.reduce(
+                        (acc, curr) => {
+                          if (acc && acc.cost < curr.cost) {
+                            return acc;
+                          }
+
+                          return curr;
+                        },
+                        primaryLineItem.tiers[0],
+                      );
+
+                      const tierTranslationKey = isMultiTier ? 'billing:startingAtPriceUnit' : 'billing:priceUnit';
+
                       return (
                         <RadioGroupItemLabel
                           selected={selected}
@@ -318,16 +340,34 @@ export function PlanPicker(
                               }
                             >
                               <div>
-                                <Price key={plan.id}>
-                                  <span>
-                                    {formatCurrency({
-                                      currencyCode:
-                                        product.currency.toLowerCase(),
-                                      value: primaryLineItem.cost,
-                                      locale,
-                                    })}
-                                  </span>
-                                </Price>
+                                <If
+                                  condition={shouldDisplayTier}
+                                  fallback={
+                                    <Price key={plan.id}>
+                                      <span>
+                                        {formatCurrency({
+                                          currencyCode:
+                                            product.currency.toLowerCase(),
+                                          value: primaryLineItem.cost,
+                                          locale,
+                                        })}
+                                      </span>
+                                    </Price>
+                                  }
+                                >
+                                  <Trans
+                                    i18nKey={tierTranslationKey}
+                                    values={{
+                                      price: formatCurrency({
+                                        currencyCode:
+                                          product.currency.toLowerCase(),
+                                        value: lowestTier?.cost ?? 0,
+                                        locale,
+                                      }),
+                                      unit: primaryLineItem.unit,
+                                    }}
+                                  />
+                                </If>
 
                                 <div>
                                   <span className={'text-muted-foreground'}>
