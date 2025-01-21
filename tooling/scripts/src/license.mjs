@@ -7,8 +7,13 @@ async function checkLicense() {
 
   try {
     gitUser =
-      execSync('git config user.username').toString().trim() ||
-      execSync('git config user.name').toString().trim();
+      execSync('git config user.username').toString().trim();
+
+    if (!gitUser) {
+      gitUser = execSync('git config user.name').toString().trim();
+    }
+
+    gitEmail = execSync('git config user.email').toString().trim();
   } catch (error) {
     console.warn(`Error checking git user: ${error.message}`);
   }
