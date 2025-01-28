@@ -27,7 +27,7 @@ function Node({
   prefix: string;
 }) {
   const url = `${prefix}/${node.slug}`;
-  const label = node.label ?? node.title;
+  const label = node.label ? node.label : node.title;
 
   const Container = (props: React.PropsWithChildren) => {
     if (node.collapsible) {
