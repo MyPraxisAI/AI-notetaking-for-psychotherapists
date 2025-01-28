@@ -21,7 +21,7 @@ async function DocsPage() {
   const cards = items.filter((item) => !item.parentId);
 
   return (
-    <div className={'flex flex-col space-y-6 xl:space-y-10'}>
+    <div className={'flex flex-col gap-y-6 xl:gap-y-10'}>
       <SitePageHeader
         title={t('marketing:documentation')}
         subtitle={t('marketing:documentationSubtitle')}

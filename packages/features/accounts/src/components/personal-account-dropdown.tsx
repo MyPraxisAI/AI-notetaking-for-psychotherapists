@@ -88,7 +88,7 @@ export function PersonalAccountDropdown({
           'animate-in fade-in focus:outline-primary flex cursor-pointer items-center duration-500 group-data-[minimized=true]:px-0',
           className ?? '',
           {
-            ['active:bg-secondary/50 items-center space-x-4 rounded-md' +
+            ['active:bg-secondary/50 items-center gap-4 rounded-md' +
             ' hover:bg-secondary p-2 transition-colors']: showProfileName,
           },
         )}
@@ -129,8 +129,8 @@ export function PersonalAccountDropdown({
         </If>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent className={'xl:!min-w-[15rem]'}>
-        <DropdownMenuItem className={'!h-10 rounded-none'}>
+      <DropdownMenuContent className={'xl:min-w-[15rem]!'}>
+        <DropdownMenuItem className={'h-10! rounded-none'}>
           <div
             className={'flex flex-col justify-start truncate text-left text-xs'}
           >

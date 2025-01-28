@@ -98,7 +98,7 @@ function DropdownLink(
     <DropdownMenuItem asChild>
       <Link
         href={props.path}
-        className={'flex h-12 w-full items-center space-x-2 px-3'}
+        className={'flex h-12 w-full items-center gap-x-3 px-3'}
       >
         {props.Icon}
 

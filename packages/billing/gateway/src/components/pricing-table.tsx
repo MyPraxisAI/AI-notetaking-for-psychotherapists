@@ -168,7 +168,7 @@ function PricingItem(
       data-cy={'subscription-plan'}
       className={cn(
         props.className,
-        `s-full relative flex flex-1 grow flex-col items-stretch justify-between self-stretch rounded-xl border p-8 lg:w-4/12 xl:max-w-[20rem]`,
+        `s-full relative flex flex-1 grow flex-col items-stretch justify-between self-stretch rounded-lg border p-8 lg:w-4/12 xl:max-w-[20rem]`,
         {
           ['border-primary']: highlighted,
           ['border-border']: !highlighted,
@@ -230,7 +230,7 @@ function PricingItem(
           <If condition={props.plan.name}>
             <span
               className={cn(
-                `animate-in slide-in-from-left-4 fade-in text-muted-foreground flex items-center space-x-0.5 text-sm capitalize`,
+                `animate-in slide-in-from-left-4 fade-in text-muted-foreground flex items-center gap-x-1 text-sm capitalize`,
               )}
             >
               <span>
@@ -397,7 +397,7 @@ function PlanIntervalSwitcher(
         const selected = plan === props.interval;
 
         const className = cn(
-          'animate-in fade-in rounded-full !outline-none transition-all focus:!ring-0',
+          'animate-in fade-in !outline-hidden rounded-full transition-all focus:!ring-0',
           {
             'border-r-transparent': index === 0,
             ['hover:text-primary text-muted-foreground']: !selected,
@@ -472,7 +472,7 @@ function DefaultCheckoutButton(
     <Link className={'w-full'} href={linkHref}>
       <Button
         size={'lg'}
-        className={'border-primary w-full rounded-lg border'}
+        className={'w-full rounded-lg border'}
         variant={props.highlighted ? 'default' : 'outline'}
       >
         <span>

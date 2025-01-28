@@ -16,7 +16,7 @@ export const Header: React.FC<HeaderProps> = function ({
   return (
     <div
       className={cn(
-        'site-header sticky top-0 z-10 w-full bg-background/80 py-2 backdrop-blur-md dark:bg-background/50',
+        'site-header bg-background/80 dark:bg-background/50 sticky top-0 z-10 w-full py-1 backdrop-blur-md',
         className,
       )}
       {...props}
@@ -25,9 +25,7 @@ export const Header: React.FC<HeaderProps> = function ({
         <div className="grid h-14 grid-cols-3 items-center">
           <div className={'mx-auto lg:mx-0'}>{logo}</div>
           <div className="order-first md:order-none">{navigation}</div>
-          <div className="flex items-center justify-end space-x-1">
-            {actions}
-          </div>
+          <div className="flex items-center justify-end gap-x-2">{actions}</div>
         </div>
       </div>
     </div>

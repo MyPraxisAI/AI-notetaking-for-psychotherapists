@@ -9,8 +9,6 @@ import { cn } from '@kit/ui/utils';
 
 import { withI18n } from '~/lib/i18n/with-i18n';
 
-// styles
-import styles from '../../blog/_components/html-renderer.module.css';
 // local imports
 import { DocsCards } from '../_components/docs-cards';
 import { DocsTableOfContents } from '../_components/docs-table-of-contents';
@@ -61,20 +59,18 @@ async function DocumentationPage({ params }: DocumentationPageProps) {
   );
 
   return (
-    <div className={'flex flex-1 flex-col space-y-4 overflow-y-hidden'}>
+    <div className={'flex flex-1 flex-col gap-y-4 overflow-y-hidden py-5'}>
       <div className={'flex overflow-y-hidden'}>
-        <article
-          className={cn(styles.HTML, 'container space-y-12 overflow-y-auto')}
-        >
-          <section className={'flex flex-col space-y-4 pt-6'}>
-            <h1 className={'!my-0'}>{page.title}</h1>
+        <article className={cn('gap-y-12 overflow-y-auto px-6')}>
+          <section className={'flex flex-col gap-y-2.5'}>
+            <h1 className={'text-3xl font-semibold text-foreground'}>{page.title}</h1>
 
-            <h2 className={'!mb-0 !font-normal !text-muted-foreground'}>
-              {description}
-            </h2>
+            <h2 className={'text-muted-foreground text-lg'}>{description}</h2>
           </section>
 
-          <ContentRenderer content={page.content} />
+          <div className={'markdoc'}>
+            <ContentRenderer content={page.content} />
+          </div>
         </article>
 
         <DocsTableOfContents data={headings} />

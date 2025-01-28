@@ -70,8 +70,8 @@ async function PersonalAccountPage(props: { account: Account }) {
       />
 
       <div className={'flex items-center justify-between'}>
-        <div className={'flex items-center space-x-4'}>
-          <div className={'flex items-center space-x-2.5'}>
+        <div className={'flex items-center gap-x-4'}>
+          <div className={'flex items-center gap-x-2.5'}>
             <ProfileAvatar
               pictureUrl={props.account.picture_url}
               displayName={props.account.name}
@@ -89,7 +89,7 @@ async function PersonalAccountPage(props: { account: Account }) {
           </If>
         </div>
 
-        <div className={'flex space-x-1'}>
+        <div className={'flex gap-x-1'}>
           <If condition={isBanned}>
             <AdminReactivateUserDialog userId={props.account.id}>
               <Button size={'sm'} variant={'ghost'}>
@@ -124,10 +124,10 @@ async function PersonalAccountPage(props: { account: Account }) {
         </div>
       </div>
 
-      <div className={'flex flex-col space-y-8'}>
+      <div className={'flex flex-col gap-y-8'}>
         <SubscriptionsTable accountId={props.account.id} />
 
-        <div className={'divider-divider-x flex flex-col space-y-2.5'}>
+        <div className={'divider-divider-x flex flex-col gap-y-2.5'}>
           <Heading level={6}>Teams</Heading>
 
           <div>
@@ -145,7 +145,7 @@ async function TeamAccountPage(props: {
   const members = await getMembers(props.account.slug ?? '');
 
   return (
-    <div className={'flex flex-col space-y-4'}>
+    <div className={'flex flex-col gap-y-4'}>
       <AppBreadcrumbs
         values={{
           [props.account.id]:
@@ -154,8 +154,8 @@ async function TeamAccountPage(props: {
       />
 
       <div className={'flex justify-between'}>
-        <div className={'flex items-center space-x-4'}>
-          <div className={'flex items-center space-x-2.5'}>
+        <div className={'flex items-center gap-x-4'}>
+          <div className={'flex items-center gap-x-2.5'}>
             <ProfileAvatar
               pictureUrl={props.account.picture_url}
               displayName={props.account.name}
@@ -178,10 +178,10 @@ async function TeamAccountPage(props: {
       </div>
 
       <div>
-        <div className={'flex flex-col space-y-8'}>
+        <div className={'flex flex-col gap-y-8'}>
           <SubscriptionsTable accountId={props.account.id} />
 
-          <div className={'flex flex-col space-y-2.5'}>
+          <div className={'flex flex-col gap-y-2.5'}>
             <Heading level={6}>Team Members</Heading>
 
             <AdminMembersTable members={members} />

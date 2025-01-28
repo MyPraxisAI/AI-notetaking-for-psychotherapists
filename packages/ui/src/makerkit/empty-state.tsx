@@ -18,7 +18,7 @@ const EmptyStateText: React.FC<React.HTMLAttributes<HTMLParagraphElement>> = ({
   className,
   ...props
 }) => (
-  <p className={cn('text-sm text-muted-foreground', className)} {...props} />
+  <p className={cn('text-muted-foreground text-sm', className)} {...props} />
 );
 EmptyStateText.displayName = 'EmptyStateText';
 
@@ -60,7 +60,7 @@ const EmptyState: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
   return (
     <div
       className={cn(
-        'flex flex-1 items-center justify-center rounded-lg border border-dashed shadow-sm',
+        'flex flex-1 items-center justify-center rounded-lg border border-dashed shadow-xs',
         className,
       )}
       {...props}

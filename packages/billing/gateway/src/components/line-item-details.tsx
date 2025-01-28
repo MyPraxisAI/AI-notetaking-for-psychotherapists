@@ -110,7 +110,7 @@ export function LineItemDetails(
               <span className={'flex items-center space-x-1.5'}>
                 <PlusSquare className={'w-3'} />
 
-                <span className={'flex space-x-1 text-sm'}>
+                <span className={'flex gap-x-2 text-sm'}>
                   <span>
                     <Trans
                       i18nKey={'billing:perUnit'}
@@ -243,7 +243,7 @@ function Tiers({
 
     return (
       <span
-        className={'text-secondary-foreground flex space-x-1 text-xs'}
+        className={'text-secondary-foreground flex gap-x-2 text-xs'}
         key={index}
       >
         <span>-</span>

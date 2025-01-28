@@ -29,17 +29,17 @@ export function Hero({
           MozAnimationDuration: '100ms',
         }}
         className={cn(
-          'mx-auto flex flex-1 flex-col items-center justify-center duration-1000 md:flex-row',
+          'mx-auto flex flex-1 flex-col items-center justify-center duration-800 md:flex-row',
           {
-            ['animate-in fade-in zoom-in-90 slide-in-from-top-36']: animate,
+            ['animate-in fade-in zoom-in-90 slide-in-from-top-24']: animate,
           },
         )}
       >
-        <div className="flex w-full flex-1 flex-col items-center space-y-6 xl:space-y-8 2xl:space-y-10">
+        <div className="flex w-full flex-1 flex-col items-center gap-y-6 xl:gap-y-8 2xl:gap-y-12">
           {pill && (
             <div
               className={cn({
-                ['delay-300 duration-700 animate-in fade-in fill-mode-both']:
+                ['animate-in fade-in fill-mode-both delay-300 duration-700']:
                   animate,
               })}
             >
@@ -47,12 +47,12 @@ export function Hero({
             </div>
           )}
 
-          <div className="flex flex-col items-center space-y-8">
+          <div className="flex flex-col items-center gap-y-6">
             <HeroTitle>{title}</HeroTitle>
 
             {subtitle && (
-              <div className="flex max-w-2xl flex-col space-y-1">
-                <h3 className="p-0 text-center font-sans text-xl font-normal tracking-tight text-muted-foreground">
+              <div className="flex max-w-lg">
+                <h3 className="text-muted-foreground p-0 text-center font-sans text-2xl font-normal tracking-tight">
                   {subtitle}
                 </h3>
               </div>
@@ -62,7 +62,7 @@ export function Hero({
           {cta && (
             <div
               className={cn({
-                ['delay-500 duration-1000 animate-in fade-in fill-mode-both']:
+                ['animate-in fade-in fill-mode-both delay-500 duration-1000']:
                   animate,
               })}
             >
@@ -78,7 +78,7 @@ export function Hero({
             MozAnimationDuration: '100ms',
           }}
           className={cn('container mx-auto flex justify-center py-8', {
-            ['delay-1000 duration-1000 animate-in fade-in zoom-in-95 slide-in-from-top-32 fill-mode-both']:
+            ['animate-in fade-in zoom-in-90 slide-in-from-top-32 fill-mode-both delay-600 duration-1000']:
               animate,
           })}
         >

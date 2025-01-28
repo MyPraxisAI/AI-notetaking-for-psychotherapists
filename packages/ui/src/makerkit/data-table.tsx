@@ -188,7 +188,7 @@ function Pagination<T>({
   table: ReactTable<T>;
 }>) {
   return (
-    <div className="flex items-center justify-end space-x-4">
+    <div className="flex items-center justify-end gap-x-4">
       <span className="flex items-center text-sm">
         <Trans
           i18nKey={'common:pageOfPages'}
@@ -199,7 +199,7 @@ function Pagination<T>({
         />
       </span>
 
-      <div className="flex items-center justify-end space-x-1">
+      <div className="flex items-center justify-end gap-x-2">
         <Button
           size={'icon'}
           variant={'ghost'}

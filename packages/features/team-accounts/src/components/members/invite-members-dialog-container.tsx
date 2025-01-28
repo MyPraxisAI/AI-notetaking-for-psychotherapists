@@ -138,7 +138,7 @@ function InviteMembersForm({
         data-test={'invite-members-form'}
         onSubmit={form.handleSubmit(onSubmit)}
       >
-        <div className="flex flex-col space-y-4">
+        <div className="flex flex-col gap-y-4">
           {fieldArray.fields.map((field, index) => {
             const isFirst = index === 0;
 
@@ -147,7 +147,7 @@ function InviteMembersForm({
 
             return (
               <div data-test={'invite-member-form-item'} key={field.id}>
-                <div className={'flex items-end space-x-0.5 md:space-x-2'}>
+                <div className={'flex items-end gap-x-1 md:space-x-2'}>
                   <div className={'w-7/12'}>
                     <FormField
                       name={emailInputName}
@@ -189,6 +189,7 @@ function InviteMembersForm({
 
                             <FormControl>
                               <MembershipRoleSelector
+                                triggerClassName={'m-0'}
                                 roles={roles}
                                 value={field.value}
                                 onChange={(role) => {
@@ -204,7 +205,7 @@ function InviteMembersForm({
                     />
                   </div>
 
-                  <div className={'flex w-[40px] justify-end'}>
+                  <div className={'flex w-[40px] items-end justify-end'}>
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>

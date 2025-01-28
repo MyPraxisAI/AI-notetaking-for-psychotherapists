@@ -144,7 +144,7 @@ export function SidebarGroup({
     }
 
     return (
-      <span className={'text-xs font-semibold uppercase text-muted-foreground'}>
+      <span className={'text-muted-foreground text-xs font-semibold uppercase'}>
         {props.children}
       </span>
     );
@@ -189,7 +189,7 @@ export function SidebarGroup({
   return (
     <div
       className={cn('flex flex-col', {
-        'space-y-1 py-1': !collapsed,
+        'gap-y-2 py-1': !collapsed,
       })}
     >
       <Wrapper />
@@ -232,7 +232,7 @@ export function SidebarItem({
           <Button
             asChild
             className={cn(
-              'flex w-full text-sm shadow-none active:bg-secondary/60',
+              'active:bg-secondary/60 flex w-full text-sm shadow-none',
               {
                 'justify-start space-x-2.5': !collapsed,
                 'hover:bg-initial': active,
@@ -267,7 +267,7 @@ export function SidebarItem({
 function getClassNameBuilder(className: string) {
   return cva([
     cn(
-      'group/sidebar transition-width fixed box-content flex h-screen w-2/12 flex-col bg-inherit backdrop-blur-sm duration-200',
+      'group/sidebar transition-width fixed box-content flex h-screen w-2/12 flex-col bg-inherit backdrop-blur-xs duration-200',
       className,
     ),
   ]);

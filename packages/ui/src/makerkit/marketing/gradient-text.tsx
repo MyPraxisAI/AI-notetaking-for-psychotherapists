@@ -7,7 +7,7 @@ export const GradientText: React.FC<React.HTMLAttributes<HTMLSpanElement>> =
     return (
       <span
         className={cn(
-          'bg-gradient-to-r bg-clip-text text-transparent',
+          'bg-linear-to-r bg-clip-text text-transparent',
           className,
         )}
         {...props}

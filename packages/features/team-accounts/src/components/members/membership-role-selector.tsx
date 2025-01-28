@@ -14,15 +14,20 @@ export function MembershipRoleSelector({
   value,
   currentUserRole,
   onChange,
+  triggerClassName,
 }: {
   roles: Role[];
   value: Role;
   currentUserRole?: Role;
   onChange: (role: Role) => unknown;
+  triggerClassName?: string;
 }) {
   return (
     <Select value={value} onValueChange={onChange}>
-      <SelectTrigger data-test={'role-selector-trigger'}>
+      <SelectTrigger
+        className={triggerClassName}
+        data-test={'role-selector-trigger'}
+      >
         <SelectValue />
       </SelectTrigger>
 

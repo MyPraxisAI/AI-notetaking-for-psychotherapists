@@ -153,8 +153,11 @@ function getPatterns() {
         // If user is logged in and does not need to verify MFA,
         // redirect to home page.
         if (!isVerifyMfa) {
+          const nextPath =
+            req.nextUrl.searchParams.get('next') ?? pathsConfig.app.home;
+
           return NextResponse.redirect(
-            new URL(pathsConfig.app.home, req.nextUrl.origin).href,
+            new URL(nextPath, req.nextUrl.origin).href,
           );
         }
       },

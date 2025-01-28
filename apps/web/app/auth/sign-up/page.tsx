@@ -38,9 +38,15 @@ async function SignUpPage({ searchParams }: Props) {
 
   return (
     <>
-      <Heading level={5} className={'tracking-tight'}>
-        <Trans i18nKey={'auth:signUpHeading'} />
-      </Heading>
+      <div className={'flex flex-col items-center gap-1'}>
+        <Heading level={4} className={'tracking-tight'}>
+          <Trans i18nKey={'auth:signUpHeading'} />
+        </Heading>
+
+        <p className={'text-muted-foreground text-sm'}>
+          <Trans i18nKey={'auth:signUpSubheading'} />
+        </p>
+      </div>
 
       <SignUpMethodsContainer
         providers={authConfig.providers}
@@ -49,7 +55,7 @@ async function SignUpPage({ searchParams }: Props) {
         paths={paths}
       />
 
-      <div className={'justify-centers flex'}>
+      <div className={'flex justify-center'}>
         <Button asChild variant={'link'} size={'sm'}>
           <Link href={signInPath}>
             <Trans i18nKey={'auth:alreadyHaveAnAccount'} />

@@ -16,7 +16,7 @@ export function TermsAndConditionsFormField(
         return (
           <FormItem>
             <FormControl>
-              <label className={'flex items-start space-x-2 py-2'}>
+              <label className={'flex items-start gap-x-3 py-2'}>
                 <Checkbox required name={field.name} />
 
                 <div className={'text-xs'}>

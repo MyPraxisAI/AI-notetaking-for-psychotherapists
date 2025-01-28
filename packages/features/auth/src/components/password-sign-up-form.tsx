@@ -55,7 +55,7 @@ export function PasswordSignUpForm({
   return (
     <Form {...form}>
       <form
-        className={'w-full space-y-2.5'}
+        className={'flex w-full flex-col gap-y-4'}
         onSubmit={form.handleSubmit(onSubmit)}
       >
         <FormField

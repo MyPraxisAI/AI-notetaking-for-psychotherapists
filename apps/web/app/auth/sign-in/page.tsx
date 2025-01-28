@@ -39,9 +39,15 @@ async function SignInPage({ searchParams }: SignInPageProps) {
 
   return (
     <>
-      <Heading level={5} className={'tracking-tight'}>
-        <Trans i18nKey={'auth:signInHeading'} />
-      </Heading>
+      <div className={'flex flex-col items-center gap-1'}>
+        <Heading level={4} className={'tracking-tight'}>
+          <Trans i18nKey={'auth:signInHeading'} />
+        </Heading>
+
+        <p className={'text-muted-foreground text-sm'}>
+          <Trans i18nKey={'auth:signInSubheading'} />
+        </p>
+      </div>
 
       <SignInMethodsContainer
         inviteToken={inviteToken}

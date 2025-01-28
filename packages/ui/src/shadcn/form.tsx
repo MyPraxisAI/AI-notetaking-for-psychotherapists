@@ -76,7 +76,7 @@ const FormItem: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
 
   return (
     <FormItemContext.Provider value={{ id }}>
-      <div className={cn('space-y-2', className)} {...props} />
+      <div className={cn('flex flex-col gap-y-2', className)} {...props} />
     </FormItemContext.Provider>
   );
 };
@@ -127,7 +127,7 @@ const FormDescription: React.FC<React.HTMLAttributes<HTMLParagraphElement>> = ({
   return (
     <p
       id={formDescriptionId}
-      className={cn('text-[0.8rem] text-muted-foreground', className)}
+      className={cn('text-muted-foreground text-[0.8rem]', className)}
       {...props}
     />
   );
@@ -149,7 +149,7 @@ const FormMessage: React.FC<React.HTMLAttributes<HTMLParagraphElement>> = ({
   return (
     <p
       id={formMessageId}
-      className={cn('text-[0.8rem] font-medium text-destructive', className)}
+      className={cn('text-destructive text-[0.8rem] font-medium', className)}
       {...props}
     >
       {typeof body === 'string' ? (

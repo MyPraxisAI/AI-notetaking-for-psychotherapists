@@ -13,7 +13,7 @@ export function DocsTableOfContents(props: { data: NavItem[] }) {
   const navData = props.data;
 
   return (
-    <div className="sticky inset-y-0 hidden h-svh max-h-full min-w-[14em] border-l bg-background p-4 lg:block">
+    <div className="bg-background sticky inset-y-0 hidden h-svh max-h-full min-w-[14em] border-l p-4 lg:block">
       <ol
         role="list"
         className="relative text-sm text-gray-600 dark:text-gray-400"
@@ -22,7 +22,7 @@ export function DocsTableOfContents(props: { data: NavItem[] }) {
           <li key={item.href} className="group/item relative mt-3 first:mt-0">
             <a
               href={item.href}
-              className="block transition-colors hover:text-gray-950 dark:hover:text-white [&_*]:[font:inherit]"
+              className="block transition-colors **:[font:inherit] hover:text-gray-950 dark:hover:text-white"
             >
               {item.text}
             </a>
@@ -35,7 +35,7 @@ export function DocsTableOfContents(props: { data: NavItem[] }) {
                   >
                     <Link
                       href={child.href}
-                      className="block transition-colors hover:text-gray-950 dark:hover:text-white [&_*]:[font:inherit]"
+                      className="block transition-colors **:[font:inherit] hover:text-gray-950 dark:hover:text-white"
                     >
                       {child.text}
                     </Link>

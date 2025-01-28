@@ -22,8 +22,8 @@ export function DocsNavLink({
       <SidebarMenuButton
         asChild
         isActive={isCurrent}
-        className={cn('border-l-3 transition-background !font-normal', {
-          'font-bold text-secondary-foreground': isCurrent,
+        className={cn('transition-background font-normal!', {
+          'text-secondary-foreground font-bold': isCurrent,
         })}
       >
         <Link href={url}>

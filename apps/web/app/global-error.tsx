@@ -41,7 +41,7 @@ const GlobalErrorPage = ({
               <div className={'flex flex-col items-center space-y-8'}>
                 <div
                   className={
-                    'flex max-w-xl flex-col items-center space-y-1 text-center'
+                    'flex max-w-xl flex-col items-center gap-y-2 text-center'
                   }
                 >
                   <div>
@@ -50,7 +50,7 @@ const GlobalErrorPage = ({
                     </Heading>
                   </div>
 
-                  <p className={'text-lg text-muted-foreground'}>
+                  <p className={'text-muted-foreground text-lg'}>
                     <Trans i18nKey={'common:genericErrorSubHeading'} />
                   </p>
                 </div>

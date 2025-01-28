@@ -46,7 +46,7 @@ export function NewsletterSignup({
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSignup)}
-          className="flex flex-col space-y-2"
+          className="flex flex-col gap-y-3"
         >
           <FormField
             control={form.control}

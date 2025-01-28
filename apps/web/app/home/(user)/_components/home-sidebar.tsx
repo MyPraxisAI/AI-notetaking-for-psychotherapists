@@ -29,7 +29,7 @@ export function HomeSidebar(props: HomeSidebarProps) {
   return (
     <Sidebar>
       <SidebarHeader className={'h-16 justify-center'}>
-        <div className={'flex items-center justify-between space-x-2'}>
+        <div className={'flex items-center justify-between gap-x-3'}>
           <If
             condition={featuresFlagConfig.enableTeamAccounts}
             fallback={

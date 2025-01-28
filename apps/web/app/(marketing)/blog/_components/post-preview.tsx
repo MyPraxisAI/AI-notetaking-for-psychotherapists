@@ -25,7 +25,7 @@ export function PostPreview({
   const slug = `/blog/${post.slug}`;
 
   return (
-    <div className="flex flex-col space-y-4 rounded-lg transition-shadow duration-500">
+    <div className="transition-shadow-sm flex flex-col gap-y-4 rounded-lg duration-500">
       <If condition={image}>
         {(imageUrl) => (
           <div className="relative mb-2 w-full" style={{ height }}>
@@ -42,13 +42,13 @@ export function PostPreview({
 
       <div className={'flex flex-col space-y-4 px-1'}>
         <div className={'flex flex-col space-y-2'}>
-          <h2 className="text-2xl font-semibold leading-snug tracking-tight">
+          <h2 className="text-xl leading-snug font-semibold tracking-tight">
             <Link href={slug} className="hover:underline">
               {title}
             </Link>
           </h2>
 
-          <div className="flex flex-row items-center space-x-2 text-sm">
+          <div className="flex flex-row items-center gap-x-3 text-sm">
             <div className="text-muted-foreground">
               <DateFormatter dateString={publishedAt} />
             </div>
@@ -56,7 +56,7 @@ export function PostPreview({
         </div>
 
         <p
-          className="mb-4 text-sm leading-relaxed text-muted-foreground"
+          className="text-muted-foreground mb-4 text-sm leading-relaxed"
           dangerouslySetInnerHTML={{ __html: description ?? '' }}
         />
       </div>

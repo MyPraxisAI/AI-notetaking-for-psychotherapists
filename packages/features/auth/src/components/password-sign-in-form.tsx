@@ -43,7 +43,7 @@ export function PasswordSignInForm({
   return (
     <Form {...form}>
       <form
-        className={'w-full space-y-2.5'}
+        className={'flex w-full flex-col gap-y-4'}
         onSubmit={form.handleSubmit(onSubmit)}
       >
         <FormField
@@ -91,17 +91,19 @@ export function PasswordSignInForm({
 
               <FormMessage />
 
-              <Button
-                asChild
-                type={'button'}
-                size={'sm'}
-                variant={'link'}
-                className={'text-xs'}
-              >
-                <Link href={'/auth/password-reset'}>
-                  <Trans i18nKey={'auth:passwordForgottenQuestion'} />
-                </Link>
-              </Button>
+              <div>
+                <Button
+                  asChild
+                  type={'button'}
+                  size={'sm'}
+                  variant={'link'}
+                  className={'text-xs'}
+                >
+                  <Link href={'/auth/password-reset'}>
+                    <Trans i18nKey={'auth:passwordForgottenQuestion'} />
+                  </Link>
+                </Button>
+              </div>
             </FormItem>
           )}
         />

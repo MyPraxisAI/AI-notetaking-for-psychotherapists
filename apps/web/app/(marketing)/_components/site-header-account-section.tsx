@@ -5,8 +5,6 @@ import Link from 'next/link';
 
 import type { User } from '@supabase/supabase-js';
 
-import { ArrowRightIcon } from 'lucide-react';
-
 import { PersonalAccountDropdown } from '@kit/accounts/personal-account-dropdown';
 import { useSignOut } from '@kit/supabase/hooks/use-sign-out';
 import { useUser } from '@kit/supabase/hooks/use-user';
@@ -65,30 +63,26 @@ function SuspendedPersonalAccountDropdown(props: { user: User | null }) {
 
 function AuthButtons() {
   return (
-    <div className={'flex space-x-2'}>
-      <div className={'hidden space-x-0.5 md:flex'}>
+    <div className={'flex gap-x-2.5'}>
+      <div className={'hidden md:flex'}>
         <If condition={features.enableThemeToggle}>
           <ModeToggle />
         </If>
+      </div>
 
-        <Button asChild variant={'ghost'}>
+      <div className={'flex gap-x-2.5'}>
+        <Button className={'hidden md:block'} asChild variant={'ghost'}>
           <Link href={pathsConfig.auth.signIn}>
             <Trans i18nKey={'auth:signIn'} />
           </Link>
         </Button>
+
+        <Button asChild className="group" variant={'default'}>
+          <Link href={pathsConfig.auth.signUp}>
+            <Trans i18nKey={'auth:signUp'} />
+          </Link>
+        </Button>
       </div>
-
-      <Button asChild className="group" variant={'default'}>
-        <Link href={pathsConfig.auth.signUp}>
-          <Trans i18nKey={'auth:signUp'} />
-
-          <ArrowRightIcon
-            className={
-              'ml-1 hidden h-4 w-4 transition-transform duration-500 group-hover:translate-x-1 lg:block'
-            }
-          />
-        </Link>
-      </Button>
     </div>
   );
 }

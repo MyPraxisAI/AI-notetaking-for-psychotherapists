@@ -5,18 +5,18 @@ import { type VariantProps, cva } from 'class-variance-authority';
 import { cn } from '../lib/utils';
 
 const alertVariants = cva(
-  'relative w-full rounded-lg border bg-gradient-to-r px-4 py-3 text-sm [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg]:text-foreground [&>svg~*]:pl-7',
+  '[&>svg]:text-foreground relative flex w-full flex-col gap-y-2 rounded-lg border bg-linear-to-r px-4 py-3.5 text-sm [&>svg]:absolute [&>svg]:top-4 [&>svg]:left-4 [&>svg+div]:translate-y-[-3px] [&>svg~*]:pl-7',
   {
     variants: {
       variant: {
         default: 'bg-background text-foreground',
         destructive:
-          'border-destructive/50 from-red-50 from-10% via-background to-background text-destructive dark:border-destructive dark:from-red-500/10 [&>svg]:text-destructive',
+          'border-destructive/50 text-destructive dark:border-destructive [&>svg]:text-destructive',
         success:
-          'border-green-600/50 from-green-50 from-10% via-background to-background text-green-600 dark:border-green-600 dark:from-green-500/10 [&>svg]:text-green-600',
+          'border-green-600/50 text-green-600 dark:border-green-600 [&>svg]:text-green-600',
         warning:
-          'border-orange-600/50 from-orange-50 from-10% via-background to-background text-orange-600 dark:border-orange-600 dark:from-orange-500/10 [&>svg]:text-orange-600',
-        info: 'border-blue-600/50 from-blue-50 from-10% via-background to-background text-blue-600 dark:border-blue-600 dark:from-blue-500/10 [&>svg]:text-blue-600',
+          'border-orange-600/50 text-orange-600 dark:border-orange-600 [&>svg]:text-orange-600',
+        info: 'border-blue-600/50 text-blue-600 dark:border-blue-600 [&>svg]:text-blue-600',
       },
     },
     defaultVariants: {
@@ -41,7 +41,7 @@ const AlertTitle: React.FC<React.HTMLAttributes<HTMLHeadingElement>> = ({
   ...props
 }) => (
   <h5
-    className={cn('mb-1 font-bold leading-none tracking-tight', className)}
+    className={cn('leading-none font-bold tracking-tight', className)}
     {...props}
   />
 );

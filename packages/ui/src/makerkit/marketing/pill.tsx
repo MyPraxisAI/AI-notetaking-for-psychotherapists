@@ -1,6 +1,7 @@
 import { Slot, Slottable } from '@radix-ui/react-slot';
 
 import { cn } from '../../lib/utils';
+import { GradientSecondaryText } from './gradient-secondary-text';
 
 export const Pill: React.FC<
   React.HTMLAttributes<HTMLHeadingElement> & {
@@ -13,7 +14,7 @@ export const Pill: React.FC<
   return (
     <Comp
       className={cn(
-        'space-x-2.5 rounded-full border border-gray-100 px-2 py-2.5 text-center text-sm font-medium text-transparent dark:border-primary/10',
+        'bg-muted/50 flex items-center gap-x-1.5 rounded-full border px-2 py-1.5 pr-2 text-center text-sm font-medium text-transparent',
         className,
       )}
       {...props}
@@ -21,15 +22,38 @@ export const Pill: React.FC<
       {props.label && (
         <span
           className={
-            'rounded-2xl bg-primary px-2.5 py-1.5 text-sm font-semibold text-primary-foreground'
+            'text-primary-foreground bg-primary rounded-2xl border px-1.5 py-0.5 text-xs font-bold tracking-tight'
           }
         >
           {props.label}
         </span>
       )}
       <Slottable>
-        <span className={'text-secondary-foreground'}>{props.children}</span>
+        <GradientSecondaryText
+          className={'flex items-center gap-x-2 font-semibold tracking-tight'}
+        >
+          {props.children}
+        </GradientSecondaryText>
       </Slottable>
+    </Comp>
+  );
+};
+
+export const PillActionButton: React.FC<
+  React.HTMLAttributes<HTMLButtonElement> & {
+    asChild?: boolean;
+  }
+> = ({ asChild, ...props }) => {
+  const Comp = asChild ? Slot : 'button';
+
+  return (
+    <Comp
+      {...props}
+      className={
+        'text-secondary-foreground bg-input active:bg-primary active:text-primary-foreground hover:ring-muted-foreground/50 rounded-full px-1.5 py-1.5 text-center text-sm font-medium ring ring-transparent transition-colors'
+      }
+    >
+      {props.children}
     </Comp>
   );
 };

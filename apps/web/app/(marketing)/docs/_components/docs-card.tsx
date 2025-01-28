@@ -17,14 +17,14 @@ export function DocsCard({
   return (
     <div className="flex flex-col">
       <div
-        className={`flex grow flex-col space-y-2.5 border bg-background p-6 ${link ? 'rounded-t-2xl border-b-0' : 'rounded-2xl'}`}
+        className={`bg-background flex grow flex-col gap-y-2 border p-6 ${link ? 'rounded-t-lg border-b-0' : 'rounded-lg'}`}
       >
         <h3 className="mt-0 text-lg font-semibold hover:underline dark:text-white">
           <Link href={link.url}>{title}</Link>
         </h3>
 
         {subtitle && (
-          <div className="text-sm text-muted-foreground">
+          <div className="text-muted-foreground text-sm">
             <p dangerouslySetInnerHTML={{ __html: subtitle }}></p>
           </div>
         )}
@@ -33,17 +33,19 @@ export function DocsCard({
       </div>
 
       {link && (
-        <div className="rounded-b-2xl border bg-muted p-6 py-4 dark:bg-background">
-          <span className={'flex items-center space-x-2'}>
-            <Link
-              className={'text-sm font-medium hover:underline'}
-              href={link.url}
-            >
+        <div className="bg-muted/50 rounded-b-lg border p-6 py-4">
+          <Link
+            className={
+              'flex items-center space-x-2 text-sm font-medium hover:underline'
+            }
+            href={link.url}
+          >
+            <span>
               {link.label ?? <Trans i18nKey={'marketing:readMore'} />}
-            </Link>
+            </span>
 
             <ChevronRight className={'h-4'} />
-          </span>
+          </Link>
         </div>
       )}
     </div>

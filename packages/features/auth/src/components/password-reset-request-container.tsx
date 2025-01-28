@@ -75,13 +75,7 @@ export function PasswordResetRequestContainer(params: {
             })}
             className={'w-full'}
           >
-            <div className={'flex flex-col space-y-4'}>
-              <div>
-                <p className={'text-muted-foreground text-sm'}>
-                  <Trans i18nKey={'auth:passwordResetSubheading'} />
-                </p>
-              </div>
-
+            <div className={'flex flex-col gap-y-4'}>
               <AuthErrorAlert error={error} />
 
               <FormField

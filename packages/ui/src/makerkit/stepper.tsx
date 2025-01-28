@@ -75,7 +75,7 @@ export function Stepper(props: {
   const containerClassName = cn('w-full', {
     ['flex justify-between']: variant === 'numbers',
     ['flex space-x-0.5']: variant === 'default',
-    ['flex space-x-2.5 self-center']: variant === 'dots',
+    ['flex gap-x-4 self-center']: variant === 'dots',
   });
 
   return (
@@ -92,7 +92,7 @@ function getClassNameBuilder() {
         default: `flex h-[2.5px] w-full flex-col transition-all duration-500`,
         numbers:
           'flex h-9 w-9 items-center justify-center rounded-full border text-sm font-bold',
-        dots: 'h-2.5 w-2.5 rounded-full bg-muted transition-colors',
+        dots: 'bg-muted h-2.5 w-2.5 rounded-full transition-colors',
       },
       selected: {
         true: '',
@@ -183,7 +183,7 @@ function StepDivider({
   complete: boolean;
 }>) {
   const spanClassName = cn('min-w-max text-sm font-medium', {
-    ['hidden text-muted-foreground sm:flex']: !selected,
+    ['text-muted-foreground hidden sm:flex']: !selected,
     ['text-secondary-foreground']: selected || complete,
     ['font-medium']: selected,
   });
@@ -200,7 +200,7 @@ function StepDivider({
       <div
         className={
           'divider h-[1px] w-full bg-gray-200 transition-colors' +
-          ' hidden group-last:hidden dark:bg-border sm:flex'
+          ' dark:bg-border hidden group-last:hidden sm:flex'
         }
       />
     </div>

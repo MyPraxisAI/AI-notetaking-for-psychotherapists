@@ -113,12 +113,10 @@ export function PlanPicker(
   return (
     <Form {...form}>
       <div
-        className={
-          'flex flex-col space-y-4 lg:flex-row lg:space-x-4 lg:space-y-0'
-        }
+        className={'flex flex-col gap-y-4 lg:flex-row lg:gap-x-4 lg:gap-y-0'}
       >
         <form
-          className={'flex w-full max-w-xl flex-col space-y-4'}
+          className={'flex w-full max-w-xl flex-col gap-y-8'}
           onSubmit={form.handleSubmit(props.onSubmit)}
         >
           <If condition={intervals.length}>
@@ -131,7 +129,7 @@ export function PlanPicker(
                 name={'interval'}
                 render={({ field }) => {
                   return (
-                    <FormItem className={'rounded-md border p-4'}>
+                    <FormItem className={'flex flex-col gap-4'}>
                       <FormLabel htmlFor={'plan-picker-id'}>
                         <Trans i18nKey={'common:billingInterval.label'} />
                       </FormLabel>
@@ -147,10 +145,11 @@ export function PlanPicker(
                                   htmlFor={interval}
                                   key={interval}
                                   className={cn(
-                                    'flex items-center space-x-2 rounded-md border border-transparent px-4 py-2 transition-colors',
+                                    'focus-within:border-primary flex items-center gap-x-2.5 rounded-md border px-2.5 py-2 transition-colors',
                                     {
-                                      ['border-primary']: selected,
-                                      ['hover:border-primary']: !selected,
+                                      ['bg-muted border-input']: selected,
+                                      ['hover:border-input border-transparent']:
+                                        !selected,
                                     },
                                   )}
                                 >
@@ -207,7 +206,7 @@ export function PlanPicker(
           <FormField
             name={'planId'}
             render={({ field }) => (
-              <FormItem>
+              <FormItem className={'flex flex-col gap-4'}>
                 <FormLabel>
                   <Trans i18nKey={'common:planPickerLabel'} />
                 </FormLabel>
@@ -259,7 +258,9 @@ export function PlanPicker(
                         primaryLineItem.tiers[0],
                       );
 
-                      const tierTranslationKey = isMultiTier ? 'billing:startingAtPriceUnit' : 'billing:priceUnit';
+                      const tierTranslationKey = isMultiTier
+                        ? 'billing:startingAtPriceUnit'
+                        : 'billing:priceUnit';
 
                       return (
                         <RadioGroupItemLabel
@@ -288,7 +289,7 @@ export function PlanPicker(
 
                           <div
                             className={
-                              'flex w-full flex-col content-center space-y-2 lg:flex-row lg:items-center lg:justify-between lg:space-y-0'
+                              'flex w-full flex-col content-center gap-y-3 lg:flex-row lg:items-center lg:justify-between lg:space-y-0'
                             }
                           >
                             <Label
@@ -336,7 +337,7 @@ export function PlanPicker(
 
                             <div
                               className={
-                                'flex flex-col space-y-2 lg:flex-row lg:items-center lg:space-x-4 lg:space-y-0 lg:text-right'
+                                'flex flex-col gap-y-3 lg:flex-row lg:items-center lg:space-x-4 lg:space-y-0 lg:text-right'
                               }
                             >
                               <div>
@@ -517,7 +518,7 @@ function PlanDetails({
 
         {selectedProduct.features.map((item) => {
           return (
-            <div key={item} className={'flex items-center space-x-1 text-sm'}>
+            <div key={item} className={'flex items-center gap-x-2 text-sm'}>
               <CheckCircle className={'h-4 text-green-500'} />
 
               <span className={'text-secondary-foreground'}>

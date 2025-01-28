@@ -111,7 +111,12 @@ export function AccountSelector({
             <If
               condition={selected}
               fallback={
-                <span className={'flex max-w-full items-center space-x-4'}>
+                <span
+                  className={cn('flex max-w-full items-center', {
+                    'justify-center gap-x-0': collapsed,
+                    'gap-x-4': !collapsed,
+                  })}
+                >
                   <PersonalAccountAvatar />
 
                   <span
@@ -125,12 +130,17 @@ export function AccountSelector({
               }
             >
               {(account) => (
-                <span className={'flex max-w-full items-center space-x-4'}>
-                  <Avatar className={'h-6 w-6 rounded-sm'}>
+                <span
+                  className={cn('flex max-w-full items-center', {
+                    'justify-center gap-x-0': collapsed,
+                    'gap-x-4': !collapsed,
+                  })}
+                >
+                  <Avatar className={'rounded-xs h-6 w-6'}>
                     <AvatarImage src={account.image ?? undefined} />
 
                     <AvatarFallback
-                      className={'group-hover:bg-background rounded-sm'}
+                      className={'group-hover:bg-background rounded-xs'}
                     >
                       {account.label ? account.label[0] : ''}
                     </AvatarFallback>
@@ -212,11 +222,11 @@ export function AccountSelector({
                       }}
                     >
                       <div className={'flex items-center'}>
-                        <Avatar className={'mr-2 h-6 w-6 rounded-sm'}>
+                        <Avatar className={'rounded-xs mr-2 h-6 w-6'}>
                           <AvatarImage src={account.image ?? undefined} />
 
                           <AvatarFallback
-                            className={cn('rounded-sm', {
+                            className={cn('rounded-xs', {
                               ['bg-background']: value === account.value,
                               ['group-hover:bg-background']:
                                 value !== account.value,
@@ -276,7 +286,7 @@ export function AccountSelector({
 
 function UserAvatar(props: { pictureUrl?: string }) {
   return (
-    <Avatar className={'h-6 w-6 rounded-sm'}>
+    <Avatar className={'rounded-xs h-6 w-6'}>
       <AvatarImage src={props.pictureUrl} />
     </Avatar>
   );

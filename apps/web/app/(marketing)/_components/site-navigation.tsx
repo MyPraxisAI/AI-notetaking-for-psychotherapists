@@ -48,8 +48,8 @@ export function SiteNavigation() {
   return (
     <>
       <div className={'hidden items-center justify-center md:flex'}>
-        <NavigationMenu className={'px-4 py-2'}>
-          <NavigationMenuList className={'space-x-5'}>
+        <NavigationMenu>
+          <NavigationMenuList className={'gap-x-2.5'}>
             {NavItems}
           </NavigationMenuList>
         </NavigationMenu>
