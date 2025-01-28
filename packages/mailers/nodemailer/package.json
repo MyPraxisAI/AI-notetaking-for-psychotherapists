@@ -13,7 +13,7 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "nodemailer": "^6.9.16"
+    "nodemailer": "^6.10.0"
   },
   "devDependencies": {
     "@kit/eslint-config": "workspace:*",
