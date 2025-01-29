@@ -49,6 +49,11 @@ jwt_expiry = 3600
 # Allow/disallow new user signups to your project.
 enable_signup = true
 
+# Enable TOTP MFA
+[auth.mfa.totp]
+verify_enabled = true
+enroll_enabled = true
+
 [auth.email]
 # Allow/disallow new user signups via email to your project.
 enable_signup = true

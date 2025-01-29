@@ -87,10 +87,6 @@ export function MultiFactorChallengeContainer({
         })}
       >
         <div className={'flex flex-col space-y-4'}>
-          <span className={'text-muted-foreground text-sm'}>
-            <Trans i18nKey={'account:verifyActivationCodeDescription'} />
-          </span>
-
           <div className={'flex w-full flex-col space-y-2.5'}>
             <div className={'flex flex-col space-y-4'}>
               <If condition={verifyMFAChallenge.error}>
