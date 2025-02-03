@@ -873,14 +873,6 @@ export function SidebarNavigation({
                   <SidebarMenu>
                     <ContentContainer>
                       {item.children.map((child, childIndex) => {
-                        if (child.renderAction) {
-                          return (
-                            <SidebarMenuSubItem key={child.path}>
-                              {child.renderAction}
-                            </SidebarMenuSubItem>
-                          );
-                        }
-
                         const Container = (props: React.PropsWithChildren) => {
                           if ('collapsible' in child && child.collapsible) {
                             return (
@@ -1060,6 +1052,10 @@ export function SidebarNavigation({
                                   )}
                                 </If>
                               </ContentContainer>
+
+                              <SidebarMenuAction>
+                                {child.renderAction}
+                              </SidebarMenuAction>
                             </SidebarMenuItem>
                           </Container>
                         );
