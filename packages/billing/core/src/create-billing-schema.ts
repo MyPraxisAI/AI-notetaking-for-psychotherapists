@@ -252,6 +252,11 @@ const ProductSchema = z
         description: 'Highlight this product. Displayed to the user.',
       })
       .optional(),
+    hidden: z
+      .boolean({
+        description: 'Hide this product from being displayed to users.',
+      })
+      .optional(),
     plans: z.array(PlanSchema),
   })
   .refine((data) => data.plans.length > 0, {

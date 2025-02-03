@@ -108,6 +108,11 @@ export function PlanPicker(
   const isRecurringPlan =
     selectedPlan?.paymentType === 'recurring' || !selectedPlan;
 
+  // Always filter out hidden products
+  const visibleProducts = props.config.products.filter(
+    (product) => !product.hidden,
+  );
+
   return (
     <Form {...form}>
       <div
@@ -211,7 +216,7 @@ export function PlanPicker(
 
                 <FormControl>
                   <RadioGroup value={field.value} name={field.name}>
-                    {props.config.products.map((product) => {
+                    {visibleProducts.map((product) => {
                       const plan = product.plans.find((item) => {
                         if (item.paymentType === 'one-time') {
                           return true;

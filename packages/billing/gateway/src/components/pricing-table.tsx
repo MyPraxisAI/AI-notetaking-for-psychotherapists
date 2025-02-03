@@ -54,6 +54,9 @@ export function PricingTable({
   const intervals = getPlanIntervals(config).filter(Boolean) as Interval[];
   const [interval, setInterval] = useState(intervals[0]!);
 
+  // Always filter out hidden products
+  const visibleProducts = config.products.filter((product) => !product.hidden);
+
   return (
     <div className={'flex flex-col space-y-8 xl:space-y-12'}>
       <div className={'flex justify-center'}>
@@ -72,7 +75,7 @@ export function PricingTable({
           ' justify-center lg:flex-row lg:space-x-4'
         }
       >
-        {config.products.map((product) => {
+        {visibleProducts.map((product) => {
           const plan = product.plans.find((plan) => {
             if (plan.paymentType === 'recurring') {
               return plan.interval === interval;
