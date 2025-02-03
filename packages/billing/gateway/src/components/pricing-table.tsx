@@ -132,6 +132,7 @@ function PricingItem(
       name?: string;
       href?: string;
       label?: string;
+      custom?: boolean;
     };
 
     CheckoutButton?: React.ComponentType<{
@@ -153,6 +154,7 @@ function PricingItem(
 ) {
   const highlighted = props.product.highlighted ?? false;
   const lineItem = props.primaryLineItem!;
+  const isCustom = props.plan.custom ?? false;
 
   // we exclude flat line items from the details since
   // it doesn't need further explanation
@@ -217,12 +219,14 @@ function PricingItem(
 
         <div className={'flex flex-col space-y-2'}>
           <Price isMonthlyPrice={props.alwaysDisplayMonthlyPrice}>
-            <PlanCostDisplay
-              primaryLineItem={lineItem}
-              currencyCode={props.product.currency}
-              interval={interval}
-              alwaysDisplayMonthlyPrice={props.alwaysDisplayMonthlyPrice}
-            />
+            <If condition={!isCustom} fallback={props.plan.label}>
+              <PlanCostDisplay
+                primaryLineItem={lineItem}
+                currencyCode={props.product.currency}
+                interval={interval}
+                alwaysDisplayMonthlyPrice={props.alwaysDisplayMonthlyPrice}
+              />
+            </If>
           </Price>
 
           <If condition={props.plan.name}>
