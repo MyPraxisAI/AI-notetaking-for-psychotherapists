@@ -242,12 +242,8 @@ function Tiers({
     const isIncluded = tier.cost === 0;
 
     return (
-      <span
-        className={'text-secondary-foreground flex gap-x-2 text-xs'}
-        key={index}
-      >
-        <span>-</span>
-
+      <span className={'text-secondary-foreground text-xs'} key={index}>
+        <span>-</span>{' '}
         <If condition={isLastTier}>
           <span className={'font-bold'}>
             {formatCurrency({
@@ -255,8 +251,7 @@ function Tiers({
               value: tier.cost,
               locale,
             })}
-          </span>
-
+          </span>{' '}
           <If condition={tiersLength > 1}>
             <span>
               <Trans
@@ -268,7 +263,6 @@ function Tiers({
               />
             </span>
           </If>
-
           <If condition={tiersLength === 1}>
             <span>
               <Trans
@@ -279,15 +273,13 @@ function Tiers({
               />
             </span>
           </If>
-        </If>
-
+        </If>{' '}
         <If condition={!isLastTier}>
           <If condition={isIncluded}>
             <span>
               <Trans i18nKey={'billing:includedUpTo'} values={{ unit, upTo }} />
             </span>
-          </If>
-
+          </If>{' '}
           <If condition={!isIncluded}>
             <span className={'font-bold'}>
               {formatCurrency({
@@ -295,8 +287,7 @@ function Tiers({
                 value: tier.cost,
                 locale,
               })}
-            </span>
-
+            </span>{' '}
             <span>
               <Trans
                 i18nKey={'billing:fromPreviousTierUpTo'}

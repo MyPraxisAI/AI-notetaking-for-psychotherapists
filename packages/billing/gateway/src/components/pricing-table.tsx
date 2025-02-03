@@ -14,7 +14,6 @@ import {
   getPlanIntervals,
   getPrimaryLineItem,
 } from '@kit/billing';
-import { formatCurrency } from '@kit/shared/utils';
 import { Badge } from '@kit/ui/badge';
 import { Button } from '@kit/ui/button';
 import { If } from '@kit/ui/if';
@@ -23,6 +22,7 @@ import { Trans } from '@kit/ui/trans';
 import { cn } from '@kit/ui/utils';
 
 import { LineItemDetails } from './line-item-details';
+import { PlanCostDisplay } from './plan-cost-display';
 
 interface Paths {
   signUp: string;
@@ -152,8 +152,7 @@ function PricingItem(
   }>,
 ) {
   const highlighted = props.product.highlighted ?? false;
-
-  const lineItem = props.primaryLineItem;
+  const lineItem = props.primaryLineItem!;
 
   // we exclude flat line items from the details since
   // it doesn't need further explanation
@@ -218,11 +217,10 @@ function PricingItem(
 
         <div className={'flex flex-col space-y-2'}>
           <Price isMonthlyPrice={props.alwaysDisplayMonthlyPrice}>
-            <LineItemPrice
-              plan={props.plan}
-              product={props.product}
+            <PlanCostDisplay
+              primaryLineItem={lineItem}
+              currencyCode={props.product.currency}
               interval={interval}
-              lineItem={lineItem}
               alwaysDisplayMonthlyPrice={props.alwaysDisplayMonthlyPrice}
             />
           </Price>
@@ -491,47 +489,4 @@ function DefaultCheckoutButton(
       </Button>
     </Link>
   );
-}
-
-function LineItemPrice({
-  lineItem,
-  plan,
-  interval,
-  product,
-  alwaysDisplayMonthlyPrice = true,
-}: {
-  lineItem: z.infer<typeof LineItemSchema> | undefined;
-  plan: {
-    label?: string;
-  };
-  interval: Interval | undefined;
-  product: {
-    currency: string;
-  };
-  alwaysDisplayMonthlyPrice?: boolean;
-}) {
-  const { i18n } = useTranslation();
-  const isYearlyPricing = interval === 'year';
-
-  const cost = lineItem
-    ? isYearlyPricing
-      ? alwaysDisplayMonthlyPrice
-        ? Number(lineItem.cost / 12).toFixed(2)
-        : lineItem.cost
-      : lineItem?.cost
-    : 0;
-
-  const costString =
-    lineItem &&
-    formatCurrency({
-      currencyCode: product.currency,
-      locale: i18n.language,
-      value: cost,
-    });
-
-  const labelString = plan.label && (
-    <Trans i18nKey={plan.label} defaults={plan.label} />
-  );
-
-  return costString ?? labelString ?? <Trans i18nKey={'billing:custom'} />;
 }
