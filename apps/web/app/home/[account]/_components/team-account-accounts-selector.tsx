@@ -1,8 +1,11 @@
 'use client';
 
+import { useContext } from 'react';
+
 import { useRouter } from 'next/navigation';
 
 import { AccountSelector } from '@kit/accounts/account-selector';
+import { SidebarContext } from '@kit/ui/shadcn-sidebar';
 
 import featureFlagsConfig from '~/config/feature-flags.config';
 import pathsConfig from '~/config/paths.config';
@@ -20,17 +23,16 @@ export function TeamAccountAccountsSelector(params: {
     value: string | null;
     image: string | null;
   }>;
-
-  collapsed?: boolean;
 }) {
   const router = useRouter();
+  const ctx = useContext(SidebarContext);
 
   return (
     <AccountSelector
       selectedAccount={params.selectedAccount}
       accounts={params.accounts}
       userId={params.userId}
-      collapsed={params.collapsed}
+      collapsed={!ctx?.open}
       features={features}
       onAccountChange={(value) => {
         const path = value

@@ -49,6 +49,7 @@ export function getTeamAccountSidebarConfig(account: string) {
     routes: getRoutes(account),
     style: process.env.NEXT_PUBLIC_TEAM_NAVIGATION_STYLE,
     sidebarCollapsed: process.env.NEXT_PUBLIC_TEAM_SIDEBAR_COLLAPSED,
+    sidebarCollapsedStyle: process.env.NEXT_PUBLIC_SIDEBAR_COLLAPSED_STYLE,
   });
 }
 

@@ -3,12 +3,7 @@ import { use } from 'react';
 import { cookies } from 'next/headers';
 
 import { UserWorkspaceContextProvider } from '@kit/accounts/components';
-import {
-  Page,
-  PageLayoutStyle,
-  PageMobileNavigation,
-  PageNavigation,
-} from '@kit/ui/page';
+import { Page, PageMobileNavigation, PageNavigation } from '@kit/ui/page';
 import { SidebarProvider } from '@kit/ui/shadcn-sidebar';
 
 import { AppLogo } from '~/components/app-logo';
@@ -22,9 +17,9 @@ import { HomeSidebar } from './_components/home-sidebar';
 import { loadUserWorkspace } from './_lib/server/load-user-workspace';
 
 function UserHomeLayout({ children }: React.PropsWithChildren) {
-  const style = use(getLayoutStyle());
+  const state = use(getLayoutState());
 
-  if (style === 'sidebar') {
+  if (state.style === 'sidebar') {
     return <SidebarLayout>{children}</SidebarLayout>;
   }
 
@@ -35,14 +30,16 @@ export default withI18n(UserHomeLayout);
 
 function SidebarLayout({ children }: React.PropsWithChildren) {
   const workspace = use(loadUserWorkspace());
-  const sidebarMinimized = personalAccountNavigationConfig.sidebarCollapsed;
+  const state = use(getLayoutState());
+
+  console.log('state', state);
 
   return (
     <UserWorkspaceContextProvider value={workspace}>
-      <SidebarProvider minimized={sidebarMinimized}>
+      <SidebarProvider defaultOpen={state.open}>
         <Page style={'sidebar'}>
           <PageNavigation>
-            <HomeSidebar workspace={workspace} minimized={sidebarMinimized} />
+            <HomeSidebar workspace={workspace} />
           </PageNavigation>
 
           <PageMobileNavigation className={'flex items-center justify-between'}>
@@ -90,11 +87,21 @@ function MobileNavigation({
   );
 }
 
-async function getLayoutStyle() {
+async function getLayoutState() {
   const cookieStore = await cookies();
 
-  return (
-    (cookieStore.get('layout-style')?.value as PageLayoutStyle) ??
-    personalAccountNavigationConfig.style
-  );
+  const layoutStyleCookie = cookieStore.get('layout-style');
+  const sidebarOpenCookie = cookieStore.get('sidebar:state');
+
+  const sidebarOpenCookieValue = sidebarOpenCookie
+    ? sidebarOpenCookie.value === 'false'
+    : personalAccountNavigationConfig.sidebarCollapsed;
+
+  const style =
+    layoutStyleCookie?.value ?? personalAccountNavigationConfig.style;
+
+  return {
+    open: sidebarOpenCookieValue,
+    style,
+  };
 }

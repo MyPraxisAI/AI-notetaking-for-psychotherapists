@@ -3,6 +3,7 @@ import { ServerDataLoader } from '@makerkit/data-loader-supabase-nextjs';
 import { AdminAccountsTable } from '@kit/admin/components/admin-accounts-table';
 import { AdminGuard } from '@kit/admin/components/admin-guard';
 import { getSupabaseServerAdminClient } from '@kit/supabase/server-admin-client';
+import { AppBreadcrumbs } from '@kit/ui/app-breadcrumbs';
 import { PageBody, PageHeader } from '@kit/ui/page';
 
 interface SearchParams {
@@ -28,10 +29,7 @@ async function AccountsPage(props: AdminAccountsPageProps) {
 
   return (
     <>
-      <PageHeader
-        title={'Accounts'}
-        description={`Below is the list of all the accounts in your application.`}
-      />
+      <PageHeader description={<AppBreadcrumbs />} />
 
       <PageBody>
         <ServerDataLoader

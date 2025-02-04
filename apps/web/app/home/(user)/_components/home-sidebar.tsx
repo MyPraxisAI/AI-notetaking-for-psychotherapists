@@ -20,24 +20,23 @@ import { HomeAccountSelector } from './home-account-selector';
 
 interface HomeSidebarProps {
   workspace: UserWorkspace;
-  minimized: boolean;
 }
 
 export function HomeSidebar(props: HomeSidebarProps) {
   const { workspace, user, accounts } = props.workspace;
+  const collapsible = personalAccountNavigationConfig.sidebarCollapsedStyle;
 
   return (
-    <Sidebar>
+    <Sidebar collapsible={collapsible}>
       <SidebarHeader className={'h-16 justify-center'}>
         <div className={'flex items-center justify-between gap-x-3'}>
           <If
             condition={featuresFlagConfig.enableTeamAccounts}
             fallback={
               <AppLogo
-                className={cn({
-                  'max-w-full': props.minimized,
-                  'py-2': !props.minimized,
-                })}
+                className={cn(
+                  'py-2 group-data-[minimized=true]:max-w-full group-data-[minimized=true]:py-0',
+                )}
               />
             }
           >

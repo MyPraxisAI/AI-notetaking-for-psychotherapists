@@ -29,7 +29,7 @@ export function HomeAccountSelector(props: {
 
   return (
     <AccountSelector
-      collapsed={context?.minimized}
+      collapsed={!context?.open}
       collisionPadding={props.collisionPadding ?? 20}
       accounts={props.accounts}
       features={features}

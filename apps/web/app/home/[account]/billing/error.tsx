@@ -20,10 +20,7 @@ export default function BillingErrorPage({
 
   return (
     <>
-      <PageHeader
-        title={<Trans i18nKey={'common:routes.billing'} />}
-        description={<AppBreadcrumbs />}
-      />
+      <PageHeader description={<AppBreadcrumbs />} />
 
       <PageBody>
         <div className={'flex flex-col space-y-4'}>

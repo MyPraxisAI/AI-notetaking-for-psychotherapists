@@ -5,10 +5,7 @@ import { PageBody, PageHeader } from '@kit/ui/page';
 function AdminPage() {
   return (
     <>
-      <PageHeader
-        title={'Super Admin'}
-        description={`Your SaaS stats at a glance`}
-      />
+      <PageHeader description={`Super Admin`} />
 
       <PageBody>
         <AdminDashboard />

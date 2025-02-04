@@ -50,9 +50,11 @@ export function VersionUpdater(props: { intervalTimeInSecond?: number }) {
     <AlertDialog open={showDialog} onOpenChange={setShowDialog}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle className={'flex items-center space-x-4'}>
+          <AlertDialogTitle className={'flex items-center gap-x-2'}>
             <RocketIcon className={'h-4'} />
-            <Trans i18nKey="common:newVersionAvailable" />
+            <span>
+              <Trans i18nKey="common:newVersionAvailable" />
+            </span>
           </AlertDialogTitle>
 
           <AlertDialogDescription>

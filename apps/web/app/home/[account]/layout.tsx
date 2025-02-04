@@ -27,9 +27,9 @@ type TeamWorkspaceLayoutProps = React.PropsWithChildren<{
 
 function TeamWorkspaceLayout({ children, params }: TeamWorkspaceLayoutProps) {
   const account = use(params).account;
-  const style = use(getLayoutStyle(account));
+  const state = use(getLayoutState(account));
 
-  if (style === 'sidebar') {
+  if (state.style === 'sidebar') {
     return <SidebarLayout account={account}>{children}</SidebarLayout>;
   }
 
@@ -43,6 +43,7 @@ function SidebarLayout({
   account: string;
 }>) {
   const data = use(loadTeamWorkspace(account));
+  const state = use(getLayoutState(account));
 
   const accounts = data.accounts.map(({ name, slug, picture_url }) => ({
     label: name,
@@ -50,11 +51,9 @@ function SidebarLayout({
     image: picture_url,
   }));
 
-  const minimized = getTeamAccountSidebarConfig(account).sidebarCollapsed;
-
   return (
     <TeamAccountWorkspaceContextProvider value={data}>
-      <SidebarProvider minimized={minimized}>
+      <SidebarProvider defaultOpen={state.open}>
         <Page style={'sidebar'}>
           <PageNavigation>
             <TeamAccountLayoutSidebar
@@ -123,13 +122,21 @@ function HeaderLayout({
   );
 }
 
-async function getLayoutStyle(account: string) {
+async function getLayoutState(account: string) {
   const cookieStore = await cookies();
+  const sidebarOpenCookie = cookieStore.get('sidebar:state');
+  const layoutCookie = cookieStore.get('layout-style');
+  const layoutStyle = layoutCookie?.value as PageLayoutStyle;
+  const config = getTeamAccountSidebarConfig(account);
 
-  return (
-    (cookieStore.get('layout-style')?.value as PageLayoutStyle) ??
-    getTeamAccountSidebarConfig(account).style
-  );
+  const sidebarOpenCookieValue = sidebarOpenCookie
+    ? sidebarOpenCookie.value === 'false'
+    : config.sidebarCollapsed;
+
+  return {
+    open: sidebarOpenCookieValue,
+    style: layoutStyle ?? config.style,
+  };
 }
 
 export default withI18n(TeamWorkspaceLayout);

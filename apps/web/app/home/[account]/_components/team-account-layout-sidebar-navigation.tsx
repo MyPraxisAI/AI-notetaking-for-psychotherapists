@@ -1,13 +1,12 @@
+import { z } from 'zod';
+
+import { NavigationConfigSchema } from '@kit/ui/navigation-schema';
 import { SidebarNavigation } from '@kit/ui/shadcn-sidebar';
 
-import { getTeamAccountSidebarConfig } from '~/config/team-account-navigation.config';
-
 export function TeamAccountLayoutSidebarNavigation({
-  account,
+  config,
 }: React.PropsWithChildren<{
-  account: string;
+  config: z.infer<typeof NavigationConfigSchema>;
 }>) {
-  const routes = getTeamAccountSidebarConfig(account);
-
-  return <SidebarNavigation config={routes} />;
+  return <SidebarNavigation config={config} />;
 }

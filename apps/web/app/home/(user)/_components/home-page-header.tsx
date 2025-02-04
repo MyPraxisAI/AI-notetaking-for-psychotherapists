@@ -7,8 +7,6 @@ export function HomeLayoutPageHeader(
   }>,
 ) {
   return (
-    <PageHeader title={props.title} description={props.description}>
-      {props.children}
-    </PageHeader>
+    <PageHeader description={props.description}>{props.children}</PageHeader>
   );
 }

@@ -1,6 +1,8 @@
 import * as React from 'react';
 
 import { cn } from '../lib/utils';
+import { Separator } from '../shadcn/separator';
+import { SidebarTrigger } from '../shadcn/sidebar';
 import { If } from './if';
 
 export type PageLayoutStyle = 'sidebar' | 'header' | 'custom';
@@ -11,6 +13,10 @@ type PageProps = React.PropsWithChildren<{
   className?: string;
   sticky?: boolean;
 }>;
+
+const ENABLE_SIDEBAR_TRIGGER = process.env.NEXT_PUBLIC_ENABLE_SIDEBAR_TRIGGER
+  ? process.env.NEXT_PUBLIC_ENABLE_SIDEBAR_TRIGGER === 'true'
+  : true;
 
 export function Page(props: PageProps) {
   switch (props.style) {
@@ -118,7 +124,7 @@ export function PageNavigation(props: React.PropsWithChildren) {
 
 export function PageDescription(props: React.PropsWithChildren) {
   return (
-    <div className={'h-6'}>
+    <div className={'flex h-6 items-center'}>
       <div className={'text-muted-foreground text-xs leading-none font-normal'}>
         {props.children}
       </div>
@@ -130,7 +136,7 @@ export function PageTitle(props: React.PropsWithChildren) {
   return (
     <h1
       className={
-        'font-heading text-xl leading-none font-bold tracking-tight dark:text-white'
+        'font-heading text-base leading-none font-bold tracking-tight dark:text-white'
       }
     >
       {props.children}
@@ -147,10 +153,12 @@ export function PageHeader({
   title,
   description,
   className,
+  displaySidebarTrigger = ENABLE_SIDEBAR_TRIGGER,
 }: React.PropsWithChildren<{
   className?: string;
   title?: string | React.ReactNode;
   description?: string | React.ReactNode;
+  displaySidebarTrigger?: boolean;
 }>) {
   return (
     <div
@@ -159,10 +167,20 @@ export function PageHeader({
         className,
       )}
     >
-      <div className={'flex flex-col'}>
-        <If condition={description}>
-          <PageDescription>{description}</PageDescription>
-        </If>
+      <div className={'flex flex-col gap-y-2'}>
+        <div className="flex items-center gap-x-2.5">
+          {displaySidebarTrigger ? (
+            <SidebarTrigger className="text-muted-foreground hover:text-secondary-foreground h-4.5 w-4.5 cursor-pointer" />
+          ) : null}
+
+          <If condition={description}>
+            <If condition={displaySidebarTrigger}>
+              <Separator orientation="vertical" className="h-4 w-px" />
+            </If>
+
+            <PageDescription>{description}</PageDescription>
+          </If>
+        </div>
 
         <If condition={title}>
           <PageTitle>{title}</PageTitle>
