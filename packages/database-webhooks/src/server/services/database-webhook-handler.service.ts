@@ -28,13 +28,13 @@ class DatabaseWebhookHandlerService {
   /**
    * @name handleWebhook
    * @description Handle the webhook event
-   * @param request
    * @param params
    */
   async handleWebhook(
-    request: Request,
-    params?: {
-      handleEvent<Table extends keyof Tables>(
+    params: {
+      body: RecordChange<keyof Tables>;
+      signature: string;
+      handleEvent?<Table extends keyof Tables>(
         payload: Table extends keyof Tables
           ? DatabaseChangePayload<Table>
           : never,
@@ -42,9 +42,7 @@ class DatabaseWebhookHandlerService {
     },
   ) {
     const logger = await getLogger();
-
-    const json = await request.clone().json();
-    const { table, type } = json as RecordChange<keyof Tables>;
+    const { table, type } = params.body;
 
     const ctx = {
       name: this.namespace,
@@ -57,7 +55,7 @@ class DatabaseWebhookHandlerService {
     // check if the signature is valid
     const verifier = await getDatabaseWebhookVerifier();
 
-    await verifier.verifySignatureOrThrow(request);
+    await verifier.verifySignatureOrThrow(params.signature);
 
     // all good, we can now the webhook
 
@@ -68,11 +66,12 @@ class DatabaseWebhookHandlerService {
 
     try {
       // handle the webhook event based on the table
-      await service.handleWebhook(json);
+      await service.handleWebhook(params.body);
 
       // if a custom handler is provided, call it
       if (params?.handleEvent) {
-        await params.handleEvent(json);
+        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+        await params.handleEvent(params.body as any);
       }
 
       logger.info(ctx, 'Webhook processed successfully');

@@ -10,8 +10,19 @@ export const POST = enhanceRouteHandler(
     const service = getDatabaseWebhookHandlerService();
 
     try {
+      const signature = request.headers.get('X-Supabase-Event-Signature');
+
+      if (!signature) {
+        return new Response('Missing signature', { status: 400 });
+      }
+
+      const body = await request.clone().json();
+
       // handle the webhook event
-      await service.handleWebhook(request);
+      await service.handleWebhook({
+        body,
+        signature,
+      });
 
       // return a successful response
       return new Response(null, { status: 200 });

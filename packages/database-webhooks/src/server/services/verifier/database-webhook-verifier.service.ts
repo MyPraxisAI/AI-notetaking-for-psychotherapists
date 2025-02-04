@@ -1,3 +1,3 @@
 export abstract class DatabaseWebhookVerifierService {
-  abstract verifySignatureOrThrow(request: Request): Promise<boolean>;
+  abstract verifySignatureOrThrow(header: string): Promise<boolean>;
 }
