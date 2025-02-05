@@ -170,12 +170,12 @@ export function PageHeader({
       <div className={'flex flex-col gap-y-2'}>
         <div className="flex items-center gap-x-2.5">
           {displaySidebarTrigger ? (
-            <SidebarTrigger className="text-muted-foreground hover:text-secondary-foreground h-4.5 w-4.5 cursor-pointer" />
+            <SidebarTrigger className="text-muted-foreground hover:text-secondary-foreground hidden h-4.5 w-4.5 cursor-pointer lg:inline-flex" />
           ) : null}
 
           <If condition={description}>
             <If condition={displaySidebarTrigger}>
-              <Separator orientation="vertical" className="h-4 w-px" />
+              <Separator orientation="vertical" className="h-4 w-px hidden lg:block" />
             </If>
 
             <PageDescription>{description}</PageDescription>
