@@ -17,6 +17,7 @@
     "@kit/eslint-config": "workspace:*",
     "@kit/keystatic": "workspace:*",
     "@kit/prettier-config": "workspace:*",
+    "@kit/shared": "workspace:*",
     "@kit/tsconfig": "workspace:*",
     "@kit/wordpress": "workspace:*",
     "@types/node": "^22.13.0"

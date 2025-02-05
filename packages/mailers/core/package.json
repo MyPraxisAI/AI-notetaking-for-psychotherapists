@@ -14,10 +14,11 @@
   },
   "devDependencies": {
     "@kit/eslint-config": "workspace:*",
+    "@kit/mailers-shared": "workspace:*",
     "@kit/nodemailer": "workspace:*",
     "@kit/prettier-config": "workspace:*",
     "@kit/resend": "workspace:*",
-    "@kit/tailwind-config": "workspace:*",
+    "@kit/shared": "workspace:*",
     "@kit/tsconfig": "workspace:*",
     "@types/node": "^22.13.0",
     "zod": "^3.24.1"

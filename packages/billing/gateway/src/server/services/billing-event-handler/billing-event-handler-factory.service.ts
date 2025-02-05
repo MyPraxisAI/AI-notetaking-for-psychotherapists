@@ -3,37 +3,44 @@ import 'server-only';
 import { z } from 'zod';
 
 import {
-  BillingConfig,
+  type BillingConfig,
   type BillingProviderSchema,
   BillingWebhookHandlerService,
 } from '@kit/billing';
+import { createRegistry } from '@kit/shared/registry';
 
-export class BillingEventHandlerFactoryService {
-  static async GetProviderStrategy(
-    provider: z.infer<typeof BillingProviderSchema>,
-    config: BillingConfig,
-  ): Promise<BillingWebhookHandlerService> {
-    switch (provider) {
-      case 'stripe': {
-        const { StripeWebhookHandlerService } = await import('@kit/stripe');
+/**
+ * @description Creates a registry for billing webhook handlers
+ * @param config - The billing config
+ * @returns The billing webhook handler registry
+ */
+export function createBillingEventHandlerFactoryService(config: BillingConfig) {
+  // Create a registry for billing webhook handlers
+  const billingWebhookHandlerRegistry = createRegistry<
+    BillingWebhookHandlerService,
+    z.infer<typeof BillingProviderSchema>
+  >();
 
-        return new StripeWebhookHandlerService(config);
-      }
+  // Register the Stripe webhook handler
+  billingWebhookHandlerRegistry.register('stripe', async () => {
+    const { StripeWebhookHandlerService } = await import('@kit/stripe');
 
-      case 'lemon-squeezy': {
-        const { LemonSqueezyWebhookHandlerService } = await import(
-          '@kit/lemon-squeezy'
-        );
+    return new StripeWebhookHandlerService(config);
+  });
 
-        return new LemonSqueezyWebhookHandlerService(config);
-      }
+  // Register the Lemon Squeezy webhook handler
+  billingWebhookHandlerRegistry.register('lemon-squeezy', async () => {
+    const { LemonSqueezyWebhookHandlerService } = await import(
+      '@kit/lemon-squeezy'
+    );
 
-      case 'paddle': {
-        throw new Error('Paddle is not supported yet');
-      }
+    return new LemonSqueezyWebhookHandlerService(config);
+  });
 
-      default:
-        throw new Error(`Unsupported billing provider: ${provider as string}`);
-    }
-  }
+  // Register Paddle webhook handler (not implemented yet)
+  billingWebhookHandlerRegistry.register('paddle', () => {
+    throw new Error('Paddle is not supported yet');
+  });
+
+  return billingWebhookHandlerRegistry;
 }

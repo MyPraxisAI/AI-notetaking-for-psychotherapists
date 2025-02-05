@@ -22,10 +22,11 @@
     "@kit/monitoring-core": "workspace:*",
     "@kit/prettier-config": "workspace:*",
     "@kit/sentry": "workspace:*",
-    "@kit/tailwind-config": "workspace:*",
+    "@kit/shared": "workspace:*",
     "@kit/tsconfig": "workspace:*",
     "@types/react": "19.0.8",
-    "react": "19.0.0"
+    "react": "19.0.0",
+    "zod": "^3.24.1"
   },
   "eslintConfig": {
     "root": true,

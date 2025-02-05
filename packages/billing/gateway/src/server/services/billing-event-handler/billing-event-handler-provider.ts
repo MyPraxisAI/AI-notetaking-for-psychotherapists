@@ -5,7 +5,7 @@ import { SupabaseClient } from '@supabase/supabase-js';
 import { BillingConfig } from '@kit/billing';
 import { Database, Enums } from '@kit/supabase/database';
 
-import { BillingEventHandlerFactoryService } from './billing-event-handler-factory.service';
+import { createBillingEventHandlerFactoryService } from './billing-event-handler-factory.service';
 import { createBillingEventHandlerService } from './billing-event-handler.service';
 
 // a function that returns a Supabase client
@@ -25,10 +25,8 @@ export async function getBillingEventHandlerService(
   provider: BillingProvider,
   config: BillingConfig,
 ) {
-  const strategy = await BillingEventHandlerFactoryService.GetProviderStrategy(
-    provider,
-    config,
-  );
+  const strategy =
+    await createBillingEventHandlerFactoryService(config).get(provider);
 
   return createBillingEventHandlerService(clientProvider, strategy);
 }

@@ -1,23 +1,25 @@
+import { createRegistry } from '../registry';
 import { Logger as LoggerInstance } from './logger';
 
-const LOGGER = process.env.LOGGER ?? 'pino';
+// Define the type for the logger provider.  Currently supporting 'pino'.
+type LoggerProvider = 'pino';
 
-/*
- * Logger
- * By default, the logger is set to use Pino. To change the logger, update the import statement below.
- * to your desired logger implementation.
+const LOGGER = (process.env.LOGGER ?? 'pino') as LoggerProvider;
+
+// Create a registry for logger implementations
+const loggerRegistry = createRegistry<LoggerInstance, LoggerProvider>();
+
+// Register the 'pino' logger implementation
+loggerRegistry.register('pino', async () => {
+  const { Logger: PinoLogger } = await import('./impl/pino');
+
+  return PinoLogger;
+});
+
+/**
+ * @name getLogger
+ * @description Retrieves the logger implementation based on the LOGGER environment variable using the registry API.
  */
-async function getLogger(): Promise<LoggerInstance> {
-  switch (LOGGER) {
-    case 'pino': {
-      const { Logger: PinoLogger } = await import('./impl/pino');
-
-      return PinoLogger;
-    }
-
-    default:
-      throw new Error(`Unknown logger: ${process.env.LOGGER}`);
-  }
+export async function getLogger() {
+  return loggerRegistry.get(LOGGER);
 }
-
-export { getLogger };

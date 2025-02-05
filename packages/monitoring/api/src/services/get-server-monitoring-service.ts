@@ -1,42 +1,52 @@
-import { ConsoleMonitoringService } from '@kit/monitoring-core';
+import {
+  ConsoleMonitoringService,
+  MonitoringService,
+} from '@kit/monitoring-core';
+import { createRegistry } from '@kit/shared/registry';
 
-import { getMonitoringProvider } from '../get-monitoring-provider';
-import { InstrumentationProvider } from '../monitoring-providers.enum';
+import {
+  MonitoringProvider,
+  getMonitoringProvider,
+} from '../get-monitoring-provider';
 
-const MONITORING_PROVIDER = getMonitoringProvider();
+// create a registry for the server monitoring services
+const serverMonitoringRegistry = createRegistry<
+  MonitoringService,
+  NonNullable<MonitoringProvider>
+>();
+
+// Register the 'baselime' monitoring service
+serverMonitoringRegistry.register('baselime', async () => {
+  const { BaselimeServerMonitoringService } = await import(
+    '@kit/baselime/server'
+  );
+
+  return new BaselimeServerMonitoringService();
+});
+
+// Register the 'sentry' monitoring service
+serverMonitoringRegistry.register('sentry', async () => {
+  const { SentryMonitoringService } = await import('@kit/sentry');
+
+  return new SentryMonitoringService();
+});
+
+// if you have a new monitoring provider, you can register it here
+//
 
 /**
  * @name getServerMonitoringService
  * @description Get the monitoring service based on the MONITORING_PROVIDER environment variable.
  */
 export async function getServerMonitoringService() {
-  if (!MONITORING_PROVIDER) {
+  const provider = getMonitoringProvider();
+
+  if (!provider) {
     console.info(
       `No instrumentation provider specified. Returning console service...`,
     );
-
     return new ConsoleMonitoringService();
   }
 
-  switch (MONITORING_PROVIDER) {
-    case InstrumentationProvider.Baselime: {
-      const { BaselimeServerMonitoringService } = await import(
-        '@kit/baselime/server'
-      );
-
-      return new BaselimeServerMonitoringService();
-    }
-
-    case InstrumentationProvider.Sentry: {
-      const { SentryMonitoringService } = await import('@kit/sentry');
-
-      return new SentryMonitoringService();
-    }
-
-    default: {
-      throw new Error(
-        `Please set the MONITORING_PROVIDER environment variable to register the monitoring instrumentation provider.`,
-      );
-    }
-  }
+  return serverMonitoringRegistry.get(provider);
 }

@@ -2,38 +2,64 @@
 
 import { lazy } from 'react';
 
-import { getMonitoringProvider } from '../get-monitoring-provider';
-import { InstrumentationProvider } from '../monitoring-providers.enum';
+import { createRegistry } from '@kit/shared/registry';
 
-const BaselimeProvider = lazy(async () => {
+import {
+  MonitoringProvider as MonitoringProviderType,
+  getMonitoringProvider,
+} from '../get-monitoring-provider';
+
+// Define the type for our provider components
+type ProviderComponent = {
+  default: React.ComponentType<React.PropsWithChildren>;
+};
+
+// Create a registry for monitoring providers
+const monitoringProviderRegistry = createRegistry<
+  ProviderComponent,
+  NonNullable<MonitoringProviderType>
+>();
+
+// Register the Baselime provider
+monitoringProviderRegistry.register('baselime', async () => {
   const { BaselimeProvider } = await import('@kit/baselime/provider');
 
   return {
-    default: BaselimeProvider,
+    default: function BaselimeProviderWrapper({
+      children,
+    }: React.PropsWithChildren) {
+      return <BaselimeProvider enableWebVitals>{children}</BaselimeProvider>;
+    },
   };
 });
 
-const SentryProvider = lazy(async () => {
+// Register the Sentry provider
+monitoringProviderRegistry.register('sentry', async () => {
   const { SentryProvider } = await import('@kit/sentry/provider');
 
   return {
-    default: SentryProvider,
+    default: function SentryProviderWrapper({
+      children,
+    }: React.PropsWithChildren) {
+      return <SentryProvider>{children}</SentryProvider>;
+    },
   };
 });
 
+/**
+ * @name MonitoringProvider
+ * @description This component is used to wrap the application with the appropriate monitoring provider.
+ * @param props
+ * @returns
+ */
 export function MonitoringProvider(props: React.PropsWithChildren) {
   const provider = getMonitoringProvider();
 
-  switch (provider) {
-    case InstrumentationProvider.Baselime:
-      return (
-        <BaselimeProvider enableWebVitals>{props.children}</BaselimeProvider>
-      );
-
-    case InstrumentationProvider.Sentry:
-      return <SentryProvider>{props.children}</SentryProvider>;
-
-    default:
-      return <>{props.children}</>;
+  if (!provider) {
+    return <>{props.children}</>;
   }
+
+  const Provider = lazy(() => monitoringProviderRegistry.get(provider));
+
+  return <Provider>{props.children}</Provider>;
 }

@@ -1,9 +1,25 @@
 import { CmsClient, CmsType } from '@kit/cms-types';
+import { createRegistry } from '@kit/shared/registry';
 
 /**
  * The type of CMS client to use.
  */
 const CMS_CLIENT = process.env.CMS_CLIENT as CmsType;
+
+// Create a registry for CMS client implementations
+const cmsRegistry = createRegistry<CmsClient, CmsType>();
+
+// Register the WordPress CMS client implementation
+cmsRegistry.register('wordpress', async () => {
+  const { createWordpressClient } = await import('@kit/wordpress');
+  return createWordpressClient();
+});
+
+// Register the Keystatic CMS client implementation
+cmsRegistry.register('keystatic', async () => {
+  const { createKeystaticClient } = await import('@kit/keystatic');
+  return createKeystaticClient();
+});
 
 /**
  * Creates a CMS client based on the specified type.
@@ -12,33 +28,6 @@ const CMS_CLIENT = process.env.CMS_CLIENT as CmsType;
  * @returns {Promise<CmsClient>} A Promise that resolves to the created CMS client.
  * @throws {Error} If the specified CMS type is unknown.
  */
-export async function createCmsClient(
-  type: CmsType = CMS_CLIENT,
-): Promise<CmsClient> {
-  return cmsClientFactory(type);
-}
-
-/**
- * Creates a CMS client based on the specified type.
- *
- * @param {CmsType} type - The type of CMS client to create.
- * @returns {Promise<CmsClient>} A Promise that resolves to the created CMS client.
- */
-async function cmsClientFactory(type: CmsType): Promise<CmsClient> {
-  switch (type) {
-    case 'wordpress': {
-      const { createWordpressClient } = await import('@kit/wordpress');
-
-      return createWordpressClient();
-    }
-
-    case 'keystatic': {
-      const { createKeystaticClient } = await import('@kit/keystatic');
-
-      return createKeystaticClient();
-    }
-
-    default:
-      throw new Error(`Unknown CMS type`);
-  }
+export async function createCmsClient(type: CmsType = CMS_CLIENT) {
+  return cmsRegistry.get(type);
 }

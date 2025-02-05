@@ -237,9 +237,6 @@ importers:
       '@kit/prettier-config':
         specifier: workspace:*
         version: link:../../tooling/prettier
-      '@kit/tailwind-config':
-        specifier: workspace:*
-        version: link:../../tooling/tailwind
       '@kit/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/typescript
@@ -443,6 +440,9 @@ importers:
       '@kit/prettier-config':
         specifier: workspace:*
         version: link:../../../tooling/prettier
+      '@kit/shared':
+        specifier: workspace:*
+        version: link:../../shared
       '@kit/tsconfig':
         specifier: workspace:*
         version: link:../../../tooling/typescript
@@ -555,9 +555,6 @@ importers:
       '@kit/supabase':
         specifier: workspace:*
         version: link:../supabase
-      '@kit/tailwind-config':
-        specifier: workspace:*
-        version: link:../../tooling/tailwind
       '@kit/team-accounts':
         specifier: workspace:*
         version: link:../features/team-accounts
@@ -964,9 +961,6 @@ importers:
       '@kit/shared':
         specifier: workspace:*
         version: link:../shared
-      '@kit/tailwind-config':
-        specifier: workspace:*
-        version: link:../../tooling/tailwind
       '@kit/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/typescript
@@ -991,6 +985,9 @@ importers:
       '@kit/eslint-config':
         specifier: workspace:*
         version: link:../../../tooling/eslint
+      '@kit/mailers-shared':
+        specifier: workspace:*
+        version: link:../shared
       '@kit/nodemailer':
         specifier: workspace:*
         version: link:../nodemailer
@@ -1000,9 +997,9 @@ importers:
       '@kit/resend':
         specifier: workspace:*
         version: link:../resend
-      '@kit/tailwind-config':
+      '@kit/shared':
         specifier: workspace:*
-        version: link:../../../tooling/tailwind
+        version: link:../../shared
       '@kit/tsconfig':
         specifier: workspace:*
         version: link:../../../tooling/typescript
@@ -1028,9 +1025,6 @@ importers:
       '@kit/prettier-config':
         specifier: workspace:*
         version: link:../../../tooling/prettier
-      '@kit/tailwind-config':
-        specifier: workspace:*
-        version: link:../../../tooling/tailwind
       '@kit/tsconfig':
         specifier: workspace:*
         version: link:../../../tooling/typescript
@@ -1052,9 +1046,6 @@ importers:
       '@kit/prettier-config':
         specifier: workspace:*
         version: link:../../../tooling/prettier
-      '@kit/tailwind-config':
-        specifier: workspace:*
-        version: link:../../../tooling/tailwind
       '@kit/tsconfig':
         specifier: workspace:*
         version: link:../../../tooling/typescript
@@ -1073,9 +1064,6 @@ importers:
       '@kit/prettier-config':
         specifier: workspace:*
         version: link:../../../tooling/prettier
-      '@kit/tailwind-config':
-        specifier: workspace:*
-        version: link:../../../tooling/tailwind
       '@kit/tsconfig':
         specifier: workspace:*
         version: link:../../../tooling/typescript
@@ -1100,9 +1088,9 @@ importers:
       '@kit/sentry':
         specifier: workspace:*
         version: link:../sentry
-      '@kit/tailwind-config':
+      '@kit/shared':
         specifier: workspace:*
-        version: link:../../../tooling/tailwind
+        version: link:../../shared
       '@kit/tsconfig':
         specifier: workspace:*
         version: link:../../../tooling/typescript
@@ -1112,6 +1100,9 @@ importers:
       react:
         specifier: 19.0.0
         version: 19.0.0
+      zod:
+        specifier: ^3.24.1
+        version: 3.24.1
 
   packages/monitoring/baselime:
     dependencies:
@@ -1131,9 +1122,6 @@ importers:
       '@kit/prettier-config':
         specifier: workspace:*
         version: link:../../../tooling/prettier
-      '@kit/tailwind-config':
-        specifier: workspace:*
-        version: link:../../../tooling/tailwind
       '@kit/tsconfig':
         specifier: workspace:*
         version: link:../../../tooling/typescript
@@ -1155,9 +1143,6 @@ importers:
       '@kit/prettier-config':
         specifier: workspace:*
         version: link:../../../tooling/prettier
-      '@kit/tailwind-config':
-        specifier: workspace:*
-        version: link:../../../tooling/tailwind
       '@kit/tsconfig':
         specifier: workspace:*
         version: link:../../../tooling/typescript
@@ -1183,9 +1168,6 @@ importers:
       '@kit/prettier-config':
         specifier: workspace:*
         version: link:../../../tooling/prettier
-      '@kit/tailwind-config':
-        specifier: workspace:*
-        version: link:../../../tooling/tailwind
       '@kit/tsconfig':
         specifier: workspace:*
         version: link:../../../tooling/typescript
@@ -1213,9 +1195,6 @@ importers:
       '@kit/supabase':
         specifier: workspace:*
         version: link:../supabase
-      '@kit/tailwind-config':
-        specifier: workspace:*
-        version: link:../../tooling/tailwind
       '@kit/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/typescript
@@ -1241,9 +1220,6 @@ importers:
       '@kit/prettier-config':
         specifier: workspace:*
         version: link:../../tooling/prettier
-      '@kit/tailwind-config':
-        specifier: workspace:*
-        version: link:../../tooling/tailwind
       '@kit/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/typescript
@@ -4121,9 +4097,6 @@ packages:
 
   '@types/eslint@8.56.12':
     resolution: {integrity: sha512-03ruubjWyOHlmljCVoxSuNDdmfZDzsrrz0P2LeJsOXr+ZwFQ+0yQIwNCwt/GYhV7Z31fgtXJTAEs+FYlEL851g==}
-
-  '@types/eslint@9.6.1':
-    resolution: {integrity: sha512-FXx2pKgId/WyYo2jXw63kk7/+TY7u7AziEJxJAnSFzHlqTAS3Ync6SvgYAN/k4/PQpnnVuzoMuVnByKK2qp0ag==}
 
   '@types/estree-jsx@1.0.5':
     resolution: {integrity: sha512-52CcUVNFyfb1A2ALocQw/Dd1BQFNmSdkuC3BkZ6iqhdMfQz7JWOFRuJFloOzjk+6WijU56m9oKXFAXc7o3Towg==}
@@ -11437,15 +11410,10 @@ snapshots:
 
   '@types/eslint-scope@3.7.7':
     dependencies:
-      '@types/eslint': 9.6.1
+      '@types/eslint': 8.56.12
       '@types/estree': 1.0.6
 
   '@types/eslint@8.56.12':
-    dependencies:
-      '@types/estree': 1.0.6
-      '@types/json-schema': 7.0.15
-
-  '@types/eslint@9.6.1':
     dependencies:
       '@types/estree': 1.0.6
       '@types/json-schema': 7.0.15

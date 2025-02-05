@@ -1,37 +1,51 @@
-import { getMonitoringProvider } from './get-monitoring-provider';
-import { InstrumentationProvider } from './monitoring-providers.enum';
+import { createRegistry } from '@kit/shared/registry';
 
-const PROVIDER = getMonitoringProvider();
+import {
+  MonitoringProvider,
+  getMonitoringProvider,
+} from './get-monitoring-provider';
+
+// Define a type for the instrumentation registration implementation
+type InstrumentationRegistration = {
+  register: () => Promise<void> | void;
+};
+
+// Create a registry for instrumentation providers, using literal strings 'baselime' and 'sentry'
+const instrumentationRegistry = createRegistry<
+  InstrumentationRegistration,
+  NonNullable<MonitoringProvider>
+>();
+
+// Register the 'baselime' instrumentation provider
+instrumentationRegistry.register('baselime', async () => {
+  const { registerInstrumentation } = await import(
+    '@kit/baselime/instrumentation'
+  );
+
+  return { register: registerInstrumentation };
+});
+
+// Register the 'sentry' instrumentation provider with a no-op registration, since Sentry v8 sets up automatically
+instrumentationRegistry.register('sentry', () => {
+  return {
+    register: () => {
+      return;
+    },
+  };
+});
 
 /**
  * @name registerMonitoringInstrumentation
- * @description Register monitoring instrumentation based on the MONITORING_PROVIDER environment variable.
- *
- * Please set the MONITORING_PROVIDER environment variable to register the monitoring instrumentation provider.
+ * @description Register monitoring instrumentation based on the MONITORING_PROVIDER environment variable using the registry internally.
  */
 export async function registerMonitoringInstrumentation() {
-  if (!PROVIDER) {
+  const provider = getMonitoringProvider();
+
+  if (!provider) {
     return;
   }
 
-  switch (PROVIDER) {
-    case InstrumentationProvider.Baselime: {
-      const { registerInstrumentation } = await import(
-        '@kit/baselime/instrumentation'
-      );
+  const instrumentation = await instrumentationRegistry.get(provider);
 
-      return registerInstrumentation();
-    }
-
-    case InstrumentationProvider.Sentry: {
-      // Sentry v8 automatically sets this up
-
-      return;
-    }
-
-    default:
-      throw new Error(
-        `Unknown instrumentation provider: ${process.env.NEXT_PUBLIC_MONITORING_PROVIDER}`,
-      );
-  }
+  return instrumentation.register();
 }

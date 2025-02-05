@@ -11,7 +11,7 @@ import {
   UpdateSubscriptionParamsSchema,
 } from '@kit/billing/schema';
 
-import { BillingGatewayFactoryService } from './billing-gateway-factory.service';
+import { billingStrategyRegistry } from './billing-gateway-registry';
 
 export function createBillingGatewayService(
   provider: z.infer<typeof BillingProviderSchema>,
@@ -138,6 +138,6 @@ class BillingGatewayService {
   }
 
   private getStrategy() {
-    return BillingGatewayFactoryService.GetProviderStrategy(this.provider);
+    return billingStrategyRegistry.get(this.provider);
   }
 }
