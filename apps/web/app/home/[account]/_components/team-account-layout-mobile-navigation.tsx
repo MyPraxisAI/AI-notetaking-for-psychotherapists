@@ -75,7 +75,11 @@ export const TeamAccountLayoutMobileNavigation = (
       </DropdownMenuTrigger>
 
       <DropdownMenuContent sideOffset={10} className={'w-screen rounded-none'}>
-        <TeamAccountsModal userId={props.userId} accounts={props.accounts} />
+        <TeamAccountsModal
+          userId={props.userId}
+          accounts={props.accounts}
+          account={props.account}
+        />
 
         {Links}
 
@@ -129,7 +133,11 @@ function SignOutDropdownItem(
   );
 }
 
-function TeamAccountsModal(props: { accounts: Accounts; userId: string }) {
+function TeamAccountsModal(props: {
+  accounts: Accounts;
+  userId: string;
+  account: string;
+}) {
   const router = useRouter();
 
   return (
@@ -159,6 +167,9 @@ function TeamAccountsModal(props: { accounts: Accounts; userId: string }) {
             className={'w-full max-w-full'}
             collisionPadding={0}
             userId={props.userId}
+            accounts={props.accounts}
+            features={features}
+            selectedAccount={props.account}
             onAccountChange={(value) => {
               const path = value
                 ? pathsConfig.app.accountHome.replace('[account]', value)
@@ -166,8 +177,6 @@ function TeamAccountsModal(props: { accounts: Accounts; userId: string }) {
 
               router.replace(path);
             }}
-            accounts={props.accounts}
-            features={features}
           />
         </div>
       </DialogContent>
