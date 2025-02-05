@@ -48,6 +48,7 @@ interface ReactTableProps<T extends object> {
   onPaginationChange?: (pagination: PaginationState) => void;
   manualPagination?: boolean;
   manualSorting?: boolean;
+  sorting?: SortingState;
   tableProps?: React.ComponentProps<typeof Table> &
     Record<`data-${string}`, string>;
 }
@@ -62,13 +63,14 @@ export function DataTable<T extends object>({
   tableProps,
   manualPagination = true,
   manualSorting = false,
+  sorting: initialSorting,
 }: ReactTableProps<T>) {
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: pageIndex ?? 0,
     pageSize: pageSize ?? 15,
   });
 
-  const [sorting, setSorting] = useState<SortingState>([]);
+  const [sorting, setSorting] = useState<SortingState>(initialSorting ?? []);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
