@@ -526,7 +526,7 @@ const SidebarMenuItem: React.FC<React.ComponentProps<'li'>> = ({
   <li
     data-sidebar="menu-item"
     className={cn(
-      'group/menu-item relative flex group-data-[collapsible=icon]:justify-center',
+      'group/menu-item relative group-data-[collapsible=icon]:justify-center',
       className,
     )}
     {...props}
@@ -940,20 +940,25 @@ export function SidebarNavigation({
                                       })}
                                     >
                                       {children.map((child) => {
-                                        if (child.renderAction) {
-                                          return (
-                                            <SidebarMenuSubItem
-                                              key={child.path}
-                                            >
-                                              {child.renderAction}
-                                            </SidebarMenuSubItem>
-                                          );
-                                        }
-
                                         const isActive = isRouteActive(
                                           child.path,
                                           currentPath,
                                           child.end,
+                                        );
+
+                                        const linkClassName = cn(
+                                          'flex items-center',
+                                          {
+                                            'mx-auto w-full gap-0! [&>svg]:flex-1':
+                                              !open,
+                                          },
+                                        );
+
+                                        const spanClassName = cn(
+                                          'w-auto transition-opacity duration-300',
+                                          {
+                                            'w-0 opacity-0': !open,
+                                          },
                                         );
 
                                         return (
@@ -963,24 +968,12 @@ export function SidebarNavigation({
                                               asChild
                                             >
                                               <Link
-                                                className={cn(
-                                                  'flex items-center',
-                                                  {
-                                                    'mx-auto w-full gap-0! [&>svg]:flex-1':
-                                                      !open,
-                                                  },
-                                                )}
+                                                className={linkClassName}
                                                 href={child.path}
                                               >
                                                 {child.Icon}
-                                                <span
-                                                  className={cn(
-                                                    'w-auto transition-opacity duration-300',
-                                                    {
-                                                      'w-0 opacity-0': !open,
-                                                    },
-                                                  )}
-                                                >
+
+                                                <span className={spanClassName}>
                                                   <Trans
                                                     i18nKey={child.label}
                                                     defaults={child.label}
