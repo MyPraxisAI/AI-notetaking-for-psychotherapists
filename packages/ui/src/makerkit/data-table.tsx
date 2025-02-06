@@ -46,6 +46,7 @@ interface ReactTableProps<T extends object> {
   pageSize?: number;
   pageCount?: number;
   onPaginationChange?: (pagination: PaginationState) => void;
+  onSortingChange?: (sorting: SortingState) => void;
   manualPagination?: boolean;
   manualSorting?: boolean;
   sorting?: SortingState;
@@ -60,6 +61,7 @@ export function DataTable<T extends object>({
   pageSize,
   pageCount,
   onPaginationChange,
+  onSortingChange,
   tableProps,
   manualPagination = true,
   manualSorting = false,
@@ -84,7 +86,6 @@ export function DataTable<T extends object>({
     getSortedRowModel: getSortedRowModel(),
     manualPagination,
     manualSorting,
-    onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
@@ -95,6 +96,23 @@ export function DataTable<T extends object>({
       columnFilters,
       columnVisibility,
       rowSelection,
+    },
+    onSortingChange: (updater) => {
+      if (typeof updater === 'function') {
+        const nextState = updater(sorting);
+
+        setSorting(nextState);
+
+        if (onSortingChange) {
+          onSortingChange(nextState);
+        }
+      } else {
+        setSorting(updater);
+
+        if (onSortingChange) {
+          onSortingChange(updater);
+        }
+      }
     },
     onPaginationChange: (updater) => {
       const navigate = (page: number) => setTimeout(() => navigateToPage(page));
@@ -190,8 +208,8 @@ function Pagination<T>({
   table: ReactTable<T>;
 }>) {
   return (
-    <div className="flex items-center justify-end gap-x-4">
-      <span className="flex items-center text-sm">
+    <div className="flex items-center gap-x-4">
+      <span className="text-muted-foreground flex items-center text-sm">
         <Trans
           i18nKey={'common:pageOfPages'}
           values={{
@@ -201,7 +219,7 @@ function Pagination<T>({
         />
       </span>
 
-      <div className="flex items-center justify-end gap-x-2">
+      <div className="flex items-center gap-x-1">
         <Button
           size={'icon'}
           variant={'ghost'}
