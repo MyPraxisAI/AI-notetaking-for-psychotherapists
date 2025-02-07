@@ -23,13 +23,6 @@
     "@types/node": "^22.13.0",
     "zod": "^3.24.1"
   },
-  "eslintConfig": {
-    "root": true,
-    "extends": [
-      "@kit/eslint-config/base",
-      "@kit/eslint-config/react"
-    ]
-  },
   "typesVersions": {
     "*": {
       "*": [

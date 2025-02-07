@@ -22,13 +22,6 @@
     "@kit/wordpress": "workspace:*",
     "@types/node": "^22.13.0"
   },
-  "eslintConfig": {
-    "root": true,
-    "extends": [
-      "@kit/eslint-config/base",
-      "@kit/eslint-config/react"
-    ]
-  },
   "typesVersions": {
     "*": {
       "*": [

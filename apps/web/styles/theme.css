@@ -49,7 +49,8 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
 
-  --font-heading: var(--font-sans);
+  --font-sans: -apple-system, var(--font-sans);
+  --font-heading: var(--font-heading);
 
   --color-sidebar: var(--sidebar-background);
   --color-sidebar-foreground: var(--sidebar-foreground);
@@ -60,6 +61,8 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
+  --animate-fade-up: fade-up 0.5s;
+  --animate-fade-down: fade-down 0.5s;
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
 
@@ -82,11 +85,6 @@
       height: 0;
     }
   }
-
-  --animate-fade-up: fade-up 0.5s;
-  --animate-fade-down: fade-down 0.5s;
-  --animate-accordion-down: accordion-down 0.2s ease-out;
-  --animate-accordion-up: accordion-up 0.2s ease-out;
 
   @keyframes fade-up {
     0% {
@@ -101,6 +99,7 @@
       transform: translateY(0px);
     }
   }
+
   @keyframes fade-down {
     0% {
       opacity: 0;
@@ -112,22 +111,6 @@
     100% {
       opacity: 1;
       transform: translateY(0px);
-    }
-  }
-  @keyframes accordion-down {
-    from {
-      height: 0;
-    }
-    to {
-      height: var(--radix-accordion-content-height);
-    }
-  }
-  @keyframes accordion-up {
-    from {
-      height: var(--radix-accordion-content-height);
-    }
-    to {
-      height: 0;
     }
   }
 }

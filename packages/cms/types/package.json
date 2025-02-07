@@ -17,13 +17,6 @@
     "@kit/prettier-config": "workspace:*",
     "@kit/tsconfig": "workspace:*"
   },
-  "eslintConfig": {
-    "root": true,
-    "extends": [
-      "@kit/eslint-config/base",
-      "@kit/eslint-config/react"
-    ]
-  },
   "typesVersions": {
     "*": {
       "*": [

@@ -54,8 +54,8 @@ export function FloatingDocumentationNavigation(
       <If condition={isVisible}>
         <div
           className={
-            'fixed left-0 top-0 z-10 h-screen w-full p-4' +
-            ' flex flex-col space-y-4 overflow-auto bg-white dark:bg-background'
+            'fixed top-0 left-0 z-10 h-screen w-full p-4' +
+            ' dark:bg-background flex flex-col space-y-4 overflow-auto bg-white'
           }
         >
           {props.children}
@@ -63,7 +63,7 @@ export function FloatingDocumentationNavigation(
       </If>
 
       <Button
-        className={'fixed bottom-5 right-5 z-10 h-16 w-16 rounded-full'}
+        className={'fixed right-5 bottom-5 z-10 h-16 w-16 rounded-full'}
         onClick={onClick}
       >
         <Menu className={'h-8'} />

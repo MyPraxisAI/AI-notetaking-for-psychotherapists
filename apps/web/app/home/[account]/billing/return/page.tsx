@@ -36,7 +36,7 @@ async function ReturnCheckoutSessionPage({ searchParams }: SessionPageProps) {
 
   return (
     <>
-      <div className={'fixed left-0 top-48 z-50 mx-auto w-full'}>
+      <div className={'fixed top-48 left-0 z-50 mx-auto w-full'}>
         <BillingSessionStatus
           redirectPath={'../billing'}
           customerEmail={customerEmail ?? ''}
@@ -54,7 +54,7 @@ function BlurryBackdrop() {
   return (
     <div
       className={
-        'fixed left-0 top-0 w-full bg-background/30 backdrop-blur-sm' +
+        'bg-background/30 fixed top-0 left-0 w-full backdrop-blur-sm' +
         ' !m-0 h-full'
       }
     />

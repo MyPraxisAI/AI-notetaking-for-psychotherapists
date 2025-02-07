@@ -13,7 +13,7 @@ export function CoverImage({ title, src, preloadImage, className }: Props) {
   return (
     <Image
       className={cn(
-        'duration-250 block rounded-xl object-cover' +
+        'block rounded-xl object-cover duration-250' +
           ' transition-all hover:opacity-90',
         {
           className,

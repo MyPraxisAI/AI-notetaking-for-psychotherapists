@@ -24,13 +24,6 @@
     "@types/react": "19.0.8",
     "wp-types": "^4.67.0"
   },
-  "eslintConfig": {
-    "root": true,
-    "extends": [
-      "@kit/eslint-config/base",
-      "@kit/eslint-config/react"
-    ]
-  },
   "typesVersions": {
     "*": {
       "*": [

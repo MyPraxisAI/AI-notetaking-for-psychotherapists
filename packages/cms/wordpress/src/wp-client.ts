@@ -75,10 +75,7 @@ class WordpressClient implements CmsClient {
     }
 
     if (options?.tags) {
-      const allTags = [
-        ...options.tags,
-        options.language ?? '',
-      ].filter(Boolean);
+      const allTags = [...options.tags, options.language ?? ''].filter(Boolean);
 
       const ids = await this.getTags({
         slugs: allTags,

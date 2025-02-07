@@ -1,9 +1,16 @@
-/** @type {import('eslint').Linter.Config} */
-const config = {
-  extends: ['plugin:@next/next/recommended'],
-  rules: {
-    '@next/next/no-html-link-for-pages': 'off',
-  },
-};
+import { FlatCompat } from '@eslint/eslintrc';
 
-module.exports = config;
+const compat = new FlatCompat({
+  baseDirectory: import.meta.dirname,
+});
+
+const nextEslintConfig = [
+  ...compat.config({
+    extends: ['next/core-web-vitals', 'next/typescript'],
+    rules: {
+      '@next/next/no-html-link-for-pages': 'off',
+    },
+  }),
+];
+
+export default nextEslintConfig;

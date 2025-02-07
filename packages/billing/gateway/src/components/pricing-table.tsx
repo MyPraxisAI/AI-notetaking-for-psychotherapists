@@ -469,7 +469,7 @@ function DefaultCheckoutButton(
   });
 
   const linkHref =
-    props.plan.href ?? `${signUpPath}?${searchParams.toString()}` ?? '';
+    props.plan.href ?? `${signUpPath}?${searchParams.toString()}`;
 
   const label = props.plan.buttonLabel ?? 'common:getStartedWithPlan';
 

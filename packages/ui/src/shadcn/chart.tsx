@@ -166,8 +166,7 @@ const ChartTooltipContent: React.FC<
     labelKey,
   ]);
 
-  /* @ts-expect-error: TS issue */
-  if (!active ?? !payload?.length) {
+  if (!active || !payload?.length) {
     return null;
   }
 
@@ -286,7 +285,6 @@ const ChartLegendContent: React.FC<
       )}
     >
       {payload.map((item) => {
-        /* eslint-disable @typescript-eslint/restrict-template-expressions */
         const key = `${nameKey ?? item.dataKey ?? 'value'}`;
         const itemConfig = getPayloadConfigFromPayload(config, item, key);
 

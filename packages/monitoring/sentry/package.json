@@ -26,13 +26,6 @@
     "@types/react": "19.0.8",
     "react": "19.0.0"
   },
-  "eslintConfig": {
-    "root": true,
-    "extends": [
-      "@kit/eslint-config/base",
-      "@kit/eslint-config/react"
-    ]
-  },
   "typesVersions": {
     "*": {
       "*": [

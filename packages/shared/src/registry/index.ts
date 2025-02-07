@@ -1,9 +1,7 @@
 /**
  * Implementation factory type
  */
-export type ImplementationFactory<T> = () =>
-  | T
-  | Promise<T>;
+export type ImplementationFactory<T> = () => T | Promise<T>;
 
 /**
  * Public API types with improved get method
@@ -34,10 +32,10 @@ export interface Registry<T, Names extends string> {
  * @description Creates a new registry instance with the provided implementations.
  * @returns A new registry instance.
  */
-export function createRegistry<
+export function createRegistry<T, Names extends string = string>(): Registry<
   T,
-  Names extends string = string,
->(): Registry<T, Names> {
+  Names
+> {
   const implementations = new Map<Names, ImplementationFactory<T>>();
   const setupCallbacks = new Map<string, Array<() => Promise<void>>>();
   const setupPromises = new Map<string, Promise<void>>();
