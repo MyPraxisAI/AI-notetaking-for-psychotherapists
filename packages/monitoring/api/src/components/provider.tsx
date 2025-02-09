@@ -14,6 +14,12 @@ type ProviderComponent = {
   default: React.ComponentType<React.PropsWithChildren>;
 };
 
+const provider = getMonitoringProvider();
+
+const Provider = provider
+  ? lazy(() => monitoringProviderRegistry.get(provider))
+  : null;
+
 // Create a registry for monitoring providers
 const monitoringProviderRegistry = createRegistry<
   ProviderComponent,
@@ -53,13 +59,9 @@ monitoringProviderRegistry.register('sentry', async () => {
  * @returns
  */
 export function MonitoringProvider(props: React.PropsWithChildren) {
-  const provider = getMonitoringProvider();
-
-  if (!provider) {
+  if (!Provider) {
     return <>{props.children}</>;
   }
-
-  const Provider = lazy(() => monitoringProviderRegistry.get(provider));
 
   return <Provider>{props.children}</Provider>;
 }
