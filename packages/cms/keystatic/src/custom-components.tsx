@@ -1,4 +1,8 @@
+import type { ComponentType } from 'react';
+
 import type { Schema } from '@markdoc/markdoc';
+
+type Component = ComponentType<unknown>;
 
 /**
  * @name CustomMarkdocComponents
@@ -12,10 +16,7 @@ import type { Schema } from '@markdoc/markdoc';
  *   Youtube,
  * };
  */
-export const CustomMarkdocComponents: Record<
-  string,
-  React.ComponentType<never>
-> = {
+export const CustomMarkdocComponents: Record<string, Component> = {
   // define your custom components here
 };
 

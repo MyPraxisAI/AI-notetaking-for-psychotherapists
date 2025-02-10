@@ -39,6 +39,11 @@ export function createPackageGenerator(plop: PlopTypes.NodePlopAPI) {
       },
       {
         type: 'add',
+        path: 'packages/{{ name }}/eslint.config.mjs',
+        templateFile: 'templates/package/eslint.config.mjs.hbs',
+      },
+      {
+        type: 'add',
         path: 'packages/{{ name }}/index.ts',
         template: "export * from './src';",
       },
