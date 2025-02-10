@@ -296,7 +296,13 @@ const SidebarTrigger: React.FC<React.ComponentProps<typeof Button>> = ({
   onClick,
   ...props
 }) => {
-  const { toggleSidebar } = useSidebar();
+  const context = React.useContext(SidebarContext);
+
+  if (!context) {
+    return null;
+  }
+
+  const { toggleSidebar } = context;
 
   return (
     <Button
