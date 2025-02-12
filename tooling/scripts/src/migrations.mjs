@@ -25,6 +25,6 @@ export function checkPendingMigrations() {
       console.log('\x1b[32m%s\x1b[0m', '✅ All migrations are up to date.');
     }
   } catch (error) {
-    console.log('\x1b[33m%s\x1b[0m', '⚠️  Migrations: No remote Supabase project found, we could not check pending migrations. This is normal if you have not yet have linked your Supabase project. Feel free to ignore this message.');
+    console.log('\x1b[33m%s\x1b[0m', '💡 Info: Project not yet linked to a remote Supabase project. Migration checks skipped - this is expected for new projects. Link your project when you\'re ready to sync with Supabase.\n');
   }
 }

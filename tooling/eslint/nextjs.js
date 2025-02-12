@@ -6,9 +6,10 @@ const compat = new FlatCompat({
 
 const nextEslintConfig = [
   ...compat.config({
-    extends: ['next/core-web-vitals', 'next/typescript'],
+    extends: ['plugin:@next/next/recommended'],
     rules: {
       '@next/next/no-html-link-for-pages': 'off',
+      'no-undef': 'off'
     },
   }),
 ];

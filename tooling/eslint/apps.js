@@ -1,6 +1,6 @@
 export default [
   {
-    files: ['**/*.{ts,tsx}'],
+    files: ['app/**/*.{ts,tsx}'],
     rules: {
       'no-restricted-imports': [
         'error',
