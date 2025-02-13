@@ -413,7 +413,7 @@ function FactorNameForm(
 
 function QrImage({ src }: { src: string }) {
   // eslint-disable-next-line @next/next/no-img-element
-  return <img alt={'QR Code'} src={src} width={160} height={160} />;
+  return <img alt={'QR Code'} src={src} width={160} height={160} className={'p-2 bg-white'} />;
 }
 
 function useEnrollFactor(userId: string) {
@@ -454,6 +454,7 @@ function useEnrollFactor(userId: string) {
 function useVerifyCodeMutation(userId: string) {
   const mutationKey = useFactorsMutationKey(userId);
   const client = useSupabase();
+  const queryClient = useQueryClient();
 
   const mutationFn = async (params: { factorId: string; code: string }) => {
     const challenge = await client.auth.mfa.challenge({
@@ -479,7 +480,13 @@ function useVerifyCodeMutation(userId: string) {
     return verify;
   };
 
-  return useMutation({ mutationKey, mutationFn });
+  return useMutation({
+    mutationKey,
+    mutationFn,
+    onSuccess: () => {
+      return queryClient.refetchQueries({ queryKey: mutationKey });
+    },
+  });
 }
 
 function ErrorAlert() {

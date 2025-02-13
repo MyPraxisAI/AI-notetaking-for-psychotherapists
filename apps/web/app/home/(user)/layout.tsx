@@ -32,8 +32,6 @@ function SidebarLayout({ children }: React.PropsWithChildren) {
   const workspace = use(loadUserWorkspace());
   const state = use(getLayoutState());
 
-  console.log('state', state);
-
   return (
     <UserWorkspaceContextProvider value={workspace}>
       <SidebarProvider defaultOpen={state.open}>
