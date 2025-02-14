@@ -35,7 +35,7 @@ export function HomeSidebar(props: HomeSidebarProps) {
             fallback={
               <AppLogo
                 className={cn(
-                  'py-2 group-data-[minimized=true]:max-w-full group-data-[minimized=true]:py-0',
+                  'p-2 group-data-[minimized=true]:max-w-full group-data-[minimized=true]:py-0',
                 )}
               />
             }

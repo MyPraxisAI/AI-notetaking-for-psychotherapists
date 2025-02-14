@@ -177,7 +177,7 @@ export function PageHeader({
             <If condition={displaySidebarTrigger}>
               <Separator
                 orientation="vertical"
-                className="hidden h-4 w-px lg:block"
+                className="hidden h-4 w-px lg:group-data-[minimized]:block"
               />
             </If>
 
