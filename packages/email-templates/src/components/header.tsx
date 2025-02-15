@@ -1,5 +1,11 @@
-import { Container } from '@react-email/components';
+import { Container, Section } from '@react-email/components';
 
 export function EmailHeader(props: React.PropsWithChildren) {
-  return <Container>{props.children}</Container>;
+  return (
+    <Container>
+      <Section>
+        {props.children}
+      </Section>
+    </Container>
+  );
 }

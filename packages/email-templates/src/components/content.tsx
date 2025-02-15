@@ -1,18 +1,19 @@
 import { Container } from '@react-email/components';
 
-export function EmailContent(
-  props: React.PropsWithChildren<{
-    className?: string;
-  }>,
-) {
+export function EmailContent({
+  children,
+  className,
+}: React.PropsWithChildren<{
+  className?: string;
+  displayLogo?: boolean;
+}>) {
   return (
     <Container
       className={
-        'mx-auto my-[8px] rounded-xl border border-solid border-[#eeeeee] px-[24px] py-[12px] ' +
-          props.className || ''
+        'mx-auto rounded-xl bg-white px-[48px] py-[36px] ' + className || ''
       }
     >
-      {props.children}
+      {children}
     </Container>
   );
 }
