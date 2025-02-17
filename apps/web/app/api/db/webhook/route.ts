@@ -1,4 +1,5 @@
 import { getDatabaseWebhookHandlerService } from '@kit/database-webhooks';
+import { getServerMonitoringService } from '@kit/monitoring/server';
 import { enhanceRouteHandler } from '@kit/next/routes';
 
 /**
@@ -26,7 +27,12 @@ export const POST = enhanceRouteHandler(
 
       // return a successful response
       return new Response(null, { status: 200 });
-    } catch {
+    } catch (error) {
+      const service = await getServerMonitoringService();
+
+      await service.ready();
+      await service.captureException(error as Error);
+
       // return an error response
       return new Response(null, { status: 500 });
     }
