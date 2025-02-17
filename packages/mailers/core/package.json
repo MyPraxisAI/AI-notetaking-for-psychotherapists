@@ -20,7 +20,7 @@
     "@kit/resend": "workspace:*",
     "@kit/shared": "workspace:*",
     "@kit/tsconfig": "workspace:*",
-    "@types/node": "^22.13.1",
+    "@types/node": "^22.13.4",
     "zod": "^3.24.2"
   },
   "typesVersions": {

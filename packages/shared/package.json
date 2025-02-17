@@ -20,7 +20,7 @@
     "@kit/eslint-config": "workspace:*",
     "@kit/prettier-config": "workspace:*",
     "@kit/tsconfig": "workspace:*",
-    "@types/react": "19.0.8"
+    "@types/react": "19.0.9"
   },
   "dependencies": {
     "pino": "^9.6.0"

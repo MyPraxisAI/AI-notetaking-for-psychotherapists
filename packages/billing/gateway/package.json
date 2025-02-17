@@ -16,7 +16,7 @@
     "./marketing": "./src/components/marketing.tsx"
   },
   "devDependencies": {
-    "@hookform/resolvers": "^4.0.0",
+    "@hookform/resolvers": "^4.1.0",
     "@kit/billing": "workspace:*",
     "@kit/eslint-config": "workspace:*",
     "@kit/lemon-squeezy": "workspace:*",
@@ -27,7 +27,7 @@
     "@kit/tsconfig": "workspace:*",
     "@kit/ui": "workspace:*",
     "@supabase/supabase-js": "2.48.1",
-    "@types/react": "19.0.8",
+    "@types/react": "19.0.9",
     "date-fns": "^4.1.0",
     "lucide-react": "^0.475.0",
     "next": "15.1.7",
