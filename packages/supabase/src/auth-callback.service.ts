@@ -42,11 +42,8 @@ class AuthCallbackService {
 
     const host = request.headers.get('host');
 
-    // set the host to the request host since outside of Vercel it gets set as "localhost"
-    if (url.host.includes('localhost:') && !host?.includes('localhost')) {
-      url.host = host as string;
-      url.port = '';
-    }
+    // set the host to the request host since outside of Vercel it gets set as "localhost" or "0.0.0.0"
+    this.adjustUrlHostForLocalDevelopment(url, host);
 
     url.pathname = params.redirectPath;
 
@@ -212,6 +209,25 @@ class AuthCallbackService {
     return {
       nextPath: nextUrl,
     };
+  }
+
+  private adjustUrlHostForLocalDevelopment(url: URL, host: string | null) {
+    if (this.isLocalhost(url.host) && !this.isLocalhost(host)) {
+      url.host = host as string;
+      url.port = '';
+    }
+  }
+
+  private isLocalhost(host: string | null) {
+    if (!host) {
+      return false;
+    }
+
+    return (
+      host.includes('localhost:') ||
+      host.includes('0.0.0.0:') ||
+      host.includes('127.0.0.1:')
+    );
   }
 }
 

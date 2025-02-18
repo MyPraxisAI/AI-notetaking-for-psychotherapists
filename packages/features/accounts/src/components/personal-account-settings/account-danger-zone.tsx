@@ -73,7 +73,7 @@ function DeleteAccountForm() {
   const form = useForm({
     resolver: zodResolver(DeletePersonalAccountSchema),
     defaultValues: {
-      confirmation: '',
+      confirmation: '' as 'DELETE'
     },
   });
 

@@ -151,7 +151,7 @@ function DeleteTeamConfirmationForm({
       }),
     ),
     defaultValues: {
-      confirm: '',
+      name: ''
     },
   });
 
@@ -260,7 +260,7 @@ function LeaveTeamContainer(props: {
       }),
     ),
     defaultValues: {
-      confirmation: '',
+      confirmation: '' as 'LEAVE'
     },
   });
 
