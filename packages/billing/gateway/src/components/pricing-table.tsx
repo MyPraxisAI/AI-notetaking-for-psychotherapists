@@ -17,7 +17,6 @@ import {
 import { Badge } from '@kit/ui/badge';
 import { Button } from '@kit/ui/button';
 import { If } from '@kit/ui/if';
-import { Separator } from '@kit/ui/separator';
 import { Trans } from '@kit/ui/trans';
 import { cn } from '@kit/ui/utils';
 
@@ -172,7 +171,7 @@ function PricingItem(
       data-cy={'subscription-plan'}
       className={cn(
         props.className,
-        `s-full relative flex flex-1 grow flex-col items-stretch justify-between self-stretch rounded-lg border p-8 lg:w-4/12 xl:max-w-[20rem]`,
+        `s-full relative flex flex-1 grow flex-col items-stretch justify-between self-stretch rounded-lg border px-6 py-5 lg:w-4/12 xl:max-w-[20rem]`,
         {
           ['border-primary']: highlighted,
           ['border-border']: !highlighted,
@@ -195,12 +194,12 @@ function PricingItem(
         </div>
       </If>
 
-      <div className={'flex flex-col space-y-6'}>
-        <div className={'flex flex-col space-y-2.5'}>
+      <div className={'flex flex-col gap-y-5'}>
+        <div className={'flex flex-col gap-y-1'}>
           <div className={'flex items-center space-x-6'}>
             <b
               className={
-                'text-current-foreground font-heading font-semibold uppercase tracking-tight'
+                'text-secondary-foreground font-heading text-xl font-medium tracking-tight'
               }
             >
               <Trans
@@ -209,20 +208,19 @@ function PricingItem(
               />
             </b>
           </div>
-
-          <span className={cn(`text-muted-foreground h-6 text-sm`)}>
-            <Trans
-              i18nKey={props.product.description}
-              defaults={props.product.description}
-            />
-          </span>
         </div>
 
-        <Separator />
-
-        <div className={'flex flex-col space-y-2'}>
-          <Price isMonthlyPrice={props.alwaysDisplayMonthlyPrice}>
-            <If condition={!isCustom} fallback={props.plan.label}>
+        <div className={'mt-6 flex flex-col gap-y-1'}>
+          <Price
+            isMonthlyPrice={props.alwaysDisplayMonthlyPrice}
+            displayBillingPeriod={!props.plan.label}
+          >
+            <If
+              condition={!isCustom}
+              fallback={
+                <Trans i18nKey={props.plan.label} defaults={props.plan.label} />
+              }
+            >
               <PlanCostDisplay
                 primaryLineItem={lineItem}
                 currencyCode={props.product.currency}
@@ -235,7 +233,7 @@ function PricingItem(
           <If condition={props.plan.name}>
             <span
               className={cn(
-                `animate-in slide-in-from-left-4 fade-in text-muted-foreground flex items-center gap-x-1 text-sm capitalize`,
+                `animate-in slide-in-from-left-4 fade-in text-muted-foreground flex items-center gap-x-1 text-xs capitalize`,
               )}
             >
               <span>
@@ -298,7 +296,14 @@ function PricingItem(
           </If>
         </If>
 
-        <Separator />
+        <span className={cn(`text-muted-foreground text-base tracking-tight`)}>
+          <Trans
+            i18nKey={props.product.description}
+            defaults={props.product.description}
+          />
+        </span>
+
+        <div className={'h-px w-full border border-dashed'} />
 
         <div className={'flex flex-col'}>
           <FeaturesList
@@ -308,7 +313,7 @@ function PricingItem(
         </div>
 
         <If condition={props.displayPlanDetails && lineItemsToDisplay.length}>
-          <Separator />
+          <div className={'h-px w-full border border-dashed'} />
 
           <div className={'flex flex-col space-y-2'}>
             <h6 className={'text-sm font-semibold'}>
@@ -330,14 +335,14 @@ function PricingItem(
 function FeaturesList(
   props: React.PropsWithChildren<{
     features: string[];
-    highlighted?: boolean;
+    highlighted: boolean;
   }>,
 ) {
   return (
-    <ul className={'flex flex-col space-y-2'}>
+    <ul className={'flex flex-col gap-1'}>
       {props.features.map((feature) => {
         return (
-          <ListItem key={feature}>
+          <ListItem highlighted={props.highlighted} key={feature}>
             <Trans i18nKey={feature} defaults={feature} />
           </ListItem>
         );
@@ -349,23 +354,27 @@ function FeaturesList(
 function Price({
   children,
   isMonthlyPrice = true,
+  displayBillingPeriod = true,
 }: React.PropsWithChildren<{
   isMonthlyPrice?: boolean;
+  displayBillingPeriod?: boolean;
 }>) {
   return (
     <div
-      className={`animate-in slide-in-from-left-4 fade-in flex items-end gap-2 duration-500`}
+      className={`animate-in slide-in-from-left-4 fade-in flex items-end gap-1 duration-500`}
     >
       <span
         className={
-          'font-heading flex items-center text-3xl font-semibold tracking-tighter'
+          'font-heading flex items-center text-4xl font-medium tracking-tighter'
         }
       >
         {children}
       </span>
 
-      <If condition={isMonthlyPrice}>
+      <If condition={isMonthlyPrice && displayBillingPeriod}>
         <span className={'text-muted-foreground text-sm leading-loose'}>
+          <span>/</span>
+
           <Trans i18nKey={'billing:perMonth'} />
         </span>
       </If>
@@ -373,14 +382,25 @@ function Price({
   );
 }
 
-function ListItem({ children }: React.PropsWithChildren) {
+function ListItem({
+  children,
+  highlighted,
+}: React.PropsWithChildren<{
+  highlighted: boolean;
+}>) {
   return (
-    <li className={'flex items-center space-x-2.5'}>
-      <CheckCircle className={'text-primary h-4 min-h-4 w-4 min-w-4'} />
+    <li className={'flex items-center gap-x-2.5'}>
+      <CheckCircle
+        className={cn('h-4 min-h-4 w-4 min-w-4', {
+          'text-secondary-foreground': highlighted,
+          'text-muted-foreground': !highlighted,
+        })}
+      />
 
       <span
         className={cn('text-sm', {
-          ['text-secondary-foreground']: true,
+          'text-muted-foreground': !highlighted,
+          'text-secondary-foreground': highlighted,
         })}
       >
         {children}
@@ -477,10 +497,10 @@ function DefaultCheckoutButton(
     <Link className={'w-full'} href={linkHref}>
       <Button
         size={'lg'}
-        className={'w-full rounded-lg border'}
-        variant={props.highlighted ? 'default' : 'outline'}
+        className={'h-12 w-full rounded-lg'}
+        variant={props.highlighted ? 'default' : 'secondary'}
       >
-        <span>
+        <span className={'text-base font-medium tracking-tight'}>
           <Trans
             i18nKey={label}
             defaults={label}
