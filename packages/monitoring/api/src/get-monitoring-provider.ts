@@ -1,6 +1,9 @@
 import { z } from 'zod';
 
-export const MONITORING_PROVIDER = z.enum(['baselime', 'sentry']).optional();
+export const MONITORING_PROVIDER = z
+  .enum(['baselime', 'sentry', ''])
+  .optional()
+  .transform((value) => value || undefined);
 
 export type MonitoringProvider = z.infer<typeof MONITORING_PROVIDER>;
 
