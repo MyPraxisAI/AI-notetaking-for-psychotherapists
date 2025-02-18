@@ -91,6 +91,7 @@ export function PlanPicker(
     name: 'interval',
     control: form.control,
   });
+
   const planId = form.getValues('planId');
 
   const { plan: selectedPlan, product: selectedProduct } = useMemo(() => {
@@ -339,12 +340,7 @@ export function PlanPicker(
                                         <Trans i18nKey={`billing:lifetime`} />
                                       }
                                     >
-                                      <Trans
-                                        i18nKey={`billing:perPeriod`}
-                                        values={{
-                                          period: selectedInterval,
-                                        }}
-                                      />
+                                      <Trans i18nKey={`billing:perMonth`} />
                                     </If>
                                   </span>
                                 </div>
