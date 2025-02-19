@@ -17,7 +17,7 @@
     "@types/eslint": "9.6.1",
     "eslint-config-next": "15.1.7",
     "eslint-config-turbo": "^2.4.2",
-    "typescript-eslint": "8.24.0"
+    "typescript-eslint": "8.24.1"
   },
   "devDependencies": {
     "@kit/prettier-config": "workspace:*",

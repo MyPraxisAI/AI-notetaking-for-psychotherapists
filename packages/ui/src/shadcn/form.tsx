@@ -68,7 +68,7 @@ const FormItemContext = React.createContext<FormItemContextValue>(
   {} as FormItemContextValue,
 );
 
-const FormItem: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
+const FormItem: React.FC<React.ComponentPropsWithRef<'div'>> = ({
   className,
   ...props
 }) => {
@@ -118,7 +118,7 @@ const FormControl: React.FC<React.ComponentPropsWithoutRef<typeof Slot>> = ({
 };
 FormControl.displayName = 'FormControl';
 
-const FormDescription: React.FC<React.HTMLAttributes<HTMLParagraphElement>> = ({
+const FormDescription: React.FC<React.ComponentPropsWithRef<'p'>> = ({
   className,
   ...props
 }) => {
@@ -134,7 +134,7 @@ const FormDescription: React.FC<React.HTMLAttributes<HTMLParagraphElement>> = ({
 };
 FormDescription.displayName = 'FormDescription';
 
-const FormMessage: React.FC<React.HTMLAttributes<HTMLParagraphElement>> = ({
+const FormMessage: React.FC<React.ComponentPropsWithRef<'p'>> = ({
   className,
   children,
   ...props

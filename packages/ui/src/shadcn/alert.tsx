@@ -26,7 +26,7 @@ const alertVariants = cva(
 );
 
 const Alert: React.FC<
-  React.HTMLAttributes<HTMLDivElement> & VariantProps<typeof alertVariants>
+  React.ComponentPropsWithRef<'div'> & VariantProps<typeof alertVariants>
 > = ({ className, variant, ...props }) => (
   <div
     role="alert"
@@ -36,7 +36,7 @@ const Alert: React.FC<
 );
 Alert.displayName = 'Alert';
 
-const AlertTitle: React.FC<React.HTMLAttributes<HTMLHeadingElement>> = ({
+const AlertTitle: React.FC<React.ComponentPropsWithRef<'h5'>> = ({
   className,
   ...props
 }) => (
@@ -48,7 +48,7 @@ const AlertTitle: React.FC<React.HTMLAttributes<HTMLHeadingElement>> = ({
 AlertTitle.displayName = 'AlertTitle';
 
 const AlertDescription: React.FC<
-  React.HTMLAttributes<HTMLParagraphElement>
+  React.ComponentPropsWithRef<'div'>
 > = ({ className, ...props }) => (
   <div
     className={cn('text-sm font-normal [&_p]:leading-relaxed', className)}
