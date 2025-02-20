@@ -23,7 +23,7 @@ const AvatarImage: React.FC<
   React.ComponentPropsWithRef<typeof AvatarPrimitive.Image>
 > = ({ className, ...props }) => (
   <AvatarPrimitive.Image
-    className={cn('aspect-square h-full w-full', className)}
+    className={cn('aspect-square h-full w-full object-cover', className)}
     {...props}
   />
 );

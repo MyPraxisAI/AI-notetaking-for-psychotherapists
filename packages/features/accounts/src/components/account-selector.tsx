@@ -86,7 +86,7 @@ export function AccountSelector({
     pictureUrl ? (
       <UserAvatar pictureUrl={pictureUrl} />
     ) : (
-      <PersonIcon className="h-5 min-h-5 w-5 min-w-5" />
+      <PersonIcon className="h-5 w-5" />
     );
 
   return (
