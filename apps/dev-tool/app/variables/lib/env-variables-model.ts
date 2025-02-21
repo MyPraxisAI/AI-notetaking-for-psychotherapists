@@ -1,0 +1,770 @@
+import { EnvMode } from '@/app/variables/lib/types';
+import { z } from 'zod';
+
+export type EnvVariableModel = {
+  name: string;
+  description: string;
+  secret?: boolean;
+  category: string;
+  test?: (value: string) => Promise<boolean>;
+  validate?: (props: {
+    value: string;
+    variables: Record<string, string>;
+    mode: EnvMode;
+  }) => z.SafeParseReturnType<unknown, unknown>;
+};
+
+export const envVariables: EnvVariableModel[] = [
+  {
+    name: 'NEXT_PUBLIC_SITE_URL',
+    description:
+      'The URL of your site, used for generating absolute URLs. Must include the protocol.',
+    category: 'Site Configuration',
+    validate: ({ value, mode }) => {
+      if (mode === 'development') {
+        return z
+          .string()
+          .url({
+            message: `The NEXT_PUBLIC_SITE_URL variable must be a valid URL`,
+          })
+          .safeParse(value);
+      }
+
+      return z
+        .string()
+        .url({
+          message: `The NEXT_PUBLIC_SITE_URL variable must be a valid URL`,
+        })
+        .startsWith(
+          'https',
+          `The NEXT_PUBLIC_SITE_URL variable must start with https`,
+        )
+        .safeParse(value);
+    },
+  },
+  {
+    name: 'NEXT_PUBLIC_PRODUCT_NAME',
+    description:
+      "Your product's name, used consistently across the application interface.",
+    category: 'Site Configuration',
+    validate: ({ value }) => {
+      return z
+        .string()
+        .min(
+          1,
+          `The NEXT_PUBLIC_PRODUCT_NAME variable must be at least 1 character`,
+        )
+        .safeParse(value);
+    },
+  },
+  {
+    name: 'NEXT_PUBLIC_SITE_TITLE',
+    description:
+      "The site's title tag content, crucial for SEO and browser display.",
+    category: 'Site Configuration',
+    validate: ({ value }) => {
+      return z
+        .string()
+        .min(
+          1,
+          `The NEXT_PUBLIC_SITE_TITLE variable must be at least 1 character`,
+        )
+        .safeParse(value);
+    },
+  },
+  {
+    name: 'NEXT_PUBLIC_SITE_DESCRIPTION',
+    description:
+      "Your site's meta description, important for SEO optimization.",
+    category: 'Site Configuration',
+    validate: ({ value }) => {
+      return z
+        .string()
+        .min(
+          1,
+          `The NEXT_PUBLIC_SITE_DESCRIPTION variable must be at least 1 character`,
+        )
+        .optional()
+        .safeParse(value);
+    },
+  },
+  {
+    name: 'NEXT_PUBLIC_DEFAULT_LOCALE',
+    description: 'Sets the default language for your application.',
+    category: 'Localization',
+    validate: ({ value }) => {
+      return z
+        .string()
+        .min(
+          1,
+          `The NEXT_PUBLIC_DEFAULT_LOCALE variable must be at least 1 character`,
+        )
+        .optional()
+        .safeParse(value);
+    },
+  },
+  {
+    name: 'NEXT_PUBLIC_AUTH_PASSWORD',
+    description: 'Enables or disables password-based authentication.',
+    category: 'Authentication',
+    validate: ({ value }) => {
+      return z.coerce.boolean().optional().safeParse(value);
+    },
+  },
+  {
+    name: 'NEXT_PUBLIC_AUTH_MAGIC_LINK',
+    description: 'Enables or disables magic link authentication.',
+    category: 'Authentication',
+    validate: ({ value }) => {
+      return z.coerce.boolean().optional().safeParse(value);
+    },
+  },
+  {
+    name: 'NEXT_PUBLIC_CAPTCHA_SITE_KEY',
+    description: 'Your Cloudflare Captcha site key for form protection.',
+    category: 'Security',
+    validate: ({ value }) => {
+      return z.string().optional().safeParse(value);
+    },
+  },
+  {
+    name: 'CAPTCHA_SECRET_TOKEN',
+    description:
+      'Your Cloudflare Captcha secret token for backend verification.',
+    category: 'Security',
+    secret: true,
+    validate: ({ value }) => {
+      return z
+        .string()
+        .min(
+          1,
+          `The CAPTCHA_SECRET_TOKEN variable must be at least 1 character`,
+        )
+        .optional()
+        .safeParse(value);
+    },
+  },
+  {
+    name: 'NEXT_PUBLIC_USER_NAVIGATION_STYLE',
+    description:
+      'Controls user navigation layout. Options: sidebar, header, or custom.',
+    category: 'Navigation',
+    validate: ({ value }) => {
+      return z
+        .enum(['sidebar', 'header', 'custom'])
+        .optional()
+        .safeParse(value);
+    },
+  },
+  {
+    name: 'NEXT_PUBLIC_HOME_SIDEBAR_COLLAPSED',
+    description: 'Sets the default state of the home sidebar.',
+    category: 'Navigation',
+    validate: ({ value }) => {
+      return z.coerce.boolean().optional().safeParse(value);
+    },
+  },
+  {
+    name: 'NEXT_PUBLIC_TEAM_NAVIGATION_STYLE',
+    description:
+      'Controls team navigation layout. Options: sidebar, header, or custom.',
+    category: 'Navigation',
+    validate: ({ value }) => {
+      return z
+        .enum(['sidebar', 'header', 'custom'])
+        .optional()
+        .safeParse(value);
+    },
+  },
+  {
+    name: 'NEXT_PUBLIC_TEAM_SIDEBAR_COLLAPSED',
+    description: 'Sets the default state of the team sidebar.',
+    category: 'Navigation',
+    validate: ({ value }) => {
+      return z.coerce.boolean().optional().safeParse(value);
+    },
+  },
+  {
+    name: 'NEXT_PUBLIC_SIDEBAR_COLLAPSIBLE_STYLE',
+    description:
+      'Defines sidebar collapse behavior. Options: offscreen, icon, or none.',
+    category: 'Navigation',
+    validate: ({ value }) => {
+      return z.enum(['offscreen', 'icon', 'none']).optional().safeParse(value);
+    },
+  },
+  {
+    name: 'NEXT_PUBLIC_DEFAULT_THEME_MODE',
+    description:
+      'Controls the default theme appearance. Options: light, dark, or system.',
+    category: 'Theme',
+    validate: ({ value }) => {
+      return z.enum(['light', 'dark', 'system']).optional().safeParse(value);
+    },
+  },
+  {
+    name: 'NEXT_PUBLIC_ENABLE_THEME_TOGGLE',
+    description: 'Controls visibility of the theme toggle feature.',
+    category: 'Theme',
+    validate: ({ value }) => {
+      return z.coerce.boolean().optional().safeParse(value);
+    },
+  },
+  {
+    name: 'NEXT_PUBLIC_ENABLE_SIDEBAR_TRIGGER',
+    description: 'Controls visibility of the sidebar trigger feature.',
+    category: 'Navigation',
+    validate: ({ value }) => {
+      return z.coerce.boolean().optional().safeParse(value);
+    },
+  },
+  {
+    name: 'NEXT_PUBLIC_ENABLE_PERSONAL_ACCOUNT_DELETION',
+    description: 'Allows users to delete their personal accounts.',
+    category: 'Features',
+    validate: ({ value }) => {
+      return z.coerce.boolean().optional().safeParse(value);
+    },
+  },
+  {
+    name: 'NEXT_PUBLIC_ENABLE_PERSONAL_ACCOUNT_BILLING',
+    description: 'Enables billing features for personal accounts.',
+    category: 'Features',
+    validate: ({ value }) => {
+      return z.coerce.boolean().optional().safeParse(value);
+    },
+  },
+  {
+    name: 'NEXT_PUBLIC_ENABLE_TEAM_ACCOUNTS',
+    description: 'Master switch for team account functionality.',
+    category: 'Features',
+    validate: ({ value }) => {
+      return z.coerce.boolean().optional().safeParse(value);
+    },
+  },
+  {
+    name: 'NEXT_PUBLIC_ENABLE_TEAM_ACCOUNTS_CREATION',
+    description: 'Controls ability to create new team accounts.',
+    category: 'Features',
+    validate: ({ value }) => {
+      return z.coerce.boolean().optional().safeParse(value);
+    },
+  },
+  {
+    name: 'NEXT_PUBLIC_ENABLE_TEAM_ACCOUNTS_DELETION',
+    description: 'Allows team account deletion.',
+    category: 'Features',
+    validate: ({ value }) => {
+      return z.coerce.boolean().optional().safeParse(value);
+    },
+  },
+  {
+    name: 'NEXT_PUBLIC_ENABLE_TEAM_ACCOUNTS_BILLING',
+    description: 'Enables billing features for team accounts.',
+    category: 'Features',
+    validate: ({ value }) => {
+      return z.coerce.boolean().optional().safeParse(value);
+    },
+  },
+  {
+    name: 'NEXT_PUBLIC_ENABLE_NOTIFICATIONS',
+    description: 'Controls the notification system.',
+    category: 'Notifications',
+    validate: ({ value }) => {
+      return z.coerce.boolean().optional().safeParse(value);
+    },
+  },
+  {
+    name: 'NEXT_PUBLIC_REALTIME_NOTIFICATIONS',
+    description: 'Enables real-time notifications using Supabase Realtime.',
+    category: 'Notifications',
+    validate: ({ value }) => {
+      return z.coerce.boolean().optional().safeParse(value);
+    },
+  },
+  {
+    name: 'NEXT_PUBLIC_SUPABASE_URL',
+    description: 'Your Supabase project URL.',
+    category: 'Supabase',
+    validate: ({ value, mode }) => {
+      if (mode === 'development') {
+        return z
+          .string()
+          .url({
+            message: `The NEXT_PUBLIC_SUPABASE_URL variable must be a valid URL`,
+          })
+          .safeParse(value);
+      }
+
+      return z
+        .string()
+        .url({
+          message: `The NEXT_PUBLIC_SUPABASE_URL variable must be a valid URL`,
+        })
+        .startsWith(
+          'https',
+          `The NEXT_PUBLIC_SUPABASE_URL variable must start with https`,
+        )
+        .safeParse(value);
+    },
+  },
+  {
+    name: 'NEXT_PUBLIC_SUPABASE_ANON_KEY',
+    description: 'Your Supabase anonymous API key.',
+    category: 'Supabase',
+    validate: ({ value }) => {
+      return z
+        .string()
+        .min(
+          1,
+          `The NEXT_PUBLIC_SUPABASE_ANON_KEY variable must be at least 1 character`,
+        )
+        .optional()
+        .safeParse(value);
+    },
+  },
+  {
+    name: 'SUPABASE_SERVICE_ROLE_KEY',
+    description: 'Your Supabase service role key (keep this secret!).',
+    category: 'Supabase',
+    secret: true,
+    validate: ({ value, variables }) => {
+      return z
+        .string()
+        .min(
+          1,
+          `The SUPABASE_SERVICE_ROLE_KEY variable must be at least 1 character`,
+        )
+        .optional()
+        .refine(
+          (value) => {
+            return value !== variables['NEXT_PUBLIC_SUPABASE_ANON_KEY'];
+          },
+          {
+            message: `The SUPABASE_SERVICE_ROLE_KEY variable must be different from NEXT_PUBLIC_SUPABASE_ANON_KEY`,
+          },
+        )
+        .safeParse(value);
+    },
+  },
+  {
+    name: 'SUPABASE_DB_WEBHOOK_SECRET',
+    description: 'Secret key for Supabase webhook verification.',
+    category: 'Supabase',
+    secret: true,
+    validate: ({ value }) => {
+      return z
+        .string()
+        .min(
+          1,
+          `The SUPABASE_DB_WEBHOOK_SECRET variable must be at least 1 character`,
+        )
+        .optional()
+        .safeParse(value);
+    },
+  },
+  {
+    name: 'NEXT_PUBLIC_BILLING_PROVIDER',
+    description:
+      'Your chosen billing provider. Options: stripe or lemon-squeezy.',
+    category: 'Billing',
+    validate: ({ value }) => {
+      return z.enum(['stripe', 'lemon-squeezy']).optional().safeParse(value);
+    },
+  },
+  {
+    name: 'NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY',
+    description: 'Your Stripe publishable key.',
+    category: 'Billing',
+    validate: ({ value }) => {
+      return z
+        .string()
+        .min(
+          1,
+          `The NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY variable must be at least 1 character`,
+        )
+        .optional()
+        .safeParse(value);
+    },
+  },
+  {
+    name: 'STRIPE_SECRET_KEY',
+    description: 'Your Stripe secret key.',
+    category: 'Billing',
+    secret: true,
+    validate: ({ value }) => {
+      return z
+        .string()
+        .min(1, `The STRIPE_SECRET_KEY variable must be at least 1 character`)
+        .optional()
+        .safeParse(value);
+    },
+  },
+  {
+    name: 'STRIPE_WEBHOOK_SECRET',
+    description: 'Your Stripe webhook secret.',
+    category: 'Billing',
+    secret: true,
+    validate: ({ value }) => {
+      return z
+        .string()
+        .min(
+          1,
+          `The STRIPE_WEBHOOK_SECRET variable must be at least 1 character`,
+        )
+        .optional()
+        .safeParse(value);
+    },
+  },
+  {
+    name: 'LEMON_SQUEEZY_SECRET_KEY',
+    description: 'Your Lemon Squeezy secret key.',
+    category: 'Billing',
+    secret: true,
+    validate: ({ value }) => {
+      return z
+        .string()
+        .min(
+          1,
+          `The LEMON_SQUEEZY_SECRET_KEY variable must be at least 1 character`,
+        )
+        .optional()
+        .safeParse(value);
+    },
+  },
+  {
+    name: 'LEMON_SQUEEZY_STORE_ID',
+    description: 'Your Lemon Squeezy store ID.',
+    category: 'Billing',
+    validate: ({ value }) => {
+      return z
+        .string()
+        .min(
+          1,
+          `The LEMON_SQUEEZY_STORE_ID variable must be at least 1 character`,
+        )
+        .optional()
+        .safeParse(value);
+    },
+  },
+  {
+    name: 'LEMON_SQUEEZY_SIGNING_SECRET',
+    description: 'Your Lemon Squeezy signing secret.',
+    category: 'Billing',
+    secret: true,
+    validate: ({ value }) => {
+      return z
+        .string()
+        .min(
+          1,
+          `The LEMON_SQUEEZY_SIGNING_SECRET variable must be at least 1 character`,
+        )
+        .optional()
+        .safeParse(value);
+    },
+  },
+  {
+    name: 'MAILER_PROVIDER',
+    description: 'Your email service provider. Options: nodemailer or resend.',
+    category: 'Email',
+    validate: ({ value }) => {
+      return z.enum(['nodemailer', 'resend']).optional().safeParse(value);
+    },
+  },
+  {
+    name: 'EMAIL_SENDER',
+    description: 'Default sender email address.',
+    category: 'Email',
+    validate: ({ value }) => {
+      return z
+        .string()
+        .min(1, `The EMAIL_SENDER variable must be at least 1 character`)
+        .safeParse(value);
+    },
+  },
+  {
+    name: 'CONTACT_EMAIL',
+    description: 'Email address for contact form submissions.',
+    category: 'Email',
+    validate: ({ value }) => {
+      return z
+        .string()
+        .email()
+        .min(1, `The CONTACT_EMAIL variable must be at least 1 character`)
+        .safeParse(value);
+    },
+  },
+  {
+    name: 'RESEND_API_KEY',
+    description: 'Your Resend API key.',
+    category: 'Email',
+    secret: true,
+    validate: ({ value }) => {
+      return z
+        .string()
+        .min(1, `The RESEND_API_KEY variable must be at least 1 character`)
+        .safeParse(value);
+    },
+  },
+  {
+    name: 'EMAIL_HOST',
+    description: 'SMTP host for Nodemailer configuration.',
+    category: 'Email',
+    validate: ({ value }) => {
+      return z.string().safeParse(value);
+    },
+  },
+  {
+    name: 'EMAIL_PORT',
+    description: 'SMTP port for Nodemailer configuration.',
+    category: 'Email',
+    validate: ({ value }) => {
+      return z.coerce
+        .number()
+        .min(1, `The EMAIL_PORT variable must be at least 1 character`)
+        .max(65535, `The EMAIL_PORT variable must be at most 65535`)
+        .safeParse(value);
+    },
+  },
+  {
+    name: 'EMAIL_USER',
+    description: 'SMTP user for Nodemailer configuration.',
+    category: 'Email',
+    validate: ({ value }) => {
+      return z
+        .string()
+        .min(1, `The EMAIL_USER variable must be at least 1 character`)
+        .safeParse(value);
+    },
+  },
+  {
+    name: 'EMAIL_PASSWORD',
+    description: 'SMTP password for Nodemailer configuration.',
+    category: 'Email',
+    secret: true,
+    validate: ({ value }) => {
+      return z
+        .string()
+        .min(1, `The EMAIL_PASSWORD variable must be at least 1 character`)
+        .safeParse(value);
+    },
+  },
+  {
+    name: 'EMAIL_TLS',
+    description: 'Whether to use TLS for SMTP connection.',
+    category: 'Email',
+    validate: ({ value }) => {
+      return z.coerce.boolean().optional().safeParse(value);
+    },
+  },
+  {
+    name: 'CMS_CLIENT',
+    description: 'Your chosen CMS system. Options: wordpress or keystatic.',
+    category: 'CMS',
+    validate: ({ value }) => {
+      return z.enum(['wordpress', 'keystatic']).optional().safeParse(value);
+    },
+  },
+  {
+    name: 'NEXT_PUBLIC_KEYSTATIC_STORAGE_KIND',
+    description: 'Your Keystatic storage kind. Options: local, cloud, github.',
+    category: 'CMS',
+    validate: ({ value }) => {
+      return z.enum(['local', 'cloud', 'github']).optional().safeParse(value);
+    },
+  },
+  {
+    name: 'NEXT_PUBLIC_KEYSTATIC_STORAGE_REPO',
+    description: 'Your Keystatic storage repo.',
+    category: 'CMS',
+    validate: ({ value }) => {
+      return z
+        .string()
+        .min(
+          1,
+          `The NEXT_PUBLIC_KEYSTATIC_STORAGE_REPO variable must be at least 1 character`,
+        )
+        .optional()
+        .safeParse(value);
+    },
+  },
+  {
+    name: 'KEYSTATIC_GITHUB_TOKEN',
+    description: 'Your Keystatic GitHub token.',
+    category: 'CMS',
+    secret: true,
+    validate: ({ value }) => {
+      return z
+        .string()
+        .min(
+          1,
+          `The KEYSTATIC_GITHUB_TOKEN variable must be at least 1 character`,
+        )
+        .optional()
+        .safeParse(value);
+    },
+  },
+  {
+    name: 'KEYSTATIC_PATH_PREFIX',
+    description: 'Your Keystatic path prefix.',
+    category: 'CMS',
+    validate: ({ value }) => {
+      return z
+        .string()
+        .min(
+          1,
+          `The KEYSTATIC_PATH_PREFIX variable must be at least 1 character`,
+        )
+        .optional()
+        .safeParse(value);
+    },
+  },
+  {
+    name: 'NEXT_PUBLIC_KEYSTATIC_CONTENT_PATH',
+    description: 'Your Keystatic content path.',
+    category: 'CMS',
+    validate: ({ value }) => {
+      return z
+        .string()
+        .min(
+          1,
+          `The NEXT_PUBLIC_KEYSTATIC_CONTENT_PATH variable must be at least 1 character`,
+        )
+        .optional()
+        .safeParse(value);
+    },
+  },
+  {
+    name: 'WORDPRESS_API_URL',
+    description: 'WordPress API URL when using WordPress as CMS.',
+    category: 'CMS',
+    validate: ({ value }) => {
+      return z
+        .string()
+        .url({
+          message: `The WORDPRESS_API_URL variable must be a valid URL`,
+        })
+        .safeParse(value);
+    },
+  },
+  {
+    name: 'NEXT_PUBLIC_LOCALES_PATH',
+    description: 'The path to your locales folder.',
+    category: 'Localization',
+    validate: ({ value }) => {
+      return z
+        .string()
+        .min(
+          1,
+          `The NEXT_PUBLIC_LOCALES_PATH variable must be at least 1 character`,
+        )
+        .optional()
+        .safeParse(value);
+    },
+  },
+  {
+    name: 'NEXT_PUBLIC_LANGUAGE_PRIORITY',
+    description: 'The priority setting as to how infer the language.',
+    category: 'Localization',
+    validate: ({ value }) => {
+      return z.enum(['user', 'application']).optional().safeParse(value);
+    },
+  },
+  {
+    name: 'NEXT_PUBLIC_ENABLE_VERSION_UPDATER',
+    description:
+      'Enables the version updater to poll the latest version and notify the user.',
+    category: 'Features',
+    validate: ({ value }) => {
+      return z.coerce.boolean().optional().safeParse(value);
+    },
+  },
+  {
+    name: `ENABLE_REACT_COMPILER`,
+    description: 'Enables the React compiler [experimental]',
+    category: 'Features',
+    validate: ({ value }) => {
+      return z.coerce.boolean().optional().safeParse(value);
+    },
+  },
+  {
+    name: 'NEXT_PUBLIC_MONITORING_PROVIDER',
+    description: 'The monitoring provider to use.',
+    category: 'Monitoring',
+    validate: ({ value }) => {
+      return z.enum(['baselime', 'sentry']).optional().safeParse(value);
+    },
+  },
+  {
+    name: 'NEXT_PUBLIC_BASELIME_KEY',
+    description: 'The Baselime key to use.',
+    category: 'Monitoring',
+    validate: ({ value }) => {
+      return z
+        .string()
+        .min(
+          1,
+          `The NEXT_PUBLIC_BASELIME_KEY variable must be at least 1 character`,
+        )
+        .optional()
+        .safeParse(value);
+    },
+  },
+  {
+    name: 'STRIPE_ENABLE_TRIAL_WITHOUT_CC',
+    description: 'Enables trial plans without credit card.',
+    category: 'Billing',
+    validate: ({ value }) => {
+      return z.coerce.boolean().optional().safeParse(value);
+    },
+  },
+  {
+    name: 'NEXT_PUBLIC_VERSION_UPDATER_REFETCH_INTERVAL_SECONDS',
+    description: 'The interval in seconds to check for updates.',
+    category: 'Features',
+    validate: ({ value }) => {
+      return z.coerce
+        .number()
+        .min(
+          1,
+          `The NEXT_PUBLIC_VERSION_UPDATER_REFETCH_INTERVAL_SECONDS variable must be at least 1 character`,
+        )
+        .max(
+          86400,
+          `The NEXT_PUBLIC_VERSION_UPDATER_REFETCH_INTERVAL_SECONDS variable must be at most 86400`,
+        )
+        .optional()
+        .safeParse(value);
+    },
+  },
+  {
+    name: 'NEXT_PUBLIC_THEME_COLOR',
+    description: 'The default theme color.',
+    category: 'Theme',
+    validate: ({ value }) => {
+      return z
+        .string()
+        .min(
+          1,
+          `The NEXT_PUBLIC_THEME_COLOR variable must be at least 1 character`,
+        )
+        .optional()
+        .safeParse(value);
+    },
+  },
+  {
+    name: 'NEXT_PUBLIC_THEME_COLOR_DARK',
+    description: 'The default theme color for dark mode.',
+    category: 'Theme',
+    validate: ({ value }) => {
+      return z
+        .string()
+        .min(
+          1,
+          `The NEXT_PUBLIC_THEME_COLOR_DARK variable must be at least 1 character`,
+        )
+        .optional()
+        .safeParse(value);
+    },
+  },
+];
