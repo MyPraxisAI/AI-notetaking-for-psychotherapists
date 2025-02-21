@@ -119,6 +119,7 @@ export const UpdatePasswordForm = ({
                   <FormControl>
                     <Input
                       data-test={'account-password-form-password-input'}
+                      autoComplete={'new-password'}
                       required
                       type={'password'}
                       {...field}
