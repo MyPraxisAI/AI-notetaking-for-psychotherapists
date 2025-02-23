@@ -1,10 +1,26 @@
 import { EnvMode } from '@/app/variables/lib/types';
 import { z } from 'zod';
 
+type DependencyRule = {
+  variable: string;
+  condition: (value: string, variables: Record<string, string>) => boolean;
+  message: string;
+};
+
+type ContextualValidation = {
+  dependencies: DependencyRule[];
+  validate: (props: {
+    value: string;
+    variables: Record<string, string>;
+    mode: EnvMode;
+  }) => z.SafeParseReturnType<unknown, unknown>;
+};
+
 export type EnvVariableModel = {
   name: string;
   description: string;
   secret?: boolean;
+  required?: boolean;
   category: string;
   test?: (value: string) => Promise<boolean>;
   validate?: (props: {
@@ -12,6 +28,7 @@ export type EnvVariableModel = {
     variables: Record<string, string>;
     mode: EnvMode;
   }) => z.SafeParseReturnType<unknown, unknown>;
+  contextualValidation?: ContextualValidation;
 };
 
 export const envVariables: EnvVariableModel[] = [
@@ -20,6 +37,7 @@ export const envVariables: EnvVariableModel[] = [
     description:
       'The URL of your site, used for generating absolute URLs. Must include the protocol.',
     category: 'Site Configuration',
+    required: true,
     validate: ({ value, mode }) => {
       if (mode === 'development') {
         return z
@@ -47,6 +65,7 @@ export const envVariables: EnvVariableModel[] = [
     description:
       "Your product's name, used consistently across the application interface.",
     category: 'Site Configuration',
+    required: true,
     validate: ({ value }) => {
       return z
         .string()
@@ -62,6 +81,7 @@ export const envVariables: EnvVariableModel[] = [
     description:
       "The site's title tag content, crucial for SEO and browser display.",
     category: 'Site Configuration',
+    required: true,
     validate: ({ value }) => {
       return z
         .string()
@@ -77,6 +97,7 @@ export const envVariables: EnvVariableModel[] = [
     description:
       "Your site's meta description, important for SEO optimization.",
     category: 'Site Configuration',
+    required: true,
     validate: ({ value }) => {
       return z
         .string()
@@ -133,6 +154,27 @@ export const envVariables: EnvVariableModel[] = [
       'Your Cloudflare Captcha secret token for backend verification.',
     category: 'Security',
     secret: true,
+    contextualValidation: {
+      dependencies: [
+        {
+          variable: 'NEXT_PUBLIC_CAPTCHA_SITE_KEY',
+          condition: (value) => {
+            return value !== '';
+          },
+          message:
+            'CAPTCHA_SECRET_TOKEN is required when NEXT_PUBLIC_CAPTCHA_SITE_KEY is set',
+        },
+      ],
+      validate: ({ value }) => {
+        return z
+          .string()
+          .min(
+            1,
+            `The CAPTCHA_SECRET_TOKEN variable must be at least 1 character`,
+          )
+          .safeParse(value);
+      },
+    },
     validate: ({ value }) => {
       return z
         .string()
@@ -286,6 +328,7 @@ export const envVariables: EnvVariableModel[] = [
     name: 'NEXT_PUBLIC_SUPABASE_URL',
     description: 'Your Supabase project URL.',
     category: 'Supabase',
+    required: true,
     validate: ({ value, mode }) => {
       if (mode === 'development') {
         return z
@@ -312,6 +355,7 @@ export const envVariables: EnvVariableModel[] = [
     name: 'NEXT_PUBLIC_SUPABASE_ANON_KEY',
     description: 'Your Supabase anonymous API key.',
     category: 'Supabase',
+    required: true,
     validate: ({ value }) => {
       return z
         .string()
@@ -319,7 +363,6 @@ export const envVariables: EnvVariableModel[] = [
           1,
           `The NEXT_PUBLIC_SUPABASE_ANON_KEY variable must be at least 1 character`,
         )
-        .optional()
         .safeParse(value);
     },
   },
@@ -328,6 +371,7 @@ export const envVariables: EnvVariableModel[] = [
     description: 'Your Supabase service role key (keep this secret!).',
     category: 'Supabase',
     secret: true,
+    required: true,
     validate: ({ value, variables }) => {
       return z
         .string()
@@ -335,7 +379,6 @@ export const envVariables: EnvVariableModel[] = [
           1,
           `The SUPABASE_SERVICE_ROLE_KEY variable must be at least 1 character`,
         )
-        .optional()
         .refine(
           (value) => {
             return value !== variables['NEXT_PUBLIC_SUPABASE_ANON_KEY'];
@@ -352,6 +395,7 @@ export const envVariables: EnvVariableModel[] = [
     description: 'Secret key for Supabase webhook verification.',
     category: 'Supabase',
     secret: true,
+    required: true,
     validate: ({ value }) => {
       return z
         .string()
@@ -368,6 +412,7 @@ export const envVariables: EnvVariableModel[] = [
     description:
       'Your chosen billing provider. Options: stripe or lemon-squeezy.',
     category: 'Billing',
+    required: true,
     validate: ({ value }) => {
       return z.enum(['stripe', 'lemon-squeezy']).optional().safeParse(value);
     },
@@ -376,6 +421,33 @@ export const envVariables: EnvVariableModel[] = [
     name: 'NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY',
     description: 'Your Stripe publishable key.',
     category: 'Billing',
+    contextualValidation: {
+      dependencies: [
+        {
+          variable: 'NEXT_PUBLIC_BILLING_PROVIDER',
+          condition: (value) => value === 'stripe',
+          message:
+            'NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY is required when NEXT_PUBLIC_BILLING_PROVIDER is set to "stripe"',
+        },
+      ],
+      validate: ({ value }) => {
+        return z
+          .string()
+          .min(
+            1,
+            `The NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY variable must be at least 1 character`,
+          )
+          .refine(
+            (value) => {
+              return value.startsWith('pk_');
+            },
+            {
+              message: `The NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY variable must start with pk_`,
+            },
+          )
+          .safeParse(value);
+      },
+    },
     validate: ({ value }) => {
       return z
         .string()
@@ -392,6 +464,30 @@ export const envVariables: EnvVariableModel[] = [
     description: 'Your Stripe secret key.',
     category: 'Billing',
     secret: true,
+    contextualValidation: {
+      dependencies: [
+        {
+          variable: 'NEXT_PUBLIC_BILLING_PROVIDER',
+          condition: (value) => value === 'stripe',
+          message:
+            'STRIPE_SECRET_KEY is required when NEXT_PUBLIC_BILLING_PROVIDER is set to "stripe"',
+        },
+      ],
+      validate: ({ value }) => {
+        return z
+          .string()
+          .min(1, `The STRIPE_SECRET_KEY variable must be at least 1 character`)
+          .refine(
+            (value) => {
+              return value.startsWith('sk_') || value.startsWith('rk_');
+            },
+            {
+              message: `The STRIPE_SECRET_KEY variable must start with sk_ or rk_`,
+            },
+          )
+          .safeParse(value);
+      },
+    },
     validate: ({ value }) => {
       return z
         .string()
@@ -405,6 +501,33 @@ export const envVariables: EnvVariableModel[] = [
     description: 'Your Stripe webhook secret.',
     category: 'Billing',
     secret: true,
+    contextualValidation: {
+      dependencies: [
+        {
+          variable: 'NEXT_PUBLIC_BILLING_PROVIDER',
+          condition: (value) => value === 'stripe',
+          message:
+            'STRIPE_WEBHOOK_SECRET is required when NEXT_PUBLIC_BILLING_PROVIDER is set to "stripe"',
+        },
+      ],
+      validate: ({ value }) => {
+        return z
+          .string()
+          .min(
+            1,
+            `The STRIPE_WEBHOOK_SECRET variable must be at least 1 character`,
+          )
+          .refine(
+            (value) => {
+              return value.startsWith('whsec_');
+            },
+            {
+              message: `The STRIPE_WEBHOOK_SECRET variable must start with whsec_`,
+            },
+          )
+          .safeParse(value);
+      },
+    },
     validate: ({ value }) => {
       return z
         .string()
@@ -421,6 +544,25 @@ export const envVariables: EnvVariableModel[] = [
     description: 'Your Lemon Squeezy secret key.',
     category: 'Billing',
     secret: true,
+    contextualValidation: {
+      dependencies: [
+        {
+          variable: 'NEXT_PUBLIC_BILLING_PROVIDER',
+          condition: (value) => value === 'lemon-squeezy',
+          message:
+            'LEMON_SQUEEZY_SECRET_KEY is required when NEXT_PUBLIC_BILLING_PROVIDER is set to "lemon-squeezy"',
+        },
+      ],
+      validate: ({ value }) => {
+        return z
+          .string()
+          .min(
+            1,
+            `The LEMON_SQUEEZY_SECRET_KEY variable must be at least 1 character`,
+          )
+          .safeParse(value);
+      },
+    },
     validate: ({ value }) => {
       return z
         .string()
@@ -436,6 +578,25 @@ export const envVariables: EnvVariableModel[] = [
     name: 'LEMON_SQUEEZY_STORE_ID',
     description: 'Your Lemon Squeezy store ID.',
     category: 'Billing',
+    contextualValidation: {
+      dependencies: [
+        {
+          variable: 'NEXT_PUBLIC_BILLING_PROVIDER',
+          condition: (value) => value === 'lemon-squeezy',
+          message:
+            'LEMON_SQUEEZY_STORE_ID is required when NEXT_PUBLIC_BILLING_PROVIDER is set to "lemon-squeezy"',
+        },
+      ],
+      validate: ({ value }) => {
+        return z
+          .string()
+          .min(
+            1,
+            `The LEMON_SQUEEZY_STORE_ID variable must be at least 1 character`,
+          )
+          .safeParse(value);
+      },
+    },
     validate: ({ value }) => {
       return z
         .string()
@@ -452,6 +613,25 @@ export const envVariables: EnvVariableModel[] = [
     description: 'Your Lemon Squeezy signing secret.',
     category: 'Billing',
     secret: true,
+    contextualValidation: {
+      dependencies: [
+        {
+          variable: 'NEXT_PUBLIC_BILLING_PROVIDER',
+          condition: (value) => value === 'lemon-squeezy',
+          message:
+            'LEMON_SQUEEZY_SIGNING_SECRET is required when NEXT_PUBLIC_BILLING_PROVIDER is set to "lemon-squeezy"',
+        },
+      ],
+      validate: ({ value }) => {
+        return z
+          .string()
+          .min(
+            1,
+            `The LEMON_SQUEEZY_SIGNING_SECRET variable must be at least 1 character`,
+          )
+          .safeParse(value);
+      },
+    },
     validate: ({ value }) => {
       return z
         .string()
@@ -467,14 +647,16 @@ export const envVariables: EnvVariableModel[] = [
     name: 'MAILER_PROVIDER',
     description: 'Your email service provider. Options: nodemailer or resend.',
     category: 'Email',
+    required: true,
     validate: ({ value }) => {
-      return z.enum(['nodemailer', 'resend']).optional().safeParse(value);
+      return z.enum(['nodemailer', 'resend']).safeParse(value);
     },
   },
   {
     name: 'EMAIL_SENDER',
     description: 'Default sender email address.',
     category: 'Email',
+    required: true,
     validate: ({ value }) => {
       return z
         .string()
@@ -486,6 +668,7 @@ export const envVariables: EnvVariableModel[] = [
     name: 'CONTACT_EMAIL',
     description: 'Email address for contact form submissions.',
     category: 'Email',
+    required: true,
     validate: ({ value }) => {
       return z
         .string()
@@ -499,42 +682,99 @@ export const envVariables: EnvVariableModel[] = [
     description: 'Your Resend API key.',
     category: 'Email',
     secret: true,
-    validate: ({ value }) => {
-      return z
-        .string()
-        .min(1, `The RESEND_API_KEY variable must be at least 1 character`)
-        .safeParse(value);
+    contextualValidation: {
+      dependencies: [
+        {
+          variable: 'MAILER_PROVIDER',
+          condition: (value) => value === 'resend',
+          message:
+            'RESEND_API_KEY is required when MAILER_PROVIDER is set to "resend"',
+        },
+      ],
+      validate: ({ value, variables }) => {
+        if (variables['MAILER_PROVIDER'] === 'resend') {
+          return z
+            .string()
+            .min(1, `The RESEND_API_KEY variable must be at least 1 character`)
+            .safeParse(value);
+        }
+
+        return z.string().optional().safeParse(value);
+      },
     },
   },
   {
     name: 'EMAIL_HOST',
     description: 'SMTP host for Nodemailer configuration.',
     category: 'Email',
-    validate: ({ value }) => {
-      return z.string().safeParse(value);
+    contextualValidation: {
+      dependencies: [
+        {
+          variable: 'MAILER_PROVIDER',
+          condition: (value) => value === 'nodemailer',
+          message:
+            'EMAIL_HOST is required when MAILER_PROVIDER is set to "nodemailer"',
+        },
+      ],
+      validate: ({ value, variables }) => {
+        if (variables['MAILER_PROVIDER'] === 'nodemailer') {
+          return z
+            .string()
+            .min(1, 'The EMAIL_HOST variable must be at least 1 character')
+            .safeParse(value);
+        }
+        return z.string().optional().safeParse(value);
+      },
     },
   },
   {
     name: 'EMAIL_PORT',
     description: 'SMTP port for Nodemailer configuration.',
     category: 'Email',
-    validate: ({ value }) => {
-      return z.coerce
-        .number()
-        .min(1, `The EMAIL_PORT variable must be at least 1 character`)
-        .max(65535, `The EMAIL_PORT variable must be at most 65535`)
-        .safeParse(value);
+    contextualValidation: {
+      dependencies: [
+        {
+          variable: 'MAILER_PROVIDER',
+          condition: (value) => value === 'nodemailer',
+          message:
+            'EMAIL_PORT is required when MAILER_PROVIDER is set to "nodemailer"',
+        },
+      ],
+      validate: ({ value, variables }) => {
+        if (variables['MAILER_PROVIDER'] === 'nodemailer') {
+          return z.coerce
+            .number()
+            .min(1, 'The EMAIL_PORT variable must be at least 1')
+            .max(65535, 'The EMAIL_PORT variable must be at most 65535')
+            .safeParse(value);
+        }
+        return z.coerce.number().optional().safeParse(value);
+      },
     },
   },
   {
     name: 'EMAIL_USER',
     description: 'SMTP user for Nodemailer configuration.',
     category: 'Email',
-    validate: ({ value }) => {
-      return z
-        .string()
-        .min(1, `The EMAIL_USER variable must be at least 1 character`)
-        .safeParse(value);
+    contextualValidation: {
+      dependencies: [
+        {
+          variable: 'MAILER_PROVIDER',
+          condition: (value) => value === 'nodemailer',
+          message:
+            'EMAIL_USER is required when MAILER_PROVIDER is set to "nodemailer"',
+        },
+      ],
+      validate: ({ value, variables }) => {
+        if (variables['MAILER_PROVIDER'] === 'nodemailer') {
+          return z
+            .string()
+            .min(1, 'The EMAIL_USER variable must be at least 1 character')
+            .safeParse(value);
+        }
+
+        return z.string().optional().safeParse(value);
+      },
     },
   },
   {
@@ -542,17 +782,46 @@ export const envVariables: EnvVariableModel[] = [
     description: 'SMTP password for Nodemailer configuration.',
     category: 'Email',
     secret: true,
-    validate: ({ value }) => {
-      return z
-        .string()
-        .min(1, `The EMAIL_PASSWORD variable must be at least 1 character`)
-        .safeParse(value);
+    contextualValidation: {
+      dependencies: [
+        {
+          variable: 'MAILER_PROVIDER',
+          condition: (value) => value === 'nodemailer',
+          message:
+            'EMAIL_PASSWORD is required when MAILER_PROVIDER is set to "nodemailer"',
+        },
+      ],
+      validate: ({ value, variables }) => {
+        if (variables['MAILER_PROVIDER'] === 'nodemailer') {
+          return z
+            .string()
+            .min(1, 'The EMAIL_PASSWORD variable must be at least 1 character')
+            .safeParse(value);
+        }
+        return z.string().optional().safeParse(value);
+      },
     },
   },
   {
     name: 'EMAIL_TLS',
     description: 'Whether to use TLS for SMTP connection.',
     category: 'Email',
+    contextualValidation: {
+      dependencies: [
+        {
+          variable: 'MAILER_PROVIDER',
+          condition: (value) => value === 'nodemailer',
+          message:
+            'EMAIL_TLS is required when MAILER_PROVIDER is set to "nodemailer"',
+        },
+      ],
+      validate: ({ value, variables }) => {
+        if (variables['MAILER_PROVIDER'] === 'nodemailer') {
+          return z.coerce.boolean().optional().safeParse(value);
+        }
+        return z.coerce.boolean().optional().safeParse(value);
+      },
+    },
     validate: ({ value }) => {
       return z.coerce.boolean().optional().safeParse(value);
     },
@@ -569,23 +838,50 @@ export const envVariables: EnvVariableModel[] = [
     name: 'NEXT_PUBLIC_KEYSTATIC_STORAGE_KIND',
     description: 'Your Keystatic storage kind. Options: local, cloud, github.',
     category: 'CMS',
-    validate: ({ value }) => {
-      return z.enum(['local', 'cloud', 'github']).optional().safeParse(value);
+    contextualValidation: {
+      dependencies: [
+        {
+          variable: 'CMS_CLIENT',
+          condition: (value) => value === 'keystatic',
+          message:
+            'NEXT_PUBLIC_KEYSTATIC_STORAGE_KIND is required when CMS_CLIENT is set to "keystatic"',
+        },
+      ],
+      validate: ({ value, variables }) => {
+        if (variables['CMS_CLIENT'] === 'keystatic') {
+          return z
+            .enum(['local', 'cloud', 'github'])
+            .optional()
+            .safeParse(value);
+        }
+        return z.enum(['local', 'cloud', 'github']).optional().safeParse(value);
+      },
     },
   },
   {
     name: 'NEXT_PUBLIC_KEYSTATIC_STORAGE_REPO',
     description: 'Your Keystatic storage repo.',
     category: 'CMS',
-    validate: ({ value }) => {
-      return z
-        .string()
-        .min(
-          1,
-          `The NEXT_PUBLIC_KEYSTATIC_STORAGE_REPO variable must be at least 1 character`,
-        )
-        .optional()
-        .safeParse(value);
+    contextualValidation: {
+      dependencies: [
+        {
+          variable: 'CMS_CLIENT',
+          condition: (value, variables) =>
+            value === 'keystatic' &&
+            variables['NEXT_PUBLIC_KEYSTATIC_STORAGE_KIND'] === 'github',
+          message:
+            'NEXT_PUBLIC_KEYSTATIC_STORAGE_REPO is required when CMS_CLIENT is set to "keystatic"',
+        },
+      ],
+      validate: ({ value }) => {
+        return z
+          .string()
+          .min(
+            1,
+            `The NEXT_PUBLIC_KEYSTATIC_STORAGE_REPO variable must be at least 1 character`,
+          )
+          .safeParse(value);
+      },
     },
   },
   {
@@ -593,58 +889,94 @@ export const envVariables: EnvVariableModel[] = [
     description: 'Your Keystatic GitHub token.',
     category: 'CMS',
     secret: true,
-    validate: ({ value }) => {
-      return z
-        .string()
-        .min(
-          1,
-          `The KEYSTATIC_GITHUB_TOKEN variable must be at least 1 character`,
-        )
-        .optional()
-        .safeParse(value);
+    contextualValidation: {
+      dependencies: [
+        {
+          variable: 'CMS_CLIENT',
+          condition: (value, variables) =>
+            value === 'keystatic' &&
+            variables['NEXT_PUBLIC_KEYSTATIC_STORAGE_KIND'] === 'github',
+          message:
+            'KEYSTATIC_GITHUB_TOKEN is required when CMS_CLIENT is set to "keystatic"',
+        },
+      ],
+      validate: ({ value }) => {
+        return z
+          .string()
+          .min(
+            1,
+            `The KEYSTATIC_GITHUB_TOKEN variable must be at least 1 character`,
+          )
+          .safeParse(value);
+      },
     },
   },
   {
     name: 'KEYSTATIC_PATH_PREFIX',
     description: 'Your Keystatic path prefix.',
     category: 'CMS',
-    validate: ({ value }) => {
-      return z
-        .string()
-        .min(
-          1,
-          `The KEYSTATIC_PATH_PREFIX variable must be at least 1 character`,
-        )
-        .optional()
-        .safeParse(value);
+    contextualValidation: {
+      dependencies: [
+        {
+          variable: 'CMS_CLIENT',
+          condition: (value) => value === 'keystatic',
+          message:
+            'KEYSTATIC_PATH_PREFIX is required when CMS_CLIENT is set to "keystatic"',
+        },
+      ],
+      validate: ({ value }) => {
+        return z
+          .string()
+          .safeParse(value);
+      },
     },
   },
   {
     name: 'NEXT_PUBLIC_KEYSTATIC_CONTENT_PATH',
     description: 'Your Keystatic content path.',
     category: 'CMS',
-    validate: ({ value }) => {
-      return z
-        .string()
-        .min(
-          1,
-          `The NEXT_PUBLIC_KEYSTATIC_CONTENT_PATH variable must be at least 1 character`,
-        )
-        .optional()
-        .safeParse(value);
+    contextualValidation: {
+      dependencies: [
+        {
+          variable: 'CMS_CLIENT',
+          condition: (value) => value === 'keystatic',
+          message:
+            'NEXT_PUBLIC_KEYSTATIC_CONTENT_PATH is required when CMS_CLIENT is set to "keystatic"',
+        },
+      ],
+      validate: ({ value }) => {
+        return z
+          .string()
+          .min(
+            1,
+            `The NEXT_PUBLIC_KEYSTATIC_CONTENT_PATH variable must be at least 1 character`,
+          )
+          .optional()
+          .safeParse(value);
+      },
     },
   },
   {
     name: 'WORDPRESS_API_URL',
     description: 'WordPress API URL when using WordPress as CMS.',
     category: 'CMS',
-    validate: ({ value }) => {
-      return z
-        .string()
-        .url({
-          message: `The WORDPRESS_API_URL variable must be a valid URL`,
-        })
-        .safeParse(value);
+    contextualValidation: {
+      dependencies: [
+        {
+          variable: 'CMS_CLIENT',
+          condition: (value) => value === 'wordpress',
+          message:
+            'WORDPRESS_API_URL is required when CMS_CLIENT is set to "wordpress"',
+        },
+      ],
+      validate: ({ value }) => {
+        return z
+          .string()
+          .url({
+            message: `The WORDPRESS_API_URL variable must be a valid URL`,
+          })
+          .safeParse(value);
+      },
     },
   },
   {
@@ -680,45 +1012,6 @@ export const envVariables: EnvVariableModel[] = [
     },
   },
   {
-    name: `ENABLE_REACT_COMPILER`,
-    description: 'Enables the React compiler [experimental]',
-    category: 'Features',
-    validate: ({ value }) => {
-      return z.coerce.boolean().optional().safeParse(value);
-    },
-  },
-  {
-    name: 'NEXT_PUBLIC_MONITORING_PROVIDER',
-    description: 'The monitoring provider to use.',
-    category: 'Monitoring',
-    validate: ({ value }) => {
-      return z.enum(['baselime', 'sentry']).optional().safeParse(value);
-    },
-  },
-  {
-    name: 'NEXT_PUBLIC_BASELIME_KEY',
-    description: 'The Baselime key to use.',
-    category: 'Monitoring',
-    validate: ({ value }) => {
-      return z
-        .string()
-        .min(
-          1,
-          `The NEXT_PUBLIC_BASELIME_KEY variable must be at least 1 character`,
-        )
-        .optional()
-        .safeParse(value);
-    },
-  },
-  {
-    name: 'STRIPE_ENABLE_TRIAL_WITHOUT_CC',
-    description: 'Enables trial plans without credit card.',
-    category: 'Billing',
-    validate: ({ value }) => {
-      return z.coerce.boolean().optional().safeParse(value);
-    },
-  },
-  {
     name: 'NEXT_PUBLIC_VERSION_UPDATER_REFETCH_INTERVAL_SECONDS',
     description: 'The interval in seconds to check for updates.',
     category: 'Features',
@@ -738,9 +1031,60 @@ export const envVariables: EnvVariableModel[] = [
     },
   },
   {
+    name: `ENABLE_REACT_COMPILER`,
+    description: 'Enables the React compiler [experimental]',
+    category: 'Build',
+    validate: ({ value }) => {
+      return z.coerce.boolean().optional().safeParse(value);
+    },
+  },
+  {
+    name: 'NEXT_PUBLIC_MONITORING_PROVIDER',
+    description: 'The monitoring provider to use.',
+    category: 'Monitoring',
+    required: true,
+    validate: ({ value }) => {
+      return z.enum(['baselime', 'sentry', '']).optional().safeParse(value);
+    },
+  },
+  {
+    name: 'NEXT_PUBLIC_BASELIME_KEY',
+    description: 'The Baselime key to use.',
+    category: 'Monitoring',
+    contextualValidation: {
+      dependencies: [
+        {
+          variable: 'NEXT_PUBLIC_MONITORING_PROVIDER',
+          condition: (value) => value === 'baselime',
+          message:
+            'NEXT_PUBLIC_BASELIME_KEY is required when NEXT_PUBLIC_MONITORING_PROVIDER is set to "baselime"',
+        },
+      ],
+      validate: ({ value }) => {
+        return z
+          .string()
+          .min(
+            1,
+            `The NEXT_PUBLIC_BASELIME_KEY variable must be at least 1 character`,
+          )
+          .optional()
+          .safeParse(value);
+      },
+    },
+  },
+  {
+    name: 'STRIPE_ENABLE_TRIAL_WITHOUT_CC',
+    description: 'Enables trial plans without credit card.',
+    category: 'Billing',
+    validate: ({ value }) => {
+      return z.coerce.boolean().optional().safeParse(value);
+    },
+  },
+  {
     name: 'NEXT_PUBLIC_THEME_COLOR',
     description: 'The default theme color.',
     category: 'Theme',
+    required: true,
     validate: ({ value }) => {
       return z
         .string()
@@ -756,6 +1100,7 @@ export const envVariables: EnvVariableModel[] = [
     name: 'NEXT_PUBLIC_THEME_COLOR_DARK',
     description: 'The default theme color for dark mode.',
     category: 'Theme',
+    required: true,
     validate: ({ value }) => {
       return z
         .string()
@@ -765,6 +1110,14 @@ export const envVariables: EnvVariableModel[] = [
         )
         .optional()
         .safeParse(value);
+    },
+  },
+  {
+    name: 'NEXT_PUBLIC_DISPLAY_TERMS_AND_CONDITIONS_CHECKBOX',
+    description: 'Whether to display the terms checkbox during sign-up.',
+    category: 'Features',
+    validate: ({ value }) => {
+      return z.coerce.boolean().optional().safeParse(value);
     },
   },
 ];

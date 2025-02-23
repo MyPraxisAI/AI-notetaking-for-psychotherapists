@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment, useState } from 'react';
+import { Fragment, useCallback, useState } from 'react';
 
 import { useRouter, useSearchParams } from 'next/navigation';
 
@@ -13,6 +13,7 @@ import {
   Copy,
   Eye,
   EyeOff,
+  EyeOffIcon,
   InfoIcon,
 } from 'lucide-react';
 
@@ -38,6 +39,15 @@ import {
 import { cn } from '@kit/ui/utils';
 
 import { AppEnvState, EnvVariableState } from '../lib/types';
+
+type ValidationResult = {
+  success: boolean;
+  error?: {
+    issues: Array<{ message: string }>;
+  };
+};
+
+type VariableRecord = Record<string, string>;
 
 export function AppEnvironmentVariablesManager({
   state,
@@ -97,36 +107,149 @@ function EnvList({ appState }: { appState: AppEnvState }) {
     return value || '(empty)';
   };
 
+  const allVariables = getEffectiveVariablesValue(appState);
+
+  // Create a map of all variables including missing ones that have contextual validation
+  const allVarsWithValidation = envVariables.reduce<
+    Record<string, EnvVariableState>
+  >((acc, model) => {
+    // If the variable exists in appState, use that
+    const existingVar = appState.variables[model.name];
+    if (existingVar) {
+      acc[model.name] = existingVar;
+    } else if (
+      // Show missing variables if they:
+      model.required || // Are marked as required
+      model.contextualValidation // OR have contextual validation
+    ) {
+      // If it doesn't exist but is required or has contextual validation, create an empty state
+      acc[model.name] = {
+        key: model.name,
+        effectiveValue: '',
+        effectiveSource: 'MISSING',
+        category: model.category,
+        isOverridden: false,
+        definitions: [],
+      };
+    }
+    return acc;
+  }, {});
+
   const renderVariable = (varState: EnvVariableState) => {
     const isExpanded = expandedVars[varState.key] ?? false;
     const isClientBundledValue = varState.key.startsWith('NEXT_PUBLIC_');
-
-    // public variables are always visible
     const isValueVisible = showValues[varState.key] ?? isClientBundledValue;
 
-    // grab model is it's a kit variable
     const model = envVariables.find(
       (variable) => variable.name === varState.key,
     );
 
-    const allVariables = Object.values(appState.variables).reduce(
-      (acc, variable) => ({
-        ...acc,
-        [variable.key]: variable.effectiveValue,
-      }),
-      {},
-    );
+    // Enhanced validation logic to handle both regular and contextual validation
+    let validation: ValidationResult = {
+      success: true,
+    };
 
-    const validation = model?.validate
-      ? model.validate({
+    if (model) {
+      // First check if it's required but missing
+      if (model.required && !varState.effectiveValue) {
+        validation = {
+          success: false,
+          error: {
+            issues: [
+              {
+                message: `This variable is required but missing from your environment files`,
+              },
+            ],
+          },
+        };
+      } else if (model.contextualValidation) {
+        // Then check contextual validation
+        const dependenciesMet = model.contextualValidation.dependencies.some(
+          (dep) => {
+            const dependencyValue = allVariables[dep.variable] ?? '';
+
+            return dep.condition(dependencyValue, allVariables);
+          },
+        );
+
+        if (dependenciesMet) {
+          // Only check for missing value or run validation if dependencies are met
+          if (!varState.effectiveValue) {
+            const dependencyErrors = model.contextualValidation.dependencies
+              .map((dep) => {
+                const dependencyValue = allVariables[dep.variable] ?? '';
+
+                const shouldValidate = dep.condition(
+                  dependencyValue,
+                  allVariables,
+                );
+
+                if (shouldValidate) {
+                  const { success } = model.contextualValidation!.validate({
+                    value: varState.effectiveValue,
+                    variables: allVariables,
+                    mode: appState.mode,
+                  });
+
+                  if (success) {
+                    return null;
+                  }
+
+                  return dep.message;
+                }
+
+                return null;
+              })
+              .filter((message): message is string => message !== null);
+
+            validation = {
+              success: dependencyErrors.length === 0,
+              error: {
+                issues: dependencyErrors.map((message) => ({ message })),
+              },
+            };
+          } else {
+            // If we have a value and dependencies are met, run contextual validation
+            const result = model.contextualValidation.validate({
+              value: varState.effectiveValue,
+              variables: allVariables,
+              mode: appState.mode,
+            });
+
+            if (!result.success) {
+              validation = {
+                success: false,
+                error: {
+                  issues: result.error.issues.map((issue) => ({
+                    message: issue.message,
+                  })),
+                },
+              };
+            }
+          }
+        }
+      } else if (model.validate && varState.effectiveValue) {
+        // Only run regular validation if:
+        // 1. There's no contextual validation
+        // 2. There's a value to validate
+        const result = model.validate({
           value: varState.effectiveValue,
           variables: allVariables,
           mode: appState.mode,
-        })
-      : {
-          success: true,
-          error: undefined,
-        };
+        });
+
+        if (!result.success) {
+          validation = {
+            success: false,
+            error: {
+              issues: result.error.issues.map((issue) => ({
+                message: issue.message,
+              })),
+            },
+          };
+        }
+      }
+    }
 
     const canExpand = varState.definitions.length > 1 || !validation.success;
 
@@ -134,11 +257,45 @@ function EnvList({ appState }: { appState: AppEnvState }) {
       <div key={varState.key} className="animate-in fade-in rounded-lg border">
         <div className="p-4">
           <div className="flex items-start justify-between">
-            <div className="flex-1 flex-col gap-y-1">
-              <div className="flex items-center gap-2">
+            <div className="flex-1 flex-col gap-y-4">
+              <div className="flex items-center gap-4">
                 <span className="font-mono text-sm font-semibold">
                   {varState.key}
                 </span>
+
+                {model?.required && <Badge variant="outline">Required</Badge>}
+
+                {varState.effectiveSource === 'MISSING' && (
+                  <Badge
+                    variant={
+                      // Show destructive if required OR if contextual validation dependencies are not met
+                      model?.required ||
+                      model?.contextualValidation?.dependencies.some((dep) => {
+                        const dependencyValue =
+                          allVariables[dep.variable] ?? '';
+
+                        const shouldValidate = dep.condition(
+                          dependencyValue,
+                          allVariables,
+                        );
+
+                        if (!shouldValidate) {
+                          return false;
+                        }
+
+                        return !model.contextualValidation!.validate({
+                          value: varState.effectiveValue,
+                          variables: allVariables,
+                          mode: appState.mode,
+                        }).success;
+                      })
+                        ? 'destructive'
+                        : 'outline'
+                    }
+                  >
+                    Missing
+                  </Badge>
+                )}
 
                 {varState.isOverridden && (
                   <Badge variant="warning">Overridden</Badge>
@@ -147,7 +304,7 @@ function EnvList({ appState }: { appState: AppEnvState }) {
 
               <If condition={model}>
                 {(model) => (
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 py-1">
                     <span className="text-muted-foreground text-xs font-normal">
                       {model.description}
                     </span>
@@ -238,33 +395,35 @@ function EnvList({ appState }: { appState: AppEnvState }) {
               </Badge>
             </If>
 
-            <Badge
-              variant={'outline'}
-              className={cn({
-                'text-destructive':
-                  varState.effectiveSource === '.env.production',
-              })}
-            >
-              {varState.effectiveSource}
+            <If condition={varState.effectiveSource !== 'MISSING'}>
+              <Badge
+                variant={'outline'}
+                className={cn({
+                  'text-destructive':
+                    varState.effectiveSource === '.env.production',
+                })}
+              >
+                {varState.effectiveSource}
 
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger>
-                    <InfoIcon className="ml-2 h-3 w-3" />
-                  </TooltipTrigger>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <InfoIcon className="ml-2 h-3 w-3" />
+                    </TooltipTrigger>
 
-                  <TooltipContent>
-                    {varState.effectiveSource === '.env.local'
-                      ? `These variables are specific to this machine and are not committed`
-                      : varState.effectiveSource === '.env.development'
-                        ? `These variables are only being used during development`
-                        : varState.effectiveSource === '.env'
-                          ? `These variables are shared under all modes`
-                          : `These variables are only used in production mode`}
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </Badge>
+                    <TooltipContent>
+                      {varState.effectiveSource === '.env.local'
+                        ? `These variables are specific to this machine and are not committed`
+                        : varState.effectiveSource === '.env.development'
+                          ? `These variables are only being used during development`
+                          : varState.effectiveSource === '.env'
+                            ? `These variables are shared under all modes`
+                            : `These variables are only used in production mode`}
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </Badge>
+            </If>
 
             <If condition={varState.isOverridden}>
               <Badge variant="warning">
@@ -313,13 +472,45 @@ function EnvList({ appState }: { appState: AppEnvState }) {
                 </Heading>
 
                 <Alert variant="destructive">
-                  <AlertTitle>Invalid Value</AlertTitle>
+                  <AlertTitle>
+                    {varState.effectiveSource === 'MISSING'
+                      ? 'Missing Required Variable'
+                      : 'Invalid Value'}
+                  </AlertTitle>
 
                   <AlertDescription>
-                    The value for {varState.key} is invalid:
-                    <pre>
-                      <code>{JSON.stringify(validation, null, 2)}</code>
-                    </pre>
+                    <div className="space-y-2">
+                      <div>
+                        {varState.effectiveSource === 'MISSING'
+                          ? `The variable ${varState.key} is required but missing from your environment files:`
+                          : `The value for ${varState.key} is invalid:`}
+                      </div>
+
+                      {/* Enhanced error display */}
+                      <div className="space-y-1">
+                        {validation.error?.issues.map((issue, index) => (
+                          <div key={index} className="text-sm">
+                            • {issue.message}
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Display dependency information if available */}
+                      {model?.contextualValidation?.dependencies && (
+                        <div className="mt-4 space-y-1">
+                          <div className="font-medium">Dependencies:</div>
+
+                          {model.contextualValidation.dependencies.map(
+                            (dep, index) => (
+                              <div key={index} className="text-sm">
+                                • Requires valid {dep.variable.toUpperCase()}{' '}
+                                when {dep.message}
+                              </div>
+                            ),
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </AlertDescription>
                 </Alert>
               </div>
@@ -401,30 +592,63 @@ function EnvList({ appState }: { appState: AppEnvState }) {
     }
 
     if (invalidVars) {
-      const allVariables = Object.values(appState.variables).reduce(
-        (acc, variable) => ({
-          ...acc,
-          [variable.key]: variable.effectiveValue,
-        }),
-        {},
-      );
+      const allVariables = getEffectiveVariablesValue(appState);
 
-      const hasError =
-        model && model.validate
-          ? !model.validate({
-              value: varState.effectiveValue,
-              variables: allVariables,
-              mode: appState.mode,
-            }).success
-          : false;
+      let hasError = false;
+
+      if (model) {
+        if (model.contextualValidation) {
+          // Check for missing or invalid dependencies
+          const dependencyErrors = model.contextualValidation.dependencies
+            .map((dep) => {
+              const dependencyValue = allVariables[dep.variable] ?? '';
+
+              const shouldValidate = dep.condition(
+                dependencyValue,
+                allVariables,
+              );
+
+              if (shouldValidate) {
+                const { error } = model.contextualValidation!.validate({
+                  value: varState.effectiveValue,
+                  variables: allVariables,
+                  mode: appState.mode,
+                });
+
+                return error;
+              }
+
+              return false;
+            })
+            .filter(Boolean);
+
+          if (dependencyErrors.length > 0) {
+            hasError = true;
+          }
+        } else if (model.validate) {
+          // Fall back to regular validation
+          const result = model.validate({
+            value: varState.effectiveValue,
+            variables: allVariables,
+            mode: appState.mode,
+          });
+
+          hasError = !result.success;
+        }
+      }
 
       if (hasError && isInSearch) return true;
+    }
+
+    if (isInSearch) {
+      return true;
     }
 
     return false;
   };
 
-  const groups = Object.values(appState.variables)
+  // Update groups to use allVarsWithValidation instead of appState.variables
+  const groups = Object.values(allVarsWithValidation)
     .filter(filterVariable)
     .reduce(
       (acc, variable) => {
@@ -445,7 +669,7 @@ function EnvList({ appState }: { appState: AppEnvState }) {
     );
 
   return (
-    <div className="flex flex-col gap-y-8">
+    <div className="flex flex-col gap-y-4">
       <div className="flex items-center">
         <div className="flex w-full space-x-2">
           <div>
@@ -501,7 +725,7 @@ function EnvList({ appState }: { appState: AppEnvState }) {
         </div>
       </div>
 
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col">
         <Summary appState={appState} />
 
         {groups.map((group) => (
@@ -561,34 +785,13 @@ function FilterSwitcher(props: {
     invalid: boolean;
   };
 }) {
-  const router = useRouter();
-
   const secretVars = props.filters.secret;
   const publicVars = props.filters.public;
   const overriddenVars = props.filters.overridden;
   const privateVars = props.filters.private;
   const invalidVars = props.filters.invalid;
 
-  const handleFilterChange = (key: string, value: boolean) => {
-    const searchParams = new URLSearchParams(window.location.search);
-    const path = window.location.pathname;
-
-    if (key === 'all' && value) {
-      searchParams.delete('secret');
-      searchParams.delete('public');
-      searchParams.delete('overridden');
-      searchParams.delete('private');
-      searchParams.delete('invalid');
-    } else {
-      if (!value) {
-        searchParams.delete(key);
-      } else {
-        searchParams.set(key, 'true');
-      }
-    }
-
-    router.push(`${path}?${searchParams.toString()}`);
-  };
+  const handleFilterChange = useUpdateFilteredVariables();
 
   const buttonLabel = () => {
     const filters = [];
@@ -678,44 +881,155 @@ function FilterSwitcher(props: {
 
 function Summary({ appState }: { appState: AppEnvState }) {
   const varsArray = Object.values(appState.variables);
+  const allVariables = getEffectiveVariablesValue(appState);
   const overridden = varsArray.filter((variable) => variable.isOverridden);
+  const handleFilterChange = useUpdateFilteredVariables();
 
-  const allVariables = varsArray.reduce(
+  // Find all variables with errors (including missing required and contextual validation)
+  const errors = envVariables.reduce<string[]>((acc, model) => {
+    // Get the current value of this variable
+    const varState = appState.variables[model.name];
+    const value = varState?.effectiveValue;
+    let hasError = false;
+
+    // Check if it's required but missing
+    if (model.required && !value) {
+      hasError = true;
+    } else if (model.contextualValidation) {
+      // Check if any dependency conditions are met
+      const dependenciesErrors = model.contextualValidation.dependencies.some(
+        (dep) => {
+          const dependencyValue = allVariables[dep.variable] ?? '';
+
+          const shouldValidate = dep.condition(dependencyValue, allVariables);
+
+          if (shouldValidate) {
+            const { error } = model.contextualValidation!.validate({
+              value: varState?.effectiveValue ?? '',
+              variables: allVariables,
+              mode: appState.mode,
+            });
+
+            return error;
+          }
+        },
+      );
+
+      if (dependenciesErrors) {
+        hasError = true;
+      }
+    } else if (model.validate && value) {
+      // Only run regular validation if:
+      // 1. There's no contextual validation
+      // 2. There's a value to validate
+      const result = model.validate({
+        value,
+        variables: allVariables,
+        mode: appState.mode,
+      });
+
+      if (!result.success) {
+        hasError = true;
+      }
+    }
+
+    if (hasError) {
+      acc.push(model.name);
+    }
+
+    return acc;
+  }, []);
+
+  const validVariables = varsArray.length - errors.length;
+
+  return (
+    <div className="flex justify-between space-x-4">
+      <div className="flex items-center gap-x-2">
+        <Badge variant={'outline'} className={'text-green-500'}>
+          {validVariables} Valid
+        </Badge>
+
+        <Badge
+          variant={'outline'}
+          className={cn({
+            'text-destructive': errors.length > 0,
+            'text-green-500': errors.length === 0,
+          })}
+        >
+          {errors.length} Invalid
+        </Badge>
+
+        <If condition={overridden.length > 0}>
+          <Badge
+            variant={'outline'}
+            className={cn({ 'text-orange-500': overridden.length > 0 })}
+          >
+            {overridden.length} Overridden
+          </Badge>
+        </If>
+      </div>
+
+      <div>
+        <If condition={errors.length > 0}>
+          <Button
+            size={'sm'}
+            variant={'ghost'}
+            onClick={() => handleFilterChange('invalid', true, true)}
+          >
+            <EyeOffIcon className="mr-2 h-3 w-3" />
+            Display Invalid only
+          </Button>
+        </If>
+      </div>
+    </div>
+  );
+}
+
+function getEffectiveVariablesValue(
+  appState: AppEnvState,
+): Record<string, string> {
+  const varsArray = Object.values(appState.variables);
+
+  return varsArray.reduce(
     (acc, variable) => ({
       ...acc,
       [variable.key]: variable.effectiveValue,
     }),
     {},
   );
+}
 
-  const errors = varsArray.filter((variable) => {
-    const model = envVariables.find((v) => variable.key === v.name);
+function useUpdateFilteredVariables() {
+  const router = useRouter();
 
-    const validation =
-      model && model.validate
-        ? model.validate({
-            value: variable.effectiveValue,
-            variables: allVariables,
-            mode: appState.mode,
-          })
-        : {
-            success: true,
-          };
+  const handleFilterChange = (key: string, value: boolean, reset = false) => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const path = window.location.pathname;
 
-    return !validation.success;
-  });
+    const resetAll = () => {
+      searchParams.delete('secret');
+      searchParams.delete('public');
+      searchParams.delete('overridden');
+      searchParams.delete('private');
+      searchParams.delete('invalid');
+    };
 
-  return (
-    <div className="flex flex-col space-y-4">
-      <div className="flex items-center gap-x-2">
-        <Badge variant={errors.length === 0 ? 'success' : 'destructive'}>
-          {errors.length} Errors
-        </Badge>
+    if (reset) {
+      resetAll();
+    }
 
-        <Badge variant={overridden.length === 0 ? 'success' : 'warning'}>
-          {overridden.length} Overridden Variables
-        </Badge>
-      </div>
-    </div>
-  );
+    if (key === 'all' && value) {
+      resetAll();
+    } else {
+      if (!value) {
+        searchParams.delete(key);
+      } else {
+        searchParams.set(key, 'true');
+      }
+    }
+
+    router.push(`${path}?${searchParams.toString()}`);
+  };
+
+  return useCallback(handleFilterChange, [router]);
 }

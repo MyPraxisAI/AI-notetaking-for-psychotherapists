@@ -115,6 +115,18 @@ async function adminMiddleware(request: NextRequest, response: NextResponse) {
     );
   }
 
+  const supabase = createMiddlewareClient(request, response);
+
+  const requiresMultiFactorAuthentication =
+    await checkRequiresMultiFactorAuthentication(supabase);
+
+  // If user requires multi-factor authentication, redirect to MFA page.
+  if (requiresMultiFactorAuthentication) {
+    return NextResponse.redirect(
+      new URL(pathsConfig.auth.verifyMfa, origin).href,
+    );
+  }
+
   const role = user?.app_metadata.role;
 
   // If user is not an admin, redirect to 404 page.

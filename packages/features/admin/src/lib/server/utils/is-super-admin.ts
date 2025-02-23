@@ -1,5 +1,6 @@
 import { SupabaseClient } from '@supabase/supabase-js';
 
+import { checkRequiresMultiFactorAuthentication } from '@kit/supabase/check-requires-mfa';
 import { Database } from '@kit/supabase/database';
 
 /**
@@ -15,6 +16,14 @@ export async function isSuperAdmin(client: SupabaseClient<Database>) {
   }
 
   if (!data.user) {
+    return false;
+  }
+
+  const requiresMultiFactorAuthentication =
+    await checkRequiresMultiFactorAuthentication(client);
+
+  // If user requires multi-factor authentication, deny access.
+  if (requiresMultiFactorAuthentication) {
     return false;
   }
 
