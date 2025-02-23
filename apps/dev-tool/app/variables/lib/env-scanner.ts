@@ -1,9 +1,9 @@
 import 'server-only';
 
-import { envVariables } from '@/app/variables/lib/env-variables-model';
 import fs from 'fs/promises';
 import path from 'path';
 
+import { envVariables } from './env-variables-model';
 import {
   AppEnvState,
   EnvFileInfo,
