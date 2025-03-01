@@ -1,13 +1,16 @@
 import { execSync } from 'child_process';
 
+
+
+
+
 const endpoint = 'https://makerkit.dev/api/license/check';
 
 async function checkLicense() {
   let gitUser, gitEmail;
 
   try {
-    gitUser =
-      execSync('git config user.username').toString().trim();
+    gitUser = execSync('git config user.username').toString().trim();
 
     if (!gitUser) {
       gitUser = execSync('git config user.name').toString().trim();
@@ -50,7 +53,9 @@ async function checkLicense() {
     return Promise.resolve();
   } else {
     return Promise.reject(
-      new Error(`License check failed. Please set the git user name with the command 'git config user.username <username>'. The username needs to match the GitHub username in your Makerkit organization.`),
+      new Error(
+        `License check failed. Please set the git user name with the command 'git config user.username <username>'. The username needs to match the GitHub username in your Makerkit organization.`,
+      ),
     );
   }
 }
@@ -107,8 +112,33 @@ function checkVisibility() {
     });
 }
 
+async function isOnline() {
+  const { lookup } = await import('dns');
+
+  try {
+    return await new Promise((resolve, reject) => {
+      lookup('google.com', (err) => {
+        if (err && err.code === 'ENOTFOUND') {
+          reject(false);
+        } else {
+          resolve(true);
+        }
+      });
+    }).catch(() => false);
+  } catch (e) {
+    return false;
+  }
+}
+
 async function main() {
   try {
+    const isUserOnline = await isOnline();
+
+    // disable the check if the user is offline
+    if (!isUserOnline) {
+      return process.exit(0);
+    }
+
     await checkVisibility();
 
     await checkLicense().catch((error) => {

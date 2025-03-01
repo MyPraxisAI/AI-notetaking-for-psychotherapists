@@ -37,7 +37,7 @@ function checkPnpmVersion() {
   }
 
   // warn if the minor version is less than 12
-  if (minor < 12) {
+  if (major < 9 && minor < 12) {
     console.warn(
       `\x1b[33m%s\x1b[0m`,
       `You are running pnpm ${currentPnpmVersion}. Makerkit recommends using pnpm 9.12.0 or higher.`,
