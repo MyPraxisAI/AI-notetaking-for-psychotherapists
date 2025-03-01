@@ -64,7 +64,7 @@ export class InvitationsPageObject {
           })
           .click();
 
-      return expect(this.page.url()).toContain('members');
+      await this.page.waitForURL('**/home/*/members');
     }).toPass()
   }
 

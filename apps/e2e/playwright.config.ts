@@ -7,7 +7,7 @@ const testIgnore: string[] = [];
 if (!enableBillingTests) {
   console.log(
     `Billing tests are disabled. To enable them, set the environment variable ENABLE_BILLING_TESTS=true.`,
-    `Current value: "${process.env.ENABLE_BILLING_TESTS}"`
+    `Current value: "${process.env.ENABLE_BILLING_TESTS}"`,
   );
 
   testIgnore.push('*-billing.spec.ts');
@@ -45,15 +45,14 @@ export default defineConfig({
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
+    navigationTimeout: 5000,
   },
-
   // test timeout set to 1 minutes
   timeout: 60 * 1000,
   expect: {
     // expect timeout set to 10 seconds
     timeout: 10 * 1000,
   },
-
   /* Configure projects for major browsers */
   projects: [
     {

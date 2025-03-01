@@ -3,10 +3,11 @@
 import { useFormStatus } from 'react-dom';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { z } from 'zod';
 
 import { ErrorBoundary } from '@kit/monitoring/components';
+import { VerifyOtpForm } from '@kit/otp/components';
 import { useUser } from '@kit/supabase/hooks/use-user';
 import { Alert, AlertDescription, AlertTitle } from '@kit/ui/alert';
 import {
@@ -61,8 +62,12 @@ export function TeamAccountDangerZone({
   // Only the primary owner can delete the team account
   const userIsPrimaryOwner = user.id === primaryOwnerUserId;
 
-  if (userIsPrimaryOwner && features.enableTeamDeletion) {
-    return <DeleteTeamContainer account={account} />;
+  if (userIsPrimaryOwner) {
+    if (features.enableTeamDeletion) {
+      return <DeleteTeamContainer account={account} />;
+    }
+
+    return;
   }
 
   // A primary owner can't leave the team account
@@ -79,7 +84,7 @@ function DeleteTeamContainer(props: {
   return (
     <div className={'flex flex-col space-y-4'}>
       <div className={'flex flex-col space-y-1'}>
-        <span className={'font-medium'}>
+        <span className={'text-sm font-medium'}>
           <Trans i18nKey={'teams:deleteTeam'} />
         </span>
 
@@ -139,21 +144,41 @@ function DeleteTeamConfirmationForm({
   name: string;
   id: string;
 }) {
+  const { data: user } = useUser();
+
   const form = useForm({
     mode: 'onChange',
     reValidateMode: 'onChange',
     resolver: zodResolver(
       z.object({
-        name: z.string().refine((value) => value === name, {
-          message: 'Name does not match',
-          path: ['name'],
-        }),
+        otp: z.string().min(6).max(6),
       }),
     ),
     defaultValues: {
-      name: ''
+      otp: '',
     },
   });
+
+  const { otp } = useWatch({ control: form.control });
+
+  if (!user?.email) {
+    return <LoadingOverlay fullPage={false} />;
+  }
+
+  if (!otp) {
+    return (
+      <VerifyOtpForm
+        purpose={`delete-team-account-${id}`}
+        email={user.email}
+        onSuccess={(otp) => form.setValue('otp', otp, { shouldValidate: true })}
+        CancelButton={
+          <AlertDialogCancel>
+            <Trans i18nKey={'common:cancel'} />
+          </AlertDialogCancel>
+        }
+      />
+    );
+  }
 
   return (
     <ErrorBoundary fallback={<DeleteTeamErrorAlert />}>
@@ -166,8 +191,7 @@ function DeleteTeamConfirmationForm({
           <div className={'flex flex-col space-y-2'}>
             <div
               className={
-                'border-2 border-red-500 p-4 text-sm text-red-500' +
-                ' my-4 flex flex-col space-y-2'
+                'border-destructive text-destructive my-4 flex flex-col space-y-2 rounded-md border-2 p-4 text-sm'
               }
             >
               <div>
@@ -185,36 +209,7 @@ function DeleteTeamConfirmationForm({
             </div>
 
             <input type="hidden" value={id} name={'accountId'} />
-
-            <FormField
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    <Trans i18nKey={'teams:teamNameInputLabel'} />
-                  </FormLabel>
-
-                  <FormControl>
-                    <Input
-                      data-test={'delete-team-form-confirm-input'}
-                      required
-                      type={'text'}
-                      autoComplete={'off'}
-                      className={'w-full'}
-                      placeholder={''}
-                      pattern={name}
-                      {...field}
-                    />
-                  </FormControl>
-
-                  <FormDescription>
-                    <Trans i18nKey={'teams:deleteTeamInputField'} />
-                  </FormDescription>
-
-                  <FormMessage />
-                </FormItem>
-              )}
-              name={'confirm'}
-            />
+            <input type="hidden" value={otp} name={'otp'} />
           </div>
 
           <AlertDialogFooter>
@@ -260,7 +255,7 @@ function LeaveTeamContainer(props: {
       }),
     ),
     defaultValues: {
-      confirmation: '' as 'LEAVE'
+      confirmation: '' as 'LEAVE',
     },
   });
 
@@ -375,7 +370,7 @@ function LeaveTeamSubmitButton() {
 
 function LeaveTeamErrorAlert() {
   return (
-    <>
+    <div className={'flex flex-col space-y-4'}>
       <Alert variant={'destructive'}>
         <AlertTitle>
           <Trans i18nKey={'teams:leaveTeamErrorHeading'} />
@@ -391,20 +386,28 @@ function LeaveTeamErrorAlert() {
           <Trans i18nKey={'common:cancel'} />
         </AlertDialogCancel>
       </AlertDialogFooter>
-    </>
+    </div>
   );
 }
 
 function DeleteTeamErrorAlert() {
   return (
-    <Alert variant={'destructive'}>
-      <AlertTitle>
-        <Trans i18nKey={'teams:deleteTeamErrorHeading'} />
-      </AlertTitle>
+    <div className={'flex flex-col space-y-4'}>
+      <Alert variant={'destructive'}>
+        <AlertTitle>
+          <Trans i18nKey={'teams:deleteTeamErrorHeading'} />
+        </AlertTitle>
 
-      <AlertDescription>
-        <Trans i18nKey={'common:genericError'} />
-      </AlertDescription>
-    </Alert>
+        <AlertDescription>
+          <Trans i18nKey={'common:genericError'} />
+        </AlertDescription>
+      </Alert>
+
+      <AlertDialogFooter>
+        <AlertDialogCancel>
+          <Trans i18nKey={'common:cancel'} />
+        </AlertDialogCancel>
+      </AlertDialogFooter>
+    </div>
   );
 }

@@ -1,14 +1,17 @@
 import { Page, expect } from '@playwright/test';
 
 import { AuthPageObject } from '../authentication/auth.po';
+import { OtpPo } from '../utils/otp.po';
 
 export class AccountPageObject {
   private readonly page: Page;
   public auth: AuthPageObject;
+  private otp: OtpPo;
 
   constructor(page: Page) {
     this.page = page;
     this.auth = new AuthPageObject(page);
+    this.otp = new OtpPo(page);
   }
 
   async setup() {
@@ -58,32 +61,16 @@ export class AccountPageObject {
     await this.page.click('[data-test="account-password-form"] button');
   }
 
-  async deleteAccount() {
-    await expect(async () => {
-      await this.page.click('[data-test="delete-account-button"]');
+  async deleteAccount(email: string) {
+    // Click the delete account button to open the modal
+    await this.page.click('[data-test="delete-account-button"]');
 
-      await this.page.fill(
-        '[data-test="delete-account-input-field"]',
-        'DELETE',
-      );
+    // Complete the OTP verification process
+    await this.otp.completeOtpVerification(email);
 
-      const click = this.page.click(
-        '[data-test="confirm-delete-account-button"]',
-      );
+    await this.page.waitForTimeout(500);
 
-      const response = await this.page
-        .waitForResponse((resp) => {
-          return (
-            resp.url().includes('home/settings') &&
-            resp.request().method() === 'POST'
-          );
-        })
-        .then((response) => {
-          expect(response.status()).toBe(303);
-        });
-
-      await Promise.all([click, response]);
-    }).toPass();
+    await this.page.click('[data-test="confirm-delete-account-button"]');
   }
 
   getProfileName() {

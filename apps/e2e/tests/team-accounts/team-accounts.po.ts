@@ -1,20 +1,25 @@
 import { Page, expect } from '@playwright/test';
 
 import { AuthPageObject } from '../authentication/auth.po';
+import { OtpPo } from '../utils/otp.po';
 
 export class TeamAccountsPageObject {
   private readonly page: Page;
   public auth: AuthPageObject;
+  public otp: OtpPo;
 
   constructor(page: Page) {
     this.page = page;
     this.auth = new AuthPageObject(page);
+    this.otp = new OtpPo(page);
   }
 
   async setup(params = this.createTeamName()) {
-    await this.auth.signUpFlow('/home');
-
+    const { email } = await this.auth.signUpFlow('/home');
+    
     await this.createTeam(params);
+
+    return { email, teamName: params.teamName, slug: params.slug };
   }
 
   getTeamFromSelector(teamName: string) {
@@ -36,6 +41,18 @@ export class TeamAccountsPageObject {
         .click();
 
       await this.page.waitForURL('**/home/*/settings');
+    }).toPass();
+  }
+
+  goToMembers() {
+    return expect(async () => {
+      await this.page
+        .locator('a', {
+          hasText: 'Members',
+        })
+        .click();
+
+      await this.page.waitForURL('**/home/*/members');
     }).toPass();
   }
 
@@ -94,18 +111,11 @@ export class TeamAccountsPageObject {
     }).toPass();
   }
 
-  async deleteAccount(teamName: string) {
+  async deleteAccount(email: string) {
     await expect(async () => {
       await this.page.click('[data-test="delete-team-trigger"]');
 
-      await expect(
-        this.page.locator('[data-test="delete-team-form-confirm-input"]'),
-      ).toBeVisible();
-
-      await this.page.fill(
-        '[data-test="delete-team-form-confirm-input"]',
-        teamName,
-      );
+      await this.otp.completeOtpVerification(email);
 
       const click = this.page.click(
         '[data-test="delete-team-form-confirm-button"]',
@@ -113,6 +123,51 @@ export class TeamAccountsPageObject {
 
       const response = this.page.waitForURL('**/home');
 
+      return Promise.all([click, response]);
+    }).toPass();
+  }
+
+  async updateMemberRole(memberEmail: string, newRole: string) {
+    await expect(async () => {
+      // Find the member row and click the actions button
+      const memberRow = this.page.getByRole('row', { name: memberEmail });
+      await memberRow.getByRole('button').click();
+      
+      // Click the update role option in the dropdown menu
+      await this.page.getByText('Update Role').click();
+      
+      // Select the new role
+      await this.page.click('[data-test="role-selector-trigger"]');
+      await this.page.click(`[data-test="role-option-${newRole}"]`);
+      
+      // Click the confirm button
+      const click = this.page.click('[data-test="confirm-update-member-role"]');
+      
+      // Wait for the update to complete and page to reload
+      const response = this.page.waitForURL('**/home/*/members');
+      
+      return Promise.all([click, response]);
+    }).toPass();
+  }
+
+  async transferOwnership(memberEmail: string, ownerEmail: string) {
+    await expect(async () => {
+      // Find the member row and click the actions button
+      const memberRow = this.page.getByRole('row', { name: memberEmail });
+      await memberRow.getByRole('button').click();
+      
+      // Click the transfer ownership option in the dropdown menu
+      await this.page.getByText('Transfer Ownership').click();
+      
+      // Complete OTP verification
+      await this.otp.completeOtpVerification(ownerEmail);
+      
+      // Click the confirm button
+      const click = this.page.click('[data-test="confirm-transfer-ownership-button"]');
+      
+      // Wait for the transfer to complete and page to reload
+      const response = this.page.waitForURL('**/home/*/members');
+      
       return Promise.all([click, response]);
     }).toPass();
   }

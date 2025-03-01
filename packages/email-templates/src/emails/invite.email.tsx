@@ -79,12 +79,12 @@ export async function renderInviteEmail(props: Props) {
             </EmailHeader>
 
             <EmailContent>
-              <Text className="text-[14px] leading-[24px] text-black">
+              <Text className="text-[16px] leading-[24px] text-[#242424]">
                 {hello}
               </Text>
 
               <Text
-                className="text-[14px] leading-[24px] text-black"
+                className="text-[16px] leading-[24px] text-[#242424]"
                 dangerouslySetInnerHTML={{ __html: mainText }}
               />
 
@@ -107,7 +107,7 @@ export async function renderInviteEmail(props: Props) {
                 <CtaButton href={props.link}>{joinTeam}</CtaButton>
               </Section>
 
-              <Text className="text-[14px] leading-[24px] text-black">
+              <Text className="text-[16px] leading-[24px] text-[#242424]">
                 {t(`${namespace}:copyPasteLink`)}{' '}
                 <Link href={props.link} className="text-blue-600 no-underline">
                   {props.link}

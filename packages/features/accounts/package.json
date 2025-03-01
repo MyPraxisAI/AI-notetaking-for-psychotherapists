@@ -27,6 +27,7 @@
     "@kit/mailers": "workspace:*",
     "@kit/monitoring": "workspace:*",
     "@kit/next": "workspace:*",
+    "@kit/otp": "workspace:*",
     "@kit/prettier-config": "workspace:*",
     "@kit/shared": "workspace:*",
     "@kit/supabase": "workspace:*",

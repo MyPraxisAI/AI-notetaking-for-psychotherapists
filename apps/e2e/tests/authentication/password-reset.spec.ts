@@ -2,35 +2,60 @@ import { expect, test } from '@playwright/test';
 
 import { AuthPageObject } from './auth.po';
 
-const email = 'owner@makerkit.dev';
 const newPassword = (Math.random() * 10000).toString();
 
 test.describe('Password Reset Flow', () => {
-  test.describe.configure({ mode: 'serial' });
-
   test('will reset the password and sign in with new one', async ({ page }) => {
     const auth = new AuthPageObject(page);
 
-    await page.goto('/auth/password-reset');
+    let email = '';
 
-    await page.fill('[name="email"]', email);
-    await page.click('[type="submit"]');
+    await expect(async () => {
+      email = `test-${Math.random() * 10000}@makerkit.dev`;
 
-    await auth.visitConfirmEmailLink(email);
+      await page.goto('/auth/sign-up');
 
-    await page.waitForURL('/update-password');
+      await auth.signUp({
+        email,
+        password: 'password',
+        repeatPassword: 'password',
+      });
 
-    await auth.updatePassword(newPassword);
+      await auth.visitConfirmEmailLink(email, {
+        deleteAfter: true,
+        subject: 'Confirm your email',
+      });
 
-    await page
-      .locator('a', {
-        hasText: 'Back to Home Page',
-      })
-      .click();
+      await page.context().clearCookies();
+      await page.reload();
 
-    await page.waitForURL('/home');
+      await page.goto('/auth/password-reset');
 
-    await auth.signOut();
+      await page.fill('[name="email"]', email);
+      await page.click('[type="submit"]');
+
+      await auth.visitConfirmEmailLink(email, {
+        deleteAfter: true,
+        subject: 'Reset your password',
+      });
+
+      await page.waitForURL('/update-password', {
+        timeout: 1000,
+      });
+
+      await auth.updatePassword(newPassword);
+
+      await page
+        .locator('a', {
+          hasText: 'Back to Home Page',
+        })
+        .click();
+
+      await page.waitForURL('/home');
+    }).toPass();
+
+    await page.context().clearCookies();
+    await page.reload();
 
     await page
       .locator('a', {
@@ -43,6 +68,8 @@ test.describe('Password Reset Flow', () => {
       password: newPassword,
     });
 
-    await page.waitForURL('/home');
+    await page.waitForURL('/home', {
+      timeout: 2000,
+    });
   });
 });

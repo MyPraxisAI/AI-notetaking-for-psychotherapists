@@ -25,7 +25,7 @@ export class AuthPageObject {
   }
 
   async signIn(params: { email: string; password: string }) {
-    await this.page.waitForTimeout(1000);
+    await this.page.waitForTimeout(500);
 
     await this.page.fill('input[name="email"]', params.email);
     await this.page.fill('input[name="password"]', params.password);
@@ -37,7 +37,7 @@ export class AuthPageObject {
     password: string;
     repeatPassword: string;
   }) {
-    await this.page.waitForTimeout(1000);
+    await this.page.waitForTimeout(500);
 
     await this.page.fill('input[name="email"]', params.email);
     await this.page.fill('input[name="password"]', params.password);
@@ -50,6 +50,7 @@ export class AuthPageObject {
     email: string,
     params: {
       deleteAfter: boolean;
+      subject?: string;
     } = {
       deleteAfter: true,
     },
@@ -79,6 +80,10 @@ export class AuthPageObject {
     });
 
     await this.visitConfirmEmailLink(email);
+
+    return {
+      email,
+    };
   }
 
   async updatePassword(password: string) {

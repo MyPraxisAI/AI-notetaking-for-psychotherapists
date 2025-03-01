@@ -1,9 +1,11 @@
 import { z } from 'zod';
 
-const confirmationString = 'TRANSFER';
-
 export const TransferOwnershipConfirmationSchema = z.object({
-  userId: z.string().uuid(),
-  confirmation: z.custom((value) => value === confirmationString),
   accountId: z.string().uuid(),
+  userId: z.string().uuid(),
+  otp: z.string().min(6),
 });
+
+export type TransferOwnershipConfirmationData = z.infer<
+  typeof TransferOwnershipConfirmationSchema
+>;

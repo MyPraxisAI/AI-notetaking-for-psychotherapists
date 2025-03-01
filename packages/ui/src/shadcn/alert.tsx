@@ -47,9 +47,10 @@ const AlertTitle: React.FC<React.ComponentPropsWithRef<'h5'>> = ({
 );
 AlertTitle.displayName = 'AlertTitle';
 
-const AlertDescription: React.FC<
-  React.ComponentPropsWithRef<'div'>
-> = ({ className, ...props }) => (
+const AlertDescription: React.FC<React.ComponentPropsWithRef<'div'>> = ({
+  className,
+  ...props
+}) => (
   <div
     className={cn('text-sm font-normal [&_p]:leading-relaxed', className)}
     {...props}

@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
 import { enhanceAction } from '@kit/next/actions';
+import { createOtpApi } from '@kit/otp';
 import { getLogger } from '@kit/shared/logger';
 import { getSupabaseServerAdminClient } from '@kit/supabase/server-admin-client';
 import { getSupabaseServerClient } from '@kit/supabase/server-client';
@@ -40,6 +41,12 @@ export const deletePersonalAccountAction = enhanceAction(
       userId: user.id,
     };
 
+    const otp = formData.get('otp') as string;
+
+    if (!otp) {
+      throw new Error('OTP is required');
+    }
+
     if (!enableAccountDeletion) {
       logger.warn(ctx, `Account deletion is not enabled`);
 
@@ -48,13 +55,32 @@ export const deletePersonalAccountAction = enhanceAction(
 
     logger.info(ctx, `Deleting account...`);
 
+    // verify the OTP
     const client = getSupabaseServerClient();
+    const otpApi = createOtpApi(client);
+
+    const otpResult = await otpApi.verifyToken({
+      token: otp,
+      userId: user.id,
+      purpose: 'delete-personal-account',
+    });
+
+    if (!otpResult.valid) {
+      throw new Error('Invalid OTP');
+    }
+
+    // validate the user ID matches the nonce's user ID
+    if (otpResult.user_id !== user.id) {
+      logger.error(
+        ctx,
+        `This token was meant to be used by a different user. Exiting.`,
+      );
+
+      throw new Error('Nonce mismatch');
+    }
 
     // create a new instance of the personal accounts service
     const service = createDeletePersonalAccountService();
-
-    // sign out the user before deleting their account
-    await client.auth.signOut();
 
     // delete the user's account and cancel all subscriptions
     await service.deletePersonalAccount({
@@ -62,6 +88,9 @@ export const deletePersonalAccountAction = enhanceAction(
       userId: user.id,
       userEmail: user.email ?? null,
     });
+
+    // sign out the user after deleting their account
+    await client.auth.signOut();
 
     logger.info(ctx, `Account request successfully sent`);
 

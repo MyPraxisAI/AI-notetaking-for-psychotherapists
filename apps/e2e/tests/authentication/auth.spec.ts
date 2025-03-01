@@ -51,6 +51,23 @@ test.describe('Auth flow', () => {
 
     expect(page.url()).toContain('/');
   });
+
+  test('will sign out using the dropdown', async ({ page }) => {
+    const auth = new AuthPageObject(page);
+
+    await page.goto('/home/settings');
+
+    await auth.signIn({
+      email: 'test@makerkit.dev',
+      password: 'testingpassword',
+    });
+
+    await page.waitForURL('/home/settings');
+
+    await auth.signOut();
+
+    await page.waitForURL('/');
+  });
 });
 
 test.describe('Protected routes', () => {

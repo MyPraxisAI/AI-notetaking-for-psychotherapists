@@ -93,7 +93,7 @@ async function getLayoutState() {
 
   const sidebarOpenCookieValue = sidebarOpenCookie
     ? sidebarOpenCookie.value === 'false'
-    : personalAccountNavigationConfig.sidebarCollapsed;
+    : !personalAccountNavigationConfig.sidebarCollapsed;
 
   const style =
     layoutStyleCookie?.value ?? personalAccountNavigationConfig.style;

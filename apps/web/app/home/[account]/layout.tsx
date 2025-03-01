@@ -126,12 +126,13 @@ async function getLayoutState(account: string) {
   const cookieStore = await cookies();
   const sidebarOpenCookie = cookieStore.get('sidebar:state');
   const layoutCookie = cookieStore.get('layout-style');
+
   const layoutStyle = layoutCookie?.value as PageLayoutStyle;
   const config = getTeamAccountSidebarConfig(account);
 
   const sidebarOpenCookieValue = sidebarOpenCookie
     ? sidebarOpenCookie.value === 'false'
-    : config.sidebarCollapsed;
+    : !config.sidebarCollapsed;
 
   return {
     open: sidebarOpenCookieValue,

@@ -3,8 +3,10 @@
 import { useState, useTransition } from 'react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 
+import { VerifyOtpForm } from '@kit/otp/components';
+import { useUser } from '@kit/supabase/hooks/use-user';
 import { Alert, AlertDescription, AlertTitle } from '@kit/ui/alert';
 import {
   AlertDialog,
@@ -16,17 +18,8 @@ import {
   AlertDialogTitle,
 } from '@kit/ui/alert-dialog';
 import { Button } from '@kit/ui/button';
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@kit/ui/form';
+import { Form } from '@kit/ui/form';
 import { If } from '@kit/ui/if';
-import { Input } from '@kit/ui/input';
 import { Trans } from '@kit/ui/trans';
 
 import { TransferOwnershipConfirmationSchema } from '../../schema/transfer-ownership-confirmation.schema';
@@ -82,15 +75,43 @@ function TransferOrganizationOwnershipForm({
 }) {
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<boolean>();
+  const { data: user } = useUser();
 
-  const form = useForm({
+  const form = useForm<{
+    accountId: string;
+    userId: string;
+    otp: string;
+  }>({
     resolver: zodResolver(TransferOwnershipConfirmationSchema),
     defaultValues: {
-      confirmation: '',
       accountId,
       userId,
+      otp: '',
     },
   });
+
+  const { otp } = useWatch({ control: form.control });
+
+  // If no OTP has been entered yet, show the OTP verification form
+  if (!otp) {
+    return (
+      <div className="flex flex-col space-y-6">
+        <VerifyOtpForm
+          purpose={`transfer-team-ownership-${accountId}`}
+          email={user?.email || ''}
+          onSuccess={(otpValue) => {
+            form.setValue('otp', otpValue, { shouldValidate: true });
+          }}
+          CancelButton={
+            <AlertDialogCancel>
+              <Trans i18nKey={'common:cancel'} />
+            </AlertDialogCancel>
+          }
+          data-test="verify-otp-form"
+        />
+      </div>
+    );
+  }
 
   return (
     <Form {...form}>
@@ -112,43 +133,19 @@ function TransferOrganizationOwnershipForm({
           <TransferOwnershipErrorAlert />
         </If>
 
-        <p>
-          <Trans
-            i18nKey={'teams:transferOwnershipDisclaimer'}
-            values={{
-              member: targetDisplayName,
-            }}
-            components={{ b: <b /> }}
-          />
-        </p>
+        <div className="border-destructive rounded-md border p-4">
+          <p className="text-destructive text-sm">
+            <Trans
+              i18nKey={'teams:transferOwnershipDisclaimer'}
+              values={{
+                member: targetDisplayName,
+              }}
+              components={{ b: <b /> }}
+            />
+          </p>
+        </div>
 
-        <FormField
-          name={'confirmation'}
-          render={({ field }) => {
-            return (
-              <FormItem>
-                <FormLabel>
-                  <Trans i18nKey={'teams:transferOwnershipInputLabel'} />
-                </FormLabel>
-
-                <FormControl>
-                  <Input
-                    autoComplete={'off'}
-                    type={'text'}
-                    required
-                    {...field}
-                  />
-                </FormControl>
-
-                <FormDescription>
-                  <Trans i18nKey={'teams:transferOwnershipInputDescription'} />
-                </FormDescription>
-
-                <FormMessage />
-              </FormItem>
-            );
-          }}
-        />
+        <input type="hidden" name="otp" value={otp} />
 
         <div>
           <p className={'text-muted-foreground'}>

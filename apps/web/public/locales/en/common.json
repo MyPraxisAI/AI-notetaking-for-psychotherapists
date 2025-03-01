@@ -73,6 +73,20 @@
       "label": "Member"
     }
   },
+  "otp": {
+    "requestVerificationCode": "Request Verification Code",
+    "requestVerificationCodeDescription": "We must verify your identity to continue with this action. We'll send a verification code to the email address {{email}}.",
+    "sendingCode": "Sending Code...",
+    "sendVerificationCode": "Send Verification Code",
+    "enterVerificationCode": "Enter Verification Code",
+    "codeSentToEmail": "We've sent a verification code to the email address {{email}}.",
+    "verificationCode": "Verification Code",
+    "enterCodeFromEmail": "Enter the 6-digit code we sent to your email.",
+    "verifying": "Verifying...",
+    "verifyCode": "Verify Code",
+    "requestNewCode": "Request New Code",
+    "errorSendingCode": "Error sending code. Please try again."
+  },
   "cookieBanner": {
     "title": "Hey, we use cookies \uD83C\uDF6A",
     "description": "This website uses cookies to ensure you get the best experience on our website.",

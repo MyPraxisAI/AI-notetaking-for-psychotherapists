@@ -1,6 +1,7 @@
 import { Page, expect, test } from '@playwright/test';
 
 import { AccountPageObject } from './account.po';
+import {AuthPageObject} from "../authentication/auth.po";
 
 test.describe('Account Settings', () => {
   let page: Page;
@@ -51,22 +52,22 @@ test.describe('Account Settings', () => {
 test.describe('Account Deletion', () => {
   test('user can delete their own account', async ({ page }) => {
     const account = new AccountPageObject(page);
+    const auth = new AuthPageObject(page);
 
-    await account.setup();
+    const { email } = await account.setup();
 
-    const request = account.deleteAccount();
+    await account.deleteAccount(email);
 
-    const response = page
-      .waitForResponse((resp) => {
-        return (
-          resp.url().includes('home/settings') &&
-          resp.request().method() === 'POST'
-        );
-      })
-      .then((response) => {
-        expect(response.status()).toBe(303);
-      });
+    await page.waitForURL('/');
 
-    await Promise.all([request, response]);
+    await page.goto('/auth/sign-in');
+
+    // sign in will now fail
+    await auth.signIn({
+      email,
+      password: 'testingpassword',
+    });
+
+    await expect(page.locator('[data-test="auth-error-message"]')).toBeVisible();
   });
 });

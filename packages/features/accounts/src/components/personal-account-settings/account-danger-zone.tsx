@@ -4,9 +4,11 @@ import { useFormStatus } from 'react-dom';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ExclamationTriangleIcon } from '@radix-ui/react-icons';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 
 import { ErrorBoundary } from '@kit/monitoring/components';
+import { VerifyOtpForm } from '@kit/otp/components';
+import { useUser } from '@kit/supabase/hooks/use-user';
 import { Alert, AlertDescription, AlertTitle } from '@kit/ui/alert';
 import {
   AlertDialog,
@@ -18,8 +20,7 @@ import {
   AlertDialogTrigger,
 } from '@kit/ui/alert-dialog';
 import { Button } from '@kit/ui/button';
-import { Form, FormControl, FormItem, FormLabel } from '@kit/ui/form';
-import { Input } from '@kit/ui/input';
+import { Form } from '@kit/ui/form';
 import { Trans } from '@kit/ui/trans';
 
 import { DeletePersonalAccountSchema } from '../../schema/delete-personal-account.schema';
@@ -46,6 +47,12 @@ export function AccountDangerZone() {
 }
 
 function DeleteAccountModal() {
+  const { data: user } = useUser();
+
+  if (!user?.email) {
+    return null;
+  }
+
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
@@ -61,21 +68,38 @@ function DeleteAccountModal() {
           </AlertDialogTitle>
         </AlertDialogHeader>
 
-        <ErrorBoundary fallback={<DeleteAccountErrorAlert />}>
-          <DeleteAccountForm />
+        <ErrorBoundary fallback={<DeleteAccountErrorContainer />}>
+          <DeleteAccountForm email={user.email} />
         </ErrorBoundary>
       </AlertDialogContent>
     </AlertDialog>
   );
 }
 
-function DeleteAccountForm() {
+function DeleteAccountForm(props: { email: string }) {
   const form = useForm({
     resolver: zodResolver(DeletePersonalAccountSchema),
     defaultValues: {
-      confirmation: '' as 'DELETE'
+      otp: '',
     },
   });
+
+  const { otp } = useWatch({ control: form.control });
+
+  if (!otp) {
+    return (
+      <VerifyOtpForm
+        purpose={'delete-personal-account'}
+        email={props.email}
+        onSuccess={(otp) => form.setValue('otp', otp, { shouldValidate: true })}
+        CancelButton={
+          <AlertDialogCancel>
+            <Trans i18nKey={'common:cancel'} />
+          </AlertDialogCancel>
+        }
+      />
+    );
+  }
 
   return (
     <Form {...form}>
@@ -84,9 +108,13 @@ function DeleteAccountForm() {
         action={deletePersonalAccountAction}
         className={'flex flex-col space-y-4'}
       >
+        <input type="hidden" name="otp" value={otp} />
+
         <div className={'flex flex-col space-y-6'}>
           <div
-            className={'border-destructive text-destructive border p-4 text-sm'}
+            className={
+              'border-destructive text-destructive rounded-md border p-4 text-sm'
+            }
           >
             <div className={'flex flex-col space-y-2'}>
               <div>
@@ -98,25 +126,6 @@ function DeleteAccountForm() {
               </div>
             </div>
           </div>
-
-          <FormItem>
-            <FormLabel>
-              <Trans i18nKey={'account:deleteProfileConfirmationInputLabel'} />
-            </FormLabel>
-
-            <FormControl>
-              <Input
-                autoComplete={'off'}
-                data-test={'delete-account-input-field'}
-                required
-                name={'confirmation'}
-                type={'text'}
-                className={'w-full'}
-                placeholder={''}
-                pattern={`DELETE`}
-              />
-            </FormControl>
-          </FormItem>
         </div>
 
         <AlertDialogFooter>
@@ -124,21 +133,21 @@ function DeleteAccountForm() {
             <Trans i18nKey={'common:cancel'} />
           </AlertDialogCancel>
 
-          <DeleteAccountSubmitButton />
+          <DeleteAccountSubmitButton disabled={!form.formState.isValid} />
         </AlertDialogFooter>
       </form>
     </Form>
   );
 }
 
-function DeleteAccountSubmitButton() {
+function DeleteAccountSubmitButton(props: { disabled: boolean }) {
   const { pending } = useFormStatus();
 
   return (
     <Button
       data-test={'confirm-delete-account-button'}
       type={'submit'}
-      disabled={pending}
+      disabled={pending || props.disabled}
       name={'action'}
       variant={'destructive'}
     >
@@ -148,6 +157,20 @@ function DeleteAccountSubmitButton() {
         <Trans i18nKey={'account:deleteAccount'} />
       )}
     </Button>
+  );
+}
+
+function DeleteAccountErrorContainer() {
+  return (
+    <div className="flex flex-col gap-y-4">
+      <DeleteAccountErrorAlert />
+
+      <div>
+        <AlertDialogCancel>
+          <Trans i18nKey={'common:cancel'} />
+        </AlertDialogCancel>
+      </div>
+    </div>
   );
 }
 

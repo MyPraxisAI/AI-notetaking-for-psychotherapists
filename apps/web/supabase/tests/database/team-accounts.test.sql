@@ -44,6 +44,16 @@ select
 		    $$, row ('owner'::varchar),
 		    'The primary owner should have the owner role for the team account');
 
+select is(
+    public.is_account_owner((select
+                        id
+                    from public.accounts
+                    where
+                        slug = 'test')),
+    true,
+    'The current user should be the owner of the team account'
+);
+
 -- Should be able to see the team account
 select
     isnt_empty($$
@@ -57,6 +67,16 @@ select
 -- Others should not be able to see the team account
 select
     tests.authenticate_as('test2');
+
+select is(
+    public.is_account_owner((select
+                        id
+                    from public.accounts
+                    where
+                        slug = 'test')),
+    false,
+    'The current user should not be the owner of the team account'
+);
 
 select
     is_empty($$

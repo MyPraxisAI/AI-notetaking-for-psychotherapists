@@ -75,6 +75,14 @@ export default async function EmailsPage() {
                 </CardButtonHeader>
               </Link>
             </CardButton>
+
+            <CardButton asChild>
+              <Link href={'/emails/otp-email'}>
+                <CardButtonHeader>
+                  <CardButtonTitle>OTP Email</CardButtonTitle>
+                </CardButtonHeader>
+              </Link>
+            </CardButton>
           </div>
         </div>
       </PageBody>

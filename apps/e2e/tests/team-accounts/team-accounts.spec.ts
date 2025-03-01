@@ -1,6 +1,73 @@
 import { Page, expect, test } from '@playwright/test';
 
+import { InvitationsPageObject } from '../invitations/invitations.po';
 import { TeamAccountsPageObject } from './team-accounts.po';
+
+// Helper function to set up a team with a member
+async function setupTeamWithMember(page: Page, memberRole = 'member') {
+  // Setup invitations page object
+  const invitations = new InvitationsPageObject(page);
+  const teamAccounts = invitations.teamAccounts;
+
+  // Setup team with owner
+  const { email: ownerEmail, slug } = await invitations.setup();
+
+  // Navigate to members page
+  await invitations.navigateToMembers();
+
+  // Create a new member email and invite them with the specified role
+  const memberEmail = invitations.auth.createRandomEmail();
+
+  const invites = [
+    {
+      email: memberEmail,
+      role: memberRole,
+    },
+  ];
+
+  await invitations.openInviteForm();
+  await invitations.inviteMembers(invites);
+
+  // Verify the invitation was sent
+  await expect(invitations.getInvitations()).toHaveCount(1);
+
+  // Sign out the current user
+  await page.context().clearCookies();
+
+  // Sign up with the new member email and accept the invitation
+  await invitations.auth.visitConfirmEmailLink(memberEmail);
+
+  await invitations.auth.signUp({
+    email: memberEmail,
+    password: 'password',
+    repeatPassword: 'password',
+  });
+
+  await invitations.auth.visitConfirmEmailLink(memberEmail);
+
+  await invitations.acceptInvitation();
+
+  await invitations.teamAccounts.openAccountsSelector();
+
+  await expect(invitations.teamAccounts.getTeams()).toHaveCount(1);
+
+  // Sign out and sign back in as the original owner
+  await page.context().clearCookies();
+
+  await page.goto('/auth/sign-in');
+
+  await invitations.auth.signIn({
+    email: ownerEmail,
+    password: 'password',
+  });
+
+  await page.waitForURL('/home');
+
+  // Navigate to the team members page
+  await page.goto(`/home/${slug}/members`);
+
+  return { invitations, teamAccounts, ownerEmail, memberEmail, slug };
+}
 
 test.describe('Team Accounts', () => {
   let page: Page;
@@ -31,19 +98,78 @@ test.describe('Team Accounts', () => {
   });
 });
 
-test.describe('Account Deletion', () => {
+test.describe('Team Account Deletion', () => {
   test('user can delete their team account', async ({ page }) => {
     const teamAccounts = new TeamAccountsPageObject(page);
     const params = teamAccounts.createTeamName();
 
-    await teamAccounts.setup(params);
+    const { email } = await teamAccounts.setup(params);
     await teamAccounts.goToSettings();
 
-    await teamAccounts.deleteAccount(params.teamName);
+    await teamAccounts.deleteAccount(email);
     await teamAccounts.openAccountsSelector();
 
     await expect(
       teamAccounts.getTeamFromSelector(params.teamName),
     ).not.toBeVisible();
+  });
+});
+
+test.describe('Team Member Role Management', () => {
+  test("owner can update a team member's role", async ({ page }) => {
+    // Setup team with a regular member
+    const { teamAccounts, memberEmail } = await setupTeamWithMember(page);
+
+    // Get the current role badge text
+    const memberRow = page.getByRole('row', { name: memberEmail });
+
+    const initialRoleBadge = memberRow.locator(
+      '[data-test="member-role-badge"]',
+    );
+
+    await expect(initialRoleBadge).toHaveText('Member');
+
+    // Update the member's role to admin
+    await teamAccounts.updateMemberRole(memberEmail, 'owner');
+
+    // Wait for the page to fully load after the update
+    await page.waitForTimeout(1000);
+
+    // Verify the role was updated successfully
+    const updatedRoleBadge = page
+      .getByRole('row', { name: memberEmail })
+      .locator('[data-test="member-role-badge"]');
+    await expect(updatedRoleBadge).toHaveText('Owner');
+  });
+});
+
+test.describe('Team Ownership Transfer', () => {
+  test('owner can transfer ownership to another team member', async ({
+    page,
+  }) => {
+    // Setup team with an owner member (required for ownership transfer)
+    const { teamAccounts, ownerEmail, memberEmail } = await setupTeamWithMember(
+      page,
+      'owner',
+    );
+
+    // Transfer ownership to the member
+    await teamAccounts.transferOwnership(memberEmail, ownerEmail);
+
+    // Wait for the page to fully load after the transfer
+    await page.waitForTimeout(1000);
+
+    // Verify the transfer was successful by checking if the primary owner badge
+    // is now on the new owner's row
+    const memberRow = page.getByRole('row', { name: memberEmail });
+
+    // Check for the primary owner badge on the member's row
+    await expect(memberRow.locator('text=Primary Owner')).toBeVisible({
+      timeout: 5000,
+    });
+
+    // The original owner should no longer have the primary owner badge
+    const ownerRow = page.getByRole('row', { name: ownerEmail.split('@')[0] });
+    await expect(ownerRow.locator('text=Primary Owner')).not.toBeVisible();
   });
 });

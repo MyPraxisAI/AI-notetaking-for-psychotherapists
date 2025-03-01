@@ -9,7 +9,7 @@ const nextEslintConfig = [
     extends: ['next/core-web-vitals', 'next/typescript'],
     rules: {
       '@next/next/no-html-link-for-pages': 'off',
-      'no-undef': 'off'
+      'no-undef': 'off',
     },
   }),
 ];

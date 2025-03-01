@@ -48,6 +48,7 @@ export default async function EmailPage(props: EmailPageProps) {
               'change-email-address-email': 'Change Email Address Email',
               'reset-password-email': 'Reset Password Email',
               'magic-link-email': 'Magic Link Email',
+              'otp-email': 'OTP Email',
             }}
           />
         }

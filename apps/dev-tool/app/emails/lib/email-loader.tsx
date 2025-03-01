@@ -1,45 +1,48 @@
 import {
   renderAccountDeleteEmail,
   renderInviteEmail,
+  renderOtpEmail,
 } from '@kit/email-templates';
 
 export async function loadEmailTemplate(id: string) {
-  if (id === 'account-delete-email') {
-    return renderAccountDeleteEmail({
-      productName: 'Makerkit',
-      userDisplayName: 'Giancarlo',
-    });
-  }
+  switch (id) {
+    case 'account-delete-email':
+      return renderAccountDeleteEmail({
+        productName: 'Makerkit',
+        userDisplayName: 'Giancarlo',
+      });
 
-  if (id === 'invite-email') {
-    return renderInviteEmail({
-      teamName: 'Makerkit',
-      teamLogo:
-        '',
-      inviter: 'Giancarlo',
-      invitedUserEmail: 'test@makerkit.dev',
-      link: 'https://makerkit.dev',
-      productName: 'Makerkit',
-    });
-  }
+    case 'invite-email':
+      return renderInviteEmail({
+        teamName: 'Makerkit',
+        teamLogo: '',
+        inviter: 'Giancarlo',
+        invitedUserEmail: 'test@makerkit.dev',
+        link: 'https://makerkit.dev',
+        productName: 'Makerkit',
+      });
 
-  if (id === 'magic-link-email') {
-    return loadFromFileSystem('magic-link');
-  }
+    case 'otp-email':
+      return renderOtpEmail({
+        productName: 'Makerkit',
+        otp: '123456',
+      });
 
-  if (id === 'reset-password-email') {
-    return loadFromFileSystem('reset-password');
-  }
+    case 'magic-link-email':
+      return loadFromFileSystem('magic-link');
 
-  if (id === 'change-email-address-email') {
-    return loadFromFileSystem('change-email-address');
-  }
+    case 'reset-password-email':
+      return loadFromFileSystem('reset-password');
 
-  if (id === 'confirm-email') {
-    return loadFromFileSystem('confirm-email');
-  }
+    case 'change-email-address-email':
+      return loadFromFileSystem('change-email-address');
 
-  throw new Error(`Email template not found: ${id}`);
+    case 'confirm-email':
+      return loadFromFileSystem('confirm-email');
+
+    default:
+      throw new Error(`Email template not found: ${id}`);
+  }
 }
 
 async function loadFromFileSystem(fileName: string) {

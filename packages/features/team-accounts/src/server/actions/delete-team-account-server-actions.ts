@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 import { enhanceAction } from '@kit/next/actions';
+import { createOtpApi } from '@kit/otp';
 import { getLogger } from '@kit/shared/logger';
 import type { Database } from '@kit/supabase/database';
 import { getSupabaseServerClient } from '@kit/supabase/server-client';
@@ -22,6 +23,18 @@ export const deleteTeamAccountAction = enhanceAction(
     const params = DeleteTeamAccountSchema.parse(
       Object.fromEntries(formData.entries()),
     );
+
+    const otpService = createOtpApi(getSupabaseServerClient());
+
+    const otpResult = await otpService.verifyToken({
+      purpose: `delete-team-account-${params.accountId}`,
+      userId: user.id,
+      token: params.otp,
+    });
+
+    if (!otpResult.valid) {
+      throw new Error('Invalid OTP code');
+    }
 
     const ctx = {
       name: 'team-accounts.delete',
@@ -59,7 +72,7 @@ async function deleteTeamAccount(params: {
   const service = createDeleteTeamAccountService();
 
   // verify that the user has the necessary permissions to delete the team account
-  await assertUserPermissionsToDeleteTeamAccount(client, params);
+  await assertUserPermissionsToDeleteTeamAccount(client, params.accountId);
 
   // delete the team account
   await service.deleteTeamAccount(client, params);
@@ -67,20 +80,17 @@ async function deleteTeamAccount(params: {
 
 async function assertUserPermissionsToDeleteTeamAccount(
   client: SupabaseClient<Database>,
-  params: {
-    accountId: string;
-    userId: string;
-  },
+  accountId: string,
 ) {
-  const { data, error } = await client
-    .from('accounts')
-    .select('id')
-    .eq('primary_owner_user_id', params.userId)
-    .eq('is_personal_account', false)
-    .eq('id', params.accountId)
+  const { data: isOwner, error } = await client
+    .rpc('is_account_owner', {
+      account_id: accountId,
+    })
     .single();
 
-  if (error ?? !data) {
-    throw new Error('Account not found');
+  if (error || !isOwner) {
+    throw new Error('You do not have permission to delete this account');
   }
+
+  return isOwner;
 }
