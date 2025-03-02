@@ -22,7 +22,7 @@
     "@kit/supabase": "workspace:*",
     "@kit/team-accounts": "workspace:*",
     "@kit/tsconfig": "workspace:*",
-    "@supabase/supabase-js": "2.48.1",
+    "@supabase/supabase-js": "2.49.1",
     "zod": "^3.24.2"
   },
   "typesVersions": {

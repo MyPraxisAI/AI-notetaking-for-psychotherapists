@@ -1,6 +1,6 @@
 {
   "name": "next-supabase-saas-kit-turbo",
-  "version": "2.5.0",
+  "version": "2.5.1",
   "private": true,
   "sideEffects": false,
   "engines": {
@@ -39,15 +39,16 @@
   "packageManager": "pnpm@9.12.0",
   "pnpm": {
     "overrides": {
-      "react-is": "19.0.0"
+      "react-is": "19.0.0",
+      "require-in-the-middle": "7.5.2"
     }
   },
   "devDependencies": {
     "@manypkg/cli": "^0.23.0",
-    "@turbo/gen": "^2.4.2",
+    "@turbo/gen": "^2.4.4",
     "cross-env": "^7.0.3",
     "prettier": "^3.5.2",
-    "turbo": "2.4.2",
-    "typescript": "^5.7.3"
+    "turbo": "2.4.4",
+    "typescript": "^5.8.2"
   }
 }

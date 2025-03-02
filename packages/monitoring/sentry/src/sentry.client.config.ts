@@ -1,4 +1,4 @@
-import * as Sentry from '@sentry/nextjs';
+import { init } from '@sentry/nextjs';
 
 type Parameters<T extends (args: never) => unknown> = T extends (
   ...args: infer P
@@ -12,12 +12,15 @@ type Parameters<T extends (args: never) => unknown> = T extends (
  * @param props
  */
 export function initializeSentryBrowserClient(
-  props: Parameters<typeof Sentry.init>[0] = {},
+  props: Parameters<typeof init>[0] = {},
 ) {
-  return Sentry.init({
+  return init({
     dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
     // Replay may only be enabled for the client-side
-    integrations: [Sentry.replayIntegration()],
+    integrations: [
+      // add your desired integrations here
+      // https://docs.sentry.io/platforms/javascript/configuration/integrations/
+    ],
 
     // Set tracesSampleRate to 1.0 to capture 100%
     // of transactions for performance monitoring.
