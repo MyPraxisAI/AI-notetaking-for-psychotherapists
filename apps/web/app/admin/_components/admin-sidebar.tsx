@@ -31,7 +31,7 @@ export function AdminSidebar() {
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Admin</SidebarGroupLabel>
+          <SidebarGroupLabel>Super Admin</SidebarGroupLabel>
 
           <SidebarGroupContent>
             <SidebarMenu>

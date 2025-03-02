@@ -10,7 +10,7 @@ select makerkit.set_identifier('member', 'member@makerkit.dev');
 select makerkit.set_identifier('custom', 'custom@makerkit.dev');
 select makerkit.set_identifier('owner', 'owner@makerkit.dev');
 
-select tests.authenticate_as('test');
+select makerkit.authenticate_as('test');
 
 select lives_ok(
     $$ insert into public.invitations (email, invited_by, account_id, role, invite_token) values ('invite1@makerkit.dev', auth.uid(),  makerkit.get_account_id_by_slug('makerkit'), 'member', gen_random_uuid()); $$,
@@ -23,7 +23,7 @@ select throws_ok(
     'duplicate key value violates unique constraint "invitations_email_account_id_key"'
 );
 
-select tests.authenticate_as('member');
+select makerkit.authenticate_as('member');
 
 -- check a member cannot invite members with higher roles
 select throws_ok(
@@ -43,7 +43,7 @@ select isnt_empty(
     'invitations should be listed'
 );
 
-select tests.authenticate_as('owner');
+select makerkit.authenticate_as('owner');
 
 -- check the owner can invite members with lower roles
 select lives_ok(
@@ -52,7 +52,7 @@ select lives_ok(
 );
 
 -- authenticate_as the custom role
-select tests.authenticate_as('custom');
+select makerkit.authenticate_as('custom');
 
 -- it will fail because the custom role does not have the invites.manage permission
 select throws_ok(
@@ -66,7 +66,7 @@ set local role postgres;
 insert into public.role_permissions (role, permission) values ('custom-role', 'invites.manage');
 
 -- authenticate_as the custom role
-select tests.authenticate_as('custom');
+select makerkit.authenticate_as('custom');
 
 select lives_ok(
     $$ insert into public.invitations (email, invited_by, account_id, role, invite_token) values ('invite4@makerkit.dev', auth.uid(), makerkit.get_account_id_by_slug('makerkit'), 'custom-role', gen_random_uuid()) $$,
@@ -88,7 +88,7 @@ select throws_ok(
 
 select tests.create_supabase_user('user');
 
-select tests.authenticate_as('user');
+select makerkit.authenticate_as('user');
 
 -- it will fail because the user is not a member of the account
 select throws_ok(

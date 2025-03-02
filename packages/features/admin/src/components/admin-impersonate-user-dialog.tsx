@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 
 import { useSupabase } from '@kit/supabase/hooks/use-supabase';
+import { Alert, AlertDescription, AlertTitle } from '@kit/ui/alert';
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -27,6 +28,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@kit/ui/form';
+import { If } from '@kit/ui/if';
 import { Input } from '@kit/ui/input';
 import { LoadingOverlay } from '@kit/ui/loading-overlay';
 
@@ -50,6 +52,9 @@ export function AdminImpersonateUserDialog(
     accessToken: string;
     refreshToken: string;
   }>();
+
+  const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<boolean | null>(null);
 
   if (tokens) {
     return (
@@ -77,13 +82,31 @@ export function AdminImpersonateUserDialog(
 
         <Form {...form}>
           <form
+            data-test={'admin-impersonate-user-form'}
             className={'flex flex-col space-y-8'}
-            onSubmit={form.handleSubmit(async (data) => {
-              const tokens = await impersonateUserAction(data);
+            onSubmit={form.handleSubmit((data) => {
+              startTransition(async () => {
+                try {
+                  const result = await impersonateUserAction(data);
 
-              setTokens(tokens);
+                  setTokens(result);
+                } catch {
+                  setError(true);
+                }
+              });
             })}
           >
+            <If condition={error}>
+              <Alert variant={'destructive'}>
+                <AlertTitle>Error</AlertTitle>
+
+                <AlertDescription>
+                  Failed to impersonate user. Please check the logs to
+                  understand what went wrong.
+                </AlertDescription>
+              </Alert>
+            </If>
+
             <FormField
               name={'confirmation'}
               render={({ field }) => (
@@ -113,7 +136,9 @@ export function AdminImpersonateUserDialog(
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
 
-              <Button type={'submit'}>Impersonate User</Button>
+              <Button disabled={isPending} type={'submit'}>
+                {isPending ? 'Impersonating...' : 'Impersonate User'}
+              </Button>
             </AlertDialogFooter>
           </form>
         </Form>

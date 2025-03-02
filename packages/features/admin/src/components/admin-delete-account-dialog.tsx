@@ -1,8 +1,11 @@
 'use client';
 
+import { useState, useTransition } from 'react';
+
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 
+import { Alert, AlertDescription, AlertTitle } from '@kit/ui/alert';
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -21,7 +24,9 @@ import {
   FormField,
   FormItem,
   FormLabel,
+  FormMessage,
 } from '@kit/ui/form';
+import { If } from '@kit/ui/if';
 import { Input } from '@kit/ui/input';
 
 import { deleteAccountAction } from '../lib/server/admin-server-actions';
@@ -32,6 +37,9 @@ export function AdminDeleteAccountDialog(
     accountId: string;
   }>,
 ) {
+  const [pending, startTransition] = useTransition();
+  const [error, setError] = useState<boolean>(false);
+
   const form = useForm({
     resolver: zodResolver(DeleteAccountSchema),
     defaultValues: {
@@ -57,11 +65,30 @@ export function AdminDeleteAccountDialog(
 
         <Form {...form}>
           <form
+            data-form={'admin-delete-account-form'}
             className={'flex flex-col space-y-8'}
             onSubmit={form.handleSubmit((data) => {
-              return deleteAccountAction(data);
+              startTransition(async () => {
+                try {
+                  await deleteAccountAction(data);
+                  setError(false);
+                } catch {
+                  setError(true);
+                }
+              });
             })}
           >
+            <If condition={error}>
+              <Alert variant={'destructive'}>
+                <AlertTitle>Error</AlertTitle>
+
+                <AlertDescription>
+                  There was an error deleting the account. Please check the
+                  server logs to see what went wrong.
+                </AlertDescription>
+              </Alert>
+            </If>
+
             <FormField
               name={'confirmation'}
               render={({ field }) => (
@@ -83,6 +110,8 @@ export function AdminDeleteAccountDialog(
                     Are you sure you want to do this? This action cannot be
                     undone.
                   </FormDescription>
+
+                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -90,8 +119,12 @@ export function AdminDeleteAccountDialog(
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
 
-              <Button type={'submit'} variant={'destructive'}>
-                Delete
+              <Button
+                disabled={pending}
+                type={'submit'}
+                variant={'destructive'}
+              >
+                {pending ? 'Deleting...' : 'Delete'}
               </Button>
             </AlertDialogFooter>
           </form>

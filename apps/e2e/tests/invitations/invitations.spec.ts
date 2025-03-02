@@ -120,7 +120,8 @@ test.describe('Full Invitation Flow', () => {
     await expect(invitations.getInvitations()).toHaveCount(2);
 
     // sign out and sign in with the first email
-    await invitations.auth.signOut();
+    await page.context().clearCookies();
+    await page.reload();
 
     console.log(`Finding email to ${firstEmail} ...`);
 

@@ -45,7 +45,9 @@ test.describe('Account Settings', () => {
 
     await Promise.all([request, response]);
 
-    await account.auth.signOut();
+    await page.context().clearCookies();
+
+    await page.reload();
   });
 });
 

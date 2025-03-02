@@ -1,8 +1,11 @@
 'use client';
 
+import { useState, useTransition } from 'react';
+
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 
+import { Alert, AlertDescription, AlertTitle } from '@kit/ui/alert';
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -23,6 +26,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@kit/ui/form';
+import { If } from '@kit/ui/if';
 import { Input } from '@kit/ui/input';
 
 import { reactivateUserAction } from '../lib/server/admin-server-actions';
@@ -33,6 +37,9 @@ export function AdminReactivateUserDialog(
     userId: string;
   }>,
 ) {
+  const [pending, startTransition] = useTransition();
+  const [error, setError] = useState<boolean>(false);
+
   const form = useForm({
     resolver: zodResolver(ReactivateUserSchema),
     defaultValues: {
@@ -56,11 +63,30 @@ export function AdminReactivateUserDialog(
 
         <Form {...form}>
           <form
+            data-test={'admin-reactivate-user-form'}
             className={'flex flex-col space-y-8'}
             onSubmit={form.handleSubmit((data) => {
-              return reactivateUserAction(data);
+              startTransition(async () => {
+                try {
+                  await reactivateUserAction(data);
+                  setError(false);
+                } catch {
+                  setError(true);
+                }
+              });
             })}
           >
+            <If condition={error}>
+              <Alert variant={'destructive'}>
+                <AlertTitle>Error</AlertTitle>
+
+                <AlertDescription>
+                  There was an error reactivating the user. Please check the
+                  server logs to see what went wrong.
+                </AlertDescription>
+              </Alert>
+            </If>
+
             <FormField
               name={'confirmation'}
               render={({ field }) => (
@@ -90,7 +116,9 @@ export function AdminReactivateUserDialog(
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
 
-              <Button type={'submit'}>Reactivate User</Button>
+              <Button disabled={pending} type={'submit'}>
+                {pending ? 'Reactivating...' : 'Reactivate User'}
+              </Button>
             </AlertDialogFooter>
           </form>
         </Form>

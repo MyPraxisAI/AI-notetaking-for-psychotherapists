@@ -1,8 +1,11 @@
 'use client';
 
+import { useState, useTransition } from 'react';
+
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 
+import { Alert, AlertDescription, AlertTitle } from '@kit/ui/alert';
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -23,6 +26,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@kit/ui/form';
+import { If } from '@kit/ui/if';
 import { Input } from '@kit/ui/input';
 
 import { deleteUserAction } from '../lib/server/admin-server-actions';
@@ -33,6 +37,9 @@ export function AdminDeleteUserDialog(
     userId: string;
   }>,
 ) {
+  const [pending, startTransition] = useTransition();
+  const [error, setError] = useState<boolean>(false);
+
   const form = useForm({
     resolver: zodResolver(DeleteUserSchema),
     defaultValues: {
@@ -58,11 +65,30 @@ export function AdminDeleteUserDialog(
 
         <Form {...form}>
           <form
+            data-test={'admin-delete-user-form'}
             className={'flex flex-col space-y-8'}
             onSubmit={form.handleSubmit((data) => {
-              return deleteUserAction(data);
+              startTransition(async () => {
+                try {
+                  await deleteUserAction(data);
+                  setError(false);
+                } catch {
+                  setError(true);
+                }
+              });
             })}
           >
+            <If condition={error}>
+              <Alert variant={'destructive'}>
+                <AlertTitle>Error</AlertTitle>
+
+                <AlertDescription>
+                  There was an error deleting the user. Please check the server
+                  logs to see what went wrong.
+                </AlertDescription>
+              </Alert>
+            </If>
+
             <FormField
               name={'confirmation'}
               render={({ field }) => (
@@ -93,8 +119,12 @@ export function AdminDeleteUserDialog(
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
 
-              <Button type={'submit'} variant={'destructive'}>
-                Delete
+              <Button
+                disabled={pending}
+                type={'submit'}
+                variant={'destructive'}
+              >
+                {pending ? 'Deleting...' : 'Delete'}
               </Button>
             </AlertDialogFooter>
           </form>

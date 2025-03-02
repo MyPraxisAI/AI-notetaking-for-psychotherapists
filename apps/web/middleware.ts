@@ -3,6 +3,7 @@ import { NextResponse, URLPattern } from 'next/server';
 
 import { CsrfError, createCsrfProtect } from '@edge-csrf/nextjs';
 
+import { isSuperAdmin } from '@kit/admin';
 import { checkRequiresMultiFactorAuthentication } from '@kit/supabase/check-requires-mfa';
 import { createMiddlewareClient } from '@kit/supabase/middleware-client';
 
@@ -115,22 +116,11 @@ async function adminMiddleware(request: NextRequest, response: NextResponse) {
     );
   }
 
-  const supabase = createMiddlewareClient(request, response);
-
-  const requiresMultiFactorAuthentication =
-    await checkRequiresMultiFactorAuthentication(supabase);
-
-  // If user requires multi-factor authentication, redirect to MFA page.
-  if (requiresMultiFactorAuthentication) {
-    return NextResponse.redirect(
-      new URL(pathsConfig.auth.verifyMfa, origin).href,
-    );
-  }
-
-  const role = user?.app_metadata.role;
+  const client = createMiddlewareClient(request, response);
+  const userIsSuperAdmin = await isSuperAdmin(client);
 
   // If user is not an admin, redirect to 404 page.
-  if (!role || role !== 'super-admin') {
+  if (!userIsSuperAdmin) {
     return NextResponse.redirect(new URL('/404', request.nextUrl.origin).href);
   }
 

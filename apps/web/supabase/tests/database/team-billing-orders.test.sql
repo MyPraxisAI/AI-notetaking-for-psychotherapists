@@ -77,7 +77,7 @@ SELECT row_eq(
     'The subscription items price_amount should be updated'
 );
 
-select tests.authenticate_as('member');
+select makerkit.authenticate_as('member');
 
 -- account can read their own subscription
 SELECT isnt_empty(
@@ -94,7 +94,7 @@ SELECT isnt_empty(
 
 -- foreigners
 select tests.create_supabase_user('foreigner');
-select tests.authenticate_as('foreigner');
+select makerkit.authenticate_as('foreigner');
 
 -- account cannot read other's subscription
 SELECT is_empty(

@@ -9,7 +9,7 @@ select tests.create_supabase_user('test1', 'test1@test.com');
 
 select tests.create_supabase_user('test2');
 
-select tests.authenticate_as('test1');
+select makerkit.authenticate_as('test1');
 
 -- users cannot insert into notifications
 select throws_ok(
@@ -25,7 +25,7 @@ select lives_ok(
     'service role can insert into notifications'
 );
 
-select tests.authenticate_as('test1');
+select makerkit.authenticate_as('test1');
 
 -- user can read their own notifications
 select row_eq(
@@ -48,7 +48,7 @@ select lives_ok(
     'service role can insert into notifications'
 );
 
-select tests.authenticate_as('member');
+select makerkit.authenticate_as('member');
 
 select row_eq(
     $$ select account_id, body from public.notifications where account_id = makerkit.get_account_id_by_slug('makerkit'); $$,
@@ -58,7 +58,7 @@ select row_eq(
 
 -- foreigners
 
-select tests.authenticate_as('test2');
+select makerkit.authenticate_as('test2');
 
 -- foreigner cannot read other user's notifications
 select is_empty(

@@ -1,6 +1,6 @@
 {
   "name": "next-supabase-saas-kit-turbo",
-  "version": "2.4.0",
+  "version": "2.5.0",
   "private": true,
   "sideEffects": false,
   "engines": {
@@ -30,6 +30,7 @@
     "supabase:web:stop": "pnpm --filter web supabase:stop",
     "supabase:web:typegen": "pnpm --filter web supabase:typegen",
     "supabase:web:reset": "pnpm --filter web supabase:reset",
+    "supabase:web:test": "pnpm --filter web supabase:test",
     "stripe:listen": "pnpm --filter '@kit/stripe' start",
     "env:generate": "turbo gen env",
     "env:validate": "turbo gen validate-env"

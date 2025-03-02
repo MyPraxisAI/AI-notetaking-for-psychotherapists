@@ -54,14 +54,10 @@ test.describe('Password Reset Flow', () => {
       await page.waitForURL('/home');
     }).toPass();
 
-    await page.context().clearCookies();
-    await page.reload();
+    await auth.signOut();
 
-    await page
-      .locator('a', {
-        hasText: 'Sign in',
-      })
-      .click();
+    await page.waitForURL('/');
+    await page.goto('/auth/sign-in');
 
     await auth.signIn({
       email,

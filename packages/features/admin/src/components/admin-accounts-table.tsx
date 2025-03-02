@@ -52,6 +52,7 @@ export function AdminAccountsTable(
     page: number;
     filters: {
       type: 'all' | 'team' | 'personal';
+      query: string;
     };
   }>,
 ) {
@@ -79,7 +80,7 @@ function AccountsTableFilters(props: {
     resolver: zodResolver(FiltersSchema),
     defaultValues: {
       type: props.filters?.type ?? 'all',
-      query: '',
+      query: props.filters?.query ?? '',
     },
     mode: 'onChange',
     reValidateMode: 'onChange',
@@ -142,6 +143,7 @@ function AccountsTableFilters(props: {
             <FormItem>
               <FormControl className={'w-full min-w-36 md:min-w-80'}>
                 <Input
+                  data-test={'admin-accounts-table-filter-input'}
                   className={'w-full'}
                   placeholder={`Search account...`}
                   {...field}

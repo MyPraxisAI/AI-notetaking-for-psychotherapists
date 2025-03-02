@@ -26,7 +26,11 @@ export function EnvModeSelector({ mode }: { mode: EnvMode }) {
 
   return (
     <div>
-      <Select name={'mode'} defaultValue={mode} onValueChange={handleModeChange}>
+      <Select
+        name={'mode'}
+        defaultValue={mode}
+        onValueChange={handleModeChange}
+      >
         <SelectTrigger>
           <SelectValue placeholder="Select Mode" />
         </SelectTrigger>

@@ -11,7 +11,7 @@ select makerkit.set_identifier('custom', 'custom@makerkit.dev');
 -- another user not in the team
 select tests.create_supabase_user('test', 'test@supabase.com');
 
-select tests.authenticate_as('owner');
+select makerkit.authenticate_as('owner');
 
 -- Can check if an account is a team member
 
@@ -25,7 +25,7 @@ select is(
   'The primary account owner can check if a member is a team member'
 );
 
-select tests.authenticate_as('member');
+select makerkit.authenticate_as('member');
 
 -- Member
 select is(
@@ -50,7 +50,7 @@ select isnt_empty(
   'The member can query the team account memberships using the get_account_members function'
 );
 
-select tests.authenticate_as('test');
+select makerkit.authenticate_as('test');
 
 -- Foreigners
 -- Cannot query the team account memberships

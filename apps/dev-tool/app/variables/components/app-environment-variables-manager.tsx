@@ -47,8 +47,6 @@ type ValidationResult = {
   };
 };
 
-type VariableRecord = Record<string, string>;
-
 export function AppEnvironmentVariablesManager({
   state,
 }: React.PropsWithChildren<{
@@ -71,11 +69,11 @@ function EnvList({ appState }: { appState: AppEnvState }) {
   const [search, setSearch] = useState('');
   const searchParams = useSearchParams();
 
-  const secretVars = searchParams.get('secret') === 'true';
-  const publicVars = searchParams.get('public') === 'true';
-  const privateVars = searchParams.get('private') === 'true';
-  const overriddenVars = searchParams.get('overridden') === 'true';
-  const invalidVars = searchParams.get('invalid') === 'true';
+  const showSecretVars = searchParams.get('secret') === 'true';
+  const showPublicVars = searchParams.get('public') === 'true';
+  const showPrivateVars = searchParams.get('private') === 'true';
+  const showOverriddenVars = searchParams.get('overridden') === 'true';
+  const showInvalidVars = searchParams.get('invalid') === 'true';
 
   const toggleExpanded = (key: string) => {
     setExpandedVars((prev) => ({
@@ -558,16 +556,16 @@ function EnvList({ appState }: { appState: AppEnvState }) {
 
     if (
       !search &&
-      !secretVars &&
-      !publicVars &&
-      !privateVars &&
-      !invalidVars &&
-      !overriddenVars
+      !showSecretVars &&
+      !showPublicVars &&
+      !showPrivateVars &&
+      !showInvalidVars &&
+      !showOverriddenVars
     ) {
       return true;
     }
 
-    const isSecret = model?.secret;
+    const isSecret = model?.secret ?? false;
     const isPublic = varState.key.startsWith('NEXT_PUBLIC_');
     const isPrivate = !isPublic;
 
@@ -575,23 +573,23 @@ function EnvList({ appState }: { appState: AppEnvState }) {
       ? varState.key.toLowerCase().includes(search.toLowerCase())
       : true;
 
-    if (isPublic && publicVars && isInSearch) {
-      return true;
+    if (showPublicVars && isInSearch) {
+      return isPublic;
     }
 
-    if (isSecret && secretVars && isInSearch) {
-      return true;
+    if (showSecretVars && isInSearch) {
+      return isSecret;
     }
 
-    if (isPrivate && privateVars && isInSearch) {
-      return true;
+    if (showPrivateVars && isInSearch) {
+      return isPrivate;
     }
 
-    if (overriddenVars && varState.isOverridden && isInSearch) {
-      return true;
+    if (showOverriddenVars && isInSearch) {
+      return varState.isOverridden;
     }
 
-    if (invalidVars) {
+    if (showInvalidVars) {
       const allVariables = getEffectiveVariablesValue(appState);
 
       let hasError = false;
@@ -637,14 +635,10 @@ function EnvList({ appState }: { appState: AppEnvState }) {
         }
       }
 
-      if (hasError && isInSearch) return true;
+      return hasError && isInSearch;
     }
 
-    if (isInSearch) {
-      return true;
-    }
-
-    return false;
+    return isInSearch;
   };
 
   // Update groups to use allVarsWithValidation instead of appState.variables
@@ -679,11 +673,11 @@ function EnvList({ appState }: { appState: AppEnvState }) {
           <div>
             <FilterSwitcher
               filters={{
-                secret: secretVars,
-                public: publicVars,
-                overridden: overriddenVars,
-                private: privateVars,
-                invalid: invalidVars,
+                secret: showSecretVars,
+                public: showPublicVars,
+                overridden: showOverriddenVars,
+                private: showPrivateVars,
+                invalid: showInvalidVars,
               }}
             />
           </div>

@@ -21,6 +21,7 @@ import {
   FormItem,
   FormMessage,
 } from '@kit/ui/form';
+import { Heading } from '@kit/ui/heading';
 import { If } from '@kit/ui/if';
 import {
   InputOTP,
@@ -86,9 +87,15 @@ export function MultiFactorChallengeContainer({
           });
         })}
       >
-        <div className={'flex flex-col space-y-4'}>
-          <div className={'flex w-full flex-col space-y-2.5'}>
-            <div className={'flex flex-col space-y-4'}>
+        <div className={'flex flex-col items-center gap-y-6'}>
+          <div className="flex flex-col items-center gap-y-4">
+            <Heading level={5}>
+              <Trans i18nKey={'auth:verifyCodeHeading'} />
+            </Heading>
+          </div>
+
+          <div className={'flex w-full flex-col gap-y-2.5'}>
+            <div className={'flex flex-col gap-y-4'}>
               <If condition={verifyMFAChallenge.error}>
                 <Alert variant={'destructive'}>
                   <ExclamationTriangleIcon className={'h-5'} />
@@ -130,7 +137,7 @@ export function MultiFactorChallengeContainer({
                         </InputOTP>
                       </FormControl>
 
-                      <FormDescription>
+                      <FormDescription className="text-center">
                         <Trans
                           i18nKey={'account:verifyActivationCodeDescription'}
                         />
@@ -145,6 +152,8 @@ export function MultiFactorChallengeContainer({
           </div>
 
           <Button
+            className="w-full"
+            data-test={'submit-mfa-button'}
             disabled={
               verifyMFAChallenge.isPending ||
               !verificationCodeForm.formState.isValid

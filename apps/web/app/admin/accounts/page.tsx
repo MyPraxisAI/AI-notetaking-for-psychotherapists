@@ -2,7 +2,7 @@ import { ServerDataLoader } from '@makerkit/data-loader-supabase-nextjs';
 
 import { AdminAccountsTable } from '@kit/admin/components/admin-accounts-table';
 import { AdminGuard } from '@kit/admin/components/admin-guard';
-import { getSupabaseServerAdminClient } from '@kit/supabase/server-admin-client';
+import { getSupabaseServerClient } from '@kit/supabase/server-client';
 import { AppBreadcrumbs } from '@kit/ui/app-breadcrumbs';
 import { PageBody, PageHeader } from '@kit/ui/page';
 
@@ -21,7 +21,7 @@ export const metadata = {
 };
 
 async function AccountsPage(props: AdminAccountsPageProps) {
-  const client = getSupabaseServerAdminClient();
+  const client = getSupabaseServerClient();
   const searchParams = await props.searchParams;
 
   const page = searchParams.page ? parseInt(searchParams.page) : 1;
@@ -47,6 +47,7 @@ async function AccountsPage(props: AdminAccountsPageProps) {
                 data={data}
                 filters={{
                   type: searchParams.account_type ?? 'all',
+                  query: searchParams.query ?? '',
                 }}
               />
             );

@@ -4,8 +4,8 @@ import Link from 'next/link';
 
 import { EmailTesterFormSchema } from '@/app/emails/lib/email-tester-form-schema';
 import { sendEmailAction } from '@/app/emails/lib/server-actions';
-import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
 
 import { Button } from '@kit/ui/button';
 import {

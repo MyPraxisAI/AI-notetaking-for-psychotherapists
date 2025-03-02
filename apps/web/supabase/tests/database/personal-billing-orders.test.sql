@@ -60,7 +60,7 @@ select row_eq(
   'The order item should be deleted when the order is updated'
 );
 
-select tests.authenticate_as('primary_owner');
+select makerkit.authenticate_as('primary_owner');
 
 -- account can read their own subscription
 select isnt_empty(
@@ -75,7 +75,7 @@ select isnt_empty(
 
 -- foreigners
 select tests.create_supabase_user('foreigner');
-select tests.authenticate_as('foreigner');
+select makerkit.authenticate_as('foreigner');
 
 -- account cannot read other's subscription
 select is_empty(

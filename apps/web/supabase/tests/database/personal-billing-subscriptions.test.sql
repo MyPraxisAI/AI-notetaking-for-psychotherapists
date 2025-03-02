@@ -144,7 +144,7 @@ select is(
   'The subscription should be active'
 );
 
-select tests.authenticate_as('primary_owner');
+select makerkit.authenticate_as('primary_owner');
 
 -- account can read their own subscription
 select isnt_empty(
@@ -171,7 +171,7 @@ select is(
 
 -- foreigners
 select tests.create_supabase_user('foreigner');
-select tests.authenticate_as('foreigner');
+select makerkit.authenticate_as('foreigner');
 
 -- account cannot read other's subscription
 select is_empty(

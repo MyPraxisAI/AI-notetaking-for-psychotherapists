@@ -11,7 +11,7 @@ select tests.create_supabase_user('test2');
 
 -- Create an team account
 
-select tests.authenticate_as('test1');
+select makerkit.authenticate_as('test1');
 
 select public.create_team_account('Test');
 
@@ -33,7 +33,7 @@ select row_eq(
 
 -- Foreigner should not have permissions to manage members
 
-select tests.authenticate_as('test2');
+select makerkit.authenticate_as('test2');
 
 select row_eq(
   $$ select public.has_permission(
@@ -81,7 +81,7 @@ set local role postgres;
 -- insert permissions for the custom role
 insert into public.role_permissions (role, permission) values ('custom-role', 'members.manage');
 
-select tests.authenticate_as('test1');
+select makerkit.authenticate_as('test1');
 
 -- the custom role does not have permissions to manage billing
 select row_eq(

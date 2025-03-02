@@ -8,7 +8,7 @@ select makerkit.set_identifier('owner', 'owner@makerkit.dev');
 select makerkit.set_identifier('member', 'member@makerkit.dev');
 select makerkit.set_identifier('custom', 'custom@makerkit.dev');
 
-select tests.authenticate_as('member');
+select makerkit.authenticate_as('member');
 
 select throws_ok(
     $$ insert into storage.objects ("bucket_id", "metadata", "name", "owner", "owner_id", "version") values
@@ -16,7 +16,7 @@ select throws_ok(
         'new row violates row-level security policy for table "objects"'
 );
 
-select tests.authenticate_as('primary_owner');
+select makerkit.authenticate_as('primary_owner');
 
 select lives_ok(
     $$ insert into storage.objects ("bucket_id", "metadata", "name", "owner", "owner_id", "version") values
@@ -29,7 +29,7 @@ select isnt_empty(
     'The object should be inserted'
 );
 
-select tests.authenticate_as('owner');
+select makerkit.authenticate_as('owner');
 
 select is_empty(
     $$ select * from storage.objects where owner = tests.get_supabase_uid('primary_owner') $$,
@@ -55,7 +55,7 @@ with check (
   and auth.uid() = tests.get_supabase_uid('primary_owner')
 );
 
-select tests.authenticate_as('member');
+select makerkit.authenticate_as('member');
 
 -- user should not be able to insert into the new bucket according to the new policy
 select throws_ok(
@@ -64,7 +64,7 @@ select throws_ok(
         'new row violates row-level security policy for table "objects"'
 );
 
-select tests.authenticate_as('primary_owner');
+select makerkit.authenticate_as('primary_owner');
 
 -- primary_owner should be able to insert into the new bucket according to the new policy
 -- this is to check the new policy system is working
@@ -88,7 +88,7 @@ with check (
   and auth.uid() = tests.get_supabase_uid('owner')
 );
 
-select tests.authenticate_as('owner');
+select makerkit.authenticate_as('owner');
 
 -- insert a new object into the new bucket
 --
@@ -106,7 +106,7 @@ select isnt_empty(
 );
 
 -- check other members cannot insert into the new bucket
-select tests.authenticate_as('member');
+select makerkit.authenticate_as('member');
 
 select throws_ok(
     $$ insert into storage.objects ("bucket_id", "metadata", "name", "owner", "owner_id", "version") values

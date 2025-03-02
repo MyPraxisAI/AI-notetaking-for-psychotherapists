@@ -11,7 +11,7 @@ select tests.create_supabase_user('test2');
 
 -- Create an team account
 
-select tests.authenticate_as('test1');
+select makerkit.authenticate_as('test1');
 
 select public.create_team_account('Test');
 select public.create_team_account('Test');

@@ -1,4 +1,5 @@
 import { Page, expect } from '@playwright/test';
+import { TOTP } from 'totp-generator';
 
 import { Mailbox } from '../utils/mailbox';
 
@@ -44,6 +45,21 @@ export class AuthPageObject {
     await this.page.fill('input[name="repeatPassword"]', params.repeatPassword);
 
     await this.page.click('button[type="submit"]');
+  }
+
+  async submitMFAVerification(key: string) {
+    const period = 30;
+
+    const { otp } = TOTP.generate(key, {
+      period,
+    });
+
+    console.log(`OTP ${otp} code`, {
+      period,
+    });
+
+    await this.page.fill('[data-input-otp]', otp);
+    await this.page.click('[data-test="submit-mfa-button"]');
   }
 
   async visitConfirmEmailLink(

@@ -925,9 +925,7 @@ export const envVariables: EnvVariableModel[] = [
         },
       ],
       validate: ({ value }) => {
-        return z
-          .string()
-          .safeParse(value);
+        return z.string().safeParse(value);
       },
     },
   },

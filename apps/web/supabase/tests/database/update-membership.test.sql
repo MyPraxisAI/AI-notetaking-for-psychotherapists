@@ -11,7 +11,7 @@ select makerkit.set_identifier('custom', 'custom@makerkit.dev');
 -- another user not in the team
 select tests.create_supabase_user('test', 'test@supabase.com');
 
-select tests.authenticate_as('member');
+select makerkit.authenticate_as('member');
 
 -- run an update query
 update public.accounts_memberships set account_role = 'owner' where user_id = auth.uid() and account_id = makerkit.get_account_id_by_slug('makerkit');

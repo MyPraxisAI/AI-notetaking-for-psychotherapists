@@ -76,7 +76,13 @@ export function PersonalAccountDropdown({
     personalAccountData?.name ?? account?.name ?? user?.email ?? '';
 
   const isSuperAdmin = useMemo(() => {
-    return user?.app_metadata.role === 'super-admin';
+    const factors = user?.factors ?? [];
+    const hasAdminRole = user?.app_metadata.role === 'super-admin';
+    const hasTotpFactor = factors.some(
+      (factor) => factor.factor_type === 'totp' && factor.status === 'verified',
+    );
+
+    return hasAdminRole && hasTotpFactor;
   }, [user]);
 
   return (
@@ -179,12 +185,14 @@ export function PersonalAccountDropdown({
 
           <DropdownMenuItem asChild>
             <Link
-              className={'s-full flex cursor-pointer items-center space-x-2'}
+              className={
+                's-full flex cursor-pointer items-center space-x-2 text-yellow-700 dark:text-yellow-500'
+              }
               href={'/admin'}
             >
               <Shield className={'h-5'} />
 
-              <span>Admin</span>
+              <span>Super Admin</span>
             </Link>
           </DropdownMenuItem>
         </If>

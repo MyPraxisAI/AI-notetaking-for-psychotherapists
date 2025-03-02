@@ -130,7 +130,7 @@ SELECT is(
   'The subscription status should be past_due'
 );
 
-select tests.authenticate_as('member');
+select makerkit.authenticate_as('member');
 
 SELECT row_eq(
     $$ select count(*) from subscription_items where subscription_id = 'sub_test' $$,
@@ -150,7 +150,7 @@ SELECT is(
   'The subscription should be active'
 );
 
-select tests.authenticate_as('member');
+select makerkit.authenticate_as('member');
 
 -- account can read their own subscription
 select isnt_empty(
@@ -171,7 +171,7 @@ select is(
 
 -- foreigners
 select tests.create_supabase_user('foreigner');
-select tests.authenticate_as('foreigner');
+select makerkit.authenticate_as('foreigner');
 
 -- account cannot read other's subscription
 select is_empty(

@@ -173,3 +173,46 @@ test.describe('Team Ownership Transfer', () => {
     await expect(ownerRow.locator('text=Primary Owner')).not.toBeVisible();
   });
 });
+
+test.describe('Team Account Security', () => {
+  test('unauthorized user cannot access team account', async ({
+    page,
+    browser,
+  }) => {
+    // 1. Create a team account with User A
+    const teamAccounts = new TeamAccountsPageObject(page);
+    const params = teamAccounts.createTeamName();
+
+    // Setup User A and create team
+    await teamAccounts.setup(params);
+
+    // Store team slug for later use
+    const teamSlug = params.slug;
+
+    // 2. Sign out User A
+    await page.context().clearCookies();
+
+    // 3. Create a new context for User B (to have clean cookies/session)
+    const userBContext = await browser.newContext();
+    const userBPage = await userBContext.newPage();
+    const userBTeamAccounts = new TeamAccountsPageObject(userBPage);
+
+    // Sign up with User B
+    await userBPage.goto('/auth/sign-up');
+    const emailB = userBTeamAccounts.auth.createRandomEmail();
+
+    await userBTeamAccounts.auth.signUp({
+      email: emailB,
+      password: 'password',
+      repeatPassword: 'password',
+    });
+
+    await userBTeamAccounts.auth.visitConfirmEmailLink(emailB);
+
+    // 4. Attempt to access the team page with User B
+    await userBPage.goto(`/home/${teamSlug}`);
+
+    // Check that we're not on the team page anymore (should redirect)
+    await expect(userBPage).toHaveURL(`/home`);
+  });
+});

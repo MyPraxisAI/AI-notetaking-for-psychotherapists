@@ -2,7 +2,7 @@ import { cache } from 'react';
 
 import { AdminAccountPage } from '@kit/admin/components/admin-account-page';
 import { AdminGuard } from '@kit/admin/components/admin-guard';
-import { getSupabaseServerAdminClient } from '@kit/supabase/server-admin-client';
+import { getSupabaseServerClient } from '@kit/supabase/server-client';
 
 interface Params {
   params: Promise<{
@@ -31,7 +31,7 @@ export default AdminGuard(AccountPage);
 const loadAccount = cache(accountLoader);
 
 async function accountLoader(id: string) {
-  const client = getSupabaseServerAdminClient();
+  const client = getSupabaseServerClient();
 
   const { data, error } = await client
     .from('accounts')

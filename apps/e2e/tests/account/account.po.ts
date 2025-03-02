@@ -54,10 +54,12 @@ export class AccountPageObject {
       '[data-test="account-password-form-password-input"]',
       password,
     );
+
     await this.page.fill(
       '[data-test="account-password-form-repeat-password-input"]',
       password,
     );
+
     await this.page.click('[data-test="account-password-form"] button');
   }
 

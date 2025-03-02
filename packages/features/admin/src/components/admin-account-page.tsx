@@ -1,13 +1,13 @@
 import {
   BadgeX,
   Ban,
-  CreditCardIcon,
   ShieldPlus,
   VenetianMask,
 } from 'lucide-react';
 
 import { Tables } from '@kit/supabase/database';
 import { getSupabaseServerAdminClient } from '@kit/supabase/server-admin-client';
+import { getSupabaseServerClient } from '@kit/supabase/server-client';
 import { Alert, AlertDescription, AlertTitle } from '@kit/ui/alert';
 import { AppBreadcrumbs } from '@kit/ui/app-breadcrumbs';
 import { Badge } from '@kit/ui/badge';
@@ -49,14 +49,17 @@ export function AdminAccountPage(props: {
 }
 
 async function PersonalAccountPage(props: { account: Account }) {
-  const client = getSupabaseServerAdminClient();
+  const adminClient = getSupabaseServerAdminClient();
 
-  const memberships = await getMemberships(props.account.id);
-  const { data, error } = await client.auth.admin.getUserById(props.account.id);
+  const { data, error } = await adminClient.auth.admin.getUserById(
+    props.account.id,
+  );
 
   if (!data || error) {
     throw new Error(`User not found`);
   }
+
+  const memberships = await getMemberships(props.account.id);
 
   const isBanned =
     'banned_until' in data.user && data.user.banned_until !== 'none';
@@ -77,7 +80,11 @@ async function PersonalAccountPage(props: { account: Account }) {
         <div className={'flex gap-x-2.5'}>
           <If condition={isBanned}>
             <AdminReactivateUserDialog userId={props.account.id}>
-              <Button size={'sm'} variant={'secondary'}>
+              <Button
+                size={'sm'}
+                variant={'secondary'}
+                data-test={'admin-reactivate-account-button'}
+              >
                 <ShieldPlus className={'mr-1 h-4'} />
                 Reactivate
               </Button>
@@ -86,14 +93,22 @@ async function PersonalAccountPage(props: { account: Account }) {
 
           <If condition={!isBanned}>
             <AdminBanUserDialog userId={props.account.id}>
-              <Button size={'sm'} variant={'secondary'}>
+              <Button
+                size={'sm'}
+                variant={'secondary'}
+                data-test={'admin-ban-account-button'}
+              >
                 <Ban className={'text-destructive mr-1 h-3'} />
                 Ban
               </Button>
             </AdminBanUserDialog>
 
             <AdminImpersonateUserDialog userId={props.account.id}>
-              <Button size={'sm'} variant={'secondary'}>
+              <Button
+                size={'sm'}
+                variant={'secondary'}
+                data-test={'admin-impersonate-button'}
+              >
                 <VenetianMask className={'mr-1 h-4 text-blue-500'} />
                 Impersonate
               </Button>
@@ -101,7 +116,11 @@ async function PersonalAccountPage(props: { account: Account }) {
           </If>
 
           <AdminDeleteUserDialog userId={props.account.id}>
-            <Button size={'sm'} variant={'destructive'}>
+            <Button
+              size={'sm'}
+              variant={'destructive'}
+              data-test={'admin-delete-account-button'}
+            >
               <BadgeX className={'mr-1 h-4'} />
               Delete
             </Button>
@@ -166,7 +185,11 @@ async function TeamAccountPage(props: {
         }
       >
         <AdminDeleteAccountDialog accountId={props.account.id}>
-          <Button size={'sm'} variant={'destructive'}>
+          <Button
+            size={'sm'}
+            variant={'destructive'}
+            data-test={'admin-delete-account-button'}
+          >
             <BadgeX className={'mr-1 h-4'} />
             Delete
           </Button>
@@ -208,7 +231,7 @@ async function TeamAccountPage(props: {
 }
 
 async function SubscriptionsTable(props: { accountId: string }) {
-  const client = getSupabaseServerAdminClient();
+  const client = getSupabaseServerClient();
 
   const { data: subscription, error } = await client
     .from('subscriptions')
@@ -229,21 +252,15 @@ async function SubscriptionsTable(props: { accountId: string }) {
   }
 
   return (
-    <div className={'flex flex-col space-y-2.5'}>
+    <div className={'flex flex-col gap-y-1'}>
       <Heading level={6}>Subscription</Heading>
 
       <If
         condition={subscription}
         fallback={
-          <Alert variant={'warning'}>
-            <CreditCardIcon className={'h-4'} />
-
-            <AlertTitle>No subscription found for this account.</AlertTitle>
-
-            <AlertDescription>
-              This account does not have a subscription.
-            </AlertDescription>
-          </Alert>
+         <span className={'text-sm text-muted-foreground'}>
+           This account does not currently have a subscription.
+         </span>
         }
       >
         {(subscription) => {
@@ -355,7 +372,7 @@ async function SubscriptionsTable(props: { accountId: string }) {
 }
 
 async function getMemberships(userId: string) {
-  const client = getSupabaseServerAdminClient();
+  const client = getSupabaseServerClient();
 
   const memberships = await client
     .from('accounts_memberships')
@@ -378,7 +395,7 @@ async function getMemberships(userId: string) {
 }
 
 async function getMembers(accountSlug: string) {
-  const client = getSupabaseServerAdminClient();
+  const client = getSupabaseServerClient();
 
   const members = await client.rpc('get_account_members', {
     account_slug: accountSlug,

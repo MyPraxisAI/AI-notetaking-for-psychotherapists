@@ -12,7 +12,7 @@ select makerkit.set_identifier('custom', 'custom@makerkit.dev');
 select tests.create_supabase_user('test', 'test@supabase.com');
 
 -- auth as a primary owner
-select tests.authenticate_as('primary_owner');
+select makerkit.authenticate_as('primary_owner');
 
 -- only the service role can transfer ownership
 select throws_ok(

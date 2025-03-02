@@ -137,6 +137,17 @@ class AdminAuthUserService {
         `You cannot perform a destructive action on your own account as a Super Admin`,
       );
     }
+
+    const targetUser =
+      await this.adminClient.auth.admin.getUserById(targetUserId);
+
+    const targetUserRole = targetUser.data.user?.app_metadata?.role;
+
+    if (targetUserRole === 'super-admin') {
+      throw new Error(
+        `You cannot perform a destructive action on a Super Admin account`,
+      );
+    }
   }
 
   private async setBanDuration(userId: string, banDuration: string) {

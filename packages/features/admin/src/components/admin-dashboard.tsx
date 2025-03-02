@@ -80,6 +80,12 @@ export async function AdminDashboard() {
           </div>
         </CardContent>
       </Card>
+
+      <div>
+        <p className={'text-muted-foreground w-max text-xs'}>
+          The above data is estimated and may not be 100% accurate.
+        </p>
+      </div>
     </div>
   );
 }

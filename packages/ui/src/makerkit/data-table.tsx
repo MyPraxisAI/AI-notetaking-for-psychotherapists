@@ -67,6 +67,8 @@ export function DataTable<T extends object>({
   manualSorting = false,
   sorting: initialSorting,
 }: ReactTableProps<T>) {
+  'use no memo';
+
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: pageIndex ?? 0,
     pageSize: pageSize ?? 15,

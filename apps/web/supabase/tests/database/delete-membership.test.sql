@@ -12,7 +12,7 @@ select makerkit.set_identifier('custom', 'custom@makerkit.dev');
 select tests.create_supabase_user('test', 'test@supabase.com');
 
 -- an owner cannot remove the primary owner
-select tests.authenticate_as('owner');
+select makerkit.authenticate_as('owner');
 
 select throws_ok(
    $$ delete from public.accounts_memberships
@@ -30,7 +30,7 @@ select lives_ok(
 );
 
 -- a member cannot remove a member with a higher role
-select tests.authenticate_as('member');
+select makerkit.authenticate_as('member');
 
 -- delete a membership record where the user is a higher role than the current user
 select throws_ok(
@@ -41,7 +41,7 @@ select throws_ok(
 );
 
 -- an primary_owner cannot remove themselves
-select tests.authenticate_as('primary_owner');
+select makerkit.authenticate_as('primary_owner');
 
 select throws_ok(
     $$ delete from public.accounts_memberships
@@ -62,7 +62,7 @@ select lives_ok(
 
 -- a user not in the account cannot remove a member
 
-select tests.authenticate_as('test');
+select makerkit.authenticate_as('test');
 
 select throws_ok(
     $$ delete from public.accounts_memberships
@@ -71,7 +71,7 @@ select throws_ok(
       'You do not have permission to action a member from this account'
  );
 
-select tests.authenticate_as('owner');
+select makerkit.authenticate_as('owner');
 
 select isnt_empty(
     $$ select 1 from public.accounts_memberships
@@ -79,7 +79,7 @@ select isnt_empty(
     and user_id = tests.get_supabase_uid('owner'); $$,
     'Foreigners should not be able to remove members');
 
-select tests.authenticate_as('test');
+select makerkit.authenticate_as('test');
 
 -- a user not in the account cannot remove themselves
 select throws_ok(

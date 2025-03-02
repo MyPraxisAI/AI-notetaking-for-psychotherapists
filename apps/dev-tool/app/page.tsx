@@ -1,10 +1,10 @@
+import { EnvMode } from '@/app/variables/lib/types';
+import { EnvModeSelector } from '@/components/env-mode-selector';
 import { ServiceCard } from '@/components/status-tile';
 
 import { Page, PageBody, PageHeader } from '@kit/ui/page';
 
 import { createConnectivityService } from './lib/connectivity-service';
-import {EnvMode} from "@/app/variables/lib/types";
-import {EnvModeSelector} from "@/components/env-mode-selector";
 
 type DashboardPageProps = React.PropsWithChildren<{
   searchParams: Promise<{ mode?: EnvMode }>;
