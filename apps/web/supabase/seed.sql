@@ -218,10 +218,10 @@ VALUES ('31a03e74-1639-45b6-bfa7-77447f1a4762', '5deaa894-2094-4da3-b4fd-1fada08
 
 -- MFA Factors
 INSERT INTO "auth"."mfa_factors" ("id", "user_id", "friendly_name", "factor_type", "status", "created_at", "updated_at",
-                                  "secret", "phone", "last_challenged_at", "web_authn_credential", "web_authn_aaguid")
+                                  "secret", "phone", "last_challenged_at")
 VALUES ('659e3b57-1128-4d26-8757-f714fd073fc4', 'c5b930c9-0a76-412e-a836-4bc4849a3270', 'iPhone', 'totp', 'verified',
         '2025-02-24 13:23:55.5805+00', '2025-02-24 13:24:32.591999+00', 'NHOHJVGPO3R3LKVPRMNIYLCDMBHUM2SE', null,
-        '2025-02-24 13:24:32.563314+00', null, null);
+        '2025-02-24 13:24:32.563314+00');
 
 --
 -- Data for Name: billing_customers; Type: TABLE DATA; Schema: public; Owner: postgres
