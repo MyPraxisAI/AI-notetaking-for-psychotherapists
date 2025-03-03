@@ -1,0 +1,304 @@
+---
+description: Detailed Database Schema and Architecture
+globs: 
+alwaysApply: true
+---
+
+# Database Rules
+
+## Database Architecture
+- Supabase uses Postgres
+- We strive to create a safe, robust, performant schema
+- Accounts are the general concept of a user account, defined by the having the same ID as Supabase Auth's users (personal). They can be a team account or a personal account.
+- Generally speaking, other tables will be used to store data related to the account. For example, a table `notes` would have a foreign key `account_id` to link it to an account.
+
+## Migrations
+- Migration files are placed at `apps/<app>/supabase/migrations`
+- The main migration schema can be found at [20221215192558_schema.sql](mdc:apps/web/supabase/migrations/20221215192558_schema.sql)
+- Use the command `pnpm --filter web supabase migrations new <name>` for creating well timestamped migrations
+
+## Security & RLS
+- Using RLS, we must ensure that only the account owner can access the data. Always write safe RLS policies and ensure that the policies are enforced.
+- Unless specified, always enable RLS when creating a table. Propose the required RLS policies ensuring the safety of the data.
+- Always consider any required constraints and triggers are in place for data consistency
+- Always consider the compromises you need to make and explain them so I can make an educated decision. Follow up with the considerations make and explain them.
+- Always consider the security of the data and explain the security implications of the data.
+- Always use Postgres schemas explicitly (e.g., `public.accounts`)
+- Consider the required compromises between simplicity, functionality and developer experience. However, never compromise on security, which is paramount and fundamental.
+
+## Schema Overview
+
+Makerkit uses a Supabase Postgres database with a well-defined schema focused on multi-tenancy through the concepts of accounts (both personal and team) and robust permission systems.
+
+### Core Entity Relationships
+
+1. **User ↔ Account**:
+   - Each user has a personal account (1:1)
+   - Users can belong to multiple team accounts (M:N through `accounts_memberships`)
+   - Accounts can have multiple users (M:N through `accounts_memberships`)
+
+2. **Account ↔ Role**:
+   - Each user has a role in each account they belong to
+   - Roles define permissions through `role_permissions`
+
+3. **Subscription System**:
+   - Accounts can have subscriptions
+   - Subscriptions have multiple subscription items
+   - Billing providers include Stripe, Lemon Squeezy, and Paddle
+
+4. **Invitation System**:
+   - Team accounts can invite users via email
+   - Invitations specify roles for the invited user
+
+5. **One-Time Tokens**:
+   - Used for secure verification processes
+   - Generic system that can be used for various purposes
+
+## Table Relationships
+
+```
+auth.users
+├── public.accounts (personal_account=true, id=user_id)
+└── public.accounts_memberships
+    └── public.accounts (personal_account=false)
+       └── public.roles (hierarchy_level)
+          └── public.role_permissions
+             └── app_permissions (enum)
+```
+
+```
+public.accounts
+├── public.billing_customers
+│   └── public.subscriptions
+│      └── public.subscription_items
+└── public.invitations
+```
+
+```
+public.nonces
+└── auth.users (optional relationship)
+```
+
+## Schema Overview
+
+Makerkit implements a multi-tenant SaaS architecture through a robust account and permission system:
+
+1. **Core Entities**:
+   - `auth.users`: Supabase Auth users
+   - `public.accounts`: Both personal and team accounts
+   - `public.accounts_memberships`: Links users to accounts with roles
+   - `public.roles` and `public.role_permissions`: Define permission hierarchy
+   - `public.invitations`: For inviting users to team accounts
+
+2. **Billing System**:
+   - `public.billing_customers`: Account's connection to billing providers
+   - `public.subscriptions` and `public.subscription_items`: For subscription tracking
+   - `public.orders` and `public.order_items`: For one-time purchases
+
+3. **Security**:
+   - `public.nonces`: One-time tokens for secure operations
+
+## Database Best Practices
+
+### Security
+
+- **Always enable RLS** on new tables unless explicitly instructed otherwise
+- **Create proper RLS policies** for all CRUD operations following existing patterns
+- **Always associate data with accounts** using a foreign key to ensure proper access control
+- **Use explicit schema references** (`public.table_name` not just `table_name`)
+- **Place internal functions in the `kit` schema**
+
+### Data Access Patterns
+
+- Use `has_role_on_account(account_id, role?)` to check membership
+- Use `has_permission(user_id, account_id, permission)` for permission checks
+- Use `is_account_owner(account_id)` to identify account ownership
+
+### SQL Coding Style
+
+- Use explicit transactions for multi-step operations
+- Follow existing naming conventions:
+  - Tables: snake_case, plural nouns (`accounts`, `subscriptions`)
+  - Functions: snake_case, verb phrases (`create_team_account`, `verify_nonce`)
+  - Triggers: descriptive action names (`set_slug_from_account_name`)
+- Document functions and complex SQL with comments
+- Use parameterized queries to prevent SQL injection
+
+### Common Patterns
+
+- **Account Lookup**: Typically by `id` (UUID) or `slug` (for team accounts)
+- **Permission Check**: Always verify proper permissions before mutations
+- **Timestamp Automation**: Use the `trigger_set_timestamps()` function
+- **User Tracking**: Use the `trigger_set_user_tracking()` function
+- **Configuration**: Use `is_set(field_name)` to check enabled features
+
+## Best Practices for Database Code
+
+### 1. RLS Policy Management
+
+- **Always Enable RLS**: Always enable RLS for your tables unless you have a specific reason not to.
+  ```sql
+  ALTER TABLE public.my_table ENABLE ROW LEVEL SECURITY;
+  ```
+
+- **Follow the Standard Policies Pattern**: Use the existing structure for policies:
+  ```sql
+  -- SELECT policy
+  CREATE POLICY "my_table_read" ON public.my_table FOR SELECT
+    TO authenticated USING (
+      account_id = (select auth.uid()) OR
+      public.has_role_on_account(account_id)
+    );
+
+  -- INSERT/UPDATE/DELETE policies follow similar patterns
+  ```
+
+### 2. Account Association
+
+- **Associate Data with Accounts**: Always link data to accounts using a foreign key:
+  ```sql
+  CREATE TABLE public.my_data (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    account_id UUID REFERENCES public.accounts(id) ON DELETE CASCADE NOT NULL,
+    /* other fields */
+  );
+  ```
+
+### 3. Permission System
+
+- **Use the Permission System**: Leverage the built-in permission system for access control:
+  ```sql
+  -- Check if a user has a specific permission
+  SELECT public.has_permission(
+    auth.uid(),
+    account_id,
+    'my.permission'::public.app_permissions
+  );
+  ```
+
+### 4. Schema Organization
+
+- **Use Schemas Explicitly**: Always use schema prefixes explicitly:
+  ```sql
+  -- Good
+  SELECT * FROM public.accounts;
+
+  -- Avoid
+  SELECT * FROM accounts;
+  ```
+
+- **Put Internal Functions in 'kit' Schema**: Use the 'kit' schema for internal helper functions
+  ```sql
+  CREATE OR REPLACE FUNCTION kit.my_helper_function()
+  RETURNS void AS $$
+  -- function body
+  $$ LANGUAGE plpgsql;
+  ```
+
+### 5. Types and Constraints
+
+- **Use Enums for Constrained Values**: Create and use enum types for values with a fixed set:
+  ```sql
+  CREATE TYPE public.my_status AS ENUM('active', 'inactive', 'pending');
+
+  CREATE TABLE public.my_table (
+    status public.my_status NOT NULL DEFAULT 'pending'
+  );
+  ```
+
+- **Apply Appropriate Constraints**: Use constraints to ensure data integrity:
+  ```sql
+  CREATE TABLE public.my_table (
+    email VARCHAR(255) NOT NULL CHECK (email ~* '^.+@.+\..+$'),
+    count INTEGER NOT NULL CHECK (count >= 0),
+    /* other fields */
+  );
+  ```
+
+### 6. Authentication and User Management
+
+- **Use Supabase Auth**: Leverage auth.users for identity management
+- **Handle User Creation**: Use triggers like `kit.setup_new_user` to set up user data after registration
+
+### 7. Function Security
+
+- **Apply Security Definer Carefully**: For functions that need elevated privileges:
+  ```sql
+  CREATE OR REPLACE FUNCTION public.my_function()
+  RETURNS void
+  LANGUAGE plpgsql
+  SECURITY DEFINER
+  SET search_path = '' AS $$
+  -- function body
+  $$;
+  ```
+
+- **Set Proper Function Permissions**:
+  ```sql
+  GRANT EXECUTE ON FUNCTION public.my_function() TO authenticated, service_role;
+  ```
+
+### 8. Error Handling and Validation
+
+- **Use Custom Error Messages**: Return meaningful errors:
+  ```sql
+  IF NOT validation_passed THEN
+    RAISE EXCEPTION 'Validation failed: %', error_message;
+  END IF;
+  ```
+
+### 9. Triggers for Automation
+
+- **Use Triggers for Derived Data**: Automate updates to derived fields:
+  ```sql
+  CREATE TRIGGER update_timestamp
+  BEFORE UPDATE ON public.my_table
+  FOR EACH ROW EXECUTE FUNCTION public.trigger_set_timestamps();
+  ```
+
+### 10. View Structure for Commonly Used Queries
+
+- **Create Views for Complex Joins**: As done with `user_account_workspace`
+  ```sql
+  CREATE OR REPLACE VIEW public.my_view
+  WITH (security_invoker = true) AS
+  SELECT ...
+  ```
+
+## Key Functions to Know
+
+1. **Account Access**
+   - `public.has_role_on_account(account_id, account_role)`
+   - `public.is_account_owner(account_id)`
+   - `public.is_team_member(account_id, user_id)`
+
+2. **Permissions**
+   - `public.has_permission(user_id, account_id, permission_name)`
+   - `public.has_more_elevated_role(target_user_id, target_account_id, role_name)`
+
+3. **Team Management**
+   - `public.create_team_account(account_name)`
+
+4. **Billing & Subscriptions**
+   - `public.has_active_subscription(target_account_id)`
+
+5. **One-Time Tokens**
+   - `public.create_nonce(...)`
+   - `public.verify_nonce(...)`
+   - `public.revoke_nonce(...)`
+
+6. **Super Admins**
+    - `public.is_super_admin()`
+
+7. **MFA**:
+    - `public.is_aal2()`
+    - `public.is_mfa_compliant()`
+
+## Configuration Control
+
+- **Use the `config` Table**: The application has a central configuration table
+- **Check Features with `public.is_set(field_name)`**:
+  ```sql
+  -- Check if team accounts are enabled
+  SELECT public.is_set('enable_team_accounts');
+  ```
