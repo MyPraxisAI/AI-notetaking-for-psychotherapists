@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@sentry/nextjs": "^9.3.0",
-    "import-in-the-middle": "1.13.0"
+    "import-in-the-middle": "1.13.1"
   },
   "devDependencies": {
     "@kit/eslint-config": "workspace:*",
