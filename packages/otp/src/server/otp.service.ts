@@ -61,7 +61,7 @@ class OtpService {
     const {
       userId,
       purpose,
-      expiresInSeconds = 3600,
+      expiresInSeconds = 900,
       metadata = {},
       description,
       tags,
@@ -122,7 +122,14 @@ class OtpService {
    */
   async verifyNonce(params: VerifyNonceParams) {
     const logger = await getLogger();
-    const { token, purpose, requiredScopes, maxVerificationAttempts } = params;
+
+    const {
+      token,
+      purpose,
+      requiredScopes,
+      maxVerificationAttempts = 1,
+    } = params;
+
     const ctx = { purpose, name: 'verify-nonce' };
 
     logger.info(ctx, 'Verifying one-time token');
@@ -187,6 +194,7 @@ class OtpService {
           { ...ctx, error: error.message },
           'Failed to revoke one-time token',
         );
+
         throw new Error(`Failed to revoke one-time token: ${error.message}`);
       }
 

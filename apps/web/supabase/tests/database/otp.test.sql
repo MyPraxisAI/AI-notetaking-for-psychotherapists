@@ -846,6 +846,265 @@ select cmp_ok(
     'Token should record at least 10 verification attempts'
 );
 
+-- ==========================================
+-- Test 9: Multiple Nonces with Same Purpose
+-- ==========================================
+
+-- Test 9.1: Creating multiple anonymous nonces with the same purpose
+set local role service_role;
+
+do $$
+declare 
+    token_result1 jsonb;
+    token_result2 jsonb;
+    token_result3 jsonb;
+    verification_result jsonb;
+    count_result integer;
+begin
+    -- Create first token with purpose "multi-purpose-test"
+    token_result1 := public.create_nonce(
+        null, -- Anonymous token
+        'multi-purpose-test',
+        3600,
+        '{"data": "first token"}'::jsonb
+    );
+    
+    -- Create second token with the same purpose
+    token_result2 := public.create_nonce(
+        null, -- Anonymous token
+        'multi-purpose-test',
+        3600,
+        '{"data": "second token"}'::jsonb,
+        null, -- Default scopes
+        false -- Don't revoke previous tokens with same purpose
+    );
+    
+    -- Create third token with the same purpose
+    token_result3 := public.create_nonce(
+        null, -- Anonymous token
+        'multi-purpose-test',
+        3600,
+        '{"data": "third token"}'::jsonb,
+        null, -- Default scopes
+        false -- Don't revoke previous tokens with same purpose
+    );
+    
+    -- Count how many tokens exist with this purpose
+    select count(*) into count_result
+    from public.nonces
+    where purpose = 'multi-purpose-test' and used_at is null and revoked = false;
+    
+    -- Verify specific token by token value
+    verification_result := public.verify_nonce(
+        token_result2->>'token', -- Use the second token specifically
+        'multi-purpose-test'
+    );
+    
+    -- Store results for assertions outside the DO block
+    perform set_config('app.settings.multiple_purpose_count', count_result::text, false);
+    perform set_config('app.settings.specific_token_verification', verification_result::text, false);
+    perform set_config('app.settings.expected_token_metadata', '{"data": "second token"}', false);
+end $$;
+
+-- Check results outside the DO block
+select is(
+    current_setting('app.settings.multiple_purpose_count', false)::integer,
+    3,
+    'There should be 3 active tokens with the same purpose when auto-revocation is disabled'
+);
+
+select is(
+    (current_setting('app.settings.specific_token_verification', false)::jsonb)->>'valid',
+    'true',
+    'Verification of specific token should succeed'
+);
+
+select is(
+    (current_setting('app.settings.specific_token_verification', false)::jsonb)->'metadata',
+    current_setting('app.settings.expected_token_metadata', false)::jsonb,
+    'Metadata from the correct (second) token should be returned'
+);
+
+-- Test 9.2: Multiple user-specific tokens with same purpose
+do $$
+declare 
+    creator_id uuid;
+    verifier_id uuid;
+    creator_token_result jsonb;
+    verifier_token_result jsonb;
+    verification_result jsonb;
+begin
+    set local role postgres;
+    
+    -- Get user IDs
+    creator_id := makerkit.get_id_by_identifier('token_creator');
+    verifier_id := makerkit.get_id_by_identifier('token_verifier');
+    
+    set local role service_role;
+    
+    -- Create token for first user
+    creator_token_result := public.create_nonce(
+        creator_id,
+        'user-specific-purpose',
+        3600,
+        '{"user": "creator"}'::jsonb
+    );
+    
+    -- Create token for second user with same purpose
+    verifier_token_result := public.create_nonce(
+        verifier_id,
+        'user-specific-purpose',
+        3600,
+        '{"user": "verifier"}'::jsonb
+    );
+    
+    -- Verify token for creator user
+    verification_result := public.verify_nonce(
+        creator_token_result->>'token',
+        'user-specific-purpose',
+        creator_id -- Specify user_id explicitly
+    );
+    
+    -- Store results for assertions
+    perform set_config('app.settings.creator_verification_result', verification_result::text, false);
+    perform set_config('app.settings.creator_token', creator_token_result::text, false);
+    perform set_config('app.settings.verifier_token', verifier_token_result::text, false);
+end $$;
+
+-- Verify that specifying the user_id correctly retrieves the right token
+select is(
+    (current_setting('app.settings.creator_verification_result', false)::jsonb)->>'valid',
+    'true',
+    'Verification of user-specific token should succeed when user_id is provided'
+);
+
+select is(
+    (current_setting('app.settings.creator_verification_result', false)::jsonb)->'metadata'->>'user',
+    'creator',
+    'Correct user metadata should be returned'
+);
+
+-- Test 9.3: Verify purpose uniqueness requirements for anonymous tokens
+do $$
+declare
+    test_token1 jsonb;
+    test_token2 jsonb;
+    wrong_verification jsonb;
+    count_result integer;
+begin
+    set local role service_role;
+    
+    -- Create anonymous token
+    test_token1 := public.create_nonce(
+        null, -- Anonymous
+        'anonymous-purpose-test',
+        3600,
+        '{"test": "first"}'::jsonb
+    );
+    
+    -- Create second anonymous token with same purpose
+    test_token2 := public.create_nonce(
+        null, -- Anonymous
+        'anonymous-purpose-test',
+        3600,
+        '{"test": "second"}'::jsonb,
+        null,
+        false -- Don't revoke previous
+    );
+    
+    -- Verify token without specifying which one
+    wrong_verification := public.verify_nonce(
+        test_token1->>'token',
+        'anonymous-purpose-test'
+        -- No user_id specified - should still work for anonymous tokens
+    );
+    
+    -- Count matching tokens
+    select count(*) into count_result
+    from public.nonces
+    where purpose = 'anonymous-purpose-test' and used_at is null and revoked = false;
+    
+    -- Store results for assertions
+    perform set_config('app.settings.anonymous_verification_result', wrong_verification::text, false);
+    perform set_config('app.settings.anonymous_token_count', count_result::text, false);
+end $$;
+
+-- Check that anonymous verification works despite multiple tokens with same purpose
+select is(
+    (current_setting('app.settings.anonymous_verification_result', false)::jsonb)->>'valid',
+    'true',
+    'First token verification should succeed even with multiple tokens with same purpose'
+);
+
+select is(
+    current_setting('app.settings.anonymous_token_count', false)::integer,
+    1,
+    'After verification, only one token should remain active (the other was used)'
+);
+
+-- ==========================================
+-- Test 10: Short Expiration Test
+-- ==========================================
+
+-- Test 10.1: Token with 1 second expiration
+set local role service_role;
+
+do $$
+declare 
+    token_result jsonb;
+    verification_result jsonb;
+    verification_after_expiry jsonb;
+    token_text text;
+begin
+    -- Create token with 1 second expiration
+    token_result := public.create_nonce(
+        null, -- Anonymous token
+        'short-expiry-test',
+        1, -- 1 second expiration
+        '{"data": "expires quickly"}'::jsonb
+    );
+    
+    token_text := token_result->>'token';
+    
+    -- Verify immediately - should be valid
+    verification_result := public.verify_nonce(
+        token_text,
+        'short-expiry-test'
+    );
+    
+    -- Wait for 1.5 seconds to ensure token expires
+    perform pg_sleep(1.5);
+    
+    -- Verify after expiration - should be invalid
+    verification_after_expiry := public.verify_nonce(
+        token_text,
+        'short-expiry-test'
+    );
+    
+    -- Store results for assertions
+    perform set_config('app.settings.quick_verification_result', verification_result::text, false);
+    perform set_config('app.settings.after_expiry_verification', verification_after_expiry::text, false);
+end $$;
+
+-- Check results
+select is(
+    (current_setting('app.settings.quick_verification_result', false)::jsonb)->>'valid',
+    'true',
+    'Token should be valid immediately after creation'
+);
+
+select is(
+    (current_setting('app.settings.after_expiry_verification', false)::jsonb)->>'valid',
+    'false',
+    'Token should be invalid after expiration time has passed'
+);
+
+select is(
+    (current_setting('app.settings.after_expiry_verification', false)::jsonb)->>'message',
+    'Invalid or expired token',
+    'Error message should indicate token is expired'
+);
+
 -- Finish tests
 select * from finish();
 
