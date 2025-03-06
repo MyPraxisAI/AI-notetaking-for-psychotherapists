@@ -17,8 +17,8 @@ export default tsEsLint.config(
     languageOptions: {
       parserOptions: {
         warnOnUnsupportedTypeScriptVersion: false,
-      }
-    }
+      },
+    },
   },
   {
     rules: {

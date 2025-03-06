@@ -105,7 +105,8 @@ class ConnectivityService {
     if (data.length === 0) {
       return {
         status: 'error' as const,
-        message: 'No accounts found in Supabase Admin. The data may not be seeded. Please run `pnpm run supabase:web:reset` to reset the database.',
+        message:
+          'No accounts found in Supabase Admin. The data may not be seeded. Please run `pnpm run supabase:web:reset` to reset the database.',
       };
     }
 

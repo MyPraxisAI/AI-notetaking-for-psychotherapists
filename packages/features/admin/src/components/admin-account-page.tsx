@@ -1,9 +1,4 @@
-import {
-  BadgeX,
-  Ban,
-  ShieldPlus,
-  VenetianMask,
-} from 'lucide-react';
+import { BadgeX, Ban, ShieldPlus, VenetianMask } from 'lucide-react';
 
 import { Tables } from '@kit/supabase/database';
 import { getSupabaseServerAdminClient } from '@kit/supabase/server-admin-client';
@@ -258,9 +253,9 @@ async function SubscriptionsTable(props: { accountId: string }) {
       <If
         condition={subscription}
         fallback={
-         <span className={'text-sm text-muted-foreground'}>
-           This account does not currently have a subscription.
-         </span>
+          <span className={'text-muted-foreground text-sm'}>
+            This account does not currently have a subscription.
+          </span>
         }
       >
         {(subscription) => {
