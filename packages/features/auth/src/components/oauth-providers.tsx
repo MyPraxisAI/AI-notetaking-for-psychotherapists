@@ -2,7 +2,10 @@
 
 import { useCallback } from 'react';
 
-import type { Provider } from '@supabase/supabase-js';
+import type {
+  Provider,
+  SignInWithOAuthCredentials,
+} from '@supabase/supabase-js';
 
 import { useSignInWithProvider } from '@kit/supabase/hooks/use-sign-in-with-provider';
 import { If } from '@kit/ui/if';
@@ -23,19 +26,21 @@ import { AuthProviderButton } from './auth-provider-button';
  */
 const OAUTH_SCOPES: Partial<Record<Provider, string>> = {
   azure: 'email',
+  keycloak: 'openid',
   // add your OAuth providers here
 };
 
-export function OauthProviders(props: {
+export const OauthProviders: React.FC<{
   inviteToken?: string;
   shouldCreateUser: boolean;
   enabledProviders: Provider[];
+  queryParams?: Record<string, string>;
 
   paths: {
     callback: string;
     returnPath: string;
   };
-}) {
+}> = (props) => {
   const signInWithProviderMutation = useSignInWithProvider();
 
   // we make the UI "busy" until the next page is fully loaded
@@ -46,7 +51,7 @@ export function OauthProviders(props: {
       const credential = await signInRequest();
 
       if (!credential) {
-        return Promise.reject(new Error('Failed to sign in with provider'));
+        return Promise.reject(new Error(`No credential returned`));
       }
     },
     [],
@@ -89,16 +94,16 @@ export function OauthProviders(props: {
                   ].join('?');
 
                   const redirectTo = [origin, redirectPath].join('');
-                  const scopesOpts = OAUTH_SCOPES[provider] ?? {};
+                  const scopes = OAUTH_SCOPES[provider] ?? undefined;
 
                   const credentials = {
                     provider,
                     options: {
-                      shouldCreateUser: props.shouldCreateUser,
                       redirectTo,
-                      ...scopesOpts,
+                      queryParams: props.queryParams,
+                      scopes,
                     },
-                  };
+                  } satisfies SignInWithOAuthCredentials;
 
                   return onSignInWithProvider(() =>
                     signInWithProviderMutation.mutateAsync(credentials),
@@ -120,7 +125,7 @@ export function OauthProviders(props: {
       </div>
     </>
   );
-}
+};
 
 function getProviderName(providerId: string) {
   const capitalize = (value: string) =>

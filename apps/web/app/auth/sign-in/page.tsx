@@ -13,6 +13,7 @@ import { withI18n } from '~/lib/i18n/with-i18n';
 interface SignInPageProps {
   searchParams: Promise<{
     invite_token?: string;
+    next?: string;
   }>;
 }
 
@@ -24,18 +25,18 @@ export const generateMetadata = async () => {
   };
 };
 
-const paths = {
-  callback: pathsConfig.auth.callback,
-  home: pathsConfig.app.home,
-  joinTeam: pathsConfig.app.joinTeam,
-};
-
 async function SignInPage({ searchParams }: SignInPageProps) {
-  const inviteToken = (await searchParams).invite_token;
+  const { invite_token: inviteToken, next = '' } = await searchParams;
 
   const signUpPath =
     pathsConfig.auth.signUp +
     (inviteToken ? `?invite_token=${inviteToken}` : '');
+
+  const paths = {
+    callback: pathsConfig.auth.callback,
+    returnPath: next ?? pathsConfig.app.home,
+    joinTeam: pathsConfig.app.joinTeam,
+  };
 
   return (
     <>

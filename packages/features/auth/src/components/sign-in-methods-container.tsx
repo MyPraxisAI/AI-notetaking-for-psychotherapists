@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
 import type { Provider } from '@supabase/supabase-js';
 
@@ -18,8 +18,8 @@ export function SignInMethodsContainer(props: {
 
   paths: {
     callback: string;
-    home: string;
     joinTeam: string;
+    returnPath: string;
   };
 
   providers: {
@@ -29,13 +29,13 @@ export function SignInMethodsContainer(props: {
   };
 }) {
   const router = useRouter();
-  const nextPath = useSearchParams().get('next') ?? props.paths.home;
 
   const redirectUrl = isBrowser()
     ? new URL(props.paths.callback, window?.location.origin).toString()
     : '';
 
   const onSignIn = () => {
+    // if the user has an invite token, we should join the team
     if (props.inviteToken) {
       const searchParams = new URLSearchParams({
         invite_token: props.inviteToken,
@@ -45,7 +45,8 @@ export function SignInMethodsContainer(props: {
 
       router.replace(joinTeamPath);
     } else {
-      router.replace(nextPath);
+      // otherwise, we should redirect to the return path
+      router.replace(props.paths.returnPath);
     }
   };
 
@@ -82,7 +83,7 @@ export function SignInMethodsContainer(props: {
           shouldCreateUser={false}
           paths={{
             callback: props.paths.callback,
-            returnPath: props.paths.home,
+            returnPath: props.paths.returnPath,
           }}
         />
       </If>
