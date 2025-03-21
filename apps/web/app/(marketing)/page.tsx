@@ -1,18 +1,12 @@
-import Image from 'next/image';
 import Link from 'next/link';
 
-import { ArrowRightIcon, LayoutDashboard } from 'lucide-react';
+import { ArrowRightIcon } from 'lucide-react';
 
 import { PricingTable } from '@kit/billing-gateway/marketing';
 import {
   CtaButton,
-  FeatureCard,
-  FeatureGrid,
-  FeatureShowcase,
-  FeatureShowcaseIconContainer,
   Hero,
   Pill,
-  PillActionButton,
   SecondaryHero,
 } from '@kit/ui/marketing';
 import { Trans } from '@kit/ui/trans';
