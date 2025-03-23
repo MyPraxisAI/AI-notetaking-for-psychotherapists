@@ -114,8 +114,7 @@ jobs:
       - name: Run Playwright tests
         run: |
           echo "Running Playwright tests. Billing tests enabled: $ENABLE_BILLING_TESTS"
-          # Use unbuffered output to see logs in real-time
-          FORCE_COLOR=1 pnpm run test -- --reporter=line
+          pnpm run test
 
       - name: Run Supabase tests
         run: pnpm --filter web supabase:test
