@@ -109,7 +109,6 @@ export class Mailbox {
    */
   private async detectMailServer(): Promise<MailServer> {
     const isCI = process.env.CI === 'true';
-    console.log(`Environment: ${isCI ? 'CI' : 'Local'}`);
     
     // Based on docker ps output, we know that:
     // - Local environment uses Mailpit (port 8025 mapped to 54324)
