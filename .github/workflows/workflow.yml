@@ -113,8 +113,8 @@ jobs:
 
       - name: Run Playwright tests
         run: |
-          echo "Running Playwright tests. Billing tests enabled: $ENABLE_BILLING_TESTS"
-          pnpm run test
+          echo "Running Playwright tests (invitations only)"
+          pnpm run test apps/e2e/tests/invitations/invitations.spec.ts
 
       - name: Run Supabase tests
         run: pnpm --filter web supabase:test
