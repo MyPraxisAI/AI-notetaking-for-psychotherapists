@@ -114,7 +114,8 @@ jobs:
       - name: Run Playwright tests
         run: |
           echo "Running Playwright tests (invitations only)"
-          pnpm run test apps/e2e/tests/invitations/invitations.spec.ts
+          pnpm --filter web-e2e test apps/e2e/tests/invitations/invitations.spec.ts
+          # pnpm run test apps/e2e/tests/invitations/invitations.spec.ts
 
       - name: Run Supabase tests
         run: pnpm --filter web supabase:test
