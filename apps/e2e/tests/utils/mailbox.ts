@@ -107,7 +107,15 @@ export class Mailbox {
    * Detects which mail server is running on the specified port
    * @returns The detected mail server type
    */
+  // Static property to store the detected mail server type
+  private static detectedMailServer: MailServer | null = null;
+
   private async detectMailServer(): Promise<MailServer> {
+    // Return memoized value if already detected
+    if (Mailbox.detectedMailServer !== null) {
+      return Mailbox.detectedMailServer;
+    }
+
     const isCI = process.env.CI === 'true';
     
     // Based on docker ps output, we know that:
@@ -128,12 +136,14 @@ export class Mailbox {
         
         // Check for Mailpit indicators in the HTML
         if (text.includes('Mailpit') || text.includes('mailpit')) {
-          return 'mailpit';
+          Mailbox.detectedMailServer = 'mailpit';
+          return Mailbox.detectedMailServer;
         }
         
         // Check for Inbucket indicators in the HTML
         if (text.includes('Inbucket') || text.includes('inbucket')) {
-          return 'inbucket';
+          Mailbox.detectedMailServer = 'inbucket';
+          return Mailbox.detectedMailServer;
         }
         
         // Log the first part of the response for debugging
@@ -146,11 +156,13 @@ export class Mailbox {
     // If detection fails, make a decision based on environment
     if (isCI) {
       console.log('CI environment detected, defaulting to Inbucket');
-      return 'inbucket';
+      Mailbox.detectedMailServer = 'inbucket';
     } else {
       console.log('Local environment detected, defaulting to Mailpit');
-      return 'mailpit';
+      Mailbox.detectedMailServer = 'mailpit';
     }
+    
+    return Mailbox.detectedMailServer;
   }
 
   async getEmail(
