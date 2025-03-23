@@ -1,0 +1,46 @@
+@keyframes pulse1 {
+  0% { transform: scaleY(1); }
+  50% { transform: scaleY(1.05); }
+  100% { transform: scaleY(1); }
+}
+
+@keyframes pulse2 {
+  0% { transform: scaleY(1); }
+  50% { transform: scaleY(1.09); }
+  100% { transform: scaleY(1); }
+}
+
+@keyframes pulse3 {
+  0% { transform: scaleY(1); }
+  50% { transform: scaleY(1.13); }
+  100% { transform: scaleY(1); }
+}
+
+.sound-path1 {
+  animation: pulse1 1.5s ease-in-out infinite;
+  transform-origin: center;
+}
+
+.sound-path2 {
+  animation: pulse2 1.8s ease-in-out infinite;
+  transform-origin: center;
+  animation-delay: 0.2s;
+}
+
+.sound-path3 {
+  animation: pulse3 2s ease-in-out infinite;
+  transform-origin: center;
+  animation-delay: 0.4s;
+}
+
+.sound-path4 {
+  animation: pulse2 1.7s ease-in-out infinite;
+  transform-origin: center;
+  animation-delay: 0.3s;
+}
+
+.sound-path5 {
+  animation: pulse1 1.9s ease-in-out infinite;
+  transform-origin: center;
+  animation-delay: 0.6s;
+}
