@@ -82,7 +82,7 @@ export class Mailbox {
 
     const json = await this.getEmail(mailbox, {
       deleteAfter,
-      subject: `One-time password for Makerkit`,
+      subject: `One-time password for MyPraxis`,
     });
 
     if (!json?.body) {
@@ -129,13 +129,11 @@ export class Mailbox {
         
         // Check for Mailpit indicators in the HTML
         if (text.includes('Mailpit') || text.includes('mailpit')) {
-          console.log('Detected Mailpit server from root page');
           return 'mailpit';
         }
         
         // Check for Inbucket indicators in the HTML
         if (text.includes('Inbucket') || text.includes('inbucket')) {
-          console.log('Detected Inbucket server from root page');
           return 'inbucket';
         }
         
