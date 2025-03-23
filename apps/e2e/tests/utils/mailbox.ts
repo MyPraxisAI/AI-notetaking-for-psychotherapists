@@ -313,89 +313,63 @@ export class Mailbox {
       subject?: string;
     },
   ) {
-    // Inbucket runs on port 9000 in the container (mapped to 54324)
-    const host = '127.0.0.1';
-    const baseUrl = `http://${host}:54324/api`;
-    const mailboxUrl = `${baseUrl}/v1/mailbox/${mailbox}`;
+    const url = `http://127.0.0.1:54324/api/v1/mailbox/${mailbox}`;
 
-    // Fetch all messages for the mailbox
-    const response = await fetch(mailboxUrl);
+    const response = await fetch(url);
 
     if (!response.ok) {
-      throw new Error(`Failed to fetch emails from Inbucket: ${response.statusText}`);
+      throw new Error(`Failed to fetch emails: ${response.statusText}`);
     }
 
-    const messages = await response.json() as Array<{
+    const json = (await response.json()) as Array<{
       id: string;
-      from: string;
       subject: string;
-      date: string;
-      size: number;
     }>;
 
-    if (!messages || !messages.length) {
-      console.log(`No emails found in mailbox ${mailbox}`);
+    if (!json || !json.length) {
+      console.log(`No emails found for mailbox ${mailbox}`);
+
       return;
     }
 
-    console.log(`Found ${messages.length} emails for mailbox ${mailbox}`);
+    const message = params.subject
+      ? (() => {
+          const filtered = json.filter(
+            (item) => item.subject === params.subject,
+          );
 
-    // Filter by subject if provided
-    let filteredMessages = messages;
-    if (params.subject) {
-      filteredMessages = messages.filter(
-        (item) => item.subject === params.subject
-      );
+          console.log(
+            `Found ${filtered.length} emails with subject ${params.subject}`,
+          );
 
-      console.log(
-        `Found ${filteredMessages.length} emails with subject ${params.subject}`,
-      );
+          return filtered[filtered.length - 1];
+        })()
+      : json[0];
 
-      if (filteredMessages.length === 0) {
-        console.log(`No emails found with subject ${params.subject}`);
-        return;
-      }
-    }
-
-    // Get the most recent message
-    const message = filteredMessages[filteredMessages.length - 1];
     console.log(`Message: ${JSON.stringify(message)}`);
 
     const messageId = message?.id;
-    const messageUrl = `${baseUrl}/v1/mailbox/${mailbox}/${messageId}`;
+    const messageUrl = `${url}/${messageId}`;
 
-    // Fetch the full message content
     const messageResponse = await fetch(messageUrl);
 
     if (!messageResponse.ok) {
-      throw new Error(`Failed to fetch email from Inbucket: ${messageResponse.statusText}`);
+      throw new Error(`Failed to fetch email: ${messageResponse.statusText}`);
     }
 
-    const messageData = await messageResponse.json() as {
-      body: { html: string };
-      header: { subject: string; date: string };
-    };
-
-    // Delete message if requested
+    // delete message
     if (params.deleteAfter) {
-      console.log(`Deleting email ${messageId} from Inbucket...`);
+      console.log(`Deleting email ${messageId} ...`);
 
-      const deleteUrl = `${baseUrl}/v1/mailbox/${mailbox}/${messageId}`;
-      const res = await fetch(deleteUrl, {
-        method: 'DELETE'
+      const res = await fetch(messageUrl, {
+        method: 'DELETE',
       });
 
       if (!res.ok) {
-        console.error(`Failed to delete email from Inbucket: ${res.statusText}`);
+        console.error(`Failed to delete email: ${res.statusText}`);
       }
     }
 
-    // Return in the expected format
-    return {
-      id: messageId,
-      subject: messageData.header.subject,
-      date: messageData.header.date,
-      body: messageData.body
-    };
+    return await messageResponse.json();
   }
 }
