@@ -96,7 +96,7 @@ jobs:
 
       - name: Supabase Server
         run: pnpm run supabase:web:start -- -x studio,migra,deno-relay,pgadmin-schema-diff,imgproxy,logflare
-
+        
       # - name: Setup tmate session
       #   uses: mxschmitt/action-tmate@v3
 
@@ -108,7 +108,7 @@ jobs:
         run: pnpm --filter web build:test
 
       - name: Run Next.js Server
-        run: pnpm --filter web start:test &
+        run: pnpm --filter web start:test > server-logs.txt 2>&1 &
 
       - name: Run Playwright tests
         run: |
@@ -123,4 +123,11 @@ jobs:
         with:
           name: playwright-report
           path: apps/e2e/playwright-report/
+          retention-days: 7
+          
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: server-logs
+          path: server-logs.txt
           retention-days: 7

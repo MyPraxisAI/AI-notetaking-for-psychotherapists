@@ -117,16 +117,12 @@ export class Mailbox {
     
     // Check the root endpoint to identify the mail server
     try {
-      console.log('Detecting mail server from root endpoint...');
       const rootUrl = 'http://127.0.0.1:54324/';
-      console.log(`Fetching: ${rootUrl}`);
       
       const rootResponse = await fetch(rootUrl, {
         method: 'GET',
         signal: AbortSignal.timeout(5000)
       });
-      
-      console.log(`Root endpoint response status: ${rootResponse.status}`);
       
       if (rootResponse.ok) {
         const text = await rootResponse.text();
