@@ -108,34 +108,55 @@ export class Mailbox {
    * @returns The detected mail server type
    */
   private async detectMailServer(): Promise<MailServer> {
+    const isCI = process.env.CI === 'true';
+    console.log(`Environment: ${isCI ? 'CI' : 'Local'}`);
+    
+    // Based on docker ps output, we know that:
+    // - Local environment uses Mailpit (port 8025 mapped to 54324)
+    // - CI environment uses Inbucket (port 9000 mapped to 54324)
+    
+    // Check the root endpoint to identify the mail server
     try {
-      // Try Mailpit API endpoint
-      const mailpitResponse = await fetch('http://127.0.0.1:54324/api/v1/messages', {
+      console.log('Detecting mail server from root endpoint...');
+      const rootUrl = 'http://127.0.0.1:54324/';
+      console.log(`Fetching: ${rootUrl}`);
+      
+      const rootResponse = await fetch(rootUrl, {
         method: 'GET',
-        headers: { 'Accept': 'application/json' },
+        signal: AbortSignal.timeout(5000)
       });
       
-      if (mailpitResponse.ok) {
-        console.log('Detected Mailpit server');
-        return 'mailpit';
+      console.log(`Root endpoint response status: ${rootResponse.status}`);
+      
+      if (rootResponse.ok) {
+        const text = await rootResponse.text();
+        
+        // Check for Mailpit indicators in the HTML
+        if (text.includes('Mailpit') || text.includes('mailpit')) {
+          console.log('Detected Mailpit server from root page');
+          return 'mailpit';
+        }
+        
+        // Check for Inbucket indicators in the HTML
+        if (text.includes('Inbucket') || text.includes('inbucket')) {
+          console.log('Detected Inbucket server from root page');
+          return 'inbucket';
+        }
+        
+        // Log the first part of the response for debugging
+        console.log(`Root page content (first 200 chars): ${text.substring(0, 200)}${text.length > 200 ? '...' : ''}`);
       }
-      
-      // Try Inbucket API endpoint
-      const inbucketResponse = await fetch('http://127.0.0.1:54324/api/v1/mailbox', {
-        method: 'GET',
-        headers: { 'Accept': 'application/json' },
-      });
-      
-      if (inbucketResponse.ok) {
-        console.log('Detected Inbucket server');
-        return 'inbucket';
-      }
-      
-      console.log('Could not detect mail server type');
-      return 'unknown';
     } catch (error) {
-      console.error('Error detecting mail server:', error);
-      return 'unknown';
+      console.error('Error checking root endpoint:', error instanceof Error ? error.message : String(error));
+    }
+    
+    // If detection fails, make a decision based on environment
+    if (isCI) {
+      console.log('CI environment detected, defaulting to Inbucket');
+      return 'inbucket';
+    } else {
+      console.log('Local environment detected, defaulting to Mailpit');
+      return 'mailpit';
     }
   }
 
@@ -147,13 +168,23 @@ export class Mailbox {
     },
   ) {
     const serverType = await this.detectMailServer();
-    const baseUrl = 'http://127.0.0.1:54324/api';
+    
+    // Log which server we're using
+    console.log(`Using mail server: ${serverType}`);
     
     if (serverType === 'inbucket') {
       return this.getEmailFromInbucket(mailbox, params);
-    } else {
-      // Default to Mailpit or fallback to it if unknown
+    } else if (serverType === 'mailpit') {
       return this.getEmailFromMailpit(mailbox, params);
+    } else {
+      // If unknown, try Inbucket first, then fall back to Mailpit if that fails
+      try {
+        console.log('Attempting to use Inbucket first...');
+        return await this.getEmailFromInbucket(mailbox, params);
+      } catch (error) {
+        console.log('Inbucket failed, falling back to Mailpit:', error);
+        return this.getEmailFromMailpit(mailbox, params);
+      }
     }
   }
   
@@ -167,7 +198,9 @@ export class Mailbox {
       subject?: string;
     },
   ) {
-    const baseUrl = 'http://127.0.0.1:54324/api';
+    // Mailpit runs on port 8025 in the container (mapped to 54324)
+    const host = '127.0.0.1';
+    const baseUrl = `http://${host}:54324/api`;
     const searchUrl = `${baseUrl}/v1/messages`;
 
     // Fetch all messages
@@ -280,7 +313,9 @@ export class Mailbox {
       subject?: string;
     },
   ) {
-    const baseUrl = 'http://127.0.0.1:54324/api';
+    // Inbucket runs on port 9000 in the container (mapped to 54324)
+    const host = '127.0.0.1';
+    const baseUrl = `http://${host}:54324/api`;
     const mailboxUrl = `${baseUrl}/v1/mailbox/${mailbox}`;
 
     // Fetch all messages for the mailbox
