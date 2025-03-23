@@ -1,6 +1,26 @@
 import { Page } from '@playwright/test';
 import { parse } from 'node-html-parser';
 
+type MailServer = 'mailpit' | 'inbucket' | 'unknown';
+
+interface MailpitMessage {
+  ID: string;
+  Subject: string;
+  To: Array<{ Address: string }>;
+  Date: string;
+  HTML?: string;
+  Text?: string;
+}
+
+interface InbucketMessage {
+  id: string;
+  subject: string;
+  date: string;
+  body: {
+    html: string;
+  };
+}
+
 export class Mailbox {
   constructor(private readonly page: Page) {}
 
@@ -83,6 +103,42 @@ export class Mailbox {
     throw new Error('Could not find OTP code in email');
   }
 
+  /**
+   * Detects which mail server is running on the specified port
+   * @returns The detected mail server type
+   */
+  private async detectMailServer(): Promise<MailServer> {
+    try {
+      // Try Mailpit API endpoint
+      const mailpitResponse = await fetch('http://127.0.0.1:54324/api/v1/messages', {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' },
+      });
+      
+      if (mailpitResponse.ok) {
+        console.log('Detected Mailpit server');
+        return 'mailpit';
+      }
+      
+      // Try Inbucket API endpoint
+      const inbucketResponse = await fetch('http://127.0.0.1:54324/api/v1/mailbox', {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' },
+      });
+      
+      if (inbucketResponse.ok) {
+        console.log('Detected Inbucket server');
+        return 'inbucket';
+      }
+      
+      console.log('Could not detect mail server type');
+      return 'unknown';
+    } catch (error) {
+      console.error('Error detecting mail server:', error);
+      return 'unknown';
+    }
+  }
+
   async getEmail(
     mailbox: string,
     params: {
@@ -90,7 +146,27 @@ export class Mailbox {
       subject?: string;
     },
   ) {
-    // Mailpit API base URL (running on port 54324 as configured in Supabase)
+    const serverType = await this.detectMailServer();
+    const baseUrl = 'http://127.0.0.1:54324/api';
+    
+    if (serverType === 'inbucket') {
+      return this.getEmailFromInbucket(mailbox, params);
+    } else {
+      // Default to Mailpit or fallback to it if unknown
+      return this.getEmailFromMailpit(mailbox, params);
+    }
+  }
+  
+  /**
+   * Gets an email from the Mailpit server
+   */
+  private async getEmailFromMailpit(
+    mailbox: string,
+    params: {
+      deleteAfter: boolean;
+      subject?: string;
+    },
+  ) {
     const baseUrl = 'http://127.0.0.1:54324/api';
     const searchUrl = `${baseUrl}/v1/messages`;
 
@@ -191,6 +267,100 @@ export class Mailbox {
       body: {
         html: messageData.HTML || messageData.Text
       }
+    };
+  }
+
+  /**
+   * Gets an email from the Inbucket server
+   */
+  private async getEmailFromInbucket(
+    mailbox: string,
+    params: {
+      deleteAfter: boolean;
+      subject?: string;
+    },
+  ) {
+    const baseUrl = 'http://127.0.0.1:54324/api';
+    const mailboxUrl = `${baseUrl}/v1/mailbox/${mailbox}`;
+
+    // Fetch all messages for the mailbox
+    const response = await fetch(mailboxUrl);
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch emails from Inbucket: ${response.statusText}`);
+    }
+
+    const messages = await response.json() as Array<{
+      id: string;
+      from: string;
+      subject: string;
+      date: string;
+      size: number;
+    }>;
+
+    if (!messages || !messages.length) {
+      console.log(`No emails found in mailbox ${mailbox}`);
+      return;
+    }
+
+    console.log(`Found ${messages.length} emails for mailbox ${mailbox}`);
+
+    // Filter by subject if provided
+    let filteredMessages = messages;
+    if (params.subject) {
+      filteredMessages = messages.filter(
+        (item) => item.subject === params.subject
+      );
+
+      console.log(
+        `Found ${filteredMessages.length} emails with subject ${params.subject}`,
+      );
+
+      if (filteredMessages.length === 0) {
+        console.log(`No emails found with subject ${params.subject}`);
+        return;
+      }
+    }
+
+    // Get the most recent message
+    const message = filteredMessages[filteredMessages.length - 1];
+    console.log(`Message: ${JSON.stringify(message)}`);
+
+    const messageId = message?.id;
+    const messageUrl = `${baseUrl}/v1/mailbox/${mailbox}/${messageId}`;
+
+    // Fetch the full message content
+    const messageResponse = await fetch(messageUrl);
+
+    if (!messageResponse.ok) {
+      throw new Error(`Failed to fetch email from Inbucket: ${messageResponse.statusText}`);
+    }
+
+    const messageData = await messageResponse.json() as {
+      body: { html: string };
+      header: { subject: string; date: string };
+    };
+
+    // Delete message if requested
+    if (params.deleteAfter) {
+      console.log(`Deleting email ${messageId} from Inbucket...`);
+
+      const deleteUrl = `${baseUrl}/v1/mailbox/${mailbox}/${messageId}`;
+      const res = await fetch(deleteUrl, {
+        method: 'DELETE'
+      });
+
+      if (!res.ok) {
+        console.error(`Failed to delete email from Inbucket: ${res.statusText}`);
+      }
+    }
+
+    // Return in the expected format
+    return {
+      id: messageId,
+      subject: messageData.header.subject,
+      date: messageData.header.date,
+      body: messageData.body
     };
   }
 }
