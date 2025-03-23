@@ -90,56 +90,92 @@ export class Mailbox {
       subject?: string;
     },
   ) {
-    const url = `http://127.0.0.1:54324/api/v1/mailbox/${mailbox}`;
+    // Mailpit API base URL (running on port 54324 as configured in Supabase)
+    const baseUrl = 'http://127.0.0.1:54324/api';
+    const searchUrl = `${baseUrl}/v1/messages`;
 
-    const response = await fetch(url);
+    // Fetch all messages
+    const response = await fetch(searchUrl);
 
     if (!response.ok) {
       throw new Error(`Failed to fetch emails: ${response.statusText}`);
     }
 
-    const json = (await response.json()) as Array<{
-      id: string;
-      subject: string;
-    }>;
+    const result = await response.json() as {
+      messages: Array<{
+        ID: string;
+        Subject: string;
+        To: Array<{ Address: string }>
+      }>,
+      total: number
+    };
 
-    if (!json || !json.length) {
-      console.log(`No emails found for mailbox ${mailbox}`);
-
+    if (!result.messages || !result.messages.length) {
+      console.log(`No emails found in mailbox`);
       return;
     }
 
-    const message = params.subject
-      ? (() => {
-          const filtered = json.filter(
-            (item) => item.subject === params.subject,
-          );
+    // Filter messages by recipient
+    let filteredMessages = result.messages.filter(message => {
+      return message.To.some(recipient => {
+        // Check if the recipient address starts with the mailbox name
+        // This handles addresses like "123456@makerkit.dev"
+        return recipient.Address.startsWith(`${mailbox}@`);
+      });
+    });
 
-          console.log(
-            `Found ${filtered.length} emails with subject ${params.subject}`,
-          );
+    console.log(`Found ${filteredMessages.length} emails for recipient ${mailbox}@*`);
 
-          return filtered[filtered.length - 1];
-        })()
-      : json[0];
+    if (filteredMessages.length === 0) {
+      console.log(`No emails found for recipient ${mailbox}@*`);
+      return;
+    }
 
+    // Filter by subject if provided
+    if (params.subject) {
+      filteredMessages = filteredMessages.filter(
+        (item) => item.Subject === params.subject
+      );
+
+      console.log(
+        `Found ${filteredMessages.length} emails with subject ${params.subject}`,
+      );
+
+      if (filteredMessages.length === 0) {
+        console.log(`No emails found with subject ${params.subject}`);
+        return;
+      }
+    }
+
+    // Get the most recent message
+    const message = filteredMessages[filteredMessages.length - 1];
     console.log(`Message: ${JSON.stringify(message)}`);
 
-    const messageId = message?.id;
-    const messageUrl = `${url}/${messageId}`;
+    const messageId = message?.ID;
+    const messageUrl = `${baseUrl}/v1/message/${messageId}`;
 
+    // Fetch the full message content
     const messageResponse = await fetch(messageUrl);
 
     if (!messageResponse.ok) {
       throw new Error(`Failed to fetch email: ${messageResponse.statusText}`);
     }
 
-    // delete message
+    const messageData = await messageResponse.json();
+
+    // Delete message if requested
     if (params.deleteAfter) {
       console.log(`Deleting email ${messageId} ...`);
 
-      const res = await fetch(messageUrl, {
+      const deleteUrl = `${baseUrl}/v1/messages`;
+      const res = await fetch(deleteUrl, {
         method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          ids: [messageId]
+        })
       });
 
       if (!res.ok) {
@@ -147,6 +183,14 @@ export class Mailbox {
       }
     }
 
-    return await messageResponse.json();
+    // Transform the response to match the expected format
+    return {
+      id: messageData.ID,
+      subject: messageData.Subject,
+      date: messageData.Date,
+      body: {
+        html: messageData.HTML || messageData.Text
+      }
+    };
   }
 }
