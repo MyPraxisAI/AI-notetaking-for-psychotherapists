@@ -97,10 +97,13 @@ jobs:
       - name: Supabase Server
         run: pnpm run supabase:web:start -- -x studio,migra,deno-relay,pgadmin-schema-diff,imgproxy,logflare
 
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+
       - name: Stripe CLI
         run: |
           docker run --add-host=host.docker.internal:host-gateway --rm -it --name=stripe -d stripe/stripe-cli:latest listen --forward-to http://host.docker.internal:3000/api/billing/webhook --skip-verify --api-key "$STRIPE_SECRET_KEY" --log-level debug &
-
+        
       - name: Run Next.js Production Build (test env)
         run: pnpm --filter web build:test
 
