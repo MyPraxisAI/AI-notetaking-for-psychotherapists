@@ -98,13 +98,7 @@ jobs:
           version: 2.15.8
 
       - name: Supabase Server
-        run: |
-          # Create custom email config to force Mailpit
-          mkdir -p ./apps/web/supabase/config
-          echo '[smtp]\nenabled = true\nhost = "127.0.0.1"\nport = 54325\nuser = ""\npassword = ""\nadmin_email = "admin@example.com"\nsender_name = "MyPraxis"' > ./apps/web/supabase/config/email.toml
-          
-          # Start Supabase with custom config
-          pnpm run supabase:web:start -- -x studio,migra,deno-relay,pgadmin-schema-diff,imgproxy,logflare
+        run: pnpm run supabase:web:start -- -x studio,migra,deno-relay,pgadmin-schema-diff,imgproxy,logflare
         
       # - name: Setup tmate session
       #   uses: mxschmitt/action-tmate@v3
