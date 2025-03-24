@@ -9,6 +9,7 @@ import { createMiddlewareClient } from '@kit/supabase/middleware-client';
 
 import appConfig from '~/config/app.config';
 import pathsConfig from '~/config/paths.config';
+import { withBasicAuth } from '~/lib/basic-auth';
 
 const CSRF_SECRET_COOKIE = 'csrfSecret';
 const NEXT_ACTION_HEADER = 'next-action';
@@ -29,6 +30,12 @@ export async function middleware(request: NextRequest) {
   // set a unique request ID for each request
   // this helps us log and trace requests
   setRequestId(request);
+  
+  // apply HTTP Basic Authentication if enabled
+  const basicAuthResponse = withBasicAuth(request);
+  if (basicAuthResponse) {
+    return basicAuthResponse;
+  }
 
   // apply CSRF protection for mutating requests
   const csrfResponse = await withCsrfMiddleware(request, response);
