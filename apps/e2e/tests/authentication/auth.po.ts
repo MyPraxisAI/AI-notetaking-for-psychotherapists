@@ -71,6 +71,7 @@ export class AuthPageObject {
       deleteAfter: true,
     },
   ) {
+    await this.page.waitForTimeout(500);
     return expect(async () => {
       const res = await this.mailbox.visitMailbox(email, params);
 
