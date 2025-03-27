@@ -340,18 +340,18 @@ INSERT INTO "public"."therapists" ("id", "account_id", "credentials", "geo_local
 VALUES ('e1b930c9-0a76-412e-a836-4bc4849a3271', 'e5b930c9-0a76-412e-a836-4bc4849a3271', 'Ph.D. in Clinical Psychology', '22222222-2222-4222-a222-222222222222', '2025-03-27 17:55:11.181332+00', '2025-03-27 17:55:11.181332+00');
 
 -- Add therapeutic approaches for the therapist
-INSERT INTO "public"."therapists_approaches" ("id", "account_id", "therapist_id", "approach_id", "created_at", "updated_at")
+INSERT INTO "public"."therapists_approaches" ("id", "therapist_id", "approach_id", "created_at", "updated_at")
 VALUES 
-('e2b930c9-0a76-412e-a836-4bc4849a3271', 'e5b930c9-0a76-412e-a836-4bc4849a3271', 'e1b930c9-0a76-412e-a836-4bc4849a3271', 'a2222222-2222-4222-a222-222222222222', '2025-03-27 17:55:11.181332+00', '2025-03-27 17:55:11.181332+00'),
-('e3b930c9-0a76-412e-a836-4bc4849a3271', 'e5b930c9-0a76-412e-a836-4bc4849a3271', 'e1b930c9-0a76-412e-a836-4bc4849a3271', 'a5555555-5555-4555-a555-555555555555', '2025-03-27 17:55:11.181332+00', '2025-03-27 17:55:11.181332+00');
+('e2b930c9-0a76-412e-a836-4bc4849a3271', 'e1b930c9-0a76-412e-a836-4bc4849a3271', 'a2222222-2222-4222-a222-222222222222', '2025-03-27 17:55:11.181332+00', '2025-03-27 17:55:11.181332+00'),
+('e3b930c9-0a76-412e-a836-4bc4849a3271', 'e1b930c9-0a76-412e-a836-4bc4849a3271', 'a5555555-5555-4555-a555-555555555555', '2025-03-27 17:55:11.181332+00', '2025-03-27 17:55:11.181332+00');
 
 -- Add a client for the therapist
-INSERT INTO "public"."clients" ("id", "account_id", "therapist_id", "full_name", "email", "phone", "created_at", "updated_at")
-VALUES ('e4b930c9-0a76-412e-a836-4bc4849a3271', 'e5b930c9-0a76-412e-a836-4bc4849a3271', 'e1b930c9-0a76-412e-a836-4bc4849a3271', 'John Smith', 'john.smith@example.com', '+1-555-123-4567', '2025-03-27 17:55:11.181332+00', '2025-03-27 17:55:11.181332+00');
+INSERT INTO "public"."clients" ("id", "therapist_id", "full_name", "email", "phone", "created_at", "updated_at")
+VALUES ('e4b930c9-0a76-412e-a836-4bc4849a3271', 'e1b930c9-0a76-412e-a836-4bc4849a3271', 'John Smith', 'john.smith@example.com', '+1-555-123-4567', '2025-03-27 17:55:11.181332+00', '2025-03-27 17:55:11.181332+00');
 
 -- Add a therapy session for the client
-INSERT INTO "public"."sessions" ("id", "account_id", "client_id", "transcript", "note", "created_at", "updated_at")
-VALUES ('f5b930c9-0a76-412e-a836-4bc4849a3271', 'e5b930c9-0a76-412e-a836-4bc4849a3271', 'e4b930c9-0a76-412e-a836-4bc4849a3271', 'Therapist: How have you been feeling since our last session, John?
+INSERT INTO "public"."sessions" ("id", "client_id", "transcript", "note", "created_at", "updated_at")
+VALUES ('f5b930c9-0a76-412e-a836-4bc4849a3271', 'e4b930c9-0a76-412e-a836-4bc4849a3271', 'Therapist: How have you been feeling since our last session, John?
 
 Client: It''s been a mixed week. The project deadline at work is getting closer, and I can feel my anxiety creeping back up. I''ve been having trouble sleeping again.
 
@@ -366,7 +366,7 @@ Client: I''ve done it a couple of times. It''s interesting to see my thoughts wr
 Therapist: That''s exactly what we''re looking for. Let''s build on that awareness today and discuss some additional cognitive techniques you might find helpful for managing those work stressors.', 'Client showing improvement with stress management techniques. Mindfulness exercises are helping, and client is gaining insight through thought journaling. Continue working on cognitive restructuring for work-related anxiety.', '2025-03-27 17:55:11.181332+00', '2025-03-27 17:55:11.181332+00');
 
 -- Add artifacts for the client and session
-INSERT INTO "public"."artifacts" ("id", "account_id", "reference_type", "reference_id", "type", "content", "created_at", "updated_at")
+INSERT INTO "public"."artifacts" ("id", "reference_type", "reference_id", "type", "content", "created_at", "updated_at")
 VALUES 
-('e6b930c9-0a76-412e-a836-4bc4849a3271', 'e5b930c9-0a76-412e-a836-4bc4849a3271', 'client', 'e4b930c9-0a76-412e-a836-4bc4849a3271', 'client_bio', 'John is a 35-year-old software developer experiencing work-related stress and anxiety.', '2025-03-27 17:55:11.181332+00', '2025-03-27 17:55:11.181332+00'),
-('e7b930c9-0a76-412e-a836-4bc4849a3271', 'e5b930c9-0a76-412e-a836-4bc4849a3271', 'session', 'f5b930c9-0a76-412e-a836-4bc4849a3271', 'session_therapist_summary', 'Client reported reduced anxiety levels. Continuing with mindfulness exercises.', '2025-03-27 17:55:11.181332+00', '2025-03-27 17:55:11.181332+00');
+('e6b930c9-0a76-412e-a836-4bc4849a3271', 'client', 'e4b930c9-0a76-412e-a836-4bc4849a3271', 'client_bio', 'John is a 35-year-old software developer experiencing work-related stress and anxiety.', '2025-03-27 17:55:11.181332+00', '2025-03-27 17:55:11.181332+00'),
+('e7b930c9-0a76-412e-a836-4bc4849a3271', 'session', 'f5b930c9-0a76-412e-a836-4bc4849a3271', 'session_therapist_summary', 'Client reported reduced anxiety levels. Continuing with mindfulness exercises.', '2025-03-27 17:55:11.181332+00', '2025-03-27 17:55:11.181332+00');

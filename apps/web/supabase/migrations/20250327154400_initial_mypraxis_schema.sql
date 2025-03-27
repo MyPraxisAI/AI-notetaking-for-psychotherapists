@@ -196,6 +196,22 @@ COMMENT ON COLUMN public.therapists_approaches.account_id IS 'The account this r
 COMMENT ON COLUMN public.therapists_approaches.therapist_id IS 'The therapist';
 COMMENT ON COLUMN public.therapists_approaches.approach_id IS 'The therapeutic approach';
 
+-- Trigger to automatically set account_id from therapist
+CREATE OR REPLACE FUNCTION public.set_therapist_approach_account_id()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF NEW.account_id IS NULL THEN
+    SELECT account_id INTO NEW.account_id FROM public.therapists WHERE id = NEW.therapist_id;
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER set_therapist_approach_account_id_trigger
+  BEFORE INSERT ON public.therapists_approaches
+  FOR EACH ROW
+  EXECUTE FUNCTION public.set_therapist_approach_account_id();
+
 -- RLS for therapists_approaches
 ALTER TABLE public.therapists_approaches ENABLE ROW LEVEL SECURITY;
 
@@ -221,8 +237,8 @@ CREATE TABLE IF NOT EXISTS public.clients (
   account_id UUID REFERENCES public.accounts(id) ON DELETE CASCADE NOT NULL,
   therapist_id UUID REFERENCES public.therapists(id) ON DELETE CASCADE NOT NULL,
   full_name TEXT NOT NULL,
-  email TEXT,
-  phone TEXT
+  email TEXT CHECK (email IS NULL OR email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'),
+  phone TEXT CHECK (phone IS NULL OR phone ~* '^\+?[0-9\s\-\(\)]{8,20}$')
 );
 
 COMMENT ON TABLE public.clients IS 'Therapy clients';
@@ -239,6 +255,22 @@ ALTER TABLE public.clients ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can access clients in their accounts"
   ON public.clients FOR ALL
   USING (public.is_account_owner(account_id));
+
+-- Trigger to automatically set account_id from therapist
+CREATE OR REPLACE FUNCTION public.set_client_account_id()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF NEW.account_id IS NULL THEN
+    SELECT account_id INTO NEW.account_id FROM public.therapists WHERE id = NEW.therapist_id;
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER set_client_account_id_trigger
+  BEFORE INSERT ON public.clients
+  FOR EACH ROW
+  EXECUTE FUNCTION public.set_client_account_id();
 
 -- Indexes
 CREATE INDEX ix_clients_account_id ON public.clients (account_id);
@@ -274,6 +306,22 @@ ALTER TABLE public.sessions ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can access sessions in their accounts"
   ON public.sessions FOR ALL
   USING (public.is_account_owner(account_id));
+
+-- Trigger to automatically set account_id from client
+CREATE OR REPLACE FUNCTION public.set_session_account_id()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF NEW.account_id IS NULL THEN
+    SELECT account_id INTO NEW.account_id FROM public.clients WHERE id = NEW.client_id;
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER set_session_account_id_trigger
+  BEFORE INSERT ON public.sessions
+  FOR EACH ROW
+  EXECUTE FUNCTION public.set_session_account_id();
 
 -- Indexes
 CREATE INDEX ix_sessions_account_id ON public.sessions (account_id);
@@ -314,6 +362,32 @@ ALTER TABLE public.artifacts ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can access artifacts in their accounts"
   ON public.artifacts FOR ALL
   USING (public.is_account_owner(account_id));
+
+-- Trigger to automatically set account_id from reference
+CREATE OR REPLACE FUNCTION public.set_artifact_account_id()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF NEW.account_id IS NULL THEN
+    CASE NEW.reference_type
+      WHEN 'client' THEN
+        SELECT account_id INTO NEW.account_id FROM public.clients WHERE id = NEW.reference_id;
+      WHEN 'session' THEN
+        SELECT account_id INTO NEW.account_id FROM public.sessions WHERE id = NEW.reference_id;
+      WHEN 'therapist' THEN
+        SELECT account_id INTO NEW.account_id FROM public.therapists WHERE id = NEW.reference_id;
+      ELSE
+        -- For other reference types, account_id must be provided
+        RAISE EXCEPTION 'account_id must be provided for reference_type %', NEW.reference_type;
+    END CASE;
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER set_artifact_account_id_trigger
+  BEFORE INSERT ON public.artifacts
+  FOR EACH ROW
+  EXECUTE FUNCTION public.set_artifact_account_id();
 
 -- Indexes
 CREATE INDEX ix_artifacts_account_id ON public.artifacts (account_id);
