@@ -1242,6 +1242,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      install_extensions: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       is_aal2: {
         Args: Record<PropertyKey, never>
         Returns: boolean
