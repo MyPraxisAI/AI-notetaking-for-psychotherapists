@@ -188,13 +188,16 @@ CREATE TABLE IF NOT EXISTS public.therapists_approaches (
   account_id UUID REFERENCES public.accounts(id) ON DELETE CASCADE NOT NULL,
   therapist_id UUID REFERENCES public.therapists(id) ON DELETE CASCADE NOT NULL,
   approach_id UUID REFERENCES public.therapeutic_approaches(id) ON DELETE CASCADE NOT NULL,
-  UNIQUE(therapist_id, approach_id)
+  priority INTEGER NOT NULL DEFAULT 0,
+  UNIQUE(therapist_id, approach_id),
+  UNIQUE(therapist_id, priority)
 );
 
 COMMENT ON TABLE public.therapists_approaches IS 'Join table for therapists and their therapeutic approaches';
 COMMENT ON COLUMN public.therapists_approaches.account_id IS 'The account this relationship belongs to';
 COMMENT ON COLUMN public.therapists_approaches.therapist_id IS 'The therapist';
 COMMENT ON COLUMN public.therapists_approaches.approach_id IS 'The therapeutic approach';
+COMMENT ON COLUMN public.therapists_approaches.priority IS 'Display order/priority of the approach for the therapist';
 
 -- Trigger to automatically set account_id from therapist
 CREATE OR REPLACE FUNCTION public.set_therapist_approach_account_id()
@@ -224,6 +227,7 @@ CREATE POLICY "Users can access therapist approaches in their accounts"
 CREATE INDEX ix_therapists_approaches_account_id ON public.therapists_approaches (account_id);
 CREATE INDEX ix_therapists_approaches_therapist_id ON public.therapists_approaches (therapist_id);
 CREATE INDEX ix_therapists_approaches_approach_id ON public.therapists_approaches (approach_id);
+CREATE INDEX ix_therapists_approaches_therapist_priority ON public.therapists_approaches (therapist_id, priority);
 
 /*
  * -------------------------------------------------------

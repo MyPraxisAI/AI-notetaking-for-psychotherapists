@@ -340,10 +340,10 @@ INSERT INTO "public"."therapists" ("id", "account_id", "credentials", "geo_local
 VALUES ('e1b930c9-0a76-412e-a836-4bc4849a3271', 'e5b930c9-0a76-412e-a836-4bc4849a3271', 'Ph.D. in Clinical Psychology', '22222222-2222-4222-a222-222222222222', '2025-03-27 17:55:11.181332+00', '2025-03-27 17:55:11.181332+00');
 
 -- Add therapeutic approaches for the therapist
-INSERT INTO "public"."therapists_approaches" ("id", "therapist_id", "approach_id", "created_at", "updated_at")
+INSERT INTO "public"."therapists_approaches" ("id", "therapist_id", "approach_id", "priority", "created_at", "updated_at")
 VALUES 
-('e2b930c9-0a76-412e-a836-4bc4849a3271', 'e1b930c9-0a76-412e-a836-4bc4849a3271', 'a2222222-2222-4222-a222-222222222222', '2025-03-27 17:55:11.181332+00', '2025-03-27 17:55:11.181332+00'),
-('e3b930c9-0a76-412e-a836-4bc4849a3271', 'e1b930c9-0a76-412e-a836-4bc4849a3271', 'a5555555-5555-4555-a555-555555555555', '2025-03-27 17:55:11.181332+00', '2025-03-27 17:55:11.181332+00');
+('e2b930c9-0a76-412e-a836-4bc4849a3271', 'e1b930c9-0a76-412e-a836-4bc4849a3271', 'a2222222-2222-4222-a222-222222222222', 0, '2025-03-27 17:55:11.181332+00', '2025-03-27 17:55:11.181332+00'),
+('e3b930c9-0a76-412e-a836-4bc4849a3271', 'e1b930c9-0a76-412e-a836-4bc4849a3271', 'a5555555-5555-4555-a555-555555555555', 1, '2025-03-27 17:55:11.181332+00', '2025-03-27 17:55:11.181332+00');
 
 -- Add a client for the therapist
 INSERT INTO "public"."clients" ("id", "therapist_id", "full_name", "email", "phone", "created_at", "updated_at")

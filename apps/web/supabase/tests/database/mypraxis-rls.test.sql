@@ -221,8 +221,8 @@ select makerkit.authenticate_as('account_owner');
 
 -- Insert a therapist_approach record
 select lives_ok(
-  $$ INSERT INTO public.therapists_approaches (id, therapist_id, approach_id)
-     VALUES ('77777777-7777-7777-7777-777777777777', '33333333-3333-3333-3333-333333333333', 'a2222222-2222-4222-a222-222222222222') $$,
+  $$ INSERT INTO public.therapists_approaches (id, therapist_id, approach_id, priority)
+     VALUES ('77777777-7777-7777-7777-777777777777', '33333333-3333-3333-3333-333333333333', 'a2222222-2222-4222-a222-222222222222', 0) $$,
   'Account owner should be able to insert therapist_approach for their therapist'
 );
 

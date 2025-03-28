@@ -945,6 +945,7 @@ export type Database = {
           approach_id: string
           created_at: string
           id: string
+          priority: number
           therapist_id: string
           updated_at: string
         }
@@ -953,6 +954,7 @@ export type Database = {
           approach_id: string
           created_at?: string
           id?: string
+          priority?: number
           therapist_id: string
           updated_at?: string
         }
@@ -961,6 +963,7 @@ export type Database = {
           approach_id?: string
           created_at?: string
           id?: string
+          priority?: number
           therapist_id?: string
           updated_at?: string
         }
@@ -1241,10 +1244,6 @@ export type Database = {
           role_name: string
         }
         Returns: boolean
-      }
-      install_extensions: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
       }
       is_aal2: {
         Args: Record<PropertyKey, never>
