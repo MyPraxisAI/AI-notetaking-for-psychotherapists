@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTransition } from 'react';
 import { useTranslation } from 'react-i18next';
+import { X } from 'lucide-react';
 import { z } from 'zod';
 
 import { PersonalAccountSettingsContainer } from '@kit/accounts/personal-account-settings';
@@ -32,6 +33,104 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@kit/
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@kit/ui/tabs';
 import { Trans } from '@kit/ui/trans';
 import { toast } from 'sonner';
+
+// ApproachTag component to avoid hooks errors
+const ApproachTag = ({ 
+  approach,
+  therapeuticApproaches,
+  onRemove
+}: { 
+  approach: string;
+  therapeuticApproaches: any[];
+  onRemove: (approach: string) => void;
+}) => {
+  const { t } = useTranslation();
+  const approachLabel = t(`mypraxis:therapeuticApproaches.${approach}`, { 
+    defaultValue: therapeuticApproaches.find(a => a.name === approach)?.title || approach 
+  });
+  
+  return (
+    <div 
+      key={approach} 
+      className="flex items-center bg-muted rounded-full px-3 py-1 text-sm"
+    >
+      <span>{approachLabel}</span>
+      <X 
+        className="ml-2 h-4 w-4 cursor-pointer hover:text-destructive" 
+        onClick={() => onRemove(approach)}
+      />
+    </div>
+  );
+};
+
+// GeoLocalitiesOptions component to avoid hooks errors
+const GeoLocalitiesOptions = ({ 
+  geoLocalities 
+}: { 
+  geoLocalities: any[]; 
+}) => {
+  const { t } = useTranslation();
+  
+  // Create a sorted copy of the localities
+  const sortedLocalities = [...geoLocalities].sort((a, b) => {
+    // Always put 'other' at the end
+    if (a.name === 'other') return 1;
+    if (b.name === 'other') return -1;
+    
+    // Sort by translated values
+    const aTranslated = t(`mypraxis:geoLocalities.${a.name}`, { defaultValue: a.name });
+    const bTranslated = t(`mypraxis:geoLocalities.${b.name}`, { defaultValue: b.name });
+    return aTranslated.localeCompare(bTranslated);
+  });
+  
+  return sortedLocalities.map(locality => (
+    <SelectItem key={locality.id} value={locality.name}>
+      <Trans
+        i18nKey={`mypraxis:geoLocalities.${locality.name}`}
+        values={{ defaultValue: locality.name }}
+      />
+    </SelectItem>
+  ));
+};
+
+// ApproachOptions component to avoid hooks errors
+const ApproachOptions = ({ 
+  therapeuticApproaches, 
+  primaryApproach, 
+  secondaryApproaches 
+}: { 
+  therapeuticApproaches: any[]; 
+  primaryApproach: string; 
+  secondaryApproaches: string[]; 
+}) => {
+  const { t } = useTranslation();
+  
+  // Create a sorted copy of the approaches
+  const sortedApproaches = [...therapeuticApproaches]
+    .filter(approach => 
+      approach.name !== primaryApproach && 
+      !secondaryApproaches.includes(approach.name)
+    )
+    .sort((a, b) => {
+      // Always put 'other' at the end
+      if (a.name === 'other') return 1;
+      if (b.name === 'other') return -1;
+      
+      // Sort by translated values
+      const aTranslated = t(`mypraxis:therapeuticApproaches.${a.name}`, { defaultValue: a.title });
+      const bTranslated = t(`mypraxis:therapeuticApproaches.${b.name}`, { defaultValue: b.title });
+      return aTranslated.localeCompare(bTranslated);
+    });
+  
+  return sortedApproaches.map(approach => (
+    <SelectItem key={approach.id} value={approach.name}>
+      <Trans
+        i18nKey={`mypraxis:therapeuticApproaches.${approach.name}`}
+        values={{ defaultValue: approach.title }}
+      />
+    </SelectItem>
+  ));
+};
 
 // Define schemas (these should be imported from your schema files)
 const ProfessionalInfoSchema = z.object({
@@ -384,12 +483,12 @@ export function EnhancedSettingsContainer(props: {
                     name="credentials"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Credentials</FormLabel>
+                        <FormLabel>Professional Credentials</FormLabel>
                         <FormControl>
-                          <Input placeholder="Ph.D., LMFT" {...field} />
+                          <Input placeholder="e.g. LCSW, LMFT or psychotherapist" {...field} />
                         </FormControl>
                         <FormDescription>
-                          Your professional credentials and certifications
+                          The way you'll be introduced
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -401,44 +500,22 @@ export function EnhancedSettingsContainer(props: {
                     name="country"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Country</FormLabel>
+                        <FormLabel>Country or Territory</FormLabel>
                         <Select 
                           onValueChange={field.onChange} 
                           defaultValue={field.value}
                         >
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="Select your country" />
+                              <SelectValue placeholder="Select a country or territory" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {(() => {
-                              const { t } = useTranslation();
-                              
-                              // Create a sorted copy of the localities
-                              const sortedLocalities = [...geoLocalities].sort((a, b) => {
-                                // Always put 'other' at the end
-                                if (a.name === 'other') return 1;
-                                if (b.name === 'other') return -1;
-                                
-                                // Sort by translated values
-                                const aTranslated = t(`mypraxis:geoLocalities.${a.name}`, { defaultValue: a.title });
-                                const bTranslated = t(`mypraxis:geoLocalities.${b.name}`, { defaultValue: b.title });
-                                return aTranslated.localeCompare(bTranslated);
-                              });
-                              
-                              return sortedLocalities.map(country => (
-                                <SelectItem key={country.id} value={country.name}>
-                                  <Trans i18nKey={`mypraxis:geoLocalities.${country.name}`}>
-                                    {country.title}
-                                  </Trans>
-                                </SelectItem>
-                              ));
-                            })()} 
+                            <GeoLocalitiesOptions geoLocalities={geoLocalities} />
                           </SelectContent>
                         </Select>
                         <FormDescription>
-                          The country where you practice
+                          Needed to ensure adherence to local privacy regulations
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -452,7 +529,17 @@ export function EnhancedSettingsContainer(props: {
                       <FormItem>
                         <FormLabel>Primary Therapeutic Approach</FormLabel>
                         <Select 
-                          onValueChange={field.onChange} 
+                          onValueChange={(value) => {
+                            // Update primary approach
+                            field.onChange(value);
+                            
+                            // Remove from secondary approaches if it's there
+                            const secondaryApproaches = professionalInfoForm.getValues().secondaryTherapeuticApproaches || [];
+                            if (secondaryApproaches.includes(value)) {
+                              const updatedSecondary = secondaryApproaches.filter(a => a !== value);
+                              professionalInfoForm.setValue('secondaryTherapeuticApproaches', updatedSecondary);
+                            }
+                          }} 
                           defaultValue={field.value}
                         >
                           <FormControl>
@@ -478,16 +565,84 @@ export function EnhancedSettingsContainer(props: {
                               
                               return sortedApproaches.map(approach => (
                                 <SelectItem key={approach.id} value={approach.name}>
-                                  <Trans i18nKey={`mypraxis:therapeuticApproaches.${approach.name}`}>
-                                    {approach.title}
-                                  </Trans>
+                                  <Trans
+                                    i18nKey={`mypraxis:therapeuticApproaches.${approach.name}`}
+                                    values={{ defaultValue: approach.title }}
+                                  />
                                 </SelectItem>
                               ));
                             })()} 
                           </SelectContent>
                         </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  {/* Secondary Therapeutic Approaches */}
+                  <FormField
+                    control={professionalInfoForm.control}
+                    name="secondaryTherapeuticApproaches"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Secondary Therapeutic Approaches</FormLabel>
+                        
+                        {/* Display selected approaches as tags */}
+                        {field.value && field.value.length > 0 && (
+                          <div className="flex flex-wrap gap-2 mb-2">
+                            {field.value.map(approach => (
+                              <ApproachTag
+                                key={approach}
+                                approach={approach}
+                                therapeuticApproaches={therapeuticApproaches}
+                                onRemove={(approachToRemove) => {
+                                  const updatedApproaches = field.value?.filter(a => a !== approachToRemove) || [];
+                                  field.onChange(updatedApproaches);
+                                }}
+                              />
+                            ))}
+                          </div>
+                        )}
+                        
+                        {/* Dropdown for adding more approaches */}
+                        <div className={(!field.value || field.value.length < 2) ? '' : 'hidden'}>
+                          <Select
+                            value=""
+                            onValueChange={(value) => {
+                              if (!value) return;
+                              
+                              // Don't add if it's the primary approach
+                              const primaryApproach = professionalInfoForm.getValues().primaryTherapeuticApproach;
+                              if (value === primaryApproach) return;
+                              
+                              // Don't add if already in secondary approaches
+                              const currentApproaches = field.value || [];
+                              if (currentApproaches.includes(value)) return;
+                              
+                              // Add to secondary approaches (up to 2)
+                              if (currentApproaches.length < 2) {
+                                field.onChange([...currentApproaches, value]);
+                              }
+                            }}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Add approach (up to 2)" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {/* Extract this to a separate component to avoid hook issues */}
+                              <ApproachOptions 
+                                therapeuticApproaches={therapeuticApproaches} 
+                                primaryApproach={professionalInfoForm.watch('primaryTherapeuticApproach')} 
+                                secondaryApproaches={field.value || []} 
+                              />
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        
                         <FormDescription>
-                          Your main therapeutic approach
+                          Will be used to fine-tune AI reports
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
