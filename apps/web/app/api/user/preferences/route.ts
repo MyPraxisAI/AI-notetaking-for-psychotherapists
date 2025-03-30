@@ -1,11 +1,24 @@
-import { enhanceRouteHandler } from '@kit/shared/enhance-route-handler';
-import { logger } from '@kit/shared/logger';
+import { NextResponse } from 'next/server';
+import { enhanceRouteHandler } from '@kit/next/routes';
+import { getLogger } from '@kit/shared/logger';
+import { SupabaseClient } from '@supabase/supabase-js';
 
-import { getSupabaseServerClient } from '~/supabase/server-client';
+import { getSupabaseServerClient } from '@kit/supabase/server-client';
 
-export const GET = enhanceRouteHandler({
-  auth: true,
-  handler: async (request, { user }) => {
+// Type assertion to allow access to custom tables
+type CustomClient = SupabaseClient & {
+  from: (table: string) => any;
+};
+
+// Initialize logger properly with await
+const logger = await getLogger();
+
+export const GET = enhanceRouteHandler(
+  async ({ request, user }) => {
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    
     const ctx = {
       name: 'get-user-preferences',
       userId: user.id,
@@ -14,23 +27,23 @@ export const GET = enhanceRouteHandler({
     logger.info(ctx, 'Fetching user preferences...');
 
     try {
-      const client = getSupabaseServerClient();
+      const client = getSupabaseServerClient() as CustomClient;
       
       // Fetch user preferences
       const { data: preferences, error } = await client
         .from('user_preferences')
-        .select('use_24_hour_clock, use_international_date_format')
+        .select('time_format, date_format')
         .eq('user_id', user.id)
         .single();
       
       if (error && error.code !== 'PGRST116') {
         logger.error(ctx, 'Error fetching user preferences', { error });
-        return Response.json({ error: 'Failed to fetch user preferences' }, { status: 500 });
+        return NextResponse.json({ error: 'Failed to fetch user preferences' }, { status: 500 });
       }
 
       // If no preferences found, return defaults
       if (!preferences) {
-        return Response.json({
+        return NextResponse.json({
           use24HourClock: true,
           useInternationalDateFormat: true,
         });
@@ -38,15 +51,15 @@ export const GET = enhanceRouteHandler({
 
       // Map the data to the expected format
       const preferencesData = {
-        use24HourClock: preferences.use_24_hour_clock,
-        useInternationalDateFormat: preferences.use_international_date_format,
+        use24HourClock: preferences && preferences.time_format === '24h',
+        useInternationalDateFormat: preferences && preferences.date_format === 'international',
       };
 
       logger.info(ctx, 'User preferences fetched successfully');
-      return Response.json(preferencesData);
+      return NextResponse.json(preferencesData);
     } catch (error) {
       logger.error(ctx, 'Failed to fetch user preferences', { error });
-      return Response.json({ error: 'Internal server error' }, { status: 500 });
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-  },
-});
+  }
+);

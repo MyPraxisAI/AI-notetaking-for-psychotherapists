@@ -21,7 +21,8 @@ CREATE TABLE IF NOT EXISTS public.geo_localities (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
-  name VARCHAR(64) NOT NULL
+  name VARCHAR(64) NOT NULL,
+  title VARCHAR(255) NOT NULL
 );
 
 COMMENT ON TABLE public.geo_localities IS 'Geographic localities for therapists';
@@ -46,15 +47,15 @@ CREATE POLICY "Only service_role can modify geo_localities"
 CREATE INDEX ix_geo_localities_name ON public.geo_localities (name);
 
 -- Populate geo_localities with initial data
-INSERT INTO public.geo_localities (id, name) VALUES
-('11111111-1111-4111-a111-111111111111', 'european_union'),
-('22222222-2222-4222-a222-222222222222', 'united_states'),
-('33333333-3333-4333-a333-333333333333', 'canada'),
-('44444444-4444-4444-a444-444444444444', 'united_kingdom'),
-('55555555-5555-4555-a555-555555555555', 'new_zealand'),
-('66666666-6666-4666-a666-666666666666', 'australia'),
-('77777777-7777-4777-a777-777777777777', 'russian_federation'),
-('88888888-8888-4888-a888-888888888888', 'other');
+INSERT INTO public.geo_localities (id, name, title) VALUES
+('11111111-1111-4111-a111-111111111111', 'eu', 'European Union'),
+('22222222-2222-4222-a222-222222222222', 'us', 'United States'),
+('33333333-3333-4333-a333-333333333333', 'ca', 'Canada'),
+('44444444-4444-4444-a444-444444444444', 'uk', 'United Kingdom'),
+('55555555-5555-4555-a555-555555555555', 'nz', 'New Zealand'),
+('66666666-6666-4666-a666-666666666666', 'au', 'Australia'),
+('77777777-7777-4777-a777-777777777777', 'ru', 'Russian Federation'),
+('88888888-8888-4888-a888-888888888888', 'other', 'Other');
 
 /*
  * -------------------------------------------------------

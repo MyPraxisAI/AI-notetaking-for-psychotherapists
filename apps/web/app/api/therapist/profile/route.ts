@@ -1,11 +1,22 @@
-import { enhanceRouteHandler } from '@kit/shared/enhance-route-handler';
-import { logger } from '@kit/shared/logger';
+import { NextResponse } from 'next/server';
+import { enhanceRouteHandler } from '@kit/next/routes';
+import { getLogger } from '@kit/shared/logger';
+import { SupabaseClient } from '@supabase/supabase-js';
+import { getSupabaseServerClient } from '@kit/supabase/server-client';
 
-import { getSupabaseServerClient } from '~/supabase/server-client';
+// Type assertion to allow access to custom tables
+type CustomClient = SupabaseClient & {
+  from: (table: string) => any;
+};
 
-export const GET = enhanceRouteHandler({
-  auth: true,
-  handler: async (request, { user }) => {
+// Initialize logger properly with await
+const logger = await getLogger();
+
+export const GET = enhanceRouteHandler(
+  async ({ request, user }) => {
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     const ctx = {
       name: 'get-therapist-profile',
       userId: user.id,
@@ -14,7 +25,7 @@ export const GET = enhanceRouteHandler({
     logger.info(ctx, 'Fetching therapist profile...');
 
     try {
-      const client = getSupabaseServerClient();
+      const client = getSupabaseServerClient() as CustomClient;
       
       // Fetch therapist record
       const { data: therapist, error: therapistError } = await client
@@ -32,7 +43,7 @@ export const GET = enhanceRouteHandler({
       
       if (therapistError && therapistError.code !== 'PGRST116') {
         logger.error(ctx, 'Error fetching therapist record', { error: therapistError });
-        return Response.json({ error: 'Failed to fetch therapist profile' }, { status: 500 });
+        return NextResponse.json({ error: 'Failed to fetch therapist profile' }, { status: 500 });
       }
 
       // If no therapist record found, return null
@@ -67,10 +78,10 @@ export const GET = enhanceRouteHandler({
       };
 
       logger.info(ctx, 'Therapist profile fetched successfully');
-      return Response.json(profileData);
+      return NextResponse.json(profileData);
     } catch (error) {
       logger.error(ctx, 'Failed to fetch therapist profile', { error });
-      return Response.json({ error: 'Internal server error' }, { status: 500 });
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-  },
-});
+  }
+);
