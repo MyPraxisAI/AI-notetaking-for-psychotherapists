@@ -320,3 +320,55 @@ SELECT pg_catalog.setval('"public"."role_permissions_id_seq"', 7, true);
 --
 
 SELECT pg_catalog.setval('"supabase_functions"."hooks_id_seq"', 19, true);
+
+-- Add MyPraxis test user
+-- First, add the user to auth.users
+
+INSERT INTO "auth"."users" ("instance_id", "id", "aud", "role", "email", "encrypted_password", "email_confirmed_at", "invited_at", "confirmation_token", "confirmation_sent_at", "recovery_token", "recovery_sent_at", "email_change_token_new", "email_change", "email_change_sent_at", "last_sign_in_at", "raw_app_meta_data", "raw_user_meta_data", "is_super_admin", "created_at", "updated_at", "phone", "phone_confirmed_at", "phone_change", "phone_change_token", "phone_change_sent_at", "email_change_token_current", "email_change_confirm_status", "banned_until", "reauthentication_token", "reauthentication_sent_at", "is_sso_user", "deleted_at", "is_anonymous")
+-- Password for test@mypraxis.ai is 'password'
+VALUES ('00000000-0000-0000-0000-000000000000', 'e5b930c9-0a76-412e-a836-4bc4849a3271', 'authenticated', 'authenticated', 'test@mypraxis.ai', '$2a$10$NaMVRrI7NyfwP.AfAVWt6O/abulGnf9BBqwa6DqdMwXMvOCGpAnVO', '2025-03-27 17:55:11.176987+00', null, '', '2025-03-27 17:55:01.649714+00', '', null, '', '', null, '2025-03-27 17:55:11.17957+00', '{"provider": "email", "providers": ["email"]}', '{"sub": "e5b930c9-0a76-412e-a836-4bc4849a3271", "email": "test@mypraxis.ai", "email_verified": true, "phone_verified": false}', null, '2025-03-27 17:55:01.646641+00', '2025-03-27 17:55:11.181332+00', null, null, '', '', null, '', 0, NULL, '', NULL, false, NULL, false);
+
+-- Add the user identity
+INSERT INTO "auth"."identities" ("id", "user_id", "identity_data", "provider", "provider_id", "last_sign_in_at", "created_at", "updated_at")
+VALUES ('e5b930c9-0a76-412e-a836-4bc4849a3271', 'e5b930c9-0a76-412e-a836-4bc4849a3271', '{"sub": "e5b930c9-0a76-412e-a836-4bc4849a3271", "email": "test@mypraxis.ai", "email_verified": true, "phone_verified": false}', 'email', 'test@mypraxis.ai', '2025-03-27 17:55:01.646641+00', '2025-03-27 17:55:11.181332+00', '2025-03-27 17:55:11.181332+00');
+
+-- Note: We don't need to add a personal account as Makerkit automatically creates one
+-- Add user preferences for the test account
+INSERT INTO "public"."user_preferences" ("id", "account_id", "use_24hr_clock", "use_us_date_format", "language", "created_at", "updated_at")
+VALUES ('f1b930c9-0a76-412e-a836-4bc4849a3271', 'e5b930c9-0a76-412e-a836-4bc4849a3271', true, false, 'en', '2025-03-27 17:55:11.181332+00', '2025-03-27 17:55:11.181332+00');
+
+-- Add therapist record for the test account
+INSERT INTO "public"."therapists" ("id", "account_id", "credentials", "geo_locality_id", "created_at", "updated_at")
+VALUES ('e1b930c9-0a76-412e-a836-4bc4849a3271', 'e5b930c9-0a76-412e-a836-4bc4849a3271', 'Ph.D. in Clinical Psychology', '22222222-2222-4222-a222-222222222222', '2025-03-27 17:55:11.181332+00', '2025-03-27 17:55:11.181332+00');
+
+-- Add therapeutic approaches for the therapist
+INSERT INTO "public"."therapists_approaches" ("id", "therapist_id", "approach_id", "priority", "created_at", "updated_at")
+VALUES 
+('e2b930c9-0a76-412e-a836-4bc4849a3271', 'e1b930c9-0a76-412e-a836-4bc4849a3271', 'a2222222-2222-4222-a222-222222222222', 0, '2025-03-27 17:55:11.181332+00', '2025-03-27 17:55:11.181332+00'),
+('e3b930c9-0a76-412e-a836-4bc4849a3271', 'e1b930c9-0a76-412e-a836-4bc4849a3271', 'a5555555-5555-4555-a555-555555555555', 1, '2025-03-27 17:55:11.181332+00', '2025-03-27 17:55:11.181332+00');
+
+-- Add a client for the therapist
+INSERT INTO "public"."clients" ("id", "therapist_id", "full_name", "email", "phone", "created_at", "updated_at")
+VALUES ('e4b930c9-0a76-412e-a836-4bc4849a3271', 'e1b930c9-0a76-412e-a836-4bc4849a3271', 'John Smith', 'john.smith@example.com', '+1-555-123-4567', '2025-03-27 17:55:11.181332+00', '2025-03-27 17:55:11.181332+00');
+
+-- Add a therapy session for the client
+INSERT INTO "public"."sessions" ("id", "client_id", "transcript", "note", "created_at", "updated_at")
+VALUES ('f5b930c9-0a76-412e-a836-4bc4849a3271', 'e4b930c9-0a76-412e-a836-4bc4849a3271', 'Therapist: How have you been feeling since our last session, John?
+
+Client: It''s been a mixed week. The project deadline at work is getting closer, and I can feel my anxiety creeping back up. I''ve been having trouble sleeping again.
+
+Therapist: I''m sorry to hear that. Have you been able to use any of the mindfulness techniques we discussed?
+
+Client: Actually, yes. I''ve been doing the breathing exercises during my lunch break, and they''ve helped a bit. I can feel when I''m getting overwhelmed and at least have a tool to use now.
+
+Therapist: That''s excellent progress. How about the thought journaling?
+
+Client: I''ve done it a couple of times. It''s interesting to see my thoughts written down - some of the catastrophic thinking becomes more obvious when I see it on paper.
+
+Therapist: That''s exactly what we''re looking for. Let''s build on that awareness today and discuss some additional cognitive techniques you might find helpful for managing those work stressors.', 'Client showing improvement with stress management techniques. Mindfulness exercises are helping, and client is gaining insight through thought journaling. Continue working on cognitive restructuring for work-related anxiety.', '2025-03-27 17:55:11.181332+00', '2025-03-27 17:55:11.181332+00');
+
+-- Add artifacts for the client and session
+INSERT INTO "public"."artifacts" ("id", "reference_type", "reference_id", "type", "content", "created_at", "updated_at")
+VALUES 
+('e6b930c9-0a76-412e-a836-4bc4849a3271', 'client', 'e4b930c9-0a76-412e-a836-4bc4849a3271', 'client_bio', 'John is a 35-year-old software developer experiencing work-related stress and anxiety.', '2025-03-27 17:55:11.181332+00', '2025-03-27 17:55:11.181332+00'),
+('e7b930c9-0a76-412e-a836-4bc4849a3271', 'session', 'f5b930c9-0a76-412e-a836-4bc4849a3271', 'session_therapist_summary', 'Client reported reduced anxiety levels. Continuing with mindfulness exercises.', '2025-03-27 17:55:11.181332+00', '2025-03-27 17:55:11.181332+00');
