@@ -42,7 +42,7 @@ export const GET = enhanceRouteHandler(
       // Map the database results to the expected format
       // We'll let the client handle translations
       const approaches = approachesData.map(approach => ({
-        id: approach.name, // Use the name as the ID for consistency with i18n keys
+        id: approach.id, // Use the actual UUID as the ID
         name: approach.name,
         title: approach.title // Keep the original title as fallback
       }));

@@ -38,7 +38,7 @@ export const GET = enhanceRouteHandler(
       // Map the database results to the expected format
       // We'll let the client handle translations
       const geoLocalities = localities.map(locality => ({
-        id: locality.name, // Use the name as the ID for consistency with i18n keys
+        id: locality.id, // Use the actual UUID as the ID
         name: locality.name,
         title: locality.title // Use name as fallback since there's no title column
       }));

@@ -45,9 +45,11 @@ const ApproachTag = ({
   onRemove: (approach: string) => void;
 }) => {
   const { t } = useTranslation();
-  const approachLabel = t(`mypraxis:therapeuticApproaches.${approach}`, { 
-    defaultValue: therapeuticApproaches.find(a => a.name === approach)?.title || approach 
-  });
+  // Find the approach by ID instead of name
+  const approachData = therapeuticApproaches.find(a => a.id === approach);
+  const approachLabel = approachData ? t(`mypraxis:therapeuticApproaches.${approachData.name}`, { 
+    defaultValue: approachData.title || approachData.name 
+  }) : approach;
   
   return (
     <div 
@@ -84,7 +86,7 @@ const GeoLocalitiesOptions = ({
   });
   
   return sortedLocalities.map(locality => (
-    <SelectItem key={locality.id} value={locality.name}>
+    <SelectItem key={locality.id} value={locality.id}>
       <Trans
         i18nKey={`mypraxis:geoLocalities.${locality.name}`}
         values={{ defaultValue: locality.name }}
@@ -108,8 +110,8 @@ const ApproachOptions = ({
   // Create a sorted copy of the approaches
   const sortedApproaches = [...therapeuticApproaches]
     .filter(approach => 
-      approach.name !== primaryApproach && 
-      !secondaryApproaches.includes(approach.name)
+      approach.id !== primaryApproach && 
+      !secondaryApproaches.includes(approach.id)
     )
     .sort((a, b) => {
       // Always put 'other' at the end
@@ -123,7 +125,7 @@ const ApproachOptions = ({
     });
   
   return sortedApproaches.map(approach => (
-    <SelectItem key={approach.id} value={approach.name}>
+    <SelectItem key={approach.id} value={approach.id}>
       <Trans
         i18nKey={`mypraxis:therapeuticApproaches.${approach.name}`}
         values={{ defaultValue: approach.title }}
@@ -210,9 +212,9 @@ function useGeoLocalities() {
   return { data, isLoading, error };
 }
 
-// Import hooks for data mutations
-import { useUpdateUserPreferences } from '../_lib/hooks/use-user-preferences';
-import { useUpdateTherapistProfile } from '../_lib/hooks/use-therapist-profile';
+// Import hooks for data fetching and mutations
+import { useUpdateUserPreferences, useUserPreferences } from '../_lib/hooks/use-user-preferences';
+import { useUpdateTherapistProfile, useTherapistProfile } from '../_lib/hooks/use-therapist-profile';
 
 // This function is no longer needed as we're using the hook directly
 
@@ -260,13 +262,9 @@ export function EnhancedSettingsContainer(props: {
     setAvailableLanguages(languageOptions);
   }, [i18n]);
   
-  // Fetch professional information data
-  const [professionalInfo, setProfessionalInfo] = useState<any>(null);
-  const [isLoadingProfessionalInfo, setIsLoadingProfessionalInfo] = useState(true);
-  
-  // Fetch user preferences data
-  const [userPreferences, setUserPreferences] = useState<any>(null);
-  const [isLoadingPreferences, setIsLoadingPreferences] = useState(true);
+  // Use hooks for data fetching
+  const { data: professionalInfo, isLoading: isLoadingProfessionalInfo } = useTherapistProfile();
+  const { data: userPreferences, isLoading: isLoadingPreferences } = useUserPreferences();
   
   // Fetch reference data
   const { 
@@ -279,50 +277,17 @@ export function EnhancedSettingsContainer(props: {
     isLoading: isLoadingLocalities 
   } = useGeoLocalities();
 
-  // Fetch professional information
+  // Update forms when data is loaded
   useEffect(() => {
-    const fetchProfessionalInfo = async () => {
-      try {
-        const response = await fetch('/api/professional/info');
-        if (response.ok) {
-          const data = await response.json();
-          setProfessionalInfo(data);
-        }
-      } catch (error) {
-        console.error('Error fetching professional information:', error);
-      } finally {
-        setIsLoadingProfessionalInfo(false);
-      }
-    };
-
-    fetchProfessionalInfo();
-  }, []);
-
-  // Fetch user preferences
-  useEffect(() => {
-    const fetchUserPreferences = async () => {
-      try {
-        const response = await fetch('/api/user/preferences');
-        if (response.ok) {
-          const data = await response.json();
-          setUserPreferences(data);
-        }
-      } catch (error) {
-        console.error('Error fetching user preferences:', error);
-      } finally {
-        setIsLoadingPreferences(false);
-      }
-    };
-
-    fetchUserPreferences();
-  }, []);
+    // This will be handled by the form reset effects below
+  }, [professionalInfo, userPreferences]);
 
   const professionalInfoForm = useForm<ProfessionalInfoFormValues>({
     resolver: zodResolver(professionalInfoFormSchema),
     defaultValues: {
       fullName: '',
       credentials: '',
-      country: '',
+      geoLocality: '',
       primaryTherapeuticApproach: '',
       secondaryTherapeuticApproaches: [],
     },
@@ -343,7 +308,7 @@ export function EnhancedSettingsContainer(props: {
       professionalInfoForm.reset({
         fullName: professionalInfo.fullName || '',
         credentials: professionalInfo.credentials || '',
-        country: professionalInfo.country || '',
+        geoLocality: professionalInfo.geoLocality || '',
         primaryTherapeuticApproach: professionalInfo.primaryTherapeuticApproach || '',
         secondaryTherapeuticApproaches: professionalInfo.secondaryTherapeuticApproaches || [],
       });
@@ -465,10 +430,10 @@ export function EnhancedSettingsContainer(props: {
                   
                   <FormField
                     control={professionalInfoForm.control}
-                    name="country"
+                    name="geoLocality"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Country or Territory</FormLabel>
+                        <FormLabel>Geographic Locality</FormLabel>
                         <Select 
                           onValueChange={field.onChange} 
                           defaultValue={field.value}
@@ -483,7 +448,7 @@ export function EnhancedSettingsContainer(props: {
                           </SelectContent>
                         </Select>
                         <FormDescription>
-                          Needed to ensure adherence to local privacy regulations
+                          Your geographic location for regulatory compliance and local service provision
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -532,7 +497,7 @@ export function EnhancedSettingsContainer(props: {
                               });
                               
                               return sortedApproaches.map(approach => (
-                                <SelectItem key={approach.id} value={approach.name}>
+                                <SelectItem key={approach.id} value={approach.id}>
                                   <Trans
                                     i18nKey={`mypraxis:therapeuticApproaches.${approach.name}`}
                                     values={{ defaultValue: approach.title }}

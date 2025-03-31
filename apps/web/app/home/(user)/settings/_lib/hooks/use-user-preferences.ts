@@ -91,7 +91,6 @@ export function useUpdateUserPreferences() {
             use_24hr_clock: data.use24HourClock,
             use_us_date_format: data.useUsDateFormat,
             language: data.language,
-            updated_at: new Date().toISOString(),
           }, {
             onConflict: 'account_id',
             ignoreDuplicates: false

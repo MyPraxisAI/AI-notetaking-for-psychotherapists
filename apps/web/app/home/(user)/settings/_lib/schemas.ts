@@ -12,7 +12,7 @@ export const UserPreferencesSchema = z.object({
 export const TherapistProfileSchema = z.object({
   fullName: z.string().min(1, 'Full name is required'),
   credentials: z.string().optional(),
-  country: z.string().min(1, 'Country is required'),
+  geoLocality: z.string().min(1, 'Geographic locality is required'),
   primaryTherapeuticApproach: z.string().min(1, 'Primary therapeutic approach is required'),
   secondaryTherapeuticApproaches: z.array(z.string()).optional(),
 });
@@ -25,11 +25,19 @@ export type TherapistProfileData = z.infer<typeof TherapistProfileSchema>;
 export interface TherapistRecord {
   id: string;
   account_id: string;
-  full_name: string;
+  full_professional_name?: string;
   credentials?: string;
-  country?: string;
-  primary_therapeutic_approach?: string;
-  secondary_therapeutic_approaches?: string[];
+  geo_locality_id?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TherapistApproachRecord {
+  id: string;
+  account_id: string;
+  therapist_id: string;
+  approach_id: string;
+  priority: number;
   created_at: string;
   updated_at: string;
 }
