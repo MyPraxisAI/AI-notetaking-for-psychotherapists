@@ -133,10 +133,16 @@ SELECT is_empty(
 -- Test insert permissions
 select makerkit.authenticate_as('account_owner');
 
+-- Delete existing record first to avoid unique constraint violation
+select lives_ok(
+  $$ DELETE FROM public.therapists WHERE account_id = (SELECT id FROM public.accounts WHERE primary_owner_user_id = tests.get_supabase_uid('account_owner')) $$,
+  'Account owner should be able to delete their own therapist'
+);
+
 -- Should be able to insert own data
 select lives_ok(
   $$ INSERT INTO public.therapists (id, account_id, credentials, geo_locality_id)
-     VALUES ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 
+     VALUES ('33333333-3333-3333-3333-333333333333', 
             (SELECT id FROM public.accounts WHERE primary_owner_user_id = tests.get_supabase_uid('account_owner')), 
             'New Credentials', 
             '22222222-2222-4222-a222-222222222222') $$,
@@ -321,8 +327,8 @@ select lives_ok(
 );
 
 select lives_ok(
-  $$ INSERT INTO public.geo_localities (id, name) 
-     VALUES ('a0000000-0000-4000-a000-000000000001', 'test_locality') $$,
+  $$ INSERT INTO public.geo_localities (id, name, title) 
+     VALUES ('a0000000-0000-4000-a000-000000000001', 'test_locality', 'Test Locality') $$,
   'Service role should be able to insert into geo_localities'
 );
 
