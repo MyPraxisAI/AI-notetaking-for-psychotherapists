@@ -2,6 +2,9 @@ import { use } from 'react';
 import { Suspense } from 'react';
 
 import { PageBody } from '@kit/ui/page';
+import authConfig from '~/config/auth.config';
+import featureFlagsConfig from '~/config/feature-flags.config';
+import pathsConfig from '~/config/paths.config';
 import { createI18nServerInstance } from '~/lib/i18n/i18n.server';
 import { withI18n } from '~/lib/i18n/with-i18n';
 import { requireUserInServerComponent } from '~/lib/server/require-user-in-server-component';
@@ -10,6 +13,17 @@ import { requireUserInServerComponent } from '~/lib/server/require-user-in-serve
 import { EnhancedSettingsContainer } from './_components/enhanced-settings-container';
 
 
+const features = {
+  enableAccountDeletion: featureFlagsConfig.enableAccountDeletion,
+  enablePasswordUpdate: authConfig.providers.password,
+};
+
+const callbackPath = pathsConfig.auth.callback;
+const accountHomePath = pathsConfig.app.accountHome;
+
+const paths = {
+  callback: callbackPath + `?next=${accountHomePath}`,
+};
 
 export const generateMetadata = async () => {
   const i18n = await createI18nServerInstance();
@@ -31,13 +45,8 @@ function PersonalAccountSettingsPage() {
           <Suspense fallback={<div className="p-8 text-center">Loading settings...</div>}>
             <EnhancedSettingsContainer 
               userId={user.id}
-              features={{
-                enableAccountDeletion: false,
-                enablePasswordUpdate: true,
-              }}
-              paths={{
-                callback: '/home/settings',
-              }}
+              features={features}
+              paths={paths}
             />
           </Suspense>
         </div>

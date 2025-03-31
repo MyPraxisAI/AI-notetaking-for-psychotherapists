@@ -146,6 +146,13 @@ CREATE POLICY "Users can access their own preferences"
 -- Indexes
 CREATE INDEX ix_user_preferences_account_id ON public.user_preferences (account_id);
 
+-- Add unique constraint to account_id
+ALTER TABLE public.user_preferences 
+  ADD CONSTRAINT user_preferences_account_id_unique UNIQUE (account_id);
+
+COMMENT ON CONSTRAINT user_preferences_account_id_unique ON public.user_preferences 
+  IS 'Ensures each user can only have one preferences record';
+
 /*
  * -------------------------------------------------------
  * Section: Therapists
@@ -156,12 +163,14 @@ CREATE TABLE IF NOT EXISTS public.therapists (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
   account_id UUID REFERENCES public.accounts(id) ON DELETE CASCADE NOT NULL,
+  full_professional_name VARCHAR(255),
   credentials TEXT,
   geo_locality_id UUID REFERENCES public.geo_localities(id) ON DELETE SET NULL
 );
 
 COMMENT ON TABLE public.therapists IS 'Therapists in the system';
 COMMENT ON COLUMN public.therapists.account_id IS 'The account this therapist belongs to';
+COMMENT ON COLUMN public.therapists.full_professional_name IS 'Full professional name of the therapist, including titles and credentials';
 COMMENT ON COLUMN public.therapists.credentials IS 'Professional credentials of the therapist';
 COMMENT ON COLUMN public.therapists.geo_locality_id IS 'Geographic locality of the therapist';
 
@@ -176,6 +185,13 @@ CREATE POLICY "Users can access therapists in their accounts"
 -- Indexes
 CREATE INDEX ix_therapists_account_id ON public.therapists (account_id);
 CREATE INDEX ix_therapists_geo_locality_id ON public.therapists (geo_locality_id);
+
+-- Add unique constraint to account_id
+ALTER TABLE public.therapists 
+  ADD CONSTRAINT therapists_account_id_unique UNIQUE (account_id);
+
+COMMENT ON CONSTRAINT therapists_account_id_unique ON public.therapists 
+  IS 'Ensures each account can only have one therapist profile';
 
 /*
  * -------------------------------------------------------

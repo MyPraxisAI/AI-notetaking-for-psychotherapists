@@ -22,8 +22,6 @@ export const GET = enhanceRouteHandler(
       userId: user?.id || 'anonymous',
     };
 
-    logger.info(ctx, 'Fetching therapeutic approaches...');
-
     try {
       // Get the Supabase client
       const client = getSupabaseServerClient() as CustomClient;
@@ -53,8 +51,6 @@ export const GET = enhanceRouteHandler(
         if (b.name === 'other') return -1;
         return a.title.localeCompare(b.title);
       });
-      
-      logger.info(ctx, 'Therapeutic approaches fetched successfully', { count: sortedApproaches.length });
       
       return Response.json(sortedApproaches);
     } catch (error) {

@@ -19,8 +19,6 @@ export const GET = enhanceRouteHandler(
       userId: user?.id || 'anonymous',
     };
 
-    logger.info(ctx, 'Fetching geographic localities...');
-
     try {
       const client = getSupabaseServerClient() as CustomClient;
       
@@ -50,7 +48,6 @@ export const GET = enhanceRouteHandler(
         return a.title.localeCompare(b.title);
       });
 
-      logger.info(ctx, 'Geographic localities fetched successfully', { count: sortedLocalities.length });
       return Response.json(sortedLocalities);
     } catch (error) {
       logger.error(ctx, 'Failed to fetch geographic localities', { error });

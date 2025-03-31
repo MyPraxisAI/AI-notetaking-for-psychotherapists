@@ -32,26 +32,6 @@ export interface TherapistRecord {
   updated_at: string;
 }
 
-export interface TherapistApproachRecord {
-  id: string;
-  account_id: string;
-  therapist_id: string;
-  approach_id: string;
-  priority: number;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface UserPreferencesRecord {
-  id: string;
-  account_id: string;
-  use_24hr_clock: boolean;
-  use_us_date_format: boolean;
-  language: string;
-  created_at: string;
-  updated_at: string;
-}
-
 // Type for the database response
 export interface DatabaseRecord {
   id: string;
