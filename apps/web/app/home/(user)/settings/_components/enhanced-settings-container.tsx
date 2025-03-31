@@ -132,27 +132,20 @@ const ApproachOptions = ({
   ));
 };
 
-// Define schemas (these should be imported from your schema files)
-const ProfessionalInfoSchema = z.object({
-  fullName: z.string().min(1, "Full name is required"),
-  credentials: z.string().optional(),
-  country: z.string().min(1, "Country is required"),
-  primaryTherapeuticApproach: z.string().min(1, "Primary approach is required"),
-  secondaryTherapeuticApproaches: z.array(z.string()).optional(),
-});
+// Import schemas from shared file
+import { 
+  TherapistProfileSchema, 
+  UserPreferencesSchema, 
+  TherapistProfileData, 
+  UserPreferencesData 
+} from '../_lib/schemas';
 
-const UserPreferencesSchema = z.object({
-  use24HourClock: z.boolean(),
-  useUsDateFormat: z.boolean(),
-  language: z.string().min(1, "Language is required"),
-});
-
-// Define the form schemas
-const professionalInfoFormSchema = ProfessionalInfoSchema;
-type ProfessionalInfoFormValues = z.infer<typeof professionalInfoFormSchema>;
+// Define the form schemas using the imported schemas
+const professionalInfoFormSchema = TherapistProfileSchema;
+type ProfessionalInfoFormValues = TherapistProfileData;
 
 const preferencesFormSchema = UserPreferencesSchema;
-type PreferencesFormValues = z.infer<typeof preferencesFormSchema>;
+type PreferencesFormValues = UserPreferencesData;
 
 // Custom hooks for fetching reference data
 function useTherapeuticApproaches() {
@@ -217,38 +210,11 @@ function useGeoLocalities() {
   return { data, isLoading, error };
 }
 
-// Mock server actions (these should be imported from your action files)
-async function updateProfessionalInfo(data: ProfessionalInfoFormValues) {
-  const response = await fetch('/api/therapist/profile', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(data),
-  });
-  
-  if (!response.ok) {
-    throw new Error('Failed to update professional information');
-  }
-  
-  return await response.json();
-}
+// Import hooks for data mutations
+import { useUpdateUserPreferences } from '../_lib/hooks/use-user-preferences';
+import { useUpdateTherapistProfile } from '../_lib/hooks/use-therapist-profile';
 
-async function updateUserPreferences(data: PreferencesFormValues) {
-  const response = await fetch('/api/user/preferences', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(data),
-  });
-  
-  if (!response.ok) {
-    throw new Error('Failed to update user preferences');
-  }
-  
-  return await response.json();
-}
+// This function is no longer needed as we're using the hook directly
 
 export function EnhancedSettingsContainer(props: {
   userId: string;
@@ -388,33 +354,35 @@ export function EnhancedSettingsContainer(props: {
     if (userPreferences) {
       preferencesForm.reset({
         use24HourClock: userPreferences.use24HourClock ?? true,
-        useUsDateFormat: userPreferences.use_us_date_format ?? false,
+        useUsDateFormat: userPreferences.useUsDateFormat ?? false,
         language: userPreferences.language ?? 'en',
       });
     }
   }, [userPreferences, preferencesForm]);
 
+  // Handle professional info form submission using the client-side mutation hook
+  const updateTherapistProfileMutation = useUpdateTherapistProfile();
+  
   const onProfessionalInfoSubmit = (data: ProfessionalInfoFormValues) => {
-    startTransition(async () => {
-      try {
-        await updateProfessionalInfo(data);
-        toast.success('Your professional information has been updated successfully.');
-      } catch (error) {
-        console.error('Error updating professional information:', error);
-        toast.error(`Failed to update professional information: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      }
+    const promise = updateTherapistProfileMutation.mutateAsync(data);
+    
+    toast.promise(promise, {
+      loading: 'Saving professional information...',
+      success: 'Your professional information has been updated successfully.',
+      error: (error) => `Failed to update professional information: ${error instanceof Error ? error.message : 'Unknown error'}`
     });
   };
 
+  // Handle preferences form submission using the client-side mutation hook
+  const updatePreferencesMutation = useUpdateUserPreferences();
+  
   const onPreferencesSubmit = (data: PreferencesFormValues) => {
-    startTransition(async () => {
-      try {
-        await updateUserPreferences(data);
-        toast.success('Your preferences have been updated successfully.');
-      } catch (error) {
-        console.error('Error updating preferences:', error);
-        toast.error(`Failed to update preferences: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      }
+    const promise = updatePreferencesMutation.mutateAsync(data);
+    
+    toast.promise(promise, {
+      loading: 'Saving preferences...',
+      success: 'Your preferences have been updated successfully.',
+      error: (error) => `Failed to update preferences: ${error instanceof Error ? error.message : 'Unknown error'}`
     });
   };
 
@@ -682,7 +650,10 @@ export function EnhancedSettingsContainer(props: {
               </div>
             ) : (
               <Form {...preferencesForm}>
-                <form onSubmit={preferencesForm.handleSubmit(onPreferencesSubmit)} className="space-y-6">
+                <form
+                  className="space-y-6"
+                  onSubmit={preferencesForm.handleSubmit(onPreferencesSubmit)}
+                >
                   <FormField
                     control={preferencesForm.control}
                     name="use24HourClock"

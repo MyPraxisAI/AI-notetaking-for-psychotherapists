@@ -2,36 +2,18 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { z } from 'zod';
+import { toast } from 'sonner';
 
-// Local implementation of useUserSession hook
-function useUserSession() {
-  // Mock implementation that returns a user session
-  return {
-    data: {
-      user: {
-        id: 'user-id',
-        email: 'user@example.com'
-      }
-    }
-  };
-}
+// Import Supabase client hook
+import { useSupabase } from '@kit/supabase/hooks/use-supabase';
 
-// Local implementation of toast
-interface ToastProps {
-  title: string;
-  description: string;
-  variant?: 'default' | 'success' | 'error';
-}
+// Import the useUserWorkspace hook from Makerkit
+import { useUserWorkspace } from '@kit/accounts/hooks/use-user-workspace';
 
-const toast = (props: ToastProps) => {
-  console.log(`Toast: ${props.title} - ${props.description}`);
-  // In a real implementation, this would show a toast notification
-};
+import { TherapistProfileSchema, TherapistProfileData, TherapistRecord, DatabaseRecord } from '../schemas';
 
-import { TherapistProfileSchema, updateTherapistProfileAction } from '../server/server-actions';
-
-// Define the therapist profile data type
-export type TherapistProfileData = z.infer<typeof TherapistProfileSchema> & {
+// Using TherapistProfileData type from shared schemas with optional id
+export interface TherapistProfileWithId extends TherapistProfileData {
   id?: string;
 };
 
@@ -39,22 +21,50 @@ export type TherapistProfileData = z.infer<typeof TherapistProfileSchema> & {
  * Hook to fetch therapist profile data
  */
 export function useTherapistProfile() {
-  const { data: session } = useUserSession();
-  const userId = session?.user?.id;
+  const { workspace } = useUserWorkspace();
+  const accountId = workspace?.id;
+  const client = useSupabase();
+
+  const queryKey = ['therapist-profile', accountId];
 
   return useQuery({
-    queryKey: ['therapist-profile', userId],
-    queryFn: async (): Promise<TherapistProfileData | null> => {
-      if (!userId) return null;
+    queryKey,
+    queryFn: async (): Promise<TherapistProfileWithId | null> => {
+      if (!accountId) return null;
 
-      const response = await fetch('/api/therapist/profile');
-      if (!response.ok) {
-        throw new Error('Failed to fetch therapist profile');
+      try {
+        // Use Supabase client directly to fetch therapist profile
+        const { data, error } = await client
+          .from('therapists')
+          .select('*')
+          .eq('account_id', accountId)
+          .single();
+
+        if (error) {
+          throw error;
+        }
+
+        if (!data) {
+          return null;
+        }
+
+        // Transform the data from database format to our schema format
+        const record = data as DatabaseRecord;
+        return {
+          fullName: record.full_name || '',
+          credentials: record.credentials || '',
+          country: record.country || '',
+          primaryTherapeuticApproach: record.primary_therapeutic_approach || '',
+          secondaryTherapeuticApproaches: record.secondary_therapeutic_approaches || [],
+        };
+      } catch (error) {
+        console.error('Error fetching therapist profile:', error);
+        throw error;
       }
-
-      return response.json();
     },
-    enabled: !!userId,
+    enabled: !!accountId,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
 }
 
@@ -63,39 +73,53 @@ export function useTherapistProfile() {
  */
 export function useUpdateTherapistProfile() {
   const queryClient = useQueryClient();
-  const { data: session } = useUserSession();
-  const userId = session?.user?.id;
+  const { workspace } = useUserWorkspace();
+  const accountId = workspace?.id;
+  const client = useSupabase();
+
+  const mutationKey = ['therapist-profile:update', accountId];
 
   return useMutation({
-    mutationFn: async (data: TherapistProfileData) => {
+    mutationKey,
+    mutationFn: async (data: TherapistProfileWithId) => {
+      if (!accountId) {
+        throw new Error('Account not found');
+      }
+
       try {
-        const result = await updateTherapistProfileAction(data);
-        return result;
+        // Use Supabase client directly to update therapist profile
+        const { error } = await client
+          .from('therapists')
+          .upsert({
+            account_id: accountId,
+            full_name: data.fullName,
+            credentials: data.credentials,
+            country: data.country,
+            primary_therapeutic_approach: data.primaryTherapeuticApproach,
+            secondary_therapeutic_approaches: data.secondaryTherapeuticApproaches,
+            updated_at: new Date().toISOString(),
+          }, {
+            onConflict: 'account_id',
+            ignoreDuplicates: false
+          });
+
+        if (error) {
+          throw error;
+        }
+
+        return { success: true };
       } catch (error) {
         console.error('Error updating therapist profile:', error);
         throw error;
       }
     },
     onSuccess: () => {
-      toast({
-        title: 'Profile updated',
-        description: 'Your therapist profile has been updated successfully.',
-        variant: 'success',
-      });
-
       // Invalidate the therapist profile query to refetch the data
-      if (userId) {
+      if (accountId) {
         queryClient.invalidateQueries({
-          queryKey: ['therapist-profile', userId],
+          queryKey: ['therapist-profile', accountId],
         });
       }
-    },
-    onError: (error) => {
-      toast({
-        title: 'Update failed',
-        description: `Failed to update profile: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        variant: 'error',
-      });
     },
   });
 }

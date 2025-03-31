@@ -2,57 +2,65 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { z } from 'zod';
+import { toast } from 'sonner';
 
-// Local implementation of useUserSession hook
-function useUserSession() {
-  // Mock implementation that returns a user session
-  return {
-    data: {
-      user: {
-        id: 'user-id',
-        email: 'user@example.com'
-      }
-    }
-  };
-}
+// Import Supabase client hook
+import { useSupabase } from '@kit/supabase/hooks/use-supabase';
 
-// Local implementation of toast
-interface ToastProps {
-  title: string;
-  description: string;
-  variant?: 'default' | 'success' | 'error';
-}
+// Import the useUserWorkspace hook from Makerkit
+import { useUserWorkspace } from '@kit/accounts/hooks/use-user-workspace';
 
-const toast = (props: ToastProps) => {
-  console.log(`Toast: ${props.title} - ${props.description}`);
-  // In a real implementation, this would show a toast notification
-};
+import { UserPreferencesSchema, UserPreferencesData, DatabaseRecord } from '../schemas';
 
-import { UserPreferencesSchema, updateUserPreferencesAction } from '../server/server-actions';
-
-// Define the user preferences data type
-export type UserPreferencesData = z.infer<typeof UserPreferencesSchema>;
+// Using UserPreferencesData type from shared schemas
 
 /**
  * Hook to fetch user preferences
  */
 export function useUserPreferences() {
-  const { data: session } = useUserSession();
-  const userId = session?.user?.id;
+  const { workspace } = useUserWorkspace();
+  const accountId = workspace?.id;
+
+  const client = useSupabase();
+
+  const queryKey = ['user-preferences', accountId];
 
   return useQuery({
-    queryKey: ['user-preferences', userId],
+    queryKey,
     queryFn: async (): Promise<UserPreferencesData | null> => {
-      if (!userId) return null;
+      if (!accountId) return null;
 
-      const response = await fetch('/api/user/preferences');
-      if (!response.ok) {
-        throw new Error('Failed to fetch user preferences');
+      try {
+        // Use Supabase client directly to fetch user preferences
+        const { data, error } = await client
+          .from('user_preferences')
+          .select('*')
+          .eq('account_id', accountId)
+          .single();
+
+        if (error) {
+          throw error;
+        }
+
+        if (!data) {
+          return null;
+        }
+
+        // Transform the data from database format to our schema format
+        const record = data as DatabaseRecord;
+        return {
+          use24HourClock: record.use_24hr_clock || false,
+          useUsDateFormat: record.use_us_date_format || false,
+          language: record.language || 'en',
+        };
+      } catch (error) {
+        console.error('Error fetching user preferences:', error);
+        throw error;
       }
-
-      return response.json();
     },
-    enabled: !!userId,
+    enabled: !!accountId,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
 }
 
@@ -61,39 +69,54 @@ export function useUserPreferences() {
  */
 export function useUpdateUserPreferences() {
   const queryClient = useQueryClient();
-  const { data: session } = useUserSession();
-  const userId = session?.user?.id;
+  const { workspace } = useUserWorkspace();
+  const accountId = workspace?.id;
+  const client = useSupabase();
+
+  const mutationKey = ['user-preferences:update', accountId];
 
   return useMutation({
+    mutationKey,
     mutationFn: async (data: UserPreferencesData) => {
+      if (!accountId) {
+        throw new Error('Account not found');
+      }
+
       try {
-        const result = await updateUserPreferencesAction(data);
-        return result;
+        // Use Supabase client directly to update user preferences
+        const { error } = await client
+          .from('user_preferences')
+          .upsert({
+            account_id: accountId,
+            use_24hr_clock: data.use24HourClock,
+            use_us_date_format: data.useUsDateFormat,
+            language: data.language,
+            updated_at: new Date().toISOString(),
+          }, {
+            onConflict: 'account_id',
+            ignoreDuplicates: false
+          });
+
+        if (error) {
+          throw error;
+        }
+
+        return { success: true };
       } catch (error) {
         console.error('Error updating user preferences:', error);
         throw error;
       }
     },
     onSuccess: () => {
-      toast({
-        title: 'Preferences updated',
-        description: 'Your preferences have been updated successfully.',
-        variant: 'success',
-      });
-
       // Invalidate the user preferences query to refetch the data
-      if (userId) {
+      if (accountId) {
         queryClient.invalidateQueries({
-          queryKey: ['user-preferences', userId],
+          queryKey: ['user-preferences', accountId],
         });
       }
     },
     onError: (error) => {
-      toast({
-        title: 'Update failed',
-        description: `Failed to update preferences: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        variant: 'error',
-      });
+      toast.error(`Failed to update preferences: ${error instanceof Error ? error.message : 'Unknown error'}`);
     },
   });
 }

@@ -14,7 +14,7 @@ type CustomClient = SupabaseClient & {
 const logger = await getLogger();
 
 export const GET = enhanceRouteHandler(
-  async ({ request, user }) => {
+  async ({ user }) => {
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -32,8 +32,8 @@ export const GET = enhanceRouteHandler(
       // Fetch user preferences
       const { data: preferences, error } = await client
         .from('user_preferences')
-        .select('time_format, date_format')
-        .eq('user_id', user.id)
+        .select('use_24hr_clock, use_us_date_format, language')
+        .eq('account_id', user.id)
         .single();
       
       if (error && error.code !== 'PGRST116') {
@@ -45,14 +45,15 @@ export const GET = enhanceRouteHandler(
       if (!preferences) {
         return NextResponse.json({
           use24HourClock: true,
-          useInternationalDateFormat: true,
+          useUsDateFormat: false,
         });
       }
 
       // Map the data to the expected format
       const preferencesData = {
-        use24HourClock: preferences && preferences.time_format === '24h',
-        useInternationalDateFormat: preferences && preferences.date_format === 'international',
+        use24HourClock: preferences && preferences.use_24hr_clock === true,
+        useUsDateFormat: preferences && preferences.use_us_date_format === true,
+        language: preferences?.language || 'en',
       };
 
       logger.info(ctx, 'User preferences fetched successfully');
@@ -63,3 +64,5 @@ export const GET = enhanceRouteHandler(
     }
   }
 );
+
+
