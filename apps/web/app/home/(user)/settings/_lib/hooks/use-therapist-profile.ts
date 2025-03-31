@@ -66,12 +66,12 @@ export function useTherapistProfile() {
         // Extract approaches and separate primary from secondary
         const approaches = approachesData || [];
         
-        const primaryApproach = approaches.length > 0 ? 
-          approaches[0].therapeutic_approaches?.id || '' : 
+        const primaryApproach = approaches.length > 0 && approaches[0]?.therapeutic_approaches ? 
+          approaches[0].therapeutic_approaches.id || '' : 
           '';
         
         const secondaryApproaches = approaches.length > 1 ? 
-          approaches.slice(1).map(a => a.therapeutic_approaches?.id || '') : 
+          approaches.slice(1).map(a => a?.therapeutic_approaches?.id || '') : 
           [];
 
         // Transform the data from database format to our schema format
