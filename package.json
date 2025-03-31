@@ -27,7 +27,7 @@
     "syncpack:list": "pnpm dlx syncpack list-mismatches",
     "syncpack:fix": "pnpm dlx syncpack fix-mismatches",
     "supabase:web:start": "pnpm --filter web supabase:start",
-    "supabase:web:stop": "pnpm --filter web supabase:sackatop",
+    "supabase:web:stop": "pnpm --filter web supabase:stop",
     "supabase:web:typegen": "pnpm --filter web supabase:typegen",
     "supabase:web:reset": "pnpm --filter web supabase:reset",
     "supabase:web:test": "pnpm --filter web supabase:test",
