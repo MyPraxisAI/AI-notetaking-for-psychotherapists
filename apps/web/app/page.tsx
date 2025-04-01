@@ -13,7 +13,7 @@ async function RootPage() {
   // Redirect based on authentication status
   if (user) {
     // If user is logged in, redirect to the personal workspace
-    redirect('/home/mypraxis');
+    redirect(pathsConfig.app.home);
   } else {
     // If user is not logged in, redirect to sign in page
     redirect(pathsConfig.auth.signIn);

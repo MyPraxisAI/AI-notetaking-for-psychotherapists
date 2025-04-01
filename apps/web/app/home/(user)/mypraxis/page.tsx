@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@kit/ui/avatar"
 import { Badge } from "@kit/ui/badge"
 import { Button } from "@kit/ui/button"
+import { useSignOut } from '@kit/supabase/hooks/use-sign-out'
 import {
   Users2,
   Mail,
@@ -220,6 +221,9 @@ export default function Page() {
     )
   }
 
+  // Initialize the sign out mutation from Makerkit
+  const signOut = useSignOut();
+
   const handleMenuClick = (item: MenuItem) => {
     // Always close navigation on small screens, regardless of whether the item is already selected
     if (window.innerWidth <= 1430) {
@@ -237,6 +241,12 @@ export default function Page() {
     // Handle special menu items
     if (item === "help") {
       window.location.href = "mailto:hello@mypraxis.ai";
+      return;
+    }
+
+    // Handle logout
+    if (item === "logout") {
+      void signOut.mutateAsync();
       return;
     }
     
