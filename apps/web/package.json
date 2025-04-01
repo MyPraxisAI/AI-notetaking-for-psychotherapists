@@ -26,6 +26,7 @@
     "supabase:test": "supabase db test",
     "supabase:db:lint": "supabase db lint",
     "supabase:deploy": "supabase link --project-ref $SUPABASE_PROJECT_REF && supabase db push",
+    "supabase:reset-prod": "supabase link --project-ref $SUPABASE_PROJECT_REF && supabase db reset --linked",
     "supabase:typegen": "pnpm run supabase:typegen:packages && pnpm run supabase:typegen:app",
     "supabase:typegen:packages": "supabase gen types typescript --local > ../../packages/supabase/src/database.types.ts",
     "supabase:typegen:app": "supabase gen types typescript --local > ./lib/database.types.ts",

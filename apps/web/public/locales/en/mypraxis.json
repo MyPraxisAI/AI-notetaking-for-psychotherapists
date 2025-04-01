@@ -1,0 +1,32 @@
+{
+  "therapeuticApproaches": {
+    "act": "Acceptance and Commitment Therapy (ACT)",
+    "cbt": "Cognitive Behavioral Therapy (CBT)",
+    "dbt": "Dialectical Behavior Therapy (DBT)",
+    "emdr": "Eye Movement Desensitization and Reprocessing (EMDR)",
+    "eft": "Emotionally Focused Therapy (EFT)",
+    "fst": "Family Systems Therapy",
+    "gt": "Gestalt Therapy",
+    "ifs": "Internal Family Systems (IFS)",
+    "ipt": "Interpersonal Therapy (IPT)",
+    "ja": "Jungian Analysis",
+    "mbct": "Mindfulness-Based Cognitive Therapy (MBCT)",
+    "mi": "Motivational Interviewing",
+    "nt": "Narrative Therapy",
+    "pct": "Person-Centered (Rogerian) Therapy",
+    "pa": "Psychoanalysis",
+    "pdt": "Psychodynamic Therapy",
+    "sfbt": "Solution-Focused Brief Therapy (SFBT)",
+    "other": "Other"
+  },
+  "geoLocalities": {
+    "eu": "European Union",
+    "us": "United States",
+    "ca": "Canada",
+    "uk": "United Kingdom",
+    "nz": "New Zealand",
+    "au": "Australia",
+    "ru": "Russian Federation",
+    "other": "Other"
+  }
+}
