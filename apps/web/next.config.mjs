@@ -42,6 +42,15 @@ const config = {
     '/*': ['./content/**/*'],
   },
   redirects: getRedirects,
+  // Add rewrites to make /home render the content from /home/mypraxis
+  async rewrites() {
+    return [
+      {
+        source: '/home',
+        destination: '/home/mypraxis',
+      },
+    ];
+  },
   experimental: {
     mdxRs: true,
     reactCompiler: ENABLE_REACT_COMPILER,
