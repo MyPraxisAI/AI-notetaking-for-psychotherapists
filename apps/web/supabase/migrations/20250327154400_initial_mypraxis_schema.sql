@@ -21,7 +21,8 @@ CREATE TABLE IF NOT EXISTS public.geo_localities (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
-  name VARCHAR(64) NOT NULL
+  name VARCHAR(64) NOT NULL,
+  title VARCHAR(255) NOT NULL
 );
 
 COMMENT ON TABLE public.geo_localities IS 'Geographic localities for therapists';
@@ -46,15 +47,15 @@ CREATE POLICY "Only service_role can modify geo_localities"
 CREATE INDEX ix_geo_localities_name ON public.geo_localities (name);
 
 -- Populate geo_localities with initial data
-INSERT INTO public.geo_localities (id, name) VALUES
-('11111111-1111-4111-a111-111111111111', 'european_union'),
-('22222222-2222-4222-a222-222222222222', 'united_states'),
-('33333333-3333-4333-a333-333333333333', 'canada'),
-('44444444-4444-4444-a444-444444444444', 'united_kingdom'),
-('55555555-5555-4555-a555-555555555555', 'new_zealand'),
-('66666666-6666-4666-a666-666666666666', 'australia'),
-('77777777-7777-4777-a777-777777777777', 'russian_federation'),
-('88888888-8888-4888-a888-888888888888', 'other');
+INSERT INTO public.geo_localities (id, name, title) VALUES
+('11111111-1111-4111-a111-111111111111', 'eu', 'European Union'),
+('22222222-2222-4222-a222-222222222222', 'us', 'United States'),
+('33333333-3333-4333-a333-333333333333', 'ca', 'Canada'),
+('44444444-4444-4444-a444-444444444444', 'uk', 'United Kingdom'),
+('55555555-5555-4555-a555-555555555555', 'nz', 'New Zealand'),
+('66666666-6666-4666-a666-666666666666', 'au', 'Australia'),
+('77777777-7777-4777-a777-777777777777', 'ru', 'Russian Federation'),
+('88888888-8888-4888-a888-888888888888', 'other', 'Other');
 
 /*
  * -------------------------------------------------------
@@ -145,6 +146,13 @@ CREATE POLICY "Users can access their own preferences"
 -- Indexes
 CREATE INDEX ix_user_preferences_account_id ON public.user_preferences (account_id);
 
+-- Add unique constraint to account_id
+ALTER TABLE public.user_preferences 
+  ADD CONSTRAINT user_preferences_account_id_unique UNIQUE (account_id);
+
+COMMENT ON CONSTRAINT user_preferences_account_id_unique ON public.user_preferences 
+  IS 'Ensures each user can only have one preferences record';
+
 /*
  * -------------------------------------------------------
  * Section: Therapists
@@ -155,12 +163,14 @@ CREATE TABLE IF NOT EXISTS public.therapists (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
   account_id UUID REFERENCES public.accounts(id) ON DELETE CASCADE NOT NULL,
+  full_professional_name VARCHAR(255),
   credentials TEXT,
   geo_locality_id UUID REFERENCES public.geo_localities(id) ON DELETE SET NULL
 );
 
 COMMENT ON TABLE public.therapists IS 'Therapists in the system';
 COMMENT ON COLUMN public.therapists.account_id IS 'The account this therapist belongs to';
+COMMENT ON COLUMN public.therapists.full_professional_name IS 'Full professional name of the therapist, including titles and credentials';
 COMMENT ON COLUMN public.therapists.credentials IS 'Professional credentials of the therapist';
 COMMENT ON COLUMN public.therapists.geo_locality_id IS 'Geographic locality of the therapist';
 
@@ -175,6 +185,13 @@ CREATE POLICY "Users can access therapists in their accounts"
 -- Indexes
 CREATE INDEX ix_therapists_account_id ON public.therapists (account_id);
 CREATE INDEX ix_therapists_geo_locality_id ON public.therapists (geo_locality_id);
+
+-- Add unique constraint to account_id
+ALTER TABLE public.therapists 
+  ADD CONSTRAINT therapists_account_id_unique UNIQUE (account_id);
+
+COMMENT ON CONSTRAINT therapists_account_id_unique ON public.therapists 
+  IS 'Ensures each account can only have one therapist profile';
 
 /*
  * -------------------------------------------------------
