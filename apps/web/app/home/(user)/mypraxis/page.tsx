@@ -35,10 +35,11 @@ import { ClientOverview } from "../../../../components/mypraxis/client-overview"
 import { ClientBio } from "../../../../components/mypraxis/client-bio"
 import { ProfileForm } from "../../../../components/mypraxis/profile-form"
 import { SettingsForm } from "../../../../components/mypraxis/settings-form"
-import type { Client } from "../../../../types/client"
 import { SessionView } from "../../../../components/mypraxis/session-view"
 import { saveSession, setSelectedSession, getSelectedSession, getClientSessions } from "../../../../lib/mypraxis/storage"
 import { AppProvider } from "../../../../context/mypraxis/app-context"
+import { useClients, useCreateClient, useDeleteClient } from "./_lib/hooks/use-clients"
+import { ClientWithId } from "./_lib/schemas/client"
 
 // Define TherapistSettings type
 interface TherapistSettings {
@@ -94,9 +95,9 @@ const sessionTranscripts: {
 
 export default function Page() {
   const [selectedItem, setSelectedItem] = useState<MenuItem>("clients")
-  const [selectedClient, setSelectedClient] = useState<ClientId>("mike")
+  const [selectedClient, setSelectedClient] = useState<ClientId>("")
   const [selectedDetailItem, setSelectedDetailItem] = useState<DetailItem>("prep-note")
-  const [clients, setClients] = useState<Client[]>([])
+  const { data: clients = [], isLoading: isLoadingClients } = useClients()
   const [sessions, setSessions] = useState<Session[]>([])
   const [selectedSession, setSelectedSessionState] = useState<string | null>(null)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
@@ -127,27 +128,13 @@ export default function Page() {
   const isInitialNavVisibilitySet = useRef(false)
 
   useEffect(() => {
-    // Load clients from localStorage
-    const clientsData = localStorage.getItem("clients")
-    if (!clientsData) {
-      const initialClients = [
-        {
-          id: "mike",
-          createdAt: new Date().toISOString(),
-          fullName: "Mike",
-          email: "",
-          phone: "",
-          address: "",
-          emergencyContact: {
-            name: "",
-            phone: "",
-          },
-        },
-      ]
-      localStorage.setItem("clients", JSON.stringify(initialClients))
-      setClients(initialClients)
-    } else {
-      setClients(JSON.parse(clientsData))
+    // Set initial selected client when clients are loaded
+    if (clients.length > 0 && !selectedClient) {
+      const initialClient = clients[0]
+      if (initialClient) {
+        setSelectedClient(setClientId(initialClient.id))
+        localStorage.setItem("selectedClient", initialClient.id)
+      }
     }
 
     // Load sessions from localStorage
@@ -277,34 +264,30 @@ export default function Page() {
     }
   }
 
+  const createClient = useCreateClient()
+
   const handleNewClient = () => {
-    const newClientId = crypto.randomUUID()
-    const newClient: Client = {
-      id: newClientId,
-      createdAt: new Date().toISOString(),
+    createClient.mutate({
       fullName: "New Client",
       email: "",
       phone: ""
-    }
+    }, {
+      onSuccess: (newClient) => {
+        // Track this as a new client
+        setNewClientIds((prev) => new Set(prev).add(newClient.id))
 
-    // Add to beginning of clients array
-    const updatedClients = [newClient, ...clients]
-    setClients(updatedClients)
-    localStorage.setItem("clients", JSON.stringify(updatedClients))
+        // Select the new client and switch to profile view
+        setSelectedClient(setClientId(newClient.id))
+        setSelectedDetailItem("profile")
+        localStorage.setItem("selectedClient", newClient.id)
+        localStorage.setItem("selectedDetailItem", "profile")
 
-    // Track this as a new client
-    setNewClientIds((prev) => new Set(prev).add(newClientId))
-
-    // Select the new client and switch to profile view
-    setSelectedClient(setClientId(newClientId))
-    setSelectedDetailItem("profile")
-    localStorage.setItem("selectedClient", newClientId)
-    localStorage.setItem("selectedDetailItem", "profile")
-
-    // Close client list on small screens when new client button is clicked
-    if (window.innerWidth <= 1050) {
-      setIsClientListVisible(false)
-    }
+        // Close client list on small screens when new client button is clicked
+        if (window.innerWidth <= 1050) {
+          setIsClientListVisible(false)
+        }
+      }
+    })
   }
 
   const handleNewSession = () => {
@@ -327,48 +310,49 @@ export default function Page() {
     setSessions((prev) => [newSession, ...prev])
   }
 
+  // Name changes are handled directly in the ProfileForm component via the useUpdateClient hook
   const handleNameChange = (name: string) => {
-    // Update clients array with new name
-    const updatedClients = clients.map((c) => (c.id === selectedClient ? { ...c, fullName: name } : c))
-    setClients(updatedClients)
+    // This function is now just a placeholder for any UI updates needed when a name changes
+    // The actual data update is handled by the useUpdateClient hook in ProfileForm
   }
 
+  const deleteClient = useDeleteClient()
+
   const handleClientDeleted = (deletedClientId: string) => {
-    // Get the remaining clients before updating state
-    const remainingClients = clients.filter((c) => c.id !== deletedClientId)
+    deleteClient.mutate(deletedClientId, {
+      onSuccess: () => {
+        // If the deleted client was selected, select the first remaining client
+        if (selectedClient === deletedClientId) {
+          const remainingClients = clients.filter((c) => c.id !== deletedClientId)
+          if (remainingClients.length > 0) {
+            const nextClient = remainingClients[0]
+            if (nextClient) {
+              setSelectedClient(setClientId(nextClient.id))
+              localStorage.setItem("selectedClient", nextClient.id)
+              setSelectedDetailItem("prep-note")
+              localStorage.setItem("selectedDetailItem", "prep-note")
+            }
+          }
+        }
 
-    // If the deleted client was selected, select the first remaining client
-    if (selectedClient === deletedClientId && remainingClients.length > 0) {
-      const nextClient = remainingClients[0]
-      // Add null check for nextClient
-      if (nextClient) {
-        setSelectedClient(setClientId(nextClient.id))
-        localStorage.setItem("selectedClient", nextClient.id)
-        setSelectedDetailItem("prep-note")
-        localStorage.setItem("selectedDetailItem", "prep-note")
+        // Clear any selected session for this client
+        const selectedSession = localStorage.getItem("selectedSession")
+        if (selectedSession) {
+          const parsed = JSON.parse(selectedSession)
+          if (parsed.clientId === deletedClientId) {
+            localStorage.removeItem("selectedSession")
+          }
+        }
+
+        // Clear any sessions for this client
+        const sessionsData = localStorage.getItem("sessions")
+        if (sessionsData) {
+          const sessions = JSON.parse(sessionsData)
+          const updatedSessions = sessions.filter((session: { clientId: string }) => session.clientId !== deletedClientId)
+          localStorage.setItem("sessions", JSON.stringify(updatedSessions))
+        }
       }
-    }
-
-    // Update clients state
-    setClients(remainingClients)
-    localStorage.setItem("clients", JSON.stringify(remainingClients))
-
-    // Clear any selected session for this client
-    const selectedSession = localStorage.getItem("selectedSession")
-    if (selectedSession) {
-      const parsed = JSON.parse(selectedSession)
-      if (parsed.clientId === deletedClientId) {
-        localStorage.removeItem("selectedSession")
-      }
-    }
-
-    // Clear any sessions for this client
-    const sessionsData = localStorage.getItem("sessions")
-    if (sessionsData) {
-      const sessions = JSON.parse(sessionsData)
-      const updatedSessions = sessions.filter((session: { clientId: string }) => session.clientId !== deletedClientId)
-      localStorage.setItem("sessions", JSON.stringify(updatedSessions))
-    }
+    })
   }
 
   const getButtonClass = (item: MenuItem) => {
