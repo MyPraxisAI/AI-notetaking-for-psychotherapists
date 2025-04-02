@@ -24,8 +24,7 @@ export function ProfileForm({ clientId, onNameChange, onClientDeleted }: Profile
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [validation, setValidation] = useState<ValidationState>({
     email: true,
-    phone: true,
-    emergencyPhone: true,
+    phone: true
   })
   // Add a new state to track the last saved values
   const [savedValues, setSavedValues] = useState<Partial<Client>>({})
@@ -144,7 +143,7 @@ export function ProfileForm({ clientId, onNameChange, onClientDeleted }: Profile
       const isValid = validatePhone(value)
       setValidation((prev) => ({
         ...prev,
-        [field === "phone" ? "phone" : "emergencyPhone"]: isValid,
+        phone: isValid,
       }))
       if (!isValid) return
     }
