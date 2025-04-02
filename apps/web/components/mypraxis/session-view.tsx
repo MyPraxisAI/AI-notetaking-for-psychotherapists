@@ -12,6 +12,8 @@ import { getSessionById, updateSession } from "../../lib/mypraxis/storage"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@kit/ui/dropdown-menu"
 import { DeleteSessionModal } from "../mypraxis/delete-session-modal"
 import type { Session } from "../../types/session"
+import { useSession, useUpdateSession, useDeleteSession } from "../../app/home/(user)/mypraxis/_lib/hooks/use-sessions"
+import { toast } from "sonner"
 
 interface SessionViewProps {
   clientId: string
@@ -75,64 +77,79 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
     loadSession()
   }, [clientId, sessionId])
 
+  // Use the update session hook from Supabase
+  const updateSessionMutation = useUpdateSession()
+
   const handleSaveNote = (note: string) => {
     if (session) {
-      updateSession(clientId, sessionId, {
-        notes: {
-          userNote: note,
-          lastModified: new Date().toISOString(),
+      // Update the session with the new note
+      updateSessionMutation.mutate({
+        id: sessionId,
+        clientId,
+        title: session.title,
+        transcript: session.transcript?.content ? 
+          typeof session.transcript.content === 'string' ? 
+            session.transcript.content : 
+            session.transcript.content.map(line => `${line.speaker}: ${line.text}`).join('\n') : 
+          '',
+        note: note, // Save the note properly
+        createdAt: session.createdAt
+      }, {
+        onSuccess: () => {
+          setIsSaved(true)
+          if (saveTimeout.current) {
+            clearTimeout(saveTimeout.current)
+          }
+          saveTimeout.current = setTimeout(() => {
+            setIsSaved(false)
+          }, 2000)
         },
+        onError: (error) => {
+          toast.error("Failed to save note")
+          console.error("Error saving note:", error)
+        }
       })
-      setIsSaved(true)
-      if (saveTimeout.current) {
-        clearTimeout(saveTimeout.current)
-      }
-      saveTimeout.current = setTimeout(() => {
-        setIsSaved(false)
-      }, 2000)
     }
   }
 
   const handleSaveClientSummary = (summary: string) => {
     if (session) {
-      updateSession(clientId, sessionId, {
-        summary: {
-          ...(session.summary || {}),
-          client: summary,
-        } as any,
-      })
+      // Client summary will be implemented in a future update
+      // For now, just update the UI state
       setIsEditingClientSummary(false)
+      toast.info('Client summaries will be saved in a future update')
     }
   }
 
   const handleSaveTherapistSummary = (summary: string) => {
     if (session) {
-      updateSession(clientId, sessionId, {
-        summary: {
-          ...(session.summary || {}),
-          therapist: summary,
-        } as any,
-      })
+      // Therapist summary will be implemented in a future update
+      // For now, just update the UI state
       setIsEditingTherapistSummary(false)
+      toast.info('Therapist summaries will be saved in a future update')
     }
   }
 
   const handleSaveTranscript = () => {
     if (session) {
-      const lines = editedTranscript.split("\n").map((line) => {
-        const [speaker = "", ...rest] = line.split(":")
-        return {
-          speaker: speaker.trim(),
-          text: rest.join(":").trim(),
+      // Update the session with the new transcript
+      updateSessionMutation.mutate({
+        id: sessionId,
+        clientId,
+        title: session.title,
+        transcript: editedTranscript, // Save the transcript as plain text
+        note: session.notes?.userNote || '',
+        createdAt: session.createdAt
+      }, {
+        onSuccess: () => {
+          setIsEditingTranscript(false)
+          toast.success('Transcript saved successfully')
+        },
+        onError: (error) => {
+          toast.error('Failed to save transcript')
+          console.error('Error saving transcript:', error)
         }
       })
-      
-      updateSession(clientId, sessionId, {
-        transcript: {
-          content: lines as any, // Type assertion to handle compatibility
-        },
-      })
-      setIsEditingTranscript(false)
     }
   }
 
@@ -159,29 +176,32 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
     }
   }
 
+  // Use the delete session hook from Supabase
+  const deleteSession = useDeleteSession()
+
   const handleDeleteSession = () => {
-    // Remove from localStorage
-    const sessionsData = localStorage.getItem("sessions")
-    if (sessionsData) {
-      const sessions = JSON.parse(sessionsData)
-      if (sessions[clientId]) {
-        delete sessions[clientId][sessionId]
-        localStorage.setItem("sessions", JSON.stringify(sessions))
-      }
-    }
+    deleteSession.mutate({ sessionId, clientId }, {
+      onSuccess: () => {
+        // Clear selected session if it's the current one
+        const selectedSession = localStorage.getItem("selectedSession")
+        if (selectedSession) {
+          const parsed = JSON.parse(selectedSession)
+          if (parsed.clientId === clientId && parsed.sessionId === sessionId) {
+            localStorage.removeItem("selectedSession")
+          }
+        }
 
-    // Clear selected session if it's the current one
-    const selectedSession = localStorage.getItem("selectedSession")
-    if (selectedSession) {
-      const parsed = JSON.parse(selectedSession)
-      if (parsed.clientId === clientId && parsed.sessionId === sessionId) {
-        localStorage.removeItem("selectedSession")
+        // Notify parent component
+        onDelete?.()
+        setIsDeleteModalOpen(false)
+        toast.success("Session deleted successfully")
+      },
+      onError: (error) => {
+        toast.error("Failed to delete session")
+        console.error("Error deleting session:", error)
+        setIsDeleteModalOpen(false)
       }
-    }
-
-    // Notify parent component
-    onDelete?.()
-    setIsDeleteModalOpen(false)
+    })
   }
 
   return (
