@@ -284,12 +284,7 @@ export default function Page() {
       createdAt: new Date().toISOString(),
       fullName: "New Client",
       email: "",
-      phone: "",
-      address: "",
-      emergencyContact: {
-        name: "",
-        phone: "",
-      },
+      phone: ""
     }
 
     // Add to beginning of clients array
