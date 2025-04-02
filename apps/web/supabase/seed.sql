@@ -337,9 +337,15 @@ VALUES ('e5b930c9-0a76-412e-a836-4bc4849a3271', 'e5b930c9-0a76-412e-a836-4bc4849
 INSERT INTO "public"."user_preferences" ("id", "account_id", "use_24hr_clock", "use_us_date_format", "language", "created_at", "updated_at")
 VALUES ('f1b930c9-0a76-412e-a836-4bc4849a3271', 'e5b930c9-0a76-412e-a836-4bc4849a3271', true, false, 'en', '2025-03-27 17:55:11.181332+00', '2025-03-27 17:55:11.181332+00');
 
--- Add therapist record for the test account
-INSERT INTO "public"."therapists" ("id", "account_id", "credentials", "geo_locality_id", "created_at", "updated_at")
-VALUES ('e1b930c9-0a76-412e-a836-4bc4849a3271', 'e5b930c9-0a76-412e-a836-4bc4849a3271', 'Ph.D. in Clinical Psychology', '22222222-2222-4222-a222-222222222222', '2025-03-27 17:55:11.181332+00', '2025-03-27 17:55:11.181332+00');
+-- Update the automatically created therapist record for the test account
+UPDATE "public"."therapists" 
+SET 
+  "id" = 'e1b930c9-0a76-412e-a836-4bc4849a3271',
+  "credentials" = 'Ph.D. in Clinical Psychology', 
+  "geo_locality_id" = '22222222-2222-4222-a222-222222222222', 
+  "created_at" = '2025-03-27 17:55:11.181332+00', 
+  "updated_at" = '2025-03-27 17:55:11.181332+00'
+WHERE "account_id" = 'e5b930c9-0a76-412e-a836-4bc4849a3271';
 
 -- Add therapeutic approaches for the therapist
 INSERT INTO "public"."therapists_approaches" ("id", "therapist_id", "approach_id", "priority", "created_at", "updated_at")
