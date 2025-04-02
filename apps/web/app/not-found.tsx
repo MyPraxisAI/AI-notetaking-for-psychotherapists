@@ -7,7 +7,6 @@ import { Button } from '@kit/ui/button';
 import { Heading } from '@kit/ui/heading';
 import { Trans } from '@kit/ui/trans';
 
-import { SiteHeader } from '~/(marketing)/_components/site-header';
 import { createI18nServerInstance } from '~/lib/i18n/i18n.server';
 import { withI18n } from '~/lib/i18n/with-i18n';
 
@@ -29,7 +28,7 @@ const NotFoundPage = async () => {
 
   return (
     <div className={'flex h-screen flex-1 flex-col'}>
-      <SiteHeader user={user} />
+      {/* <SiteHeader user={user} /> */}
 
       <div
         className={
