@@ -246,7 +246,7 @@ export default function Page() {
 
     // Handle logout
     if (item === "logout") {
-      void signOut.mutateAsync();
+      void signOut.mutateAsync(); // Correctly call mutateAsync
       return;
     }
     
@@ -315,7 +315,7 @@ export default function Page() {
   const handleNewSession = () => {
     const newSession: Session = {
       id: crypto.randomUUID(),
-      date: new Date().toISOString().split("T")[0], // YYYY-MM-DD format
+      date: new Date().toISOString().split("T")[0]!, // YYYY-MM-DD format
       title: "New session",
       createdAt: new Date().toISOString(),
     }
@@ -345,10 +345,13 @@ export default function Page() {
     // If the deleted client was selected, select the first remaining client
     if (selectedClient === deletedClientId && remainingClients.length > 0) {
       const nextClient = remainingClients[0]
-      setSelectedClient(setClientId(nextClient.id))
-      localStorage.setItem("selectedClient", nextClient.id)
-      setSelectedDetailItem("prep-note")
-      localStorage.setItem("selectedDetailItem", "prep-note")
+      // Add null check for nextClient
+      if (nextClient) {
+        setSelectedClient(setClientId(nextClient.id))
+        localStorage.setItem("selectedClient", nextClient.id)
+        setSelectedDetailItem("prep-note")
+        localStorage.setItem("selectedDetailItem", "prep-note")
+      }
     }
 
     // Update clients state
@@ -418,12 +421,18 @@ export default function Page() {
 
     // Find the next session to select
     let nextSessionId: string | null = null
-    if (currentIndex > 0 && sessions[currentIndex - 1]) {
+    const previousSession = sessions[currentIndex - 1]
+    const nextAvailableSession = sessions[currentIndex + 1] // Use currentIndex + 1 for next
+
+    if (currentIndex > 0 && previousSession) {
       // Select previous session if available
-      nextSessionId = sessions[currentIndex - 1].id
-    } else if (sessions.length > 1 && sessions[1]) {
-      // Select next session if available
-      nextSessionId = sessions[1].id
+      nextSessionId = previousSession.id
+    } else if (nextAvailableSession) {
+      // Select next session if available (Corrected logic)
+      nextSessionId = nextAvailableSession.id
+    } else if (sessions.length === 1) {
+      // If it was the only session, select null or a default
+      nextSessionId = null // Or perhaps a default state like 'prep-note'
     }
 
     // Update sessions list
@@ -667,9 +676,19 @@ export default function Page() {
               </Button>
             </div>
             <div className="px-2">
-              <Button variant="ghost" className={getButtonClass("logout")} onClick={() => handleMenuClick("logout")}>
-                <LogOut className="h-[18px] w-[18px]" />
-                Log out
+              <Button
+                variant="ghost"
+                className={getButtonClass("logout")}
+                onClick={() => {
+                  handleMenuClick("logout"); // Call the main handler
+                  // Add direct call as fallback with delay
+                  setTimeout(() => {
+                    void signOut.mutateAsync(); // Correctly call mutateAsync
+                  }, 100);
+                }}
+              >
+                <LogOut className="h-5 w-5" />
+                Logout
               </Button>
             </div>
           </div>
