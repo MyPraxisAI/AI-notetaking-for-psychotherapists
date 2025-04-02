@@ -15,6 +15,10 @@ import {
 import { Checkbox } from "@kit/ui/checkbox"
 import { Avatar, AvatarFallback, AvatarImage } from "@kit/ui/avatar"
 import { Button } from "@kit/ui/button"
+import { toast } from "sonner"
+
+// Import our custom hooks for user preferences
+import { useMyPraxisUserPreferences, useUpdatePreferenceField } from "../../app/home/(user)/mypraxis/_lib/hooks/use-user-preferences"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@kit/ui/dropdown-menu"
 import { ChevronDown } from "lucide-react"
 import { X } from "lucide-react"
@@ -82,9 +86,17 @@ const languages = [
 ];
 
 export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisible }: SettingsFormProps) {
+  // Fetch user preferences from Supabase
+  const userPreferencesQuery = useMyPraxisUserPreferences();
+  const updatePreferenceField = useUpdatePreferenceField();
+  
+  // Extract data and loading state from the query
+  const preferences = userPreferencesQuery.data;
+  const isLoadingPreferences = userPreferencesQuery.isLoading;
+  
   // State for settings
   const [settings, setSettings] = useState<TherapistSettings>(() => {
-    // Try to load from localStorage first
+    // Try to load from localStorage first for non-preference fields
     const savedSettings = localStorage.getItem("therapistSettings");
     if (savedSettings) {
       return JSON.parse(savedSettings);
@@ -148,15 +160,41 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
   const saveTimeout = useRef<NodeJS.Timeout | null>(null);
   const savedTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Load settings from localStorage
+  // Load settings from localStorage for non-preference fields
   useEffect(() => {
     const savedSettings = localStorage.getItem("therapistSettings");
     if (savedSettings) {
       const parsedSettings = JSON.parse(savedSettings);
-      setSettings(parsedSettings);
-      setSavedValues(parsedSettings);
+      // Don't overwrite preference fields that will come from Supabase
+      const { language, use24HourClock, useUSDateFormat, ...nonPreferenceFields } = parsedSettings;
+      setSettings(prevSettings => ({
+        ...prevSettings,
+        ...nonPreferenceFields
+      }));
+      setSavedValues(prevValues => ({
+        ...prevValues,
+        ...nonPreferenceFields
+      }));
     }
   }, []);
+  
+  // Update settings when preferences are loaded from Supabase
+  useEffect(() => {
+    if (preferences) {
+      setSettings(prevSettings => ({
+        ...prevSettings,
+        language: preferences.language,
+        use24HourClock: preferences.use24HourClock,
+        useUSDateFormat: preferences.useUSDateFormat
+      }));
+      setSavedValues(prevValues => ({
+        ...prevValues,
+        language: preferences.language,
+        use24HourClock: preferences.use24HourClock,
+        useUSDateFormat: preferences.useUSDateFormat
+      }));
+    }
+  }, [preferences]);
 
   // Validate email
   const isValidEmail = (email: string) => {
@@ -321,7 +359,43 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
       [field]: value,
     }));
     
-    saveField(field, value);
+    // For language preference, use Supabase
+    if (field === 'language') {
+      // Save to Supabase
+      const promise = updatePreferenceField.updatePreference(field, value);
+      
+      toast.promise(promise, {
+        loading: 'Saving language preference...',
+        success: 'Language preference saved',
+        error: (error) => `Failed to save language preference: ${error.message}`
+      });
+      
+      promise.then(() => {
+        // Show checkmark
+        setSavedFields((prev) => new Set(prev).add(field));
+        
+        // Clear checkmark after 1 second
+        if (saveTimeout.current) {
+          clearTimeout(saveTimeout.current);
+        }
+        saveTimeout.current = setTimeout(() => {
+          setSavedFields((prev) => {
+            const newSet = new Set(prev);
+            newSet.delete(field);
+            return newSet;
+          });
+        }, 1000);
+        
+        // Update saved values
+        setSavedValues((prev) => ({
+          ...prev,
+          [field]: value,
+        }));
+      });
+    } else {
+      // For other fields, use localStorage
+      saveField(field, value);
+    }
   };
 
   // Handle primary therapeutic approach change
@@ -482,29 +556,65 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
     
     setSettings(updatedSettings);
     
-    // Save to localStorage
-    localStorage.setItem("therapistSettings", JSON.stringify(updatedSettings));
-    
-    // Update saved values
-    setSavedValues((prev) => ({
-      ...prev,
-      [field]: checked,
-    }));
-    
-    // Show checkmark with appropriate color
-    setSavedFields((prev) => new Set(prev).add(field));
-
-    // Clear checkmark after 1 second
-    if (saveTimeout.current) {
-      clearTimeout(saveTimeout.current);
-    }
-    saveTimeout.current = setTimeout(() => {
-      setSavedFields((prev) => {
-        const newSet = new Set(prev);
-        newSet.delete(field);
-        return newSet;
+    // For preference fields (use24HourClock and useUSDateFormat), use Supabase
+    if (field === 'use24HourClock' || field === 'useUSDateFormat') {
+      // Save to Supabase
+      const promise = updatePreferenceField.updatePreference(field, checked);
+      
+      toast.promise(promise, {
+        loading: `Saving ${field === 'use24HourClock' ? 'time format' : 'date format'} preference...`,
+        success: `${field === 'use24HourClock' ? 'Time format' : 'Date format'} preference saved`,
+        error: (error) => `Failed to save preference: ${error.message}`
       });
-    }, 1000);
+      
+      promise.then(() => {
+        // Show checkmark
+        setSavedFields((prev) => new Set(prev).add(field));
+        
+        // Clear checkmark after 1 second
+        if (saveTimeout.current) {
+          clearTimeout(saveTimeout.current);
+        }
+        saveTimeout.current = setTimeout(() => {
+          setSavedFields((prev) => {
+            const newSet = new Set(prev);
+            newSet.delete(field);
+            return newSet;
+          });
+        }, 1000);
+        
+        // Update saved values
+        setSavedValues((prev) => ({
+          ...prev,
+          [field]: checked,
+        }));
+      });
+    } else {
+      // For other fields, use localStorage
+      // Save to localStorage
+      localStorage.setItem("therapistSettings", JSON.stringify(updatedSettings));
+      
+      // Update saved values
+      setSavedValues((prev) => ({
+        ...prev,
+        [field]: checked,
+      }));
+      
+      // Show checkmark with appropriate color
+      setSavedFields((prev) => new Set(prev).add(field));
+
+      // Clear checkmark after 1 second
+      if (saveTimeout.current) {
+        clearTimeout(saveTimeout.current);
+      }
+      saveTimeout.current = setTimeout(() => {
+        setSavedFields((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(field);
+          return newSet;
+        });
+      }, 1000);
+    }
     
     // Call the onSettingsChange prop if provided
     if (onSettingsChange) {
@@ -854,7 +964,18 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
       
       {/* Preferences */}
       <div className="mt-6 space-y-6 pb-6 border-b border-[#E5E7EB]">
-        <h3 className="text-[18px] font-medium text-[#111827]">Preferences</h3>
+        <div className="flex items-center justify-between">
+          <h3 className="text-[18px] font-medium text-[#111827]">Preferences</h3>
+          {isLoadingPreferences && (
+            <div className="text-sm text-muted-foreground flex items-center">
+              <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Loading preferences...
+            </div>
+          )}
+        </div>
         
         {/* UI Language */}
         <div className="relative space-y-3">
