@@ -45,3 +45,4 @@ yarn-error.log*
 
 # contentlayer
 .contentlayer/
+apps/web/dist/

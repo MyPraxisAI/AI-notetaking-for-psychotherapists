@@ -141,6 +141,18 @@ async function adminMiddleware(request: NextRequest, response: NextResponse) {
 function getPatterns() {
   return [
     {
+      pattern: new URLPattern({ pathname: '/' }),
+      handler: async (req: NextRequest, res: NextResponse) => {
+        const {
+          data: { user },
+        } = await getUser(req, res);
+
+        // No need to do anything here as the page component will handle the redirect
+        // This pattern is just to ensure consistency with the rest of the application
+        return;
+      },
+    },
+    {
       pattern: new URLPattern({ pathname: '/admin/*?' }),
       handler: adminMiddleware,
     },
