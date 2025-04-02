@@ -115,14 +115,10 @@ export default function Page() {
         title: session.title,
         createdAt: session.createdAt,
         transcript: session.transcript ? {
-          content: [{
-            speaker: 'System',
-            text: session.transcript
-          }]
+          content: session.transcript
         } : undefined,
         notes: session.note ? {
-          userNote: session.note,
-          lastModified: session.createdAt
+          userNote: session.note
         } : undefined
       }))
       setSessions(mappedSessions)
