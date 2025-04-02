@@ -1,0 +1,182 @@
+/* MyPraxis App Responsive Styles */
+
+/* Root container - prevent any scrolling at the root level */
+.flex.h-screen.w-full.relative {
+  overflow: hidden;
+}
+
+/* Content column scrolling */
+/* For settings page */
+.column-3.settings-mode .column-3-content {
+  height: calc(100vh - 30px);
+  overflow-y: auto;
+}
+
+/* For all pages */
+.column-3-content {
+  height: 100%;
+  overflow-y: auto;
+}
+
+/* Client list column (column 2) scrolling */
+.client-list-column {
+  height: 100vh;
+  overflow-y: auto;
+}
+
+/* Details column (column 4) scrolling */
+.column-4 {
+  height: 100vh;
+  overflow-y: auto;
+}
+
+/* Fixed positioning for navigation column */
+.nav-column {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+/* Animation for column 1 (navigation) slide-in */
+@media (max-width: 1430px) {
+  .nav-column {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    height: 100vh;
+    z-index: 50;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-in-out;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .nav-column.visible {
+    transform: translateX(0);
+  }
+  
+  .nav-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.3);
+    z-index: 45;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease-in-out;
+  }
+  
+  .nav-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+/* Animation for column 2 (client list) slide-in */
+@media (max-width: 1050px) {
+  .client-list-column {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    height: 100vh;
+    z-index: 40;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-in-out;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .client-list-column.visible {
+    transform: translateX(0);
+  }
+  
+  .client-list-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.3);
+    z-index: 35;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease-in-out;
+  }
+  
+  .client-list-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+/* Animation for column 4 slide-in */
+@media (max-width: 970px) {
+  .column-4 {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    height: 100vh;
+    z-index: 50;
+    transform: translateX(100%);
+    transition: transform 0.3s ease-in-out;
+    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .column-4:not(.hidden) {
+    transform: translateX(0);
+  }
+  
+  .details-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.3);
+    z-index: 40;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease-in-out;
+  }
+  
+  .details-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+/* Custom responsive behavior for columns 3 and 4 */
+@media (max-width: 1050px) {
+  /* When viewport is 1050px or less, start shrinking column 4 */
+  .column-4 {
+    width: calc(250px - (1050px - 100vw));
+    min-width: 200px;
+  }
+}
+
+/* Mobile recording button disabled state */
+.mobile-disabled-button {
+  position: relative;
+  opacity: 0.7;
+}
+
+.mobile-disabled-button::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.2);
+  pointer-events: none;
+}
+
+/* Settings mode - hide client list and details columns */
+.settings-mode ~ .column-4,
+.settings-mode ~ .client-list-column {
+  display: none !important;
+}
