@@ -5,6 +5,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@kit/ui/avatar"
 import { Badge } from "@kit/ui/badge"
 import { Button } from "@kit/ui/button"
 import { useSignOut } from '@kit/supabase/hooks/use-sign-out'
+import { useCreateSession, useSessions, useSession, useUpdateSession, useDeleteSession } from "./_lib/hooks/use-sessions"
+import { SessionWithId } from "./_lib/schemas/session"
 import {
   Users2,
   Mail,
@@ -99,6 +101,33 @@ export default function Page() {
   const [selectedDetailItem, setSelectedDetailItem] = useState<DetailItem>("prep-note")
   const { data: clients = [], isLoading: isLoadingClients } = useClients()
   const [sessions, setSessions] = useState<Session[]>([])
+  
+  // Fetch sessions for the selected client from Supabase
+  const { data: sessionsData, isLoading: isLoadingSessions } = useSessions(selectedClient)
+  
+  // Update sessions state when Supabase data changes
+  useEffect(() => {
+    if (sessionsData) {
+      // Map Supabase SessionWithId to local Session type
+      const mappedSessions = sessionsData.map(session => ({
+        id: session.id,
+        date: new Date(session.createdAt).toISOString().split('T')[0]!,
+        title: session.title,
+        createdAt: session.createdAt,
+        transcript: session.transcript ? {
+          content: [{
+            speaker: 'System',
+            text: session.transcript
+          }]
+        } : undefined,
+        notes: session.note ? {
+          userNote: session.note,
+          lastModified: session.createdAt
+        } : undefined
+      }))
+      setSessions(mappedSessions)
+    }
+  }, [sessionsData])
   const [selectedSession, setSelectedSessionState] = useState<string | null>(null)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [isNavVisible, setIsNavVisible] = useState(true)
@@ -137,11 +166,7 @@ export default function Page() {
       }
     }
 
-    // Load sessions from localStorage
-    const sessionsData = localStorage.getItem("sessions")
-    if (sessionsData) {
-      setSessions(JSON.parse(sessionsData))
-    }
+    // Sessions are now loaded via the useSessions hook above
 
     // Load therapist settings from localStorage
     const savedTherapistSettings = localStorage.getItem("therapistSettings")
@@ -173,9 +198,7 @@ export default function Page() {
       setSelectedDetailItem(selected.sessionId)
     }
 
-    // Load sessions from localStorage
-    const clientSessions = getClientSessions(selectedClient)
-    setSessions(clientSessions)
+    // Sessions are now loaded via the useSessions hook
   }, [selectedClient]) // Added selectedClient to dependencies
 
   useEffect(() => {
@@ -290,24 +313,31 @@ export default function Page() {
     })
   }
 
+  const createSession = useCreateSession()
+
   const handleNewSession = () => {
-    const newSession: Session = {
-      id: crypto.randomUUID(),
-      date: new Date().toISOString().split("T")[0]!, // YYYY-MM-DD format
+    if (!selectedClient) return
+
+    createSession.mutate({
+      clientId: selectedClient,
       title: "New session",
-      createdAt: new Date().toISOString(),
-    }
+      transcript: "",
+      note: ""
+    }, {
+      onSuccess: (newSession: SessionWithId) => {
+        // Update selected session
+        setSelectedSessionState(newSession.id)
+        setSelectedDetailItem(newSession.id)
+        localStorage.setItem("selectedDetailItem", newSession.id)
 
-    // Save to localStorage
-    saveSession(selectedClient, newSession)
-
-    // Update selected session
-    setSelectedSession(selectedClient, newSession.id)
-    setSelectedSessionState(newSession.id)
-    setSelectedDetailItem(newSession.id)
-
-    // Update sessions list
-    setSessions((prev) => [newSession, ...prev])
+        // Save selected session to localStorage for UI state
+        const sessionData = {
+          clientId: selectedClient,
+          sessionId: newSession.id
+        }
+        localStorage.setItem("selectedSession", JSON.stringify(sessionData))
+      }
+    })
   }
 
   // Name changes are handled directly in the ProfileForm component via the useUpdateClient hook
