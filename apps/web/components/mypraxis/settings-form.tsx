@@ -20,12 +20,14 @@ import { toast } from "sonner"
 // Import our custom hooks for user preferences and therapist profile
 import { useMyPraxisUserPreferences, useUpdatePreferenceField } from "../../app/home/(user)/mypraxis/_lib/hooks/use-user-preferences"
 import { useMyPraxisTherapistProfile, useUpdateTherapistField } from "../../app/home/(user)/mypraxis/_lib/hooks/use-therapist-profile"
+import { useUpdatePassword, PasswordSchema } from "../../app/home/(user)/mypraxis/_lib/hooks/use-update-password"
 import { GeoLocalitiesSelect } from "./geo-localities-select"
 import { TherapeuticApproachesSelect } from "./therapeutic-approaches-select"
 import { useTranslation } from "react-i18next"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@kit/ui/dropdown-menu"
 import { ChevronDown } from "lucide-react"
 import { X } from "lucide-react"
+import { z } from "zod"
 import { Menu } from "lucide-react"
 
 // Define the settings interface
@@ -139,6 +141,8 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
   const [validation, setValidation] = useState({
     email: true,
     passwordMatch: true,
+    passwordValid: true,
+    passwordError: "",
   });
 
   // State for saved fields
@@ -161,6 +165,9 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
 
   // State for password confirmation
   const [confirmPassword, setConfirmPassword] = useState("");
+  
+  // Password update mutation
+  const updatePassword = useUpdatePassword();
 
   // Refs for input fields
   const fullNameRef = useRef<HTMLInputElement>(null);
@@ -359,12 +366,38 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
 
   // Handle password confirm blur
   const handlePasswordConfirmBlur = () => {
+    // Check if passwords match
     const isMatch = settings.password === confirmPassword;
-    setValidation((prev) => ({ ...prev, passwordMatch: isMatch }));
     
-    if (isMatch && settings.password) {
-      saveField("password", settings.password);
+    // Validate password strength if there is a password
+    let passwordValid = true;
+    let passwordError = "";
+    
+    if (settings.password) {
+      try {
+        // Validate password against schema
+        PasswordSchema.parse({
+          password: settings.password,
+          passwordConfirmation: confirmPassword
+        });
+      } catch (error) {
+        if (error instanceof z.ZodError) {
+          passwordValid = false;
+          // Get the first error message
+          passwordError = error.errors[0]?.message || "Invalid password";
+        } else {
+          passwordValid = false;
+          passwordError = "Invalid password format";
+        }
+      }
     }
+    
+    setValidation(prev => ({
+      ...prev,
+      passwordMatch: isMatch,
+      passwordValid,
+      passwordError
+    }));
   };
 
   // Handle key down event for Enter key
@@ -1188,6 +1221,7 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
             onBlur={(e) => handleBlur(e, "password")}
             onKeyDown={(e) => handleKeyDown(e, "password")}
             placeholder="Enter new password"
+            autoComplete="new-password"
             className="focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)] w-full max-w-md"
           />
           <Input
@@ -1200,6 +1234,7 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
             onBlur={handlePasswordConfirmBlur}
             onKeyDown={(e) => handleKeyDown(e, "confirmPassword")}
             placeholder="Confirm new password"
+            autoComplete="new-password"
             className={`focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)] w-full max-w-md ${
               !validation.passwordMatch ? "border-red-500" : ""
             }`}
@@ -1207,16 +1242,31 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
           {!validation.passwordMatch && (
             <p className="text-sm text-red-500 mt-1">Passwords do not match</p>
           )}
+          {!validation.passwordValid && (
+            <p className="text-sm text-red-500 mt-1">{validation.passwordError}</p>
+          )}
+          <p className="text-xs text-muted-foreground mt-1">
+            Password must be at least 8 characters and include uppercase, lowercase, number and special character
+          </p>
           <Button 
             variant="outline" 
             className="mt-2 max-w-md"
+            disabled={updatePassword.isPending || !settings.password || !validation.passwordMatch || !validation.passwordValid}
             onClick={() => {
-              // This would typically open a password change dialog
-              // For now, we'll just clear the field
-              setSettings(prev => ({ ...prev, password: "" }));
+              if (settings.password && validation.passwordMatch && validation.passwordValid) {
+                updatePassword.mutate(settings.password, {
+                  onSuccess: () => {
+                    // Clear password fields
+                    setSettings(prev => ({ ...prev, password: "" }));
+                    setConfirmPassword("");
+                    // Mark as saved
+                    setSavedFields(prev => new Set([...prev, "password"]));
+                  }
+                });
+              }
             }}
           >
-            Change Password
+            {updatePassword.isPending ? "Updating..." : "Change Password"}
           </Button>
         </div>
       </div>
