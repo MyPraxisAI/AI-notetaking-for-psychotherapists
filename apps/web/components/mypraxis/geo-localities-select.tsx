@@ -10,7 +10,6 @@ import {
 } from "@kit/ui/select";
 import { useGeoLocalities, GeoLocality } from '../../app/home/(user)/mypraxis/_lib/hooks/use-geo-localities';
 import { useTranslation } from 'react-i18next';
-import { Trans } from 'react-i18next';
 
 interface GeoLocalitiesSelectProps {
   value: string;
@@ -69,10 +68,7 @@ export function GeoLocalitiesSelect({
         ) : (
           localities.map((locality) => (
             <SelectItem key={locality.id} value={locality.id}>
-              <Trans
-                i18nKey={`mypraxis:geoLocalities.${locality.name}`}
-                values={{ defaultValue: locality.name }}
-              />
+              {t(`mypraxis:geoLocalities.${locality.name}`, { defaultValue: locality.name })}
             </SelectItem>
           ))
         )}

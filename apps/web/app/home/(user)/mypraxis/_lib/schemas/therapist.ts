@@ -8,7 +8,9 @@ export const TherapistProfileSchema = z.object({
   country: z.string().min(1, 'Country is required'),
   countryName: z.string().optional(),
   primaryTherapeuticApproach: z.string().min(1, 'Primary therapeutic approach is required'),
+  primaryApproachName: z.string().optional(),
   secondaryTherapeuticApproaches: z.array(z.string()).optional(),
+  secondaryApproachNames: z.array(z.string()).optional(),
 });
 
 // Define types based on schemas
