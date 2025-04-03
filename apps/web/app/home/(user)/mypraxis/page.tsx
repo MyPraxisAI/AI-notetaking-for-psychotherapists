@@ -103,8 +103,24 @@ export default function Page() {
   const { data: clients = [], isLoading: isLoadingClients } = useClients()
   const [sessions, setSessions] = useState<Session[]>([])
   
-  // Get user data from Supabase with React Query
-  const { user, refreshUserData } = useUserData()
+  // Get user data from Supabase with improved loading state handling
+  const { user, refreshUserData, isDataReady } = useUserData()
+  
+  // Track avatar image loading state
+  const [isAvatarLoaded, setIsAvatarLoaded] = useState(false)
+  const avatarUrl = user?.user_metadata?.avatar_url
+  
+  // Preload the avatar image
+  useEffect(() => {
+    if (avatarUrl) {
+      const img = new Image()
+      img.onload = () => setIsAvatarLoaded(true)
+      img.onerror = () => setIsAvatarLoaded(false)
+      img.src = avatarUrl
+    } else {
+      setIsAvatarLoaded(false)
+    }
+  }, [avatarUrl])
   
   // Fetch sessions for the selected client from Supabase
   const { data: sessionsData, isLoading: isLoadingSessions } = useSessions(selectedClient)
@@ -142,16 +158,16 @@ export default function Page() {
 
   // Therapist settings state
   const [therapistSettings, setTherapistSettings] = useState<TherapistSettings>({
-    fullName: "",
-    email: "",
-    avatar: "",
-    credentials: "",
-    country: "",
-    primaryTherapeuticApproach: "",
-    secondaryTherapeuticApproaches: [],
-    language: "",
-    use24HourClock: false,
-    useUSDateFormat: false
+    fullName: user?.user_metadata?.full_name || "",
+    email: user?.email || "",
+    avatar: user?.user_metadata?.avatar_url || "",
+    credentials: user?.user_metadata?.credentials || "",
+    country: user?.user_metadata?.country || "",
+    primaryTherapeuticApproach: user?.user_metadata?.primary_therapeutic_approach || "",
+    secondaryTherapeuticApproaches: user?.user_metadata?.secondary_therapeutic_approaches || [],
+    language: user?.user_metadata?.language || "",
+    use24HourClock: user?.user_metadata?.use_24_hour_clock || false,
+    useUSDateFormat: user?.user_metadata?.use_us_date_format || false
   })
 
   const isInitialNavVisibilitySet = useRef(false)
@@ -603,19 +619,40 @@ export default function Page() {
       }`}>
         {/* Avatar Section */}
         <div className="flex items-center gap-3 p-4 mb-4">
-          <Avatar className="h-[32px] w-[32px] bg-[#22C55E] text-white">
-            <AvatarImage
-              src={user?.user_metadata?.avatar_url || therapistSettings.avatar}
-              alt={user?.user_metadata?.full_name || therapistSettings.fullName}
-              className="object-cover"
-            />
-            <AvatarFallback className="bg-[#22C55E] text-white font-medium">
-              {getTherapistInitials(user?.user_metadata?.full_name || therapistSettings.fullName)}
-            </AvatarFallback>
-          </Avatar>
-          <span className="text-[14px] font-medium text-[#E5E7EB] tracking-[-0.011em]">
-            {formatTherapistName(therapistSettings.fullName)}
-          </span>
+          {/* Show loading skeleton until data is ready and avatar is loaded (if applicable) */}
+          {!isDataReady || (avatarUrl && !isAvatarLoaded) ? (
+            <div className="flex items-center gap-3 h-[32px] animate-pulse">
+              <div className="w-[32px] h-[32px] rounded-full bg-gray-700"></div>
+              <div className="h-4 w-20 bg-gray-700 rounded"></div>
+            </div>
+          ) : user ? (
+            <>
+              {/* Avatar - only show when fully loaded */}
+              {avatarUrl && isAvatarLoaded ? (
+                <div className="relative h-[32px] w-[32px] rounded-full overflow-hidden">
+                  <img 
+                    src={avatarUrl}
+                    alt={user.user_metadata?.full_name || therapistSettings.fullName}
+                    className="object-cover w-full h-full"
+                  />
+                </div>
+              ) : (
+                <Avatar className="h-[32px] w-[32px] bg-[#22C55E] text-white">
+                  <AvatarFallback className="bg-[#22C55E] text-white font-medium">
+                    {getTherapistInitials(user.user_metadata?.full_name || therapistSettings.fullName)}
+                  </AvatarFallback>
+                </Avatar>
+              )}
+              <span className="text-[14px] font-medium text-[#E5E7EB] tracking-[-0.011em]">
+                {formatTherapistName(user.user_metadata?.full_name || therapistSettings.fullName)}
+              </span>
+            </>
+          ) : (
+            <div className="flex items-center gap-3 h-[32px] animate-pulse">
+              <div className="w-[32px] h-[32px] rounded-full bg-gray-700"></div>
+              <div className="h-4 w-20 bg-gray-700 rounded"></div>
+            </div>
+          )}
         </div>
 
         {/* Main Navigation */}
