@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useState } from 'react';
+import { AVATAR_UPDATED_EVENT } from './use-user-data';
 import { toast } from 'sonner';
 import { useSupabase } from '@kit/supabase/hooks/use-supabase';
 import { useTranslation } from 'react-i18next';
@@ -83,8 +84,9 @@ export function useUpdateAvatar() {
       }
     },
     onSuccess: () => {
-      // Invalidate user data queries
+      // Invalidate both user data queries
       queryClient.invalidateQueries({ queryKey: ['user'] });
+      queryClient.invalidateQueries({ queryKey: ['mypraxis-user'] });
     },
   });
 
@@ -95,6 +97,12 @@ export function useUpdateAvatar() {
           const result = await updateAvatarMutation.mutateAsync({ file, currentPictureUrl });
           // Update our local state with the new URL
           setCurrentPictureUrl(result);
+          
+          // Dispatch a custom event to notify other components about the avatar update
+          window.dispatchEvent(new CustomEvent(AVATAR_UPDATED_EVENT, {
+            detail: { avatarUrl: result }
+          }));
+          
           return result;
         },
         {

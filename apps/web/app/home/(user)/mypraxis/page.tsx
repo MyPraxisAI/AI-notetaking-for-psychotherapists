@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@kit/ui/avatar"
 import { Badge } from "@kit/ui/badge"
 import { Button } from "@kit/ui/button"
 import { useSignOut } from '@kit/supabase/hooks/use-sign-out'
+import { useUserData } from './_lib/hooks/use-user-data'
 import { useCreateSession, useSessions, useSession, useUpdateSession, useDeleteSession } from "./_lib/hooks/use-sessions"
 import { SessionWithId } from "./_lib/schemas/session"
 import {
@@ -101,6 +102,9 @@ export default function Page() {
   const [selectedDetailItem, setSelectedDetailItem] = useState<DetailItem>("prep-note")
   const { data: clients = [], isLoading: isLoadingClients } = useClients()
   const [sessions, setSessions] = useState<Session[]>([])
+  
+  // Get user data from Supabase with React Query
+  const { user, refreshUserData } = useUserData()
   
   // Fetch sessions for the selected client from Supabase
   const { data: sessionsData, isLoading: isLoadingSessions } = useSessions(selectedClient)
@@ -601,12 +605,12 @@ export default function Page() {
         <div className="flex items-center gap-3 p-4 mb-4">
           <Avatar className="h-[32px] w-[32px] bg-[#22C55E] text-white">
             <AvatarImage
-              src={therapistSettings.avatar}
-              alt={therapistSettings.fullName}
+              src={user?.user_metadata?.avatar_url || therapistSettings.avatar}
+              alt={user?.user_metadata?.full_name || therapistSettings.fullName}
               className="object-cover"
             />
             <AvatarFallback className="bg-[#22C55E] text-white font-medium">
-              {getTherapistInitials(therapistSettings.fullName)}
+              {getTherapistInitials(user?.user_metadata?.full_name || therapistSettings.fullName)}
             </AvatarFallback>
           </Avatar>
           <span className="text-[14px] font-medium text-[#E5E7EB] tracking-[-0.011em]">
