@@ -168,7 +168,5 @@ async function getAvatarFileName(
   // This is similar to nanoid in the accounts package
   const uniqueId = Math.random().toString(36).substring(2, 18);
   
-  // Use the exact format that was working before
-  // This matches the accounts package implementation
   return `${userId}.${extension}?v=${uniqueId}`;
 }
