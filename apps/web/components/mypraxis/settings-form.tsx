@@ -15,9 +15,26 @@ import {
 import { Checkbox } from "@kit/ui/checkbox"
 import { Avatar, AvatarFallback, AvatarImage } from "@kit/ui/avatar"
 import { Button } from "@kit/ui/button"
+import { toast } from "sonner"
+import { Alert, AlertTitle, AlertDescription } from "@kit/ui/alert"
+import { CheckIcon } from "@radix-ui/react-icons"
+
+// Import our custom hooks for user preferences and therapist profile
+import { useMyPraxisUserPreferences, useUpdatePreferenceField } from "../../app/home/(user)/mypraxis/_lib/hooks/use-user-preferences"
+import { useMyPraxisTherapistProfile, useUpdateTherapistField } from "../../app/home/(user)/mypraxis/_lib/hooks/use-therapist-profile"
+import { useUpdatePassword, PasswordSchema } from "../../app/home/(user)/mypraxis/_lib/hooks/use-update-password"
+import { useUpdateUserName, UserNameSchema } from "../../app/home/(user)/mypraxis/_lib/hooks/use-update-user-name"
+import { useUpdateEmail, EmailSchema } from "../../app/home/(user)/mypraxis/_lib/hooks/use-update-email"
+import { useUpdateAvatar } from "../../app/home/(user)/mypraxis/_lib/hooks/use-update-avatar"
+import { ImageUploader } from "@kit/ui/image-uploader"
+import { GeoLocalitiesSelect } from "./geo-localities-select"
+import { TherapeuticApproachesSelect } from "./therapeutic-approaches-select"
+import { useTranslation } from "react-i18next"
+import { useUserWorkspace } from "@kit/accounts/hooks/use-user-workspace"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@kit/ui/dropdown-menu"
 import { ChevronDown } from "lucide-react"
 import { X } from "lucide-react"
+import { z } from "zod"
 import { Menu } from "lucide-react"
 
 // Define the settings interface
@@ -82,38 +99,54 @@ const languages = [
 ];
 
 export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisible }: SettingsFormProps) {
+  const { t } = useTranslation();
+  
+  // Get user data
+  const { user, workspace } = useUserWorkspace();
+  
+  // Fetch user preferences from Supabase
+  const userPreferencesQuery = useMyPraxisUserPreferences();
+  const updatePreferenceField = useUpdatePreferenceField();
+  
+  // Fetch therapist profile from Supabase
+  const therapistProfileQuery = useMyPraxisTherapistProfile();
+  const updateTherapistFieldMutation = useUpdateTherapistField();
+  
+  // Auth-related mutations
+  const updatePassword = useUpdatePassword();
+  const updateUserName = useUpdateUserName();
+  const updateEmail = useUpdateEmail();
+  const { updateAvatar, isLoading: isAvatarLoading } = useUpdateAvatar();
+  
+  // Extract data and loading state from the queries
+  const preferences = userPreferencesQuery.data;
+  const isLoadingPreferences = userPreferencesQuery.isLoading;
+  
+  const therapistProfile = therapistProfileQuery.data;
+  const isLoadingTherapistProfile = therapistProfileQuery.isLoading;
+  
   // State for settings
-  const [settings, setSettings] = useState<TherapistSettings>(() => {
-    // Try to load from localStorage first
-    const savedSettings = localStorage.getItem("therapistSettings");
-    if (savedSettings) {
-      return JSON.parse(savedSettings);
-    }
-    
-    // If props are provided, use them
-    if (therapistSettings) {
-      return therapistSettings;
-    }
-    
-    // Default settings
-    return {
-      fullName: "",
-      email: "",
-      avatar: "",
-      credentials: "",
-      country: "",
-      primaryTherapeuticApproach: "",
-      secondaryTherapeuticApproaches: [],
-      language: "en",
-      use24HourClock: false,
-      useUSDateFormat: false,
-    };
+  const [settings, setSettings] = useState<TherapistSettings>({
+    fullName: "",
+    email: "",
+    avatar: "",
+    credentials: "",
+    country: "",
+    primaryTherapeuticApproach: "",
+    secondaryTherapeuticApproaches: [],
+    language: "en",
+    use24HourClock: false,
+    useUSDateFormat: false,
+    password: "",
   });
 
   // State for validation
   const [validation, setValidation] = useState({
     email: true,
     passwordMatch: true,
+    passwordValid: true,
+    passwordError: "",
+    emailError: "",
   });
 
   // State for saved fields
@@ -134,7 +167,7 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
     password: "",
   });
 
-  // State for password confirmation
+  // State for confirmation fields
   const [confirmPassword, setConfirmPassword] = useState("");
 
   // Refs for input fields
@@ -148,21 +181,85 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
   const saveTimeout = useRef<NodeJS.Timeout | null>(null);
   const savedTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Load settings from localStorage
+  // Initialize with user data
   useEffect(() => {
-    const savedSettings = localStorage.getItem("therapistSettings");
-    if (savedSettings) {
-      const parsedSettings = JSON.parse(savedSettings);
-      setSettings(parsedSettings);
-      setSavedValues(parsedSettings);
+    if (user) {
+      setSettings(prevSettings => ({
+        ...prevSettings,
+        fullName: user.user_metadata?.name || "",
+        email: user.email || "",
+      }));
+      setSavedValues(prevValues => ({
+        ...prevValues,
+        fullName: user.user_metadata?.name || "",
+        email: user.email || "",
+      }));
     }
-  }, []);
+  }, [user]);
+  
+  // Update settings when preferences are loaded from Supabase
+  useEffect(() => {
+    if (preferences) {
+      setSettings(prevSettings => ({
+        ...prevSettings,
+        language: preferences.language,
+        use24HourClock: preferences.use24HourClock,
+        useUSDateFormat: preferences.useUSDateFormat
+      }));
+      setSavedValues(prevValues => ({
+        ...prevValues,
+        language: preferences.language,
+        use24HourClock: preferences.use24HourClock,
+        useUSDateFormat: preferences.useUSDateFormat
+      }));
+    }
+  }, [preferences]);
+  
+  // Update settings when therapist profile is loaded from Supabase
+  useEffect(() => {
+    if (therapistProfile) {
+      setSettings(prevSettings => ({
+        ...prevSettings,
+        fullName: therapistProfile.fullName,
+        credentials: therapistProfile.credentials || '',
+        country: therapistProfile.country,
+        primaryTherapeuticApproach: therapistProfile.primaryTherapeuticApproach,
+        secondaryTherapeuticApproaches: therapistProfile.secondaryTherapeuticApproaches || []
+      }));
+      setSavedValues(prevValues => ({
+        ...prevValues,
+        fullName: therapistProfile.fullName,
+        credentials: therapistProfile.credentials || '',
+        country: therapistProfile.country,
+        primaryTherapeuticApproach: therapistProfile.primaryTherapeuticApproach,
+        secondaryTherapeuticApproaches: therapistProfile.secondaryTherapeuticApproaches || []
+      }));
+    }
+  }, [therapistProfile]);
 
   // Validate email
-  const isValidEmail = (email: string) => {
-    // Allow empty email
-    if (!email.trim()) return true;
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const validateEmail = () => {
+    // Check if email is valid format
+    const isValidFormat = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(settings.email);
+    
+    // Update validation state
+    setValidation(prev => ({
+      ...prev,
+      email: isValidFormat,
+      emailError: !isValidFormat ? "Please enter a valid email" : ""
+    }));
+    
+    return isValidFormat;
+  };
+  
+  // Handle email blur
+  const handleEmailBlur = () => {
+    const isValid = validateEmail();
+    
+    if (isValid && settings.email) {
+      // Only save if email is valid
+      saveField("email", settings.email);
+    }
   };
 
   // Handle input change
@@ -191,17 +288,49 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
   ) => {
     const value = e.target.value;
     
-    // Validate email
-    if (isEmail && value && !isValidEmail(value)) {
-      setValidation((prev) => ({ ...prev, email: false }));
+    // Validate email - we now handle this in validateEmail function
+    if (isEmail) {
+      // Don't validate here, this is now handled in handleRepeatEmailBlur
       return;
     }
     
-    if (isEmail) {
-      setValidation((prev) => ({ ...prev, email: true }));
+    // For therapist profile fields, use Supabase
+    if (field === 'fullName' || field === 'credentials') {
+      // Save to Supabase
+      const promise = updateTherapistFieldMutation.updateField(field, value);
+      
+      toast.promise(promise, {
+        loading: `Saving ${field === 'fullName' ? 'name' : 'credentials'}...`,
+        success: `${field === 'fullName' ? 'Name' : 'Credentials'} saved successfully`,
+        error: (error) => `Failed to save ${field}: ${error.message}`
+      });
+      
+      promise.then(() => {
+        // Show checkmark
+        setSavedFields((prev) => new Set(prev).add(field));
+        
+        // Clear checkmark after 1 second
+        if (saveTimeout.current) {
+          clearTimeout(saveTimeout.current);
+        }
+        saveTimeout.current = setTimeout(() => {
+          setSavedFields((prev) => {
+            const newSet = new Set(prev);
+            newSet.delete(field);
+            return newSet;
+          });
+        }, 1000);
+        
+        // Update saved values
+        setSavedValues((prev) => ({
+          ...prev,
+          [field]: value,
+        }));
+      });
+    } else {
+      // For other fields, use localStorage
+      saveField(field, value);
     }
-    
-    saveField(field, value);
   };
 
   // Save field
@@ -218,8 +347,24 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
     
     setSettings(updatedSettings);
     
-    // Save to localStorage
-    localStorage.setItem("therapistSettings", JSON.stringify(updatedSettings));
+    // Handle different fields
+    if (field === "fullName" && typeof value === "string") {
+      // Update user's name in Supabase Auth
+      updateUserName.mutate(value);
+    } else if (field === "email" && typeof value === "string") {
+      // Update user's email in Supabase Auth with verification
+      const redirectTo = window.location.href;
+      updateEmail.mutate({ email: value, redirectTo });
+    } else if (field === "language" || field === "use24HourClock" || field === "useUSDateFormat") {
+      // These are handled by the preference hooks
+      // Do nothing here as they're handled in handleSelectChange and handleCheckboxChange
+    } else if (field === "password") {
+      // Password is handled separately
+      // Do nothing here as it's handled in the password section
+    } else {
+      // For therapist profile fields, use the therapist profile hook
+      // This is handled in handleSelectChange, handleInputChange, etc.
+    }
     
     // Update saved values
     setSavedValues((prev) => ({
@@ -250,12 +395,38 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
 
   // Handle password confirm blur
   const handlePasswordConfirmBlur = () => {
+    // Check if passwords match
     const isMatch = settings.password === confirmPassword;
-    setValidation((prev) => ({ ...prev, passwordMatch: isMatch }));
     
-    if (isMatch && settings.password) {
-      saveField("password", settings.password);
+    // Validate password strength if there is a password
+    let passwordValid = true;
+    let passwordError = "";
+    
+    if (settings.password) {
+      try {
+        // Validate password against schema
+        PasswordSchema.parse({
+          password: settings.password,
+          passwordConfirmation: confirmPassword
+        });
+      } catch (error) {
+        if (error instanceof z.ZodError) {
+          passwordValid = false;
+          // Get the first error message
+          passwordError = error.errors[0]?.message || "Invalid password";
+        } else {
+          passwordValid = false;
+          passwordError = "Invalid password format";
+        }
+      }
     }
+    
+    setValidation(prev => ({
+      ...prev,
+      passwordMatch: isMatch,
+      passwordValid,
+      passwordError
+    }));
   };
 
   // Handle key down event for Enter key
@@ -268,8 +439,9 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
       
       // For email field, validate first
       if (currentField === "email") {
-        setValidation((prev) => ({ ...prev, email: isValidEmail(value) }));
-        if (!isValidEmail(value)) return;
+        // Use our validateEmail function instead
+        const isValid = validateEmail();
+        if (!isValid) return;
       }
       
       // For password confirmation field, validate match
@@ -321,7 +493,77 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
       [field]: value,
     }));
     
-    saveField(field, value);
+    // For language preference, use Supabase
+    if (field === 'language') {
+      // Save to Supabase
+      const promise = updatePreferenceField.updatePreference(field, value);
+      
+      toast.promise(promise, {
+        loading: 'Saving language preference...',
+        success: 'Language preference saved',
+        error: (error) => `Failed to save language preference: ${error.message}`
+      });
+      
+      promise.then(() => {
+        // Show checkmark
+        setSavedFields((prev) => new Set(prev).add(field));
+        
+        // Clear checkmark after 1 second
+        if (saveTimeout.current) {
+          clearTimeout(saveTimeout.current);
+        }
+        saveTimeout.current = setTimeout(() => {
+          setSavedFields((prev) => {
+            const newSet = new Set(prev);
+            newSet.delete(field);
+            return newSet;
+          });
+        }, 1000);
+        
+        // Update saved values
+        setSavedValues((prev) => ({
+          ...prev,
+          [field]: value,
+        }));
+      });
+    }
+    // For country field, use Supabase
+    else if (field === 'country') {
+      // Save to Supabase
+      const promise = updateTherapistFieldMutation.updateField(field, value);
+      
+      toast.promise(promise, {
+        loading: 'Saving country...',
+        success: 'Country saved successfully',
+        error: (error) => `Failed to save country: ${error.message}`
+      });
+      
+      promise.then(() => {
+        // Show checkmark
+        setSavedFields((prev) => new Set(prev).add(field));
+        
+        // Clear checkmark after 1 second
+        if (saveTimeout.current) {
+          clearTimeout(saveTimeout.current);
+        }
+        saveTimeout.current = setTimeout(() => {
+          setSavedFields((prev) => {
+            const newSet = new Set(prev);
+            newSet.delete(field);
+            return newSet;
+          });
+        }, 1000);
+        
+        // Update saved values
+        setSavedValues((prev) => ({
+          ...prev,
+          [field]: value,
+        }));
+      });
+    } else {
+      // For other fields, use localStorage
+      saveField(field, value);
+    }
   };
 
   // Handle primary therapeutic approach change
@@ -340,35 +582,43 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
     
     setSettings(updatedSettings);
     
-    // Save to localStorage
-    localStorage.setItem("therapistSettings", JSON.stringify(updatedSettings));
+    // Save to Supabase
+    const promise = updateTherapistFieldMutation.updateField('primaryTherapeuticApproach', value);
     
-    // Update saved values
-    setSavedValues((prev) => ({
-      ...prev,
-      primaryTherapeuticApproach: value,
-      secondaryTherapeuticApproaches: updatedSettings.secondaryTherapeuticApproaches
-    }));
+    toast.promise(promise, {
+      loading: 'Saving primary therapeutic approach...',
+      success: 'Primary therapeutic approach saved successfully',
+      error: (error) => `Failed to save primary therapeutic approach: ${error.message}`
+    });
     
-    // Show checkmark
-    setSavedFields((prev) => new Set(prev).add("primaryTherapeuticApproach"));
-    
-    // Clear checkmark after 1 second
-    if (saveTimeout.current) {
-      clearTimeout(saveTimeout.current);
-    }
-    saveTimeout.current = setTimeout(() => {
-      setSavedFields((prev) => {
-        const newSet = new Set(prev);
-        newSet.delete("primaryTherapeuticApproach");
-        return newSet;
-      });
-    }, 1000);
-    
-    // Call the onSettingsChange prop if provided
-    if (onSettingsChange) {
-      onSettingsChange(updatedSettings);
-    }
+    promise.then(() => {
+      // Show checkmark
+      setSavedFields((prev) => new Set(prev).add("primaryTherapeuticApproach"));
+      
+      // Clear checkmark after 1 second
+      if (saveTimeout.current) {
+        clearTimeout(saveTimeout.current);
+      }
+      saveTimeout.current = setTimeout(() => {
+        setSavedFields((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete("primaryTherapeuticApproach");
+          return newSet;
+        });
+      }, 1000);
+      
+      // Update saved values
+      setSavedValues((prev) => ({
+        ...prev,
+        primaryTherapeuticApproach: value,
+        secondaryTherapeuticApproaches: updatedSettings.secondaryTherapeuticApproaches
+      }));
+      
+      // Call the onSettingsChange prop if provided
+      if (onSettingsChange) {
+        onSettingsChange(updatedSettings);
+      }
+    });
   };
 
   // Handle secondary therapeutic approach addition
@@ -397,29 +647,37 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
     
     setSettings(updatedSettings);
     
-    // Save to localStorage
-    localStorage.setItem("therapistSettings", JSON.stringify(updatedSettings));
+    // Save to Supabase
+    const promise = updateTherapistFieldMutation.updateField('secondaryTherapeuticApproaches', updatedApproaches);
     
-    // Update saved values
-    setSavedValues((prev) => ({
-      ...prev,
-      secondaryTherapeuticApproaches: updatedApproaches,
-    }));
-
-    // Show checkmark
-    setSavedFields((prev) => new Set(prev).add("secondaryTherapeuticApproaches"));
-
-    // Clear checkmark after 1 second
-    if (saveTimeout.current) {
-      clearTimeout(saveTimeout.current);
-    }
-    saveTimeout.current = setTimeout(() => {
-      setSavedFields((prev) => {
-        const newSet = new Set(prev);
-        newSet.delete("secondaryTherapeuticApproaches");
-        return newSet;
-      });
-    }, 1000);
+    toast.promise(promise, {
+      loading: 'Saving therapeutic approaches...',
+      success: 'Therapeutic approaches saved successfully',
+      error: (error) => `Failed to save therapeutic approaches: ${error.message}`
+    });
+    
+    promise.then(() => {
+      // Update saved values
+      setSavedValues((prev) => ({
+        ...prev,
+        secondaryTherapeuticApproaches: updatedApproaches,
+      }));
+  
+      // Show checkmark
+      setSavedFields((prev) => new Set(prev).add("secondaryTherapeuticApproaches"));
+  
+      // Clear checkmark after 1 second
+      if (saveTimeout.current) {
+        clearTimeout(saveTimeout.current);
+      }
+      saveTimeout.current = setTimeout(() => {
+        setSavedFields((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete("secondaryTherapeuticApproaches");
+          return newSet;
+        });
+      }, 1000);
+    });
     
     // Call the onSettingsChange prop if provided
     if (onSettingsChange) {
@@ -438,29 +696,37 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
     
     setSettings(updatedSettings);
     
-    // Save to localStorage
-    localStorage.setItem("therapistSettings", JSON.stringify(updatedSettings));
+    // Save to Supabase
+    const promise = updateTherapistFieldMutation.updateField('secondaryTherapeuticApproaches', updatedApproaches);
     
-    // Update saved values
-    setSavedValues((prev) => ({
-      ...prev,
-      secondaryTherapeuticApproaches: updatedApproaches,
-    }));
+    toast.promise(promise, {
+      loading: 'Updating therapeutic approaches...',
+      success: 'Therapeutic approaches updated successfully',
+      error: (error) => `Failed to update therapeutic approaches: ${error.message}`
+    });
     
-    // Show checkmark
-    setSavedFields((prev) => new Set(prev).add("secondaryTherapeuticApproaches"));
-    
-    // Clear checkmark after 1 second
-    if (saveTimeout.current) {
-      clearTimeout(saveTimeout.current);
-    }
-    saveTimeout.current = setTimeout(() => {
-      setSavedFields((prev) => {
-        const newSet = new Set(prev);
-        newSet.delete("secondaryTherapeuticApproaches");
-        return newSet;
-      });
-    }, 1000);
+    promise.then(() => {
+      // Update saved values
+      setSavedValues((prev) => ({
+        ...prev,
+        secondaryTherapeuticApproaches: updatedApproaches,
+      }));
+      
+      // Show checkmark
+      setSavedFields((prev) => new Set(prev).add("secondaryTherapeuticApproaches"));
+      
+      // Clear checkmark after 1 second
+      if (saveTimeout.current) {
+        clearTimeout(saveTimeout.current);
+      }
+      saveTimeout.current = setTimeout(() => {
+        setSavedFields((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete("secondaryTherapeuticApproaches");
+          return newSet;
+        });
+      }, 1000);
+    });
     
     // Call the onSettingsChange prop if provided
     if (onSettingsChange) {
@@ -482,29 +748,65 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
     
     setSettings(updatedSettings);
     
-    // Save to localStorage
-    localStorage.setItem("therapistSettings", JSON.stringify(updatedSettings));
-    
-    // Update saved values
-    setSavedValues((prev) => ({
-      ...prev,
-      [field]: checked,
-    }));
-    
-    // Show checkmark with appropriate color
-    setSavedFields((prev) => new Set(prev).add(field));
-
-    // Clear checkmark after 1 second
-    if (saveTimeout.current) {
-      clearTimeout(saveTimeout.current);
-    }
-    saveTimeout.current = setTimeout(() => {
-      setSavedFields((prev) => {
-        const newSet = new Set(prev);
-        newSet.delete(field);
-        return newSet;
+    // For preference fields (use24HourClock and useUSDateFormat), use Supabase
+    if (field === 'use24HourClock' || field === 'useUSDateFormat') {
+      // Save to Supabase
+      const promise = updatePreferenceField.updatePreference(field, checked);
+      
+      toast.promise(promise, {
+        loading: `Saving ${field === 'use24HourClock' ? 'time format' : 'date format'} preference...`,
+        success: `${field === 'use24HourClock' ? 'Time format' : 'Date format'} preference saved`,
+        error: (error) => `Failed to save preference: ${error.message}`
       });
-    }, 1000);
+      
+      promise.then(() => {
+        // Show checkmark
+        setSavedFields((prev) => new Set(prev).add(field));
+        
+        // Clear checkmark after 1 second
+        if (saveTimeout.current) {
+          clearTimeout(saveTimeout.current);
+        }
+        saveTimeout.current = setTimeout(() => {
+          setSavedFields((prev) => {
+            const newSet = new Set(prev);
+            newSet.delete(field);
+            return newSet;
+          });
+        }, 1000);
+        
+        // Update saved values
+        setSavedValues((prev) => ({
+          ...prev,
+          [field]: checked,
+        }));
+      });
+    } else {
+      // For other fields, use localStorage
+      // Save to localStorage
+      localStorage.setItem("therapistSettings", JSON.stringify(updatedSettings));
+      
+      // Update saved values
+      setSavedValues((prev) => ({
+        ...prev,
+        [field]: checked,
+      }));
+      
+      // Show checkmark with appropriate color
+      setSavedFields((prev) => new Set(prev).add(field));
+
+      // Clear checkmark after 1 second
+      if (saveTimeout.current) {
+        clearTimeout(saveTimeout.current);
+      }
+      saveTimeout.current = setTimeout(() => {
+        setSavedFields((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(field);
+          return newSet;
+        });
+      }, 1000);
+    }
     
     // Call the onSettingsChange prop if provided
     if (onSettingsChange) {
@@ -529,22 +831,9 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
     }
   };
 
-  // Handle avatar upload
-  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const avatarDataUrl = event.target?.result as string;
-      setSettings((prev) => ({
-        ...prev,
-        avatar: avatarDataUrl,
-      }));
-      
-      saveField("avatar", avatarDataUrl);
-    };
-    reader.readAsDataURL(file);
+  // Handle avatar upload - now handled by useUpdateAvatar hook
+  const handleAvatarChange = (file: File | null) => {
+    updateAvatar(file, user?.user_metadata?.avatar_url || null);
   };
 
   return (
@@ -570,41 +859,24 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
         {/* Avatar Upload */}
         <div className="relative space-y-3">
           <div className="flex items-center">
-            <Label htmlFor="avatar" className="text-right">
-              Photo
+            <Label className="text-right">
+              Profile Picture
             </Label>
-            <div className="w-5 h-5 ml-2">
-              <Check 
-                className={`h-5 w-5 transition-opacity ${
-                  savedFields.has("avatar") 
-                    ? "opacity-100" 
-                    : "opacity-0"
-                } text-green-500`} 
-              />
-            </div>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="relative">
-              <Avatar className="h-12 w-12">
-                <AvatarImage src={settings.avatar} alt={settings.fullName} />
-                <AvatarFallback className="bg-[#22C55E] text-white">{settings.fullName.split(' ').map(n => n[0]).join('').toUpperCase()}</AvatarFallback>
-              </Avatar>
+          <ImageUploader 
+            value={user?.user_metadata?.avatar_url || null} 
+            onValueChange={handleAvatarChange}
+          >
+            <div className="flex flex-col space-y-1">
+              <span className="text-sm">
+                Profile Picture
+              </span>
+
+              <span className="text-xs text-muted-foreground">
+                Change your profile picture
+              </span>
             </div>
-            <Button 
-              variant="secondary" 
-              className="bg-[#22C55E] hover:bg-[#22C55E]/90 text-white"
-              onClick={() => document.getElementById('avatar')?.click()}
-            >
-              Choose an image
-            </Button>
-            <Input 
-              id="avatar" 
-              type="file" 
-              accept="image/*" 
-              className="hidden" 
-              onChange={handleAvatarUpload} 
-            />
-          </div>
+          </ImageUploader>
         </div>
         
         {/* Full Name */}
@@ -652,22 +924,46 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
               />
             </div>
           </div>
-          <Input
-            ref={emailRef}
-            id="email"
-            name="email"
-            type="email"
-            value={settings.email}
-            onChange={handleInputChange}
-            onBlur={(e) => handleBlur(e, "email", true)}
-            onKeyDown={(e) => handleKeyDown(e, "email")}
-            placeholder="Enter your email address"
-            className={`focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)] w-full max-w-md ${
-              !validation.email ? "border-red-500" : ""
-            }`}
-          />
-          {!validation.email && (
-            <p className="text-sm text-red-500 mt-1">Please enter a valid email address</p>
+          
+          {updateEmail.data ? (
+            <div className="bg-green-50 border border-green-200 rounded-md p-4 mb-4">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-green-800">Email update initiated</h3>
+                  <div className="mt-2 text-sm text-green-700">
+                    <p>A confirmation email has been sent to your new address. Please check your inbox and follow the instructions to complete the update.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <Input
+                ref={emailRef}
+                id="email"
+                name="email"
+                type="email"
+                value={settings.email}
+                onChange={handleInputChange}
+                onBlur={handleEmailBlur}
+                onKeyDown={(e) => handleKeyDown(e, "email")}
+                placeholder="Enter your email address"
+                className={`focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)] w-full max-w-md ${
+                  !validation.email ? "border-red-500" : ""
+                }`}
+              />
+              {!validation.email && (
+                <p className="text-sm text-red-500 mt-1">{validation.emailError || "Please enter a valid email address"}</p>
+              )}
+              <p className="text-xs text-muted-foreground mt-1">
+                Changing your email will require verification of the new address
+              </p>
+            </div>
           )}
         </div>
         
@@ -722,25 +1018,12 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
               />
             </div>
           </div>
-          <Select
+          <GeoLocalitiesSelect
             value={settings.country}
             onValueChange={(value) => handleSelectChange(value, "country")}
-          >
-            <SelectTrigger 
-              id="country"
-              className="w-full max-w-md focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)]"
-              onKeyDown={(e) => handleSelectKeyDown(e, "country")}
-            >
-              <SelectValue placeholder="Select a country or territory" />
-            </SelectTrigger>
-            <SelectContent>
-              {countries.map((country) => (
-                <SelectItem key={country.value} value={country.value}>
-                  {country.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            onKeyDown={(e) => handleSelectKeyDown(e, "country")}
+            placeholder="Select a country or territory"
+          />
           <p className="text-sm text-muted-foreground">Needed to ensure adherence to local privacy regulations</p>
         </div>
         
@@ -758,27 +1041,14 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
               />
             </div>
           </div>
-          <Select
+          <TherapeuticApproachesSelect
             value={settings.primaryTherapeuticApproach}
             onValueChange={handlePrimaryApproachChange}
-            required
-          >
-            <SelectTrigger 
-              id="primaryTherapeuticApproach"
-              className="w-full max-w-md focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)]"
-              onKeyDown={(e) => handleSelectKeyDown(e, "primaryTherapeuticApproach")}
-            >
-              <SelectValue placeholder="Select approach" />
-            </SelectTrigger>
-            <SelectContent>
-              {therapeuticApproaches.map((approach) => (
-                <SelectItem key={approach.value} value={approach.value}>
-                  {approach.label}
-                </SelectItem>
-              ))}
-              <SelectItem value="other">Other</SelectItem>
-            </SelectContent>
-          </Select>
+            onKeyDown={(e) => handleSelectKeyDown(e, "primaryTherapeuticApproach")}
+            placeholder="Select primary approach"
+            secondaryApproaches={settings.secondaryTherapeuticApproaches}
+            filterSecondary={true}
+          />
         </div>
         
         {/* Secondary Therapeutic Approaches */}
@@ -798,14 +1068,15 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
           
           {/* Display selected approaches as tags */}
           <div className="flex flex-wrap gap-2 mb-2">
-            {settings.secondaryTherapeuticApproaches.map(approach => {
-              const approachLabel = therapeuticApproaches.find(a => a.value === approach)?.label || approach;
+            {settings.secondaryTherapeuticApproaches.map((approach, index) => {
+              // Get the approach name from therapistProfile if available
+              const approachName = therapistProfile?.secondaryApproachNames?.[index] || '';
               return (
                 <div 
                   key={approach} 
                   className="flex items-center bg-gray-100 rounded-full px-3 py-1 text-sm"
                 >
-                  <span>{approachLabel}</span>
+                      {t(`mypraxis:therapeuticApproaches.${approachName}`, { defaultValue: approachName })}
                   <X 
                     className="ml-2 h-4 w-4 cursor-pointer hover:text-red-500" 
                     onClick={() => handleSecondaryApproachRemove(approach)}
@@ -817,35 +1088,18 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
           
           {/* Dropdown for adding more approaches */}
           {settings.secondaryTherapeuticApproaches.length < 2 && (
-            <Select
+            <TherapeuticApproachesSelect
               value=""
               onValueChange={handleSecondaryApproachAdd}
-            >
-              <SelectTrigger 
-                id="secondaryTherapeuticApproachesTrigger"
-                className="w-full max-w-md focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)]"
-                onKeyDown={(e) => handleSelectKeyDown(e, "secondaryTherapeuticApproaches")}
-              >
-                <SelectValue placeholder="Add approach (up to 2)" />
-              </SelectTrigger>
-              <SelectContent>
-                {therapeuticApproaches
-                  .filter(approach => 
-                    approach.value !== settings.primaryTherapeuticApproach && 
-                    !settings.secondaryTherapeuticApproaches.includes(approach.value)
-                  )
-                  .map((approach) => (
-                    <SelectItem key={approach.value} value={approach.value}>
-                      {approach.label}
-                    </SelectItem>
-                  ))
-                }
-                {!settings.secondaryTherapeuticApproaches.includes("other") && 
-                 settings.primaryTherapeuticApproach !== "other" && (
-                  <SelectItem value="other">Other</SelectItem>
-                )}
-              </SelectContent>
-            </Select>
+              onKeyDown={(e) => handleSelectKeyDown(e, "secondaryTherapeuticApproaches")}
+              placeholder={settings.secondaryTherapeuticApproaches.length === 0 
+                ? "Add approach (up to 2)" 
+                : "Add approach (final one)"}
+              primaryApproach={settings.primaryTherapeuticApproach}
+              secondaryApproaches={settings.secondaryTherapeuticApproaches}
+              filterPrimary={true}
+              filterSecondary={true}
+            />
           )}
           
           <p className="text-sm text-muted-foreground">Will be used to fine-tune AI reports</p>
@@ -854,7 +1108,18 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
       
       {/* Preferences */}
       <div className="mt-6 space-y-6 pb-6 border-b border-[#E5E7EB]">
-        <h3 className="text-[18px] font-medium text-[#111827]">Preferences</h3>
+        <div className="flex items-center justify-between">
+          <h3 className="text-[18px] font-medium text-[#111827]">Preferences</h3>
+          {isLoadingPreferences && (
+            <div className="text-sm text-muted-foreground flex items-center">
+              <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Loading preferences...
+            </div>
+          )}
+        </div>
         
         {/* UI Language */}
         <div className="relative space-y-3">
@@ -980,6 +1245,7 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
             onBlur={(e) => handleBlur(e, "password")}
             onKeyDown={(e) => handleKeyDown(e, "password")}
             placeholder="Enter new password"
+            autoComplete="new-password"
             className="focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)] w-full max-w-md"
           />
           <Input
@@ -992,6 +1258,7 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
             onBlur={handlePasswordConfirmBlur}
             onKeyDown={(e) => handleKeyDown(e, "confirmPassword")}
             placeholder="Confirm new password"
+            autoComplete="new-password"
             className={`focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)] w-full max-w-md ${
               !validation.passwordMatch ? "border-red-500" : ""
             }`}
@@ -999,16 +1266,31 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
           {!validation.passwordMatch && (
             <p className="text-sm text-red-500 mt-1">Passwords do not match</p>
           )}
+          {!validation.passwordValid && (
+            <p className="text-sm text-red-500 mt-1">{validation.passwordError}</p>
+          )}
+          <p className="text-xs text-muted-foreground mt-1">
+            Password must be at least 8 characters and include uppercase, lowercase, number and special character
+          </p>
           <Button 
             variant="outline" 
             className="mt-2 max-w-md"
+            disabled={updatePassword.isPending || !settings.password || !validation.passwordMatch || !validation.passwordValid}
             onClick={() => {
-              // This would typically open a password change dialog
-              // For now, we'll just clear the field
-              setSettings(prev => ({ ...prev, password: "" }));
+              if (settings.password && validation.passwordMatch && validation.passwordValid) {
+                updatePassword.mutate(settings.password, {
+                  onSuccess: () => {
+                    // Clear password fields
+                    setSettings(prev => ({ ...prev, password: "" }));
+                    setConfirmPassword("");
+                    // Mark as saved
+                    setSavedFields(prev => new Set([...prev, "password"]));
+                  }
+                });
+              }
             }}
           >
-            Change Password
+            {updatePassword.isPending ? "Updating..." : "Change Password"}
           </Button>
         </div>
       </div>
