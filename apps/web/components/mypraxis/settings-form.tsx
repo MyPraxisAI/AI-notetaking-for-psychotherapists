@@ -25,6 +25,8 @@ import { useMyPraxisTherapistProfile, useUpdateTherapistField } from "../../app/
 import { useUpdatePassword, PasswordSchema } from "../../app/home/(user)/mypraxis/_lib/hooks/use-update-password"
 import { useUpdateUserName, UserNameSchema } from "../../app/home/(user)/mypraxis/_lib/hooks/use-update-user-name"
 import { useUpdateEmail, EmailSchema } from "../../app/home/(user)/mypraxis/_lib/hooks/use-update-email"
+import { useUpdateAvatar } from "../../app/home/(user)/mypraxis/_lib/hooks/use-update-avatar"
+import { ImageUploader } from "@kit/ui/image-uploader"
 import { GeoLocalitiesSelect } from "./geo-localities-select"
 import { TherapeuticApproachesSelect } from "./therapeutic-approaches-select"
 import { useTranslation } from "react-i18next"
@@ -114,6 +116,7 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
   const updatePassword = useUpdatePassword();
   const updateUserName = useUpdateUserName();
   const updateEmail = useUpdateEmail();
+  const { updateAvatar, isLoading: isAvatarLoading } = useUpdateAvatar();
   
   // Extract data and loading state from the queries
   const preferences = userPreferencesQuery.data;
@@ -828,22 +831,9 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
     }
   };
 
-  // Handle avatar upload
-  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const avatarDataUrl = event.target?.result as string;
-      setSettings((prev) => ({
-        ...prev,
-        avatar: avatarDataUrl,
-      }));
-      
-      saveField("avatar", avatarDataUrl);
-    };
-    reader.readAsDataURL(file);
+  // Handle avatar upload - now handled by useUpdateAvatar hook
+  const handleAvatarChange = (file: File | null) => {
+    updateAvatar(file, user?.user_metadata?.avatar_url || null);
   };
 
   return (
@@ -869,41 +859,24 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
         {/* Avatar Upload */}
         <div className="relative space-y-3">
           <div className="flex items-center">
-            <Label htmlFor="avatar" className="text-right">
-              Photo
+            <Label className="text-right">
+              Profile Picture
             </Label>
-            <div className="w-5 h-5 ml-2">
-              <Check 
-                className={`h-5 w-5 transition-opacity ${
-                  savedFields.has("avatar") 
-                    ? "opacity-100" 
-                    : "opacity-0"
-                } text-green-500`} 
-              />
-            </div>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="relative">
-              <Avatar className="h-12 w-12">
-                <AvatarImage src={settings.avatar} alt={settings.fullName} />
-                <AvatarFallback className="bg-[#22C55E] text-white">{settings.fullName.split(' ').map(n => n[0]).join('').toUpperCase()}</AvatarFallback>
-              </Avatar>
+          <ImageUploader 
+            value={user?.user_metadata?.avatar_url || null} 
+            onValueChange={handleAvatarChange}
+          >
+            <div className="flex flex-col space-y-1">
+              <span className="text-sm">
+                Profile Picture
+              </span>
+
+              <span className="text-xs text-muted-foreground">
+                Change your profile picture
+              </span>
             </div>
-            <Button 
-              variant="secondary" 
-              className="bg-[#22C55E] hover:bg-[#22C55E]/90 text-white"
-              onClick={() => document.getElementById('avatar')?.click()}
-            >
-              Choose an image
-            </Button>
-            <Input 
-              id="avatar" 
-              type="file" 
-              accept="image/*" 
-              className="hidden" 
-              onChange={handleAvatarUpload} 
-            />
-          </div>
+          </ImageUploader>
         </div>
         
         {/* Full Name */}
