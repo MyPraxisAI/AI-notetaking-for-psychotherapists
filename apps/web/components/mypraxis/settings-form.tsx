@@ -17,8 +17,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@kit/ui/avatar"
 import { Button } from "@kit/ui/button"
 import { toast } from "sonner"
 
-// Import our custom hooks for user preferences
+// Import our custom hooks for user preferences and therapist profile
 import { useMyPraxisUserPreferences, useUpdatePreferenceField } from "../../app/home/(user)/mypraxis/_lib/hooks/use-user-preferences"
+import { useMyPraxisTherapistProfile, useUpdateTherapistField } from "../../app/home/(user)/mypraxis/_lib/hooks/use-therapist-profile"
+import { GeoLocalitiesSelect } from "./geo-localities-select"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@kit/ui/dropdown-menu"
 import { ChevronDown } from "lucide-react"
 import { X } from "lucide-react"
@@ -90,9 +92,16 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
   const userPreferencesQuery = useMyPraxisUserPreferences();
   const updatePreferenceField = useUpdatePreferenceField();
   
-  // Extract data and loading state from the query
+  // Fetch therapist profile from Supabase
+  const therapistProfileQuery = useMyPraxisTherapistProfile();
+  const updateTherapistFieldMutation = useUpdateTherapistField();
+  
+  // Extract data and loading state from the queries
   const preferences = userPreferencesQuery.data;
   const isLoadingPreferences = userPreferencesQuery.isLoading;
+  
+  const therapistProfile = therapistProfileQuery.data;
+  const isLoadingTherapistProfile = therapistProfileQuery.isLoading;
   
   // State for settings
   const [settings, setSettings] = useState<TherapistSettings>(() => {
@@ -195,6 +204,28 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
       }));
     }
   }, [preferences]);
+  
+  // Update settings when therapist profile is loaded from Supabase
+  useEffect(() => {
+    if (therapistProfile) {
+      setSettings(prevSettings => ({
+        ...prevSettings,
+        fullName: therapistProfile.fullName,
+        credentials: therapistProfile.credentials || '',
+        country: therapistProfile.country,
+        primaryTherapeuticApproach: therapistProfile.primaryTherapeuticApproach,
+        secondaryTherapeuticApproaches: therapistProfile.secondaryTherapeuticApproaches || []
+      }));
+      setSavedValues(prevValues => ({
+        ...prevValues,
+        fullName: therapistProfile.fullName,
+        credentials: therapistProfile.credentials || '',
+        country: therapistProfile.country,
+        primaryTherapeuticApproach: therapistProfile.primaryTherapeuticApproach,
+        secondaryTherapeuticApproaches: therapistProfile.secondaryTherapeuticApproaches || []
+      }));
+    }
+  }, [therapistProfile]);
 
   // Validate email
   const isValidEmail = (email: string) => {
@@ -239,7 +270,43 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
       setValidation((prev) => ({ ...prev, email: true }));
     }
     
-    saveField(field, value);
+    // For therapist profile fields, use Supabase
+    if (field === 'fullName' || field === 'credentials') {
+      // Save to Supabase
+      const promise = updateTherapistFieldMutation.updateField(field, value);
+      
+      toast.promise(promise, {
+        loading: `Saving ${field === 'fullName' ? 'name' : 'credentials'}...`,
+        success: `${field === 'fullName' ? 'Name' : 'Credentials'} saved successfully`,
+        error: (error) => `Failed to save ${field}: ${error.message}`
+      });
+      
+      promise.then(() => {
+        // Show checkmark
+        setSavedFields((prev) => new Set(prev).add(field));
+        
+        // Clear checkmark after 1 second
+        if (saveTimeout.current) {
+          clearTimeout(saveTimeout.current);
+        }
+        saveTimeout.current = setTimeout(() => {
+          setSavedFields((prev) => {
+            const newSet = new Set(prev);
+            newSet.delete(field);
+            return newSet;
+          });
+        }, 1000);
+        
+        // Update saved values
+        setSavedValues((prev) => ({
+          ...prev,
+          [field]: value,
+        }));
+      });
+    } else {
+      // For other fields, use localStorage
+      saveField(field, value);
+    }
   };
 
   // Save field
@@ -392,6 +459,40 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
           [field]: value,
         }));
       });
+    }
+    // For country field, use Supabase
+    else if (field === 'country') {
+      // Save to Supabase
+      const promise = updateTherapistFieldMutation.updateField(field, value);
+      
+      toast.promise(promise, {
+        loading: 'Saving country...',
+        success: 'Country saved successfully',
+        error: (error) => `Failed to save country: ${error.message}`
+      });
+      
+      promise.then(() => {
+        // Show checkmark
+        setSavedFields((prev) => new Set(prev).add(field));
+        
+        // Clear checkmark after 1 second
+        if (saveTimeout.current) {
+          clearTimeout(saveTimeout.current);
+        }
+        saveTimeout.current = setTimeout(() => {
+          setSavedFields((prev) => {
+            const newSet = new Set(prev);
+            newSet.delete(field);
+            return newSet;
+          });
+        }, 1000);
+        
+        // Update saved values
+        setSavedValues((prev) => ({
+          ...prev,
+          [field]: value,
+        }));
+      });
     } else {
       // For other fields, use localStorage
       saveField(field, value);
@@ -414,35 +515,43 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
     
     setSettings(updatedSettings);
     
-    // Save to localStorage
-    localStorage.setItem("therapistSettings", JSON.stringify(updatedSettings));
+    // Save to Supabase
+    const promise = updateTherapistFieldMutation.updateField('primaryTherapeuticApproach', value);
     
-    // Update saved values
-    setSavedValues((prev) => ({
-      ...prev,
-      primaryTherapeuticApproach: value,
-      secondaryTherapeuticApproaches: updatedSettings.secondaryTherapeuticApproaches
-    }));
+    toast.promise(promise, {
+      loading: 'Saving primary therapeutic approach...',
+      success: 'Primary therapeutic approach saved successfully',
+      error: (error) => `Failed to save primary therapeutic approach: ${error.message}`
+    });
     
-    // Show checkmark
-    setSavedFields((prev) => new Set(prev).add("primaryTherapeuticApproach"));
-    
-    // Clear checkmark after 1 second
-    if (saveTimeout.current) {
-      clearTimeout(saveTimeout.current);
-    }
-    saveTimeout.current = setTimeout(() => {
-      setSavedFields((prev) => {
-        const newSet = new Set(prev);
-        newSet.delete("primaryTherapeuticApproach");
-        return newSet;
-      });
-    }, 1000);
-    
-    // Call the onSettingsChange prop if provided
-    if (onSettingsChange) {
-      onSettingsChange(updatedSettings);
-    }
+    promise.then(() => {
+      // Show checkmark
+      setSavedFields((prev) => new Set(prev).add("primaryTherapeuticApproach"));
+      
+      // Clear checkmark after 1 second
+      if (saveTimeout.current) {
+        clearTimeout(saveTimeout.current);
+      }
+      saveTimeout.current = setTimeout(() => {
+        setSavedFields((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete("primaryTherapeuticApproach");
+          return newSet;
+        });
+      }, 1000);
+      
+      // Update saved values
+      setSavedValues((prev) => ({
+        ...prev,
+        primaryTherapeuticApproach: value,
+        secondaryTherapeuticApproaches: updatedSettings.secondaryTherapeuticApproaches
+      }));
+      
+      // Call the onSettingsChange prop if provided
+      if (onSettingsChange) {
+        onSettingsChange(updatedSettings);
+      }
+    });
   };
 
   // Handle secondary therapeutic approach addition
@@ -471,29 +580,37 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
     
     setSettings(updatedSettings);
     
-    // Save to localStorage
-    localStorage.setItem("therapistSettings", JSON.stringify(updatedSettings));
+    // Save to Supabase
+    const promise = updateTherapistFieldMutation.updateField('secondaryTherapeuticApproaches', updatedApproaches);
     
-    // Update saved values
-    setSavedValues((prev) => ({
-      ...prev,
-      secondaryTherapeuticApproaches: updatedApproaches,
-    }));
-
-    // Show checkmark
-    setSavedFields((prev) => new Set(prev).add("secondaryTherapeuticApproaches"));
-
-    // Clear checkmark after 1 second
-    if (saveTimeout.current) {
-      clearTimeout(saveTimeout.current);
-    }
-    saveTimeout.current = setTimeout(() => {
-      setSavedFields((prev) => {
-        const newSet = new Set(prev);
-        newSet.delete("secondaryTherapeuticApproaches");
-        return newSet;
-      });
-    }, 1000);
+    toast.promise(promise, {
+      loading: 'Saving therapeutic approaches...',
+      success: 'Therapeutic approaches saved successfully',
+      error: (error) => `Failed to save therapeutic approaches: ${error.message}`
+    });
+    
+    promise.then(() => {
+      // Update saved values
+      setSavedValues((prev) => ({
+        ...prev,
+        secondaryTherapeuticApproaches: updatedApproaches,
+      }));
+  
+      // Show checkmark
+      setSavedFields((prev) => new Set(prev).add("secondaryTherapeuticApproaches"));
+  
+      // Clear checkmark after 1 second
+      if (saveTimeout.current) {
+        clearTimeout(saveTimeout.current);
+      }
+      saveTimeout.current = setTimeout(() => {
+        setSavedFields((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete("secondaryTherapeuticApproaches");
+          return newSet;
+        });
+      }, 1000);
+    });
     
     // Call the onSettingsChange prop if provided
     if (onSettingsChange) {
@@ -512,29 +629,37 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
     
     setSettings(updatedSettings);
     
-    // Save to localStorage
-    localStorage.setItem("therapistSettings", JSON.stringify(updatedSettings));
+    // Save to Supabase
+    const promise = updateTherapistFieldMutation.updateField('secondaryTherapeuticApproaches', updatedApproaches);
     
-    // Update saved values
-    setSavedValues((prev) => ({
-      ...prev,
-      secondaryTherapeuticApproaches: updatedApproaches,
-    }));
+    toast.promise(promise, {
+      loading: 'Updating therapeutic approaches...',
+      success: 'Therapeutic approaches updated successfully',
+      error: (error) => `Failed to update therapeutic approaches: ${error.message}`
+    });
     
-    // Show checkmark
-    setSavedFields((prev) => new Set(prev).add("secondaryTherapeuticApproaches"));
-    
-    // Clear checkmark after 1 second
-    if (saveTimeout.current) {
-      clearTimeout(saveTimeout.current);
-    }
-    saveTimeout.current = setTimeout(() => {
-      setSavedFields((prev) => {
-        const newSet = new Set(prev);
-        newSet.delete("secondaryTherapeuticApproaches");
-        return newSet;
-      });
-    }, 1000);
+    promise.then(() => {
+      // Update saved values
+      setSavedValues((prev) => ({
+        ...prev,
+        secondaryTherapeuticApproaches: updatedApproaches,
+      }));
+      
+      // Show checkmark
+      setSavedFields((prev) => new Set(prev).add("secondaryTherapeuticApproaches"));
+      
+      // Clear checkmark after 1 second
+      if (saveTimeout.current) {
+        clearTimeout(saveTimeout.current);
+      }
+      saveTimeout.current = setTimeout(() => {
+        setSavedFields((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete("secondaryTherapeuticApproaches");
+          return newSet;
+        });
+      }, 1000);
+    });
     
     // Call the onSettingsChange prop if provided
     if (onSettingsChange) {
@@ -832,25 +957,12 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
               />
             </div>
           </div>
-          <Select
+          <GeoLocalitiesSelect
             value={settings.country}
             onValueChange={(value) => handleSelectChange(value, "country")}
-          >
-            <SelectTrigger 
-              id="country"
-              className="w-full max-w-md focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)]"
-              onKeyDown={(e) => handleSelectKeyDown(e, "country")}
-            >
-              <SelectValue placeholder="Select a country or territory" />
-            </SelectTrigger>
-            <SelectContent>
-              {countries.map((country) => (
-                <SelectItem key={country.value} value={country.value}>
-                  {country.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            onKeyDown={(e) => handleSelectKeyDown(e, "country")}
+            placeholder="Select a country or territory"
+          />
           <p className="text-sm text-muted-foreground">Needed to ensure adherence to local privacy regulations</p>
         </div>
         
