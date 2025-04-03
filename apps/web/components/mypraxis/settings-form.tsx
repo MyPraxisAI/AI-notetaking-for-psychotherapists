@@ -21,6 +21,8 @@ import { toast } from "sonner"
 import { useMyPraxisUserPreferences, useUpdatePreferenceField } from "../../app/home/(user)/mypraxis/_lib/hooks/use-user-preferences"
 import { useMyPraxisTherapistProfile, useUpdateTherapistField } from "../../app/home/(user)/mypraxis/_lib/hooks/use-therapist-profile"
 import { GeoLocalitiesSelect } from "./geo-localities-select"
+import { TherapeuticApproachesSelect } from "./therapeutic-approaches-select"
+import { useTranslation } from "react-i18next"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@kit/ui/dropdown-menu"
 import { ChevronDown } from "lucide-react"
 import { X } from "lucide-react"
@@ -88,6 +90,8 @@ const languages = [
 ];
 
 export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisible }: SettingsFormProps) {
+  const { t } = useTranslation();
+  
   // Fetch user preferences from Supabase
   const userPreferencesQuery = useMyPraxisUserPreferences();
   const updatePreferenceField = useUpdatePreferenceField();
@@ -980,27 +984,14 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
               />
             </div>
           </div>
-          <Select
+          <TherapeuticApproachesSelect
             value={settings.primaryTherapeuticApproach}
             onValueChange={handlePrimaryApproachChange}
-            required
-          >
-            <SelectTrigger 
-              id="primaryTherapeuticApproach"
-              className="w-full max-w-md focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)]"
-              onKeyDown={(e) => handleSelectKeyDown(e, "primaryTherapeuticApproach")}
-            >
-              <SelectValue placeholder="Select approach" />
-            </SelectTrigger>
-            <SelectContent>
-              {therapeuticApproaches.map((approach) => (
-                <SelectItem key={approach.value} value={approach.value}>
-                  {approach.label}
-                </SelectItem>
-              ))}
-              <SelectItem value="other">Other</SelectItem>
-            </SelectContent>
-          </Select>
+            onKeyDown={(e) => handleSelectKeyDown(e, "primaryTherapeuticApproach")}
+            placeholder="Select primary approach"
+            secondaryApproaches={settings.secondaryTherapeuticApproaches}
+            filterSecondary={true}
+          />
         </div>
         
         {/* Secondary Therapeutic Approaches */}
@@ -1020,14 +1011,15 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
           
           {/* Display selected approaches as tags */}
           <div className="flex flex-wrap gap-2 mb-2">
-            {settings.secondaryTherapeuticApproaches.map(approach => {
-              const approachLabel = therapeuticApproaches.find(a => a.value === approach)?.label || approach;
+            {settings.secondaryTherapeuticApproaches.map((approach, index) => {
+              // Get the approach name from therapistProfile if available
+              const approachName = therapistProfile?.secondaryApproachNames?.[index] || '';
               return (
                 <div 
                   key={approach} 
                   className="flex items-center bg-gray-100 rounded-full px-3 py-1 text-sm"
                 >
-                  <span>{approachLabel}</span>
+                      {t(`mypraxis:therapeuticApproaches.${approachName}`, { defaultValue: approachName })}
                   <X 
                     className="ml-2 h-4 w-4 cursor-pointer hover:text-red-500" 
                     onClick={() => handleSecondaryApproachRemove(approach)}
@@ -1039,35 +1031,18 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
           
           {/* Dropdown for adding more approaches */}
           {settings.secondaryTherapeuticApproaches.length < 2 && (
-            <Select
+            <TherapeuticApproachesSelect
               value=""
               onValueChange={handleSecondaryApproachAdd}
-            >
-              <SelectTrigger 
-                id="secondaryTherapeuticApproachesTrigger"
-                className="w-full max-w-md focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)]"
-                onKeyDown={(e) => handleSelectKeyDown(e, "secondaryTherapeuticApproaches")}
-              >
-                <SelectValue placeholder="Add approach (up to 2)" />
-              </SelectTrigger>
-              <SelectContent>
-                {therapeuticApproaches
-                  .filter(approach => 
-                    approach.value !== settings.primaryTherapeuticApproach && 
-                    !settings.secondaryTherapeuticApproaches.includes(approach.value)
-                  )
-                  .map((approach) => (
-                    <SelectItem key={approach.value} value={approach.value}>
-                      {approach.label}
-                    </SelectItem>
-                  ))
-                }
-                {!settings.secondaryTherapeuticApproaches.includes("other") && 
-                 settings.primaryTherapeuticApproach !== "other" && (
-                  <SelectItem value="other">Other</SelectItem>
-                )}
-              </SelectContent>
-            </Select>
+              onKeyDown={(e) => handleSelectKeyDown(e, "secondaryTherapeuticApproaches")}
+              placeholder={settings.secondaryTherapeuticApproaches.length === 0 
+                ? "Add approach (up to 2)" 
+                : "Add approach (final one)"}
+              primaryApproach={settings.primaryTherapeuticApproach}
+              secondaryApproaches={settings.secondaryTherapeuticApproaches}
+              filterPrimary={true}
+              filterSecondary={true}
+            />
           )}
           
           <p className="text-sm text-muted-foreground">Will be used to fine-tune AI reports</p>

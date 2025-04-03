@@ -49,6 +49,7 @@ export function useMyPraxisTherapistProfile() {
           .select(`
             id,
             priority,
+            approach_id,
             therapeutic_approaches(id, name)
           `)
           .eq('therapist_id', therapistData.id)
@@ -61,13 +62,24 @@ export function useMyPraxisTherapistProfile() {
         // Extract approaches and separate primary from secondary
         const approaches = approachesData || [];
         
-        const primaryApproach = approaches.length > 0 && approaches[0]?.therapeutic_approaches ? 
-          approaches[0].therapeutic_approaches.id || '' : 
+        // Get the primary approach (priority 0)
+        const primaryApproach = approaches.length > 0 && approaches[0] ? 
+          approaches[0].approach_id || '' : 
           '';
         
+        // Get the secondary approaches (priority > 0)
         const secondaryApproaches = approaches.length > 1 ? 
-          approaches.slice(1).map(a => a?.therapeutic_approaches?.id || '') : 
+          approaches.slice(1).map(a => a.approach_id || '') : 
           [];
+        
+        // Also store the approach names for display purposes
+        const approachNames = new Map<string, string>();
+        approaches.forEach(approach => {
+          if (approach.therapeutic_approaches) {
+            const approachData = approach.therapeutic_approaches as any;
+            approachNames.set(approach.approach_id, approachData.name || '');
+          }
+        });
 
         // Fetch geo locality information
         let geoLocalityName = '';
@@ -94,8 +106,10 @@ export function useMyPraxisTherapistProfile() {
           credentials: record.credentials || '',
           country: record.geo_locality_id || '', // Store the UUID
           countryName: geoLocalityName, // Store the name for display
-          primaryTherapeuticApproach: primaryApproach,
-          secondaryTherapeuticApproaches: secondaryApproaches,
+          primaryTherapeuticApproach: primaryApproach, // Store the UUID
+          primaryApproachName: approachNames.get(primaryApproach) || '', // Store the name for display
+          secondaryTherapeuticApproaches: secondaryApproaches, // Store the UUIDs
+          secondaryApproachNames: secondaryApproaches.map(id => approachNames.get(id) || ''), // Store the names for display
         };
       } catch (error) {
         console.error('Error fetching therapist profile:', error);
