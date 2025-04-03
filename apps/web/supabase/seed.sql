@@ -333,13 +333,27 @@ INSERT INTO "auth"."identities" ("id", "user_id", "identity_data", "provider", "
 VALUES ('e5b930c9-0a76-412e-a836-4bc4849a3271', 'e5b930c9-0a76-412e-a836-4bc4849a3271', '{"sub": "e5b930c9-0a76-412e-a836-4bc4849a3271", "email": "test@mypraxis.ai", "email_verified": true, "phone_verified": false}', 'email', 'test@mypraxis.ai', '2025-03-27 17:55:01.646641+00', '2025-03-27 17:55:11.181332+00', '2025-03-27 17:55:11.181332+00');
 
 -- Note: We don't need to add a personal account as Makerkit automatically creates one
--- Add user preferences for the test account
-INSERT INTO "public"."user_preferences" ("id", "account_id", "use_24hr_clock", "use_us_date_format", "language", "created_at", "updated_at")
-VALUES ('f1b930c9-0a76-412e-a836-4bc4849a3271', 'e5b930c9-0a76-412e-a836-4bc4849a3271', true, false, 'en', '2025-03-27 17:55:11.181332+00', '2025-03-27 17:55:11.181332+00');
+-- Note: User preferences are automatically created by the trigger in migration 20250403093600_auto_create_user_preferences.sql
+-- Update the preferences for the test account
+UPDATE "public"."user_preferences"
+SET 
+  "id" = 'f1b930c9-0a76-412e-a836-4bc4849a3271',
+  "use_24hr_clock" = true, 
+  "use_us_date_format" = false, 
+  "language" = 'en',
+  "created_at" = '2025-03-27 17:55:11.181332+00', 
+  "updated_at" = '2025-03-27 17:55:11.181332+00'
+WHERE "account_id" = 'e5b930c9-0a76-412e-a836-4bc4849a3271';
 
--- Add therapist record for the test account
-INSERT INTO "public"."therapists" ("id", "account_id", "credentials", "geo_locality_id", "created_at", "updated_at")
-VALUES ('e1b930c9-0a76-412e-a836-4bc4849a3271', 'e5b930c9-0a76-412e-a836-4bc4849a3271', 'Ph.D. in Clinical Psychology', '22222222-2222-4222-a222-222222222222', '2025-03-27 17:55:11.181332+00', '2025-03-27 17:55:11.181332+00');
+-- Update the automatically created therapist record for the test account
+UPDATE "public"."therapists" 
+SET 
+  "id" = 'e1b930c9-0a76-412e-a836-4bc4849a3271',
+  "credentials" = 'Ph.D. in Clinical Psychology', 
+  "geo_locality_id" = '22222222-2222-4222-a222-222222222222', 
+  "created_at" = '2025-03-27 17:55:11.181332+00', 
+  "updated_at" = '2025-03-27 17:55:11.181332+00'
+WHERE "account_id" = 'e5b930c9-0a76-412e-a836-4bc4849a3271';
 
 -- Add therapeutic approaches for the therapist
 INSERT INTO "public"."therapists_approaches" ("id", "therapist_id", "approach_id", "priority", "created_at", "updated_at")
@@ -352,8 +366,8 @@ INSERT INTO "public"."clients" ("id", "therapist_id", "full_name", "email", "pho
 VALUES ('e4b930c9-0a76-412e-a836-4bc4849a3271', 'e1b930c9-0a76-412e-a836-4bc4849a3271', 'John Smith', 'john.smith@example.com', '+1-555-123-4567', '2025-03-27 17:55:11.181332+00', '2025-03-27 17:55:11.181332+00');
 
 -- Add a therapy session for the client
-INSERT INTO "public"."sessions" ("id", "client_id", "transcript", "note", "created_at", "updated_at")
-VALUES ('f5b930c9-0a76-412e-a836-4bc4849a3271', 'e4b930c9-0a76-412e-a836-4bc4849a3271', 'Therapist: How have you been feeling since our last session, John?
+INSERT INTO "public"."sessions" ("id", "client_id", "title", "transcript", "note", "created_at", "updated_at")
+VALUES ('f5b930c9-0a76-412e-a836-4bc4849a3271', 'e4b930c9-0a76-412e-a836-4bc4849a3271', 'Breathing Exercises', 'Therapist: How have you been feeling since our last session, John?
 
 Client: It''s been a mixed week. The project deadline at work is getting closer, and I can feel my anxiety creeping back up. I''ve been having trouble sleeping again.
 

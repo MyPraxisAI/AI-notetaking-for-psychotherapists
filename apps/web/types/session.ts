@@ -5,10 +5,7 @@ export interface Session {
   createdAt: string
   meetingLink?: string
   transcript?: {
-    content: Array<{
-      speaker: string
-      text: string
-    }>
+    content: string
   }
   summary?: {
     therapist: string
@@ -16,7 +13,6 @@ export interface Session {
   }
   notes?: {
     userNote: string
-    lastModified: string
   }
 }
 

@@ -12,6 +12,8 @@ import { getSessionById, updateSession } from "../../lib/mypraxis/storage"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@kit/ui/dropdown-menu"
 import { DeleteSessionModal } from "../mypraxis/delete-session-modal"
 import type { Session } from "../../types/session"
+import { useSession, useUpdateSession, useDeleteSession } from "../../app/home/(user)/mypraxis/_lib/hooks/use-sessions"
+import { toast } from "sonner"
 
 interface SessionViewProps {
   clientId: string
@@ -39,100 +41,111 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
   const copyTimeout = useRef<NodeJS.Timeout | undefined>(undefined)
   const clientCopyTimeout = useRef<NodeJS.Timeout | undefined>(undefined)
 
-  // Load session data and bot state on mount
+  // Use the session hook from Supabase to load session data
+  const { data: sessionData, isLoading: isLoadingSession } = useSession(sessionId)
+
+  // Update local state when session data changes
   useEffect(() => {
-    const loadSession = () => {
-      let sessionData = getSessionById(clientId, sessionId)
-
-      if (!sessionData && sessionId.match(/^\d{4}-\d{2}-\d{2}$/)) {
-        const demoSession = sessionTranscripts[clientId as "mike"]?.[sessionId as keyof typeof sessionTranscripts["mike"]]
-        if (demoSession) {
-          sessionData = {
-            id: sessionId,
-            date: demoSession.date,
-            title: demoSession.title,
-            createdAt: new Date().toISOString(),
-            transcript: {
-              content: demoSession.content as any, // Type assertion to handle readonly array
-            },
-            summary: demoSession.summary,
-          }
-        }
+    if (sessionData) {
+      // Convert SessionWithId to Session format
+      const formattedSession: Session = {
+        id: sessionData.id,
+        date: new Date(sessionData.createdAt).toISOString().split('T')[0]!,
+        title: sessionData.title,
+        createdAt: sessionData.createdAt,
+        transcript: sessionData.transcript ? {
+          content: sessionData.transcript
+        } : undefined,
+        notes: sessionData.note ? {
+          userNote: sessionData.note
+        } : undefined
       }
-
-      if (sessionData) {
-        setSession(sessionData)
-        setUserNote(sessionData.notes?.userNote || "")
-        if (sessionData.summary?.client) {
-          setEditedClientSummary(sessionData.summary.client)
+      
+      setSession(formattedSession)
+      setUserNote(sessionData.note || "")
+      
+      // For demo sessions, handle summaries (to be implemented in future)
+      if (sessionId.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        const demoSession = sessionTranscripts[clientId as "mike"]?.[sessionId as keyof typeof sessionTranscripts["mike"]]
+        if (demoSession?.summary?.client) {
+          setEditedClientSummary(demoSession.summary.client)
         }
-        if (sessionData.summary?.therapist) {
-          setEditedTherapistSummary(sessionData.summary.therapist)
+        if (demoSession?.summary?.therapist) {
+          setEditedTherapistSummary(demoSession.summary.therapist)
         }
       }
     }
+  }, [sessionData, clientId, sessionId])
 
-    loadSession()
-  }, [clientId, sessionId])
+  // Use the update session hook from Supabase
+  const updateSessionMutation = useUpdateSession()
 
   const handleSaveNote = (note: string) => {
     if (session) {
-      updateSession(clientId, sessionId, {
-        notes: {
-          userNote: note,
-          lastModified: new Date().toISOString(),
+      // Update the session with the new note
+      updateSessionMutation.mutate({
+        id: sessionId,
+        clientId,
+        title: session.title,
+        transcript: session.transcript?.content || '',
+        note: note, // Save the note properly
+        createdAt: session.createdAt
+      }, {
+        onSuccess: () => {
+          setIsSaved(true)
+          if (saveTimeout.current) {
+            clearTimeout(saveTimeout.current)
+          }
+          saveTimeout.current = setTimeout(() => {
+            setIsSaved(false)
+          }, 2000)
         },
+        onError: (error) => {
+          toast.error("Failed to save note")
+          console.error("Error saving note:", error)
+        }
       })
-      setIsSaved(true)
-      if (saveTimeout.current) {
-        clearTimeout(saveTimeout.current)
-      }
-      saveTimeout.current = setTimeout(() => {
-        setIsSaved(false)
-      }, 2000)
     }
   }
 
   const handleSaveClientSummary = (summary: string) => {
     if (session) {
-      updateSession(clientId, sessionId, {
-        summary: {
-          ...(session.summary || {}),
-          client: summary,
-        } as any,
-      })
+      // Client summary will be implemented in a future update
+      // For now, just update the UI state
       setIsEditingClientSummary(false)
+      toast.info('Client summaries will be saved in a future update')
     }
   }
 
   const handleSaveTherapistSummary = (summary: string) => {
     if (session) {
-      updateSession(clientId, sessionId, {
-        summary: {
-          ...(session.summary || {}),
-          therapist: summary,
-        } as any,
-      })
+      // Therapist summary will be implemented in a future update
+      // For now, just update the UI state
       setIsEditingTherapistSummary(false)
+      toast.info('Therapist summaries will be saved in a future update')
     }
   }
 
   const handleSaveTranscript = () => {
     if (session) {
-      const lines = editedTranscript.split("\n").map((line) => {
-        const [speaker = "", ...rest] = line.split(":")
-        return {
-          speaker: speaker.trim(),
-          text: rest.join(":").trim(),
+      // Update the session with the new transcript
+      updateSessionMutation.mutate({
+        id: sessionId,
+        clientId,
+        title: session.title,
+        transcript: editedTranscript, // Save the transcript as plain text
+        note: session.notes?.userNote || '',
+        createdAt: session.createdAt
+      }, {
+        onSuccess: () => {
+          setIsEditingTranscript(false)
+          toast.success('Transcript saved successfully')
+        },
+        onError: (error) => {
+          toast.error('Failed to save transcript')
+          console.error('Error saving transcript:', error)
         }
       })
-      
-      updateSession(clientId, sessionId, {
-        transcript: {
-          content: lines as any, // Type assertion to handle compatibility
-        },
-      })
-      setIsEditingTranscript(false)
     }
   }
 
@@ -159,29 +172,32 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
     }
   }
 
+  // Use the delete session hook from Supabase
+  const deleteSession = useDeleteSession()
+
   const handleDeleteSession = () => {
-    // Remove from localStorage
-    const sessionsData = localStorage.getItem("sessions")
-    if (sessionsData) {
-      const sessions = JSON.parse(sessionsData)
-      if (sessions[clientId]) {
-        delete sessions[clientId][sessionId]
-        localStorage.setItem("sessions", JSON.stringify(sessions))
-      }
-    }
+    deleteSession.mutate({ sessionId, clientId }, {
+      onSuccess: () => {
+        // Clear selected session if it's the current one
+        const selectedSession = localStorage.getItem("selectedSession")
+        if (selectedSession) {
+          const parsed = JSON.parse(selectedSession)
+          if (parsed.clientId === clientId && parsed.sessionId === sessionId) {
+            localStorage.removeItem("selectedSession")
+          }
+        }
 
-    // Clear selected session if it's the current one
-    const selectedSession = localStorage.getItem("selectedSession")
-    if (selectedSession) {
-      const parsed = JSON.parse(selectedSession)
-      if (parsed.clientId === clientId && parsed.sessionId === sessionId) {
-        localStorage.removeItem("selectedSession")
+        // Notify parent component
+        onDelete?.()
+        setIsDeleteModalOpen(false)
+        toast.success("Session deleted successfully")
+      },
+      onError: (error) => {
+        toast.error("Failed to delete session")
+        console.error("Error deleting session:", error)
+        setIsDeleteModalOpen(false)
       }
-    }
-
-    // Notify parent component
-    onDelete?.()
-    setIsDeleteModalOpen(false)
+    })
   }
 
   return (
@@ -303,7 +319,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                       autoFocus
                     />
                   </div>
-                ) : userNote.trim() ? (
+                ) : userNote && userNote.trim() ? (
                   <div className="relative group">
                     <div
                       className="rounded-lg bg-[#FFF9E8] p-6 text-[14px] leading-[1.6] min-h-[100px] cursor-pointer"
@@ -472,7 +488,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
             {isEditingTranscript ? (
               <div className="relative">
                 <Textarea
-                  value={editedTranscript || (typeof session?.transcript?.content === "string" ? session.transcript.content : session?.transcript?.content?.map((line) => `${line.speaker}: ${line.text}`).join("\n") || "")}
+                  value={editedTranscript || session?.transcript?.content || ""}
                   onChange={(e) => setEditedTranscript(e.target.value)}
                   onBlur={() => handleSaveTranscript()}
                   className="min-h-[300px] resize-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)]"
@@ -492,14 +508,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
             ) : session?.transcript ? (
               <div className="relative group">
                 <div className="rounded-lg bg-[#FFF9E8] px-6 pb-6 pt-7 text-[14px] leading-[1.6] whitespace-pre-wrap">
-                  {typeof session.transcript?.content === "string"
-                    ? session.transcript.content
-                    : session.transcript?.content?.map((line, index) => (
-                        <div key={index} className="flex gap-3">
-                          <span className="font-semibold min-w-[20px]">{line.speaker}:</span>
-                          <span>{line.text}</span>
-                        </div>
-                      ))}
+                  {session.transcript?.content}
                 </div>
                 <div className="absolute right-2 top-[7px] flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   <Button
@@ -508,11 +517,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                     className="h-6 w-6 hover:bg-transparent"
                     onClick={() => {
                       setIsEditingTranscript(true)
-                      setEditedTranscript(
-                        typeof session.transcript?.content === "string"
-                          ? session.transcript.content
-                          : session.transcript?.content?.map((line) => `${line.speaker}: ${line.text}`).join("\n") || "",
-                      )
+                      setEditedTranscript(session.transcript?.content || "")
                     }}
                   >
                     <Edit2 className="h-4 w-4" />
