@@ -8,7 +8,6 @@ import { Label } from "@kit/ui/label"
 import { Check, Edit2, Plus, Copy, MoreVertical } from "lucide-react"
 import { Button } from "@kit/ui/button"
 import { Input } from "@kit/ui/input"
-// Removed legacy storage import - using Supabase hooks instead
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@kit/ui/dropdown-menu"
 import { DeleteSessionModal } from "../mypraxis/delete-session-modal"
 import type { Session } from "../../types/session"

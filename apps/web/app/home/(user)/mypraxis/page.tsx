@@ -38,7 +38,6 @@ import { ClientBio } from "../../../../components/mypraxis/client-bio"
 import { ProfileForm } from "../../../../components/mypraxis/profile-form"
 import { SettingsForm } from "../../../../components/mypraxis/settings-form"
 import { SessionView } from "../../../../components/mypraxis/session-view"
-// Removed legacy localStorage imports
 import { useClients, useCreateClient, useDeleteClient } from "./_lib/hooks/use-clients"
 import { ClientWithId } from "./_lib/schemas/client"
 
