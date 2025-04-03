@@ -16,14 +16,19 @@ import { Checkbox } from "@kit/ui/checkbox"
 import { Avatar, AvatarFallback, AvatarImage } from "@kit/ui/avatar"
 import { Button } from "@kit/ui/button"
 import { toast } from "sonner"
+import { Alert, AlertTitle, AlertDescription } from "@kit/ui/alert"
+import { CheckIcon } from "@radix-ui/react-icons"
 
 // Import our custom hooks for user preferences and therapist profile
 import { useMyPraxisUserPreferences, useUpdatePreferenceField } from "../../app/home/(user)/mypraxis/_lib/hooks/use-user-preferences"
 import { useMyPraxisTherapistProfile, useUpdateTherapistField } from "../../app/home/(user)/mypraxis/_lib/hooks/use-therapist-profile"
 import { useUpdatePassword, PasswordSchema } from "../../app/home/(user)/mypraxis/_lib/hooks/use-update-password"
+import { useUpdateUserName, UserNameSchema } from "../../app/home/(user)/mypraxis/_lib/hooks/use-update-user-name"
+import { useUpdateEmail, EmailSchema } from "../../app/home/(user)/mypraxis/_lib/hooks/use-update-email"
 import { GeoLocalitiesSelect } from "./geo-localities-select"
 import { TherapeuticApproachesSelect } from "./therapeutic-approaches-select"
 import { useTranslation } from "react-i18next"
+import { useUserWorkspace } from "@kit/accounts/hooks/use-user-workspace"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@kit/ui/dropdown-menu"
 import { ChevronDown } from "lucide-react"
 import { X } from "lucide-react"
@@ -94,6 +99,9 @@ const languages = [
 export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisible }: SettingsFormProps) {
   const { t } = useTranslation();
   
+  // Get user data
+  const { user, workspace } = useUserWorkspace();
+  
   // Fetch user preferences from Supabase
   const userPreferencesQuery = useMyPraxisUserPreferences();
   const updatePreferenceField = useUpdatePreferenceField();
@@ -101,6 +109,11 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
   // Fetch therapist profile from Supabase
   const therapistProfileQuery = useMyPraxisTherapistProfile();
   const updateTherapistFieldMutation = useUpdateTherapistField();
+  
+  // Auth-related mutations
+  const updatePassword = useUpdatePassword();
+  const updateUserName = useUpdateUserName();
+  const updateEmail = useUpdateEmail();
   
   // Extract data and loading state from the queries
   const preferences = userPreferencesQuery.data;
@@ -110,31 +123,18 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
   const isLoadingTherapistProfile = therapistProfileQuery.isLoading;
   
   // State for settings
-  const [settings, setSettings] = useState<TherapistSettings>(() => {
-    // Try to load from localStorage first for non-preference fields
-    const savedSettings = localStorage.getItem("therapistSettings");
-    if (savedSettings) {
-      return JSON.parse(savedSettings);
-    }
-    
-    // If props are provided, use them
-    if (therapistSettings) {
-      return therapistSettings;
-    }
-    
-    // Default settings
-    return {
-      fullName: "",
-      email: "",
-      avatar: "",
-      credentials: "",
-      country: "",
-      primaryTherapeuticApproach: "",
-      secondaryTherapeuticApproaches: [],
-      language: "en",
-      use24HourClock: false,
-      useUSDateFormat: false,
-    };
+  const [settings, setSettings] = useState<TherapistSettings>({
+    fullName: "",
+    email: "",
+    avatar: "",
+    credentials: "",
+    country: "",
+    primaryTherapeuticApproach: "",
+    secondaryTherapeuticApproaches: [],
+    language: "en",
+    use24HourClock: false,
+    useUSDateFormat: false,
+    password: "",
   });
 
   // State for validation
@@ -143,6 +143,7 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
     passwordMatch: true,
     passwordValid: true,
     passwordError: "",
+    emailError: "",
   });
 
   // State for saved fields
@@ -163,11 +164,8 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
     password: "",
   });
 
-  // State for password confirmation
+  // State for confirmation fields
   const [confirmPassword, setConfirmPassword] = useState("");
-  
-  // Password update mutation
-  const updatePassword = useUpdatePassword();
 
   // Refs for input fields
   const fullNameRef = useRef<HTMLInputElement>(null);
@@ -180,23 +178,21 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
   const saveTimeout = useRef<NodeJS.Timeout | null>(null);
   const savedTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Load settings from localStorage for non-preference fields
+  // Initialize with user data
   useEffect(() => {
-    const savedSettings = localStorage.getItem("therapistSettings");
-    if (savedSettings) {
-      const parsedSettings = JSON.parse(savedSettings);
-      // Don't overwrite preference fields that will come from Supabase
-      const { language, use24HourClock, useUSDateFormat, ...nonPreferenceFields } = parsedSettings;
+    if (user) {
       setSettings(prevSettings => ({
         ...prevSettings,
-        ...nonPreferenceFields
+        fullName: user.user_metadata?.name || "",
+        email: user.email || "",
       }));
       setSavedValues(prevValues => ({
         ...prevValues,
-        ...nonPreferenceFields
+        fullName: user.user_metadata?.name || "",
+        email: user.email || "",
       }));
     }
-  }, []);
+  }, [user]);
   
   // Update settings when preferences are loaded from Supabase
   useEffect(() => {
@@ -239,10 +235,28 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
   }, [therapistProfile]);
 
   // Validate email
-  const isValidEmail = (email: string) => {
-    // Allow empty email
-    if (!email.trim()) return true;
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const validateEmail = () => {
+    // Check if email is valid format
+    const isValidFormat = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(settings.email);
+    
+    // Update validation state
+    setValidation(prev => ({
+      ...prev,
+      email: isValidFormat,
+      emailError: !isValidFormat ? "Please enter a valid email" : ""
+    }));
+    
+    return isValidFormat;
+  };
+  
+  // Handle email blur
+  const handleEmailBlur = () => {
+    const isValid = validateEmail();
+    
+    if (isValid && settings.email) {
+      // Only save if email is valid
+      saveField("email", settings.email);
+    }
   };
 
   // Handle input change
@@ -271,14 +285,10 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
   ) => {
     const value = e.target.value;
     
-    // Validate email
-    if (isEmail && value && !isValidEmail(value)) {
-      setValidation((prev) => ({ ...prev, email: false }));
-      return;
-    }
-    
+    // Validate email - we now handle this in validateEmail function
     if (isEmail) {
-      setValidation((prev) => ({ ...prev, email: true }));
+      // Don't validate here, this is now handled in handleRepeatEmailBlur
+      return;
     }
     
     // For therapist profile fields, use Supabase
@@ -334,8 +344,24 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
     
     setSettings(updatedSettings);
     
-    // Save to localStorage
-    localStorage.setItem("therapistSettings", JSON.stringify(updatedSettings));
+    // Handle different fields
+    if (field === "fullName" && typeof value === "string") {
+      // Update user's name in Supabase Auth
+      updateUserName.mutate(value);
+    } else if (field === "email" && typeof value === "string") {
+      // Update user's email in Supabase Auth with verification
+      const redirectTo = window.location.href;
+      updateEmail.mutate({ email: value, redirectTo });
+    } else if (field === "language" || field === "use24HourClock" || field === "useUSDateFormat") {
+      // These are handled by the preference hooks
+      // Do nothing here as they're handled in handleSelectChange and handleCheckboxChange
+    } else if (field === "password") {
+      // Password is handled separately
+      // Do nothing here as it's handled in the password section
+    } else {
+      // For therapist profile fields, use the therapist profile hook
+      // This is handled in handleSelectChange, handleInputChange, etc.
+    }
     
     // Update saved values
     setSavedValues((prev) => ({
@@ -410,8 +436,9 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
       
       // For email field, validate first
       if (currentField === "email") {
-        setValidation((prev) => ({ ...prev, email: isValidEmail(value) }));
-        if (!isValidEmail(value)) return;
+        // Use our validateEmail function instead
+        const isValid = validateEmail();
+        if (!isValid) return;
       }
       
       // For password confirmation field, validate match
@@ -924,22 +951,46 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
               />
             </div>
           </div>
-          <Input
-            ref={emailRef}
-            id="email"
-            name="email"
-            type="email"
-            value={settings.email}
-            onChange={handleInputChange}
-            onBlur={(e) => handleBlur(e, "email", true)}
-            onKeyDown={(e) => handleKeyDown(e, "email")}
-            placeholder="Enter your email address"
-            className={`focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)] w-full max-w-md ${
-              !validation.email ? "border-red-500" : ""
-            }`}
-          />
-          {!validation.email && (
-            <p className="text-sm text-red-500 mt-1">Please enter a valid email address</p>
+          
+          {updateEmail.data ? (
+            <div className="bg-green-50 border border-green-200 rounded-md p-4 mb-4">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-green-800">Email update initiated</h3>
+                  <div className="mt-2 text-sm text-green-700">
+                    <p>A confirmation email has been sent to your new address. Please check your inbox and follow the instructions to complete the update.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <Input
+                ref={emailRef}
+                id="email"
+                name="email"
+                type="email"
+                value={settings.email}
+                onChange={handleInputChange}
+                onBlur={handleEmailBlur}
+                onKeyDown={(e) => handleKeyDown(e, "email")}
+                placeholder="Enter your email address"
+                className={`focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)] w-full max-w-md ${
+                  !validation.email ? "border-red-500" : ""
+                }`}
+              />
+              {!validation.email && (
+                <p className="text-sm text-red-500 mt-1">{validation.emailError || "Please enter a valid email address"}</p>
+              )}
+              <p className="text-xs text-muted-foreground mt-1">
+                Changing your email will require verification of the new address
+              </p>
+            </div>
           )}
         </div>
         
