@@ -12,8 +12,9 @@ export const UserPreferencesSchema = z.object({
 export const TherapistProfileSchema = z.object({
   fullName: z.string().min(1, 'Full name is required'),
   credentials: z.string().optional(),
-  geoLocality: z.string().min(1, 'Geographic locality is required'),
-  primaryTherapeuticApproach: z.string().min(1, 'Primary therapeutic approach is required'),
+  // Make these fields optional with empty string support
+  geoLocality: z.string().optional().nullable(),
+  primaryTherapeuticApproach: z.string().optional().nullable(),
   secondaryTherapeuticApproaches: z.array(z.string()).optional(),
 });
 
