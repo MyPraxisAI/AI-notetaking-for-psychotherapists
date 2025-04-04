@@ -38,8 +38,6 @@ import { ClientBio } from "../../../../components/mypraxis/client-bio"
 import { ProfileForm } from "../../../../components/mypraxis/profile-form"
 import { SettingsForm } from "../../../../components/mypraxis/settings-form"
 import { SessionView } from "../../../../components/mypraxis/session-view"
-import { saveSession, setSelectedSession, getSelectedSession, getClientSessions } from "../../../../lib/mypraxis/storage"
-import { AppProvider } from "../../../../context/mypraxis/app-context"
 import { useClients, useCreateClient, useDeleteClient } from "./_lib/hooks/use-clients"
 import { ClientWithId } from "./_lib/schemas/client"
 
@@ -187,12 +185,7 @@ export default function Page() {
       setSelectedDetailItem(savedDetailItem as DetailItem)
     }
 
-    // Load selected session from localStorage
-    const selected = getSelectedSession()
-    if (selected) {
-      setSelectedSessionState(selected.sessionId)
-      setSelectedDetailItem(selected.sessionId)
-    }
+    // Session selection is now handled via state only
 
     // Sessions are now loaded via the useSessions hook
   }, [selectedClient]) // Added selectedClient to dependencies
@@ -278,7 +271,6 @@ export default function Page() {
 
     // If the item is a session ID, update selected session
     if (sessions.find((s) => s.id === item)) {
-      setSelectedSession(selectedClient, item)
       setSelectedSessionState(item)
     }
   }
@@ -447,11 +439,9 @@ export default function Page() {
     if (nextSessionId) {
       setSelectedDetailItem(nextSessionId)
       setSelectedSessionState(nextSessionId)
-      setSelectedSession(selectedClient, nextSessionId)
     } else {
       setSelectedDetailItem("prep-note")
       setSelectedSessionState(null)
-      localStorage.removeItem("selectedSession")
     }
   }
 
