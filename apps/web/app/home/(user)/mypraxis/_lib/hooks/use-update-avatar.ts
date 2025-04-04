@@ -1,6 +1,7 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
+import { AVATAR_UPDATED_EVENT } from './use-user-data';
 import { toast } from 'sonner';
 import { useSupabase } from '@kit/supabase/hooks/use-supabase';
 import { useTranslation } from 'react-i18next';
@@ -14,6 +15,9 @@ export function useUpdateAvatar() {
   const client = useSupabase();
   const { user } = useUserWorkspace();
   const queryClient = useQueryClient();
+  
+  // Track the current picture URL in client state
+  const [currentPictureUrl, setCurrentPictureUrl] = useState<string | null>(user?.user_metadata?.avatar_url || null);
 
   const updateAvatarMutation = useMutation({
     mutationFn: async ({ file, currentPictureUrl }: { file: File | null; currentPictureUrl: string | null }) => {
@@ -22,10 +26,34 @@ export function useUpdateAvatar() {
       }
 
       const removeExistingStorageFile = async () => {
+        // If we have a currentPictureUrl, use it to delete the file
         if (currentPictureUrl) {
-          return deleteProfilePhoto(client, currentPictureUrl) ?? Promise.resolve();
+          try {
+            return await deleteProfilePhoto(client, currentPictureUrl);
+          } catch (error) {
+            return Promise.resolve();
+          }
+        } else {
+          // If currentPictureUrl is null, try to delete by user ID
+          // This handles the case where a file exists but currentPictureUrl is null
+          try {
+            // We don't know the extension, so try to list files and delete any that match the user ID
+            const bucket = client.storage.from(AVATARS_BUCKET);
+            const { data: files } = await bucket.list();
+            
+            if (files) {
+              const userFiles = files.filter(file => file.name.startsWith(user.id));
+              
+              for (const file of userFiles) {
+                await bucket.remove([file.name]);
+              }
+            }
+            
+            return Promise.resolve();
+          } catch (error) {
+            return Promise.resolve();
+          }
         }
-        return Promise.resolve();
       };
 
       if (file) {
@@ -56,15 +84,27 @@ export function useUpdateAvatar() {
       }
     },
     onSuccess: () => {
-      // Invalidate user data queries
+      // Invalidate both user data queries
       queryClient.invalidateQueries({ queryKey: ['user'] });
+      queryClient.invalidateQueries({ queryKey: ['mypraxis-user'] });
     },
   });
 
   const updateAvatar = useCallback(
-    (file: File | null, currentPictureUrl: string | null) => {
+    (file: File | null) => {
       toast.promise(
-        () => updateAvatarMutation.mutateAsync({ file, currentPictureUrl }),
+        async () => {
+          const result = await updateAvatarMutation.mutateAsync({ file, currentPictureUrl });
+          // Update our local state with the new URL
+          setCurrentPictureUrl(result);
+          
+          // Dispatch a custom event to notify other components about the avatar update
+          window.dispatchEvent(new CustomEvent(AVATAR_UPDATED_EVENT, {
+            detail: { avatarUrl: result }
+          }));
+          
+          return result;
+        },
         {
           loading: t('Updating profile picture...'),
           success: t('Profile picture updated successfully'),
@@ -72,7 +112,7 @@ export function useUpdateAvatar() {
         }
       );
     },
-    [updateAvatarMutation, t]
+    [updateAvatarMutation, t, currentPictureUrl]
   );
 
   return {
@@ -81,15 +121,19 @@ export function useUpdateAvatar() {
   };
 }
 
-function deleteProfilePhoto(client: any, url: string) {
+async function deleteProfilePhoto(client: any, url: string) {
   const bucket = client.storage.from(AVATARS_BUCKET);
   const fileName = url.split('/').pop()?.split('?')[0];
 
   if (!fileName) {
-    return;
+    return Promise.resolve();
   }
-
-  return bucket.remove([fileName]);
+  
+  try {
+    return await bucket.remove([fileName]);
+  } catch (error) {
+    return Promise.resolve();
+  }
 }
 
 async function uploadUserProfilePhoto(
@@ -102,23 +146,27 @@ async function uploadUserProfilePhoto(
   const extension = photoFile.name.split('.').pop();
   const fileName = await getAvatarFileName(userId, extension);
 
-  const result = await bucket.upload(fileName, bytes);
+  // Exactly match the accounts package implementation - no upsert option
+  try {
+    const result = await bucket.upload(fileName, bytes);
 
-  if (!result.error) {
-    return bucket.getPublicUrl(fileName).data.publicUrl;
+    if (!result.error) {
+      return bucket.getPublicUrl(fileName).data.publicUrl;
+    }
+
+    throw result.error;
+  } catch (error) {
+    throw error;
   }
-
-  throw result.error;
 }
 
 async function getAvatarFileName(
   userId: string,
   extension: string | undefined,
 ) {
-  // Generate a random string for the version parameter
+  // Generate a random string to use as a unique ID
+  // This is similar to nanoid in the accounts package
   const uniqueId = Math.random().toString(36).substring(2, 18);
-
-  // we add a version to the URL to ensure
-  // the browser always fetches the latest image
+  
   return `${userId}.${extension}?v=${uniqueId}`;
 }

@@ -148,7 +148,7 @@ export function useUpdateMyPraxisTherapistProfile() {
             account_id: accountId,
             full_professional_name: data.fullName,
             credentials: data.credentials,
-            geo_locality_id: data.country, // Using country instead of geoLocality
+            geo_locality_id: data.country && data.country !== '' ? data.country : null, // Convert empty string to null
           }, {
             onConflict: 'account_id',
             ignoreDuplicates: false
@@ -232,10 +232,17 @@ export function useUpdateTherapistField() {
         throw new Error('Therapist profile not found');
       }
 
+      // Handle UUID fields - convert empty strings to null
+      let processedValue = value;
+      if ((field === 'country' || field === 'geoLocality' || field === 'primaryTherapeuticApproach') && 
+          (value === '' || value === undefined)) {
+        processedValue = null;
+      }
+
       // Create an updated profile with the new field value
       const updatedProfile: TherapistProfileWithId = {
         ...currentProfile,
-        [field]: value,
+        [field]: processedValue,
       };
 
       // Update the profile

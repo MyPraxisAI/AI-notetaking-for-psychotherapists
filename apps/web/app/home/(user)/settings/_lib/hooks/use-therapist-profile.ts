@@ -111,8 +111,17 @@ export function useUpdateTherapistProfile() {
       if (!accountId) {
         throw new Error('Account not found');
       }
+      
+      // Process data to handle empty UUID fields
+      const processedData = {
+        ...data,
+        geoLocality: data.geoLocality && data.geoLocality !== '' ? data.geoLocality : null,
+        primaryTherapeuticApproach: data.primaryTherapeuticApproach && data.primaryTherapeuticApproach !== '' ? data.primaryTherapeuticApproach : null,
+        secondaryTherapeuticApproaches: data.secondaryTherapeuticApproaches?.filter(approach => approach && approach !== '') || []
+      };
 
       try {
+
         // Update or create the therapist record
         const { data: therapistData, error: therapistError } = await client
           .from('therapists')
@@ -120,7 +129,7 @@ export function useUpdateTherapistProfile() {
             account_id: accountId,
             full_professional_name: data.fullName,
             credentials: data.credentials,
-            geo_locality_id: data.geoLocality, // Using the geo_locality_id directly
+            geo_locality_id: processedData.geoLocality // Already processed to handle empty strings
           }, {
             onConflict: 'account_id',
             ignoreDuplicates: false
@@ -148,11 +157,11 @@ export function useUpdateTherapistProfile() {
           throw deleteError;
         }
 
-        // Combine primary and secondary approaches
+        // Use the processed approaches
         const allApproaches = [
-          data.primaryTherapeuticApproach,
-          ...(data.secondaryTherapeuticApproaches || [])
-        ].filter(Boolean);
+          processedData.primaryTherapeuticApproach,
+          ...processedData.secondaryTherapeuticApproaches
+        ].filter(Boolean); // Remove null/undefined values
 
         // Insert approaches with priority
         if (allApproaches.length > 0) {
