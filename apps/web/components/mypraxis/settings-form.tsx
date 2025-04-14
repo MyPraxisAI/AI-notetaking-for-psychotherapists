@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react"
 import { Input } from "@kit/ui/input"
 import { Label } from "@kit/ui/label"
 import { Check } from "lucide-react"
-import { Textarea } from "@kit/ui/textarea"
+
 import { 
   Select,
   SelectContent,
@@ -13,26 +13,23 @@ import {
   SelectValue
 } from "@kit/ui/select"
 import { Checkbox } from "@kit/ui/checkbox"
-import { Avatar, AvatarFallback, AvatarImage } from "@kit/ui/avatar"
 import { Button } from "@kit/ui/button"
 import { toast } from "sonner"
-import { Alert, AlertTitle, AlertDescription } from "@kit/ui/alert"
-import { CheckIcon } from "@radix-ui/react-icons"
+
 
 // Import our custom hooks for user preferences and therapist profile
 import { useMyPraxisUserPreferences, useUpdatePreferenceField } from "../../app/home/(user)/mypraxis/_lib/hooks/use-user-preferences"
 import { useMyPraxisTherapistProfile, useUpdateTherapistField } from "../../app/home/(user)/mypraxis/_lib/hooks/use-therapist-profile"
 import { useUpdatePassword, PasswordSchema } from "../../app/home/(user)/mypraxis/_lib/hooks/use-update-password"
-import { useUpdateUserName, UserNameSchema } from "../../app/home/(user)/mypraxis/_lib/hooks/use-update-user-name"
-import { useUpdateEmail, EmailSchema } from "../../app/home/(user)/mypraxis/_lib/hooks/use-update-email"
+import { useUpdateUserName } from "../../app/home/(user)/mypraxis/_lib/hooks/use-update-user-name"
+import { useUpdateEmail } from "../../app/home/(user)/mypraxis/_lib/hooks/use-update-email"
 import { useUpdateAvatar } from "../../app/home/(user)/mypraxis/_lib/hooks/use-update-avatar"
 import { ImageUploader } from "@kit/ui/image-uploader"
 import { GeoLocalitiesSelect } from "./geo-localities-select"
 import { TherapeuticApproachesSelect } from "./therapeutic-approaches-select"
 import { useTranslation } from "react-i18next"
 import { useUserWorkspace } from "@kit/accounts/hooks/use-user-workspace"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@kit/ui/dropdown-menu"
-import { ChevronDown } from "lucide-react"
+
 import { X } from "lucide-react"
 import { z } from "zod"
 import { Menu } from "lucide-react"
@@ -57,50 +54,13 @@ interface SettingsFormProps {
   setIsNavVisible?: (isVisible: boolean) => void;
 }
 
-// Define the countries list
-const countries = [
-  { value: "eu", label: "European Union" },
-  { value: "us", label: "United States" },
-  { value: "ca", label: "Canada" },
-  { value: "uk", label: "United Kingdom" },
-  { value: "nz", label: "New Zealand" },
-  { value: "au", label: "Australia" },
-  { value: "ru", label: "Russian Federation" },
-  { value: "other", label: "Other" },
-];
 
-// Define the therapeutic approaches
-const therapeuticApproaches = [
-  { value: "act", label: "Acceptance and Commitment Therapy (ACT)" },
-  { value: "cbt", label: "Cognitive Behavioral Therapy (CBT)" },
-  { value: "dbt", label: "Dialectical Behavior Therapy (DBT)" },
-  { value: "emdr", label: "Eye Movement Desensitization and Reprocessing (EMDR)" },
-  { value: "eft", label: "Emotionally Focused Therapy (EFT)" },
-  { value: "fst", label: "Family Systems Therapy" },
-  { value: "gt", label: "Gestalt Therapy" },
-  { value: "ifs", label: "Internal Family Systems (IFS)" },
-  { value: "ipt", label: "Interpersonal Therapy (IPT)" },
-  { value: "ja", label: "Jungian Analysis" },
-  { value: "mbct", label: "Mindfulness-Based Cognitive Therapy (MBCT)" },
-  { value: "mi", label: "Motivational Interviewing" },
-  { value: "nt", label: "Narrative Therapy" },
-  { value: "pct", label: "Person-Centered (Rogerian) Therapy" },
-  { value: "pa", label: "Psychoanalysis" },
-  { value: "pdt", label: "Psychodynamic Therapy" },
-  { value: "sfbt", label: "Solution-Focused Brief Therapy (SFBT)" },
-];
-
-// Define the languages
-const languages = [
-  { value: "en", label: "English" },
-  { value: "ru", label: "Russian" },
-];
 
 export function SettingsForm({ setIsNavVisible }: SettingsFormProps) {
   const { t } = useTranslation();
   
-  // Get user data
-  const { user, workspace } = useUserWorkspace();
+  // Get user data from the Makerkit useUserWorkspace hook
+  const { user } = useUserWorkspace();
   
   // Fetch user preferences from Supabase
   const userPreferencesQuery = useMyPraxisUserPreferences();
@@ -114,14 +74,14 @@ export function SettingsForm({ setIsNavVisible }: SettingsFormProps) {
   const updatePassword = useUpdatePassword();
   const updateUserName = useUpdateUserName();
   const updateEmail = useUpdateEmail();
-  const { updateAvatar, isLoading: isAvatarLoading } = useUpdateAvatar();
+  const { updateAvatar, isLoading: _isAvatarLoading } = useUpdateAvatar();
   
   // Extract data and loading state from the queries
   const preferences = userPreferencesQuery.data;
   const isLoadingPreferences = userPreferencesQuery.isLoading;
   
   const therapistProfile = therapistProfileQuery.data;
-  const isLoadingTherapistProfile = therapistProfileQuery.isLoading;
+  const _isLoadingTherapistProfile = therapistProfileQuery.isLoading;
   
   // State for settings
   const [settings, setSettings] = useState<TherapistSettings>({
@@ -175,9 +135,8 @@ export function SettingsForm({ setIsNavVisible }: SettingsFormProps) {
   const passwordRef = useRef<HTMLInputElement>(null);
   const confirmPasswordRef = useRef<HTMLInputElement>(null);
 
-  // Timeout refs for saved fields
+  // Timeout ref for saved fields
   const saveTimeout = useRef<NodeJS.Timeout | null>(null);
-  const savedTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Initialize with user data
   useEffect(() => {
@@ -959,7 +918,7 @@ export function SettingsForm({ setIsNavVisible }: SettingsFormProps) {
             placeholder="e.g. LCSW, LMFT or psychotherapist"
             className="focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)] w-full max-w-md"
           />
-          <p className="text-sm text-muted-foreground">The way you'll be introduced</p>
+          <p className="text-sm text-muted-foreground">The way you&apos;ll be introduced</p>
         </div>
       </div>
       

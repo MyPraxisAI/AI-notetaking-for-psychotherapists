@@ -1,8 +1,6 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { z } from 'zod';
-import { toast } from 'sonner';
 
 // Import Supabase client hook
 import { useSupabase } from '@kit/supabase/hooks/use-supabase';
@@ -10,7 +8,7 @@ import { useSupabase } from '@kit/supabase/hooks/use-supabase';
 // Import the useUserWorkspace hook from Makerkit
 import { useUserWorkspace } from '@kit/accounts/hooks/use-user-workspace';
 
-import { TherapistProfileSchema, TherapistProfileData, TherapistRecord, DatabaseRecord } from '../schemas';
+import { TherapistProfileData, TherapistRecord } from '../schemas';
 
 // Using TherapistProfileData type from shared schemas with optional id
 export interface TherapistProfileWithId extends TherapistProfileData {
