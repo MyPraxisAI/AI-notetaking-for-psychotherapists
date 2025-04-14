@@ -227,7 +227,7 @@ export function EnhancedSettingsContainer(props: {
   };
 }) {
   const [activeTab, setActiveTab] = useState('account');
-  const [isPending, startTransition] = useTransition();
+  const [isPending, _startTransition] = useTransition();
   const { i18n } = useTranslation();
   
   // Get available languages from i18n
@@ -267,12 +267,12 @@ export function EnhancedSettingsContainer(props: {
   // Fetch reference data
   const { 
     data: therapeuticApproaches, 
-    isLoading: isLoadingApproaches 
+    isLoading: _isLoadingApproaches 
   } = useTherapeuticApproaches();
   
   const { 
     data: geoLocalities, 
-    isLoading: isLoadingLocalities 
+    isLoading: _isLoadingLocalities 
   } = useGeoLocalities();
 
   // Update forms when data is loaded
@@ -419,7 +419,7 @@ export function EnhancedSettingsContainer(props: {
                           <Input placeholder="e.g. LCSW, LMFT or psychotherapist" {...field} />
                         </FormControl>
                         <FormDescription>
-                          The way you'll be introduced
+                          The way you&apos;ll be introduced
                         </FormDescription>
                         <FormMessage />
                       </FormItem>

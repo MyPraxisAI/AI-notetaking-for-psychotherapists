@@ -31,8 +31,14 @@ export function useGeoLocalities() {
         // Safely transform the data to match our interface
         if (!data) return [];
         
-        // Use type assertion with any as an intermediate step
-        const localities = (data as any[]).map(item => ({
+        // Define the expected database record structure
+        interface GeoLocalityRecord {
+          id: string;
+          name: string;
+        }
+        
+        // Use proper typing for the data
+        const localities = (data as GeoLocalityRecord[]).map(item => ({
           id: item.id,
           name: item.name
         }));

@@ -9,6 +9,12 @@ export interface TherapeuticApproach {
   name: string;
 }
 
+// Database record type for therapeutic approaches
+interface TherapeuticApproachDatabaseRecord {
+  id: string;
+  name: string;
+}
+
 /**
  * Hook to fetch therapeutic approaches
  */
@@ -31,8 +37,8 @@ export function useTherapeuticApproaches() {
         // Safely transform the data to match our interface
         if (!data) return [];
         
-        // Use type assertion with any as an intermediate step
-        const approaches = (data as any[]).map(item => ({
+        // Use proper typing for database records
+        const approaches = (data as TherapeuticApproachDatabaseRecord[]).map(item => ({
           id: item.id,
           name: item.name
         }));

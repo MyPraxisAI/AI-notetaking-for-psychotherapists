@@ -36,7 +36,7 @@ export function ProfileForm({ clientId, onNameChange, onClientDeleted }: Profile
   const phoneRef = useRef<HTMLInputElement>(null)
 
   const saveTimeout = useRef<NodeJS.Timeout | undefined>(undefined)
-  const router = useRouter()
+  const _router = useRouter()
 
   // Update form data when client data changes
   useEffect(() => {
@@ -63,7 +63,7 @@ export function ProfileForm({ clientId, onNameChange, onClientDeleted }: Profile
   }
 
   // Modify the saveField function to update the savedValues state
-  const saveField = (field: string, value: any) => {
+  const saveField = (field: string, value: string | number | boolean | null) => {
     if (!client) return
 
     // Check if the value has actually changed
@@ -100,8 +100,8 @@ export function ProfileForm({ clientId, onNameChange, onClientDeleted }: Profile
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
     field: string,
-    isPhone = false,
-    isEmail = false,
+    _isPhone = false,
+    _isEmail = false,
   ) => {
     const value = e.target.value
 

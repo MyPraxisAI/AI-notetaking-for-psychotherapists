@@ -4,7 +4,19 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useSupabase } from '@kit/supabase/hooks/use-supabase';
 import { useUserWorkspace } from '@kit/accounts/hooks/use-user-workspace';
-import { SessionData, SessionWithId, SessionRecord } from '../schemas/session';
+import { SessionData, SessionWithId } from '../schemas/session';
+
+// Define the database record structure
+interface SessionDatabaseRecord {
+  id: string;
+  account_id: string;
+  client_id: string;
+  title?: string | null;
+  note: string | null;
+  transcript: string | null;
+  created_at: string;
+  updated_at: string;
+}
 
 /**
  * Hook to fetch all sessions for a specific client
@@ -33,8 +45,9 @@ export function useSessions(clientId: string | null) {
           throw sessionsError;
         }
 
+        
         // Transform the data from database format to our schema format
-        return (sessionsData || []).map((record: any) => ({
+        return (sessionsData || []).map((record: SessionDatabaseRecord) => ({
           id: record.id,
           clientId: record.client_id,
           title: record.title ?? record.note ?? 'Untitled Session',
@@ -83,8 +96,8 @@ export function useSession(sessionId: string | null) {
           return null;
         }
 
-        // Transform the data
-        const record = sessionData as any; // Use any temporarily until migration is applied
+        // Transform the data using the same interface we defined earlier
+        const record = sessionData as SessionDatabaseRecord;
         return {
           id: record.id,
           clientId: record.client_id,
@@ -136,8 +149,8 @@ export function useCreateSession() {
           throw createError;
         }
 
-        // Transform to our session model
-        const record = newSession as any; // Use any temporarily until migration is applied
+        // Transform to our session model using the defined interface
+        const record = newSession as SessionDatabaseRecord;
         return {
           id: record.id,
           clientId: record.client_id,
@@ -178,7 +191,7 @@ export function useUpdateSession() {
   const client = useSupabase();
 
   return useMutation({
-    mutationFn: async ({ id, clientId, ...data }: SessionWithId): Promise<SessionWithId> => {
+    mutationFn: async ({ id, clientId: _clientId, ...data }: SessionWithId): Promise<SessionWithId> => {
       if (!accountId) {
         throw new Error('Account not found');
       }
@@ -200,8 +213,8 @@ export function useUpdateSession() {
           throw updateError;
         }
 
-        // Transform to our session model
-        const record = updatedSession as any; // Use any temporarily until migration is applied
+        // Transform to our session model using the defined interface
+        const record = updatedSession as SessionDatabaseRecord;
         return {
           id: record.id,
           clientId: record.client_id,
@@ -246,7 +259,7 @@ export function useDeleteSession() {
   const client = useSupabase();
 
   return useMutation({
-    mutationFn: async ({ sessionId, clientId }: { sessionId: string, clientId: string }) => {
+    mutationFn: async ({ sessionId, clientId: _clientId }: { sessionId: string, clientId: string }) => {
       if (!accountId) {
         throw new Error('Account not found');
       }

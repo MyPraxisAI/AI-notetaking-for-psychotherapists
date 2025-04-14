@@ -1,22 +1,22 @@
-import { NextResponse } from 'next/server';
+// NextResponse is used implicitly by the enhanceRouteHandler
+import type { NextResponse as _NextResponse } from 'next/server';
 import { enhanceRouteHandler } from '@kit/next/routes';
 import { getLogger } from '@kit/shared/logger';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { getSupabaseServerClient } from '@kit/supabase/server-client';
-import { createI18nServerInstance } from '~/lib/i18n/i18n.server';
 
 // Initialize logger properly with await
 const logger = await getLogger();
 
 // Type assertion to allow access to custom tables
 type CustomClient = SupabaseClient & {
-  from: (table: string) => any;
+  from: (table: string) => ReturnType<SupabaseClient['from']>;
 };
 
 // Therapeutic approach IDs will be loaded from the database
 
 export const GET = enhanceRouteHandler(
-  async ({ request, user }) => {
+  async ({ request: _request, user }) => {
     const ctx = {
       name: 'get-therapeutic-approaches',
       userId: user?.id || 'anonymous',

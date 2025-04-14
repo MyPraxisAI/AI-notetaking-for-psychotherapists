@@ -24,7 +24,7 @@ export function DeleteSessionModal({ isOpen, onClose, onDelete, sessionTitle }: 
         <DialogHeader>
           <DialogTitle>Delete Session</DialogTitle>
           <DialogDescription className="space-y-2">
-            <p>Are you sure you want to delete "{sessionTitle}"?</p>
+            <p>Are you sure you want to delete &quot;{sessionTitle}&quot;?</p>
             <p className="text-destructive">This action cannot be undone.</p>
           </DialogDescription>
         </DialogHeader>

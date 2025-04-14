@@ -30,7 +30,7 @@ export function useUpdateAvatar() {
         if (currentPictureUrl) {
           try {
             return await deleteProfilePhoto(client, currentPictureUrl);
-          } catch (error) {
+          } catch (_error) {
             return Promise.resolve();
           }
         } else {
@@ -50,7 +50,7 @@ export function useUpdateAvatar() {
             }
             
             return Promise.resolve();
-          } catch (error) {
+          } catch (_error) {
             return Promise.resolve();
           }
         }
@@ -121,7 +121,7 @@ export function useUpdateAvatar() {
   };
 }
 
-async function deleteProfilePhoto(client: any, url: string) {
+async function deleteProfilePhoto(client: { storage: { from: (bucket: string) => { remove: (paths: string[]) => Promise<any> } } }, url: string) {
   const bucket = client.storage.from(AVATARS_BUCKET);
   const fileName = url.split('/').pop()?.split('?')[0];
 
@@ -131,13 +131,13 @@ async function deleteProfilePhoto(client: any, url: string) {
   
   try {
     return await bucket.remove([fileName]);
-  } catch (error) {
+  } catch (_error) {
     return Promise.resolve();
   }
 }
 
 async function uploadUserProfilePhoto(
-  client: any,
+  client: { storage: { from: (bucket: string) => { upload: (path: string, data: ArrayBuffer) => Promise<any>; getPublicUrl: (path: string) => { data: { publicUrl: string } } } } },
   photoFile: File,
   userId: string,
 ) {
@@ -147,17 +147,13 @@ async function uploadUserProfilePhoto(
   const fileName = await getAvatarFileName(userId, extension);
 
   // Exactly match the accounts package implementation - no upsert option
-  try {
-    const result = await bucket.upload(fileName, bytes);
+  const result = await bucket.upload(fileName, bytes);
 
-    if (!result.error) {
-      return bucket.getPublicUrl(fileName).data.publicUrl;
-    }
-
-    throw result.error;
-  } catch (error) {
-    throw error;
+  if (!result.error) {
+    return bucket.getPublicUrl(fileName).data.publicUrl;
   }
+
+  throw result.error;
 }
 
 async function getAvatarFileName(
