@@ -798,7 +798,7 @@ export function SettingsForm({ setIsNavVisible }: SettingsFormProps) {
 
   // Handle avatar upload - now handled by useUpdateAvatar hook
   const handleAvatarChange = (file: File | null) => {
-    updateAvatar(file, user?.user_metadata?.avatar_url || null);
+    updateAvatar(file);
   };
 
   return (

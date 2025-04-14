@@ -161,7 +161,7 @@ export function useUpdateTherapistProfile() {
         const allApproaches = [
           processedData.primaryTherapeuticApproach,
           ...processedData.secondaryTherapeuticApproaches
-        ].filter(Boolean); // Remove null/undefined values
+        ].filter((approach): approach is string => !!approach); // Remove null/undefined values and ensure string type
 
         // Insert approaches with priority
         if (allApproaches.length > 0) {

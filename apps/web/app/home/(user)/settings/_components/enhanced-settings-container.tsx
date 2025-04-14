@@ -436,7 +436,7 @@ export function EnhancedSettingsContainer(props: {
                         <FormLabel>Geographic Locality</FormLabel>
                         <Select 
                           onValueChange={field.onChange} 
-                          defaultValue={field.value}
+                          defaultValue={field.value || undefined}
                         >
                           <FormControl>
                             <SelectTrigger>
@@ -473,7 +473,7 @@ export function EnhancedSettingsContainer(props: {
                               professionalInfoForm.setValue('secondaryTherapeuticApproaches', updatedSecondary);
                             }
                           }} 
-                          defaultValue={field.value}
+                          defaultValue={field.value || undefined}
                         >
                           <FormControl>
                             <SelectTrigger>
@@ -567,7 +567,7 @@ export function EnhancedSettingsContainer(props: {
                               {/* Extract this to a separate component to avoid hook issues */}
                               <ApproachOptions 
                                 therapeuticApproaches={therapeuticApproaches} 
-                                primaryApproach={professionalInfoForm.watch('primaryTherapeuticApproach')} 
+                                primaryApproach={professionalInfoForm.watch('primaryTherapeuticApproach') || ''} 
                                 secondaryApproaches={field.value || []} 
                               />
                             </SelectContent>
@@ -673,7 +673,7 @@ export function EnhancedSettingsContainer(props: {
                         <FormLabel>Language</FormLabel>
                         <Select 
                           onValueChange={field.onChange} 
-                          defaultValue={field.value}
+                          defaultValue={field.value || undefined}
                         >
                           <FormControl>
                             <SelectTrigger>
