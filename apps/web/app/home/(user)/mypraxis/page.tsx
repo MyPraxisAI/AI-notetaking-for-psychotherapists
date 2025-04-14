@@ -42,20 +42,8 @@ import { SessionView } from "../../../../components/mypraxis/session-view"
 import { useClients, useCreateClient, useDeleteClient } from "./_lib/hooks/use-clients"
 import { ClientWithId } from "./_lib/schemas/client"
 
-// Define TherapistSettings type
-interface TherapistSettings {
-  fullName: string;
-  email: string;
-  avatar: string;
-  credentials: string;
-  country: string;
-  primaryTherapeuticApproach: string;
-  secondaryTherapeuticApproaches: string[];
-  language: string;
-  use24HourClock: boolean;
-  useUSDateFormat: boolean;
-  password?: string;
-}
+// Menu item type
+
 
 type MenuItem = "clients" | "settings" | "billing" | "help" | "gift" | "logout"
 
@@ -150,25 +138,10 @@ export default function Page() {
   const [isSmallScreen, setIsSmallScreen] = useState(false)
   const [isMobileView, setIsMobileView] = useState(false)
   const isNavVisibleRef = useRef(true)
+  const isInitialNavVisibilitySet = useRef(false)
 
   // Track newly created clients
   const [newClientIds, setNewClientIds] = useState<Set<string>>(new Set())
-
-  // Therapist settings state
-  const [therapistSettings, setTherapistSettings] = useState<TherapistSettings>({
-    fullName: user?.user_metadata?.full_name || "",
-    email: user?.email || "",
-    avatar: user?.user_metadata?.avatar_url || "",
-    credentials: user?.user_metadata?.credentials || "",
-    country: user?.user_metadata?.country || "",
-    primaryTherapeuticApproach: user?.user_metadata?.primary_therapeutic_approach || "",
-    secondaryTherapeuticApproaches: user?.user_metadata?.secondary_therapeutic_approaches || [],
-    language: user?.user_metadata?.language || "",
-    use24HourClock: user?.user_metadata?.use_24_hour_clock || false,
-    useUSDateFormat: user?.user_metadata?.use_us_date_format || false
-  })
-
-  const isInitialNavVisibilitySet = useRef(false)
 
   useEffect(() => {
     // Set initial selected client when clients are loaded
@@ -181,12 +154,6 @@ export default function Page() {
     }
 
     // Sessions are now loaded via the useSessions hook above
-
-    // Load therapist settings from localStorage
-    const savedTherapistSettings = localStorage.getItem("therapistSettings")
-    if (savedTherapistSettings) {
-      setTherapistSettings(JSON.parse(savedTherapistSettings))
-    }
 
     // Load selected menu item from localStorage
     const savedMenuItem = localStorage.getItem("selectedMenuItem")
@@ -465,11 +432,6 @@ export default function Page() {
     }
   }
 
-  const handleTherapistSettingsChange = (updatedSettings: TherapistSettings) => {
-    setTherapistSettings(updatedSettings);
-    localStorage.setItem("therapistSettings", JSON.stringify(updatedSettings));
-  };
-
   const formatTherapistName = (fullName: string) => {
     if (!fullName) return "Therapist";
     
@@ -497,11 +459,7 @@ export default function Page() {
 
     // If settings is selected, show settings form
     if (selectedItem === "settings") {
-      return <SettingsForm 
-        therapistSettings={therapistSettings} 
-        onSettingsChange={handleTherapistSettingsChange} 
-        setIsNavVisible={setIsNavVisible}
-      />
+      return <SettingsForm setIsNavVisible={setIsNavVisible} />
     }
 
     // Rest of the existing renderContent logic...
@@ -622,19 +580,19 @@ export default function Page() {
                 <div className="relative h-[32px] w-[32px] rounded-full overflow-hidden">
                   <img 
                     src={avatarUrl}
-                    alt={user.user_metadata?.full_name || therapistSettings.fullName}
+                    alt={user.user_metadata?.full_name || ""}
                     className="object-cover w-full h-full"
                   />
                 </div>
               ) : (
                 <Avatar className="h-[32px] w-[32px] bg-[#22C55E] text-white">
                   <AvatarFallback className="bg-[#22C55E] text-white font-medium">
-                    {getTherapistInitials(user.user_metadata?.full_name || therapistSettings.fullName)}
+                    {getTherapistInitials(user.user_metadata?.full_name || "")}
                   </AvatarFallback>
                 </Avatar>
               )}
               <span className="text-[14px] font-medium text-[#E5E7EB] tracking-[-0.011em]">
-                {formatTherapistName(user.user_metadata?.full_name || therapistSettings.fullName)}
+                {formatTherapistName(user.user_metadata?.full_name || "")}
               </span>
             </>
           ) : (

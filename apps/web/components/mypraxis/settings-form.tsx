@@ -54,8 +54,6 @@ interface TherapistSettings {
 
 // Define the component props
 interface SettingsFormProps {
-  therapistSettings?: TherapistSettings;
-  onSettingsChange?: (settings: TherapistSettings) => void;
   setIsNavVisible?: (isVisible: boolean) => void;
 }
 
@@ -98,7 +96,7 @@ const languages = [
   { value: "ru", label: "Russian" },
 ];
 
-export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisible }: SettingsFormProps) {
+export function SettingsForm({ setIsNavVisible }: SettingsFormProps) {
   const { t } = useTranslation();
   
   // Get user data
@@ -273,11 +271,6 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
     };
     
     setSettings(updatedSettings);
-    
-    // Call the onSettingsChange prop if provided
-    if (onSettingsChange) {
-      onSettingsChange(updatedSettings);
-    }
   };
 
   // Handle input blur
@@ -328,7 +321,7 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
         }));
       });
     } else {
-      // For other fields, use localStorage
+      // For other fields, use Supabase hooks
       saveField(field, value);
     }
   };
@@ -386,11 +379,6 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
         return newSet;
       });
     }, 1000);
-    
-    // Call the onSettingsChange prop if provided
-    if (onSettingsChange) {
-      onSettingsChange(updatedSettings);
-    }
   };
 
   // Handle password confirm blur
@@ -561,7 +549,7 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
         }));
       });
     } else {
-      // For other fields, use localStorage
+      // For other fields, use Supabase hooks
       saveField(field, value);
     }
   };
@@ -613,11 +601,6 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
         primaryTherapeuticApproach: value,
         secondaryTherapeuticApproaches: updatedSettings.secondaryTherapeuticApproaches
       }));
-      
-      // Call the onSettingsChange prop if provided
-      if (onSettingsChange) {
-        onSettingsChange(updatedSettings);
-      }
     });
   };
 
@@ -678,11 +661,6 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
         });
       }, 1000);
     });
-    
-    // Call the onSettingsChange prop if provided
-    if (onSettingsChange) {
-      onSettingsChange(updatedSettings);
-    }
   };
   
   // Handle secondary therapeutic approach removal
@@ -727,11 +705,6 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
         });
       }, 1000);
     });
-    
-    // Call the onSettingsChange prop if provided
-    if (onSettingsChange) {
-      onSettingsChange(updatedSettings);
-    }
   };
 
   // Handle checkbox change
@@ -782,17 +755,14 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
         }));
       });
     } else {
-      // For other fields, use localStorage
-      // Save to localStorage
-      localStorage.setItem("therapistSettings", JSON.stringify(updatedSettings));
-      
+      // For other checkbox fields (if any in the future), handle appropriately
       // Update saved values
       setSavedValues((prev) => ({
         ...prev,
         [field]: checked,
       }));
       
-      // Show checkmark with appropriate color
+      // Show checkmark
       setSavedFields((prev) => new Set(prev).add(field));
 
       // Clear checkmark after 1 second
@@ -806,11 +776,6 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
           return newSet;
         });
       }, 1000);
-    }
-    
-    // Call the onSettingsChange prop if provided
-    if (onSettingsChange) {
-      onSettingsChange(updatedSettings);
     }
   };
 
