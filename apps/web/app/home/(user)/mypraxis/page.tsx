@@ -666,6 +666,7 @@ export default function Page() {
             <div className="px-2">
               <Button
                 variant="ghost"
+                data-test="logout-button"
                 className={getButtonClass("logout")}
                 onClick={() => {
                   handleMenuClick("logout"); // Call the main handler
@@ -710,6 +711,7 @@ export default function Page() {
             <Button
               variant="ghost"
               size="icon"
+              data-test="nav-menu-button"
               className="h-8 w-8 flex-shrink-0"
               onClick={() => setIsNavVisible(!isNavVisible)}
             >

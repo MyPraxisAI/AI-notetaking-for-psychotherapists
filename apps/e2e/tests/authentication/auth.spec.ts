@@ -52,21 +52,21 @@ test.describe('Auth flow', () => {
     expect(page.url()).toContain('/');
   });
 
-  test('will sign out using the dropdown', async ({ page }) => {
+  test('will sign out using the logout button', async ({ page }) => {
     const auth = new AuthPageObject(page);
 
-    await page.goto('/home/settings');
+    await page.goto('/home/mypraxis');
 
     await auth.signIn({
       email: 'test@makerkit.dev',
       password: 'testingpassword',
     });
 
-    await page.waitForURL('/home/settings');
+    await page.waitForURL('/home/mypraxis');
 
     await auth.signOut();
 
-    await page.waitForURL('/');
+    await page.waitForURL('/auth/sign-in');
   });
 });
 
@@ -76,23 +76,23 @@ test.describe('Protected routes', () => {
   }) => {
     const auth = new AuthPageObject(page);
 
-    await page.goto('/home/settings');
+    await page.goto('/home/mypraxis');
 
     await auth.signIn({
       email: 'test@makerkit.dev',
       password: 'testingpassword',
     });
 
-    await page.waitForURL('/home/settings');
+    await page.waitForURL('/home/mypraxis');
 
-    expect(page.url()).toContain('/home/settings');
+    expect(page.url()).toContain('/home/mypraxis');
   });
 
   test('will redirect to the sign-in page if not authenticated', async ({
     page,
   }) => {
-    await page.goto('/home/settings');
+    await page.goto('/home/mypraxis');
 
-    expect(page.url()).toContain('/auth/sign-in?next=/home/settings');
+    expect(page.url()).toContain('/auth/sign-in?next=/home/mypraxis');
   });
 });

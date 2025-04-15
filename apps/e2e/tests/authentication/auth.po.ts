@@ -21,8 +21,21 @@ export class AuthPageObject {
   }
 
   async signOut() {
-    await this.page.click('[data-test="account-dropdown-trigger"]');
-    await this.page.click('[data-test="account-dropdown-sign-out"]');
+    // Check if the logout button is visible
+    const logoutButton = this.page.locator('[data-test="logout-button"]');
+    const isLogoutButtonVisible = await logoutButton.isVisible();
+    
+    // If the logout button is not visible, the sidebar might be collapsed in responsive mode
+    if (!isLogoutButtonVisible) {
+      // Click the menu button to show the sidebar
+      await this.page.click('[data-test="nav-menu-button"]');
+      
+      // Wait for the sidebar animation to complete and the logout button to be visible
+      await this.page.waitForSelector('[data-test="logout-button"]', { state: 'visible' });
+    }
+    
+    // Now click the logout button
+    await this.page.click('[data-test="logout-button"]');
   }
 
   async signIn(params: { email: string; password: string }) {
