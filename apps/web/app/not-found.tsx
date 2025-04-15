@@ -22,9 +22,8 @@ export const generateMetadata = async () => {
 const NotFoundPage = async () => {
   const client = getSupabaseServerClient();
 
-  const {
-    data: { user },
-  } = await client.auth.getUser();
+  // Auth check is performed but user data is not needed
+  await client.auth.getUser();
 
   return (
     <div className={'flex h-screen flex-1 flex-col'}>

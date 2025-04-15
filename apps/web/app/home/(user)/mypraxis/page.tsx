@@ -1,37 +1,31 @@
 "use client"
 
 import { useEffect, useState, useRef } from "react"
-import { Avatar, AvatarFallback, AvatarImage } from "@kit/ui/avatar"
+import { Avatar, AvatarFallback } from "@kit/ui/avatar"
 import { Badge } from "@kit/ui/badge"
 import { Button } from "@kit/ui/button"
 import { useSignOut } from '@kit/supabase/hooks/use-sign-out'
 import { useUserData } from './_lib/hooks/use-user-data'
-import { useCreateSession, useSessions, useSession, useUpdateSession, useDeleteSession } from "./_lib/hooks/use-sessions"
+import { useCreateSession, useSessions } from "./_lib/hooks/use-sessions"
 import { SessionWithId } from "./_lib/schemas/session"
 import {
   Users2,
-  Mail,
-  Video,
+
   Settings,
   Wallet,
   HelpCircle,
   Gift,
   LogOut,
   Plus,
-  Zap,
   ClipboardEdit,
-  Layout,
-  GitBranch,
   Menu,
   Edit2,
   Mic,
-  FileText,
   User,
   ClipboardList,
   Brain,
   ChevronLeft,
   ChevronRight,
-  X,
 } from "lucide-react"
 import { PrepNote } from "../../../../components/mypraxis/prep-note"
 import { ClientOverview } from "../../../../components/mypraxis/client-overview"
@@ -40,7 +34,7 @@ import { ProfileForm } from "../../../../components/mypraxis/profile-form"
 import { SettingsForm } from "../../../../components/mypraxis/settings-form"
 import { SessionView } from "../../../../components/mypraxis/session-view"
 import { useClients, useCreateClient, useDeleteClient } from "./_lib/hooks/use-clients"
-import { ClientWithId } from "./_lib/schemas/client"
+
 
 // Menu item type
 
@@ -86,11 +80,11 @@ export default function Page() {
   const [selectedItem, setSelectedItem] = useState<MenuItem>("clients")
   const [selectedClient, setSelectedClient] = useState<ClientId>("")
   const [selectedDetailItem, setSelectedDetailItem] = useState<DetailItem>("prep-note")
-  const { data: clients = [], isLoading: isLoadingClients } = useClients()
+  const { data: clients = [], isLoading: _isLoadingClients } = useClients()
   const [sessions, setSessions] = useState<Session[]>([])
   
   // Get user data from Supabase with improved loading state handling
-  const { user, refreshUserData, isDataReady } = useUserData()
+  const { user, refreshUserData: _refreshUserData, isDataReady } = useUserData()
   
   // Track avatar image loading state
   const [isAvatarLoaded, setIsAvatarLoaded] = useState(false)
@@ -109,7 +103,7 @@ export default function Page() {
   }, [avatarUrl])
   
   // Fetch sessions for the selected client from Supabase
-  const { data: sessionsData, isLoading: isLoadingSessions } = useSessions(selectedClient)
+  const { data: sessionsData, isLoading: _isLoadingSessions } = useSessions(selectedClient)
   
   // Update sessions state when Supabase data changes
   useEffect(() => {
@@ -130,8 +124,8 @@ export default function Page() {
       setSessions(mappedSessions)
     }
   }, [sessionsData])
-  const [selectedSession, setSelectedSessionState] = useState<string | null>(null)
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [_selectedSession, setSelectedSessionState] = useState<string | null>(null)
+  const [_isDeleteModalOpen, _setIsDeleteModalOpen] = useState(false)
   const [isNavVisible, setIsNavVisible] = useState(true)
   const [isClientListVisible, setIsClientListVisible] = useState(true)
   const [isDetailsColumnVisible, setIsDetailsColumnVisible] = useState(true)
@@ -141,7 +135,7 @@ export default function Page() {
   const isInitialNavVisibilitySet = useRef(false)
 
   // Track newly created clients
-  const [newClientIds, setNewClientIds] = useState<Set<string>>(new Set())
+  const [_newClientIds, setNewClientIds] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     // Set initial selected client when clients are loaded
@@ -179,7 +173,7 @@ export default function Page() {
 
   useEffect(() => {
     const handleSessionTitleChange = (event: CustomEvent) => {
-      const { clientId, sessionId, title, session } = event.detail
+      const { clientId: _clientId, sessionId, title } = event.detail
       setSessions((prev) => prev.map((s) => (s.id === sessionId ? { ...s, title } : s)))
 
       // Update demo sessions if needed
@@ -316,7 +310,7 @@ export default function Page() {
   }
 
   // Name changes are handled directly in the ProfileForm component via the useUpdateClient hook
-  const handleNameChange = (name: string) => {
+  const handleNameChange = (_name: string) => {
     // This function is now just a placeholder for any UI updates needed when a name changes
     // The actual data update is handled by the useUpdateClient hook in ProfileForm
   }

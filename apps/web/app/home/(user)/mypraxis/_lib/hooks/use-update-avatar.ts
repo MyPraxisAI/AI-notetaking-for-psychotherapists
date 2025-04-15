@@ -29,8 +29,8 @@ export function useUpdateAvatar() {
         // If we have a currentPictureUrl, use it to delete the file
         if (currentPictureUrl) {
           try {
-            return await deleteProfilePhoto(client, currentPictureUrl);
-          } catch (_error) {
+            await deleteProfilePhoto(client, currentPictureUrl);
+          } catch {
             return Promise.resolve();
           }
         } else {
@@ -48,9 +48,7 @@ export function useUpdateAvatar() {
                 await bucket.remove([file.name]);
               }
             }
-            
-            return Promise.resolve();
-          } catch (_error) {
+          } catch {
             return Promise.resolve();
           }
         }
@@ -121,7 +119,7 @@ export function useUpdateAvatar() {
   };
 }
 
-async function deleteProfilePhoto(client: { storage: { from: (bucket: string) => { remove: (paths: string[]) => Promise<any> } } }, url: string) {
+async function deleteProfilePhoto(client: { storage: { from: (bucket: string) => { remove: (paths: string[]) => Promise<{ data: unknown; error: unknown }> } } }, url: string) {
   const bucket = client.storage.from(AVATARS_BUCKET);
   const fileName = url.split('/').pop()?.split('?')[0];
 
@@ -131,13 +129,13 @@ async function deleteProfilePhoto(client: { storage: { from: (bucket: string) =>
   
   try {
     return await bucket.remove([fileName]);
-  } catch (_error) {
+  } catch {
     return Promise.resolve();
   }
 }
 
 async function uploadUserProfilePhoto(
-  client: { storage: { from: (bucket: string) => { upload: (path: string, data: ArrayBuffer) => Promise<any>; getPublicUrl: (path: string) => { data: { publicUrl: string } } } } },
+  client: { storage: { from: (bucket: string) => { upload: (path: string, data: ArrayBuffer) => Promise<{ data: unknown; error: unknown }>; getPublicUrl: (path: string) => { data: { publicUrl: string } } } } },
   photoFile: File,
   userId: string,
 ) {

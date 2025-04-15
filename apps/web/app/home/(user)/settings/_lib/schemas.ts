@@ -37,5 +37,9 @@ export interface TherapistRecord {
 export interface DatabaseRecord {
   id: string;
   account_id: string;
-  [key: string]: any;
+  created_at?: string;
+  updated_at?: string;
+  language?: string;
+  use_24hr_clock?: boolean;
+  use_us_date_format?: boolean;
 }

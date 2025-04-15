@@ -25,7 +25,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
   const [isEditing, setIsEditing] = useState(false)
   const [isEditingClientSummary, setIsEditingClientSummary] = useState(false)
   const [isEditingTherapistSummary, setIsEditingTherapistSummary] = useState(false)
-  const [isSaved, setIsSaved] = useState(false)
+  const [_isSaved, setIsSaved] = useState(false)
   const [isCopied, setIsCopied] = useState(false)
   const [isClientSummaryCopied, setIsClientSummaryCopied] = useState(false)
   const [summaryView, setSummaryView] = useState<"therapist" | "client">("therapist")
@@ -41,7 +41,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
   const clientCopyTimeout = useRef<NodeJS.Timeout | undefined>(undefined)
 
   // Use the session hook from Supabase to load session data
-  const { data: sessionData, isLoading: isLoadingSession } = useSession(sessionId)
+  const { data: sessionData, isLoading: _isLoadingSession } = useSession(sessionId)
 
   // Update local state when session data changes
   useEffect(() => {
@@ -107,7 +107,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
     }
   }
 
-  const handleSaveClientSummary = (summary: string) => {
+  const handleSaveClientSummary = (_summary: string) => {
     if (session) {
       // Client summary will be implemented in a future update
       // For now, just update the UI state
@@ -116,7 +116,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
     }
   }
 
-  const handleSaveTherapistSummary = (summary: string) => {
+  const handleSaveTherapistSummary = (_summary: string) => {
     if (session) {
       // Therapist summary will be implemented in a future update
       // For now, just update the UI state

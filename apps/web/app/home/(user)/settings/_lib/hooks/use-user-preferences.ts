@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { z } from 'zod';
+
 import { toast } from 'sonner';
 
 // Import Supabase client hook
@@ -10,7 +10,7 @@ import { useSupabase } from '@kit/supabase/hooks/use-supabase';
 // Import the useUserWorkspace hook from Makerkit
 import { useUserWorkspace } from '@kit/accounts/hooks/use-user-workspace';
 
-import { UserPreferencesSchema, UserPreferencesData, DatabaseRecord } from '../schemas';
+import { UserPreferencesData, DatabaseRecord } from '../schemas';
 
 // Using UserPreferencesData type from shared schemas
 
