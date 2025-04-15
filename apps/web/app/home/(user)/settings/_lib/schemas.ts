@@ -33,8 +33,8 @@ export interface TherapistRecord {
   updated_at: string;
 }
 
-// Type for the database response
-export interface DatabaseRecord {
+// Type for the user preferences database record
+export interface UserPreferencesRecord {
   id: string;
   account_id: string;
   created_at?: string;

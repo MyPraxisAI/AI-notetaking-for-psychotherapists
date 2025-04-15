@@ -10,7 +10,7 @@ import { useSupabase } from '@kit/supabase/hooks/use-supabase';
 // Import the useUserWorkspace hook from Makerkit
 import { useUserWorkspace } from '@kit/accounts/hooks/use-user-workspace';
 
-import { UserPreferencesData, DatabaseRecord } from '../schemas';
+import { UserPreferencesData, UserPreferencesRecord } from '../schemas';
 
 // Using UserPreferencesData type from shared schemas
 
@@ -47,7 +47,7 @@ export function useUserPreferences() {
         }
 
         // Transform the data from database format to our schema format
-        const record = data as DatabaseRecord;
+        const record = data as UserPreferencesRecord;
         return {
           use24HourClock: record.use_24hr_clock || false,
           useUsDateFormat: record.use_us_date_format || false,
