@@ -221,7 +221,7 @@ export function useUpdateTherapistField() {
   const therapistProfileQuery = useMyPraxisTherapistProfile();
   const updateMutation = useUpdateMyPraxisTherapistProfile();
 
-  const updateField = async (field: keyof TherapistProfileWithId, value: string | null) => {
+  const updateField = async (field: keyof TherapistProfileWithId, value: string | null | string[]) => {
     try {
       const currentProfile = therapistProfileQuery.data;
       
