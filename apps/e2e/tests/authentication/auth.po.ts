@@ -1,6 +1,6 @@
 import { Page, expect } from '@playwright/test';
 import { TOTP } from 'totp-generator';
-
+import { clickMenuItemWithResponsiveHandling } from '../utils/menu-helpers';
 import { Mailbox } from '../utils/mailbox';
 
 export class AuthPageObject {
@@ -21,21 +21,11 @@ export class AuthPageObject {
   }
 
   async signOut() {
-    // Check if the logout button is visible
-    const logoutButton = this.page.locator('[data-test="logout-button"]');
-    const isLogoutButtonVisible = await logoutButton.isVisible();
-    
-    // If the logout button is not visible, the sidebar might be collapsed in responsive mode
-    if (!isLogoutButtonVisible) {
-      // Click the menu button to show the sidebar
-      await this.page.click('[data-test="nav-menu-button"]');
-      
-      // Wait for the sidebar animation to complete and the logout button to be visible
-      await this.page.waitForSelector('[data-test="logout-button"]', { state: 'visible' });
-    }
-    
-    // Now click the logout button
-    await this.page.click('[data-test="logout-button"]');
+    // Use the utility function to handle responsive menu interactions
+    await clickMenuItemWithResponsiveHandling(
+      this.page,
+      '[data-test="logout-button"]'
+    );
   }
 
   async signIn(params: { email: string; password: string }) {

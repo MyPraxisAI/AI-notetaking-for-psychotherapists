@@ -823,6 +823,7 @@ export function SettingsForm({ setIsNavVisible }: SettingsFormProps) {
             ref={fullNameRef}
             id="fullName"
             name="fullName"
+            data-test="settings-fullname-input"
             value={settings.fullName}
             onChange={handleInputChange}
             onBlur={(e) => handleBlur(e, "fullName")}
@@ -872,14 +873,13 @@ export function SettingsForm({ setIsNavVisible }: SettingsFormProps) {
                 id="email"
                 name="email"
                 type="email"
+                data-test="settings-email-input"
                 value={settings.email}
                 onChange={handleInputChange}
                 onBlur={handleEmailBlur}
                 onKeyDown={(e) => handleKeyDown(e, "email")}
                 placeholder="Enter your email address"
-                className={`focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)] w-full max-w-md ${
-                  !validation.email ? "border-red-500" : ""
-                }`}
+                className={`focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)] w-full max-w-md ${!validation.email ? "border-red-500" : ""}`}
               />
               {!validation.email && (
                 <p className="text-sm text-red-500 mt-1">{validation.emailError || "Please enter a valid email address"}</p>

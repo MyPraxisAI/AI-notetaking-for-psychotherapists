@@ -650,6 +650,7 @@ export default function Page() {
             <div className="mt-4 px-2">
               <Button
                 variant="ghost"
+                data-test="settings-button"
                 className={getButtonClass("settings")}
                 onClick={() => handleMenuClick("settings")}
               >
