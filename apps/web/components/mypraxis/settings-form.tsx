@@ -1011,6 +1011,7 @@ export function SettingsForm({ setIsNavVisible }: SettingsFormProps) {
                 <div 
                   key={approach} 
                   className="flex items-center bg-gray-100 rounded-full px-3 py-1 text-sm"
+                  data-test="settings-secondary-approach-tag"
                 >
                       {t(`mypraxis:therapeuticApproaches.${approachName}`, { defaultValue: approachName })}
                   <X 

@@ -49,7 +49,7 @@ test.describe('MyPraxis Settings Page', () => {
     const settings = new SettingsPageObject(page);
     
     // Login with the user created in beforeAll
-    await page.goto('/auth/sign-in');
+    await page.goto('/auth/sign-in', { timeout: 10000 });
     await auth.signIn({
       email,
       password
@@ -101,7 +101,7 @@ test.describe('MyPraxis Settings Page', () => {
     await auth.signOut();
     
     // Wait to be redirected to the sign-in page
-    await page.waitForURL('/auth/sign-in');
+    await page.waitForURL('/auth/sign-in', { timeout: 10000 });
     
     // Log back in
     await auth.signIn({

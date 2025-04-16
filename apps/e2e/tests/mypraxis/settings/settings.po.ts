@@ -184,8 +184,8 @@ export class SettingsPageObject {
    */
   async getSecondaryTherapeuticApproaches(): Promise<string[]> {
     try {
-      // Find all secondary approach tags
-      const approachTags = this.page.locator('.bg-gray-100.rounded-full');
+      // Find all secondary approach tags using the data-test attribute
+      const approachTags = this.page.locator('[data-test="settings-secondary-approach-tag"]');
       
       // Get the count of tags
       const count = await approachTags.count();
