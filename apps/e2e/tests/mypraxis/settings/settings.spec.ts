@@ -43,7 +43,7 @@ test.describe('MyPraxis Settings Page', () => {
     await context.close();
   });
   
-  test('should update properties and persist after logout and login', async ({ page }) => {
+  test('should update properties and verify they persist after logout and login', async ({ page }) => {
 
     const auth = new AuthPageObject(page);
     const settings = new SettingsPageObject(page);
@@ -76,6 +76,14 @@ test.describe('MyPraxis Settings Page', () => {
     // Select Gestalt Therapy as the primary therapeutic approach
     const newApproach = 'Gestalt Therapy';
     await settings.selectTherapeuticApproach(newApproach);
+    
+    // Add Jungian Analysis as the first secondary therapeutic approach
+    const firstSecondaryApproach = 'Jungian Analysis';
+    await settings.addSecondaryTherapeuticApproach(firstSecondaryApproach);
+    
+    // Add Narrative Therapy as the second secondary therapeutic approach
+    const secondSecondaryApproach = 'Narrative Therapy';
+    await settings.addSecondaryTherapeuticApproach(secondSecondaryApproach);
     
     // Verify that the therapist name was updated immediately in the sidebar
     const sidebarDisplayedName = await settings.getSidebarTherapistName();
@@ -130,6 +138,13 @@ test.describe('MyPraxis Settings Page', () => {
     const selectedApproach = await settings.getSelectedTherapeuticApproach();
     console.log(`Selected therapeutic approach after login: "${selectedApproach}"`);
     expect(selectedApproach).toBe(newApproach);
+    
+    // Verify that the secondary therapeutic approaches persisted
+    const secondaryApproaches = await settings.getSecondaryTherapeuticApproaches();
+    console.log(`Selected secondary therapeutic approaches after login: ${JSON.stringify(secondaryApproaches)}`);
+    expect(secondaryApproaches).toContain(firstSecondaryApproach);
+    expect(secondaryApproaches).toContain(secondSecondaryApproach);
+    expect(secondaryApproaches.length).toBe(2);
     
     // Verify that the avatar was updated
     const isAvatarUpdated = await settings.isAvatarUpdated();

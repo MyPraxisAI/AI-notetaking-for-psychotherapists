@@ -154,6 +154,61 @@ export class SettingsPageObject {
   }
   
   /**
+   * Adds a secondary therapeutic approach
+   * @param approachName The name of the therapeutic approach to add (e.g., "Jungian Analysis")
+   */
+  async addSecondaryTherapeuticApproach(approachName: string) {
+    try {
+      // Click on the secondary therapeutic approach dropdown to open it
+      await this.page.locator('[data-test="settings-secondary-therapeutic-approach-select"]').click();
+      
+      // Wait for the dropdown to appear
+      await this.page.waitForTimeout(500);
+      
+      // Click on the approach option by its visible text
+      await this.page.getByRole('option', { name: approachName }).click();
+      
+      // Wait for the save animation (checkmark) to appear and disappear
+      await this.page.waitForTimeout(1500);
+      
+      return true;
+    } catch (error) {
+      console.error(`Error adding secondary therapeutic approach ${approachName}:`, error);
+      return false;
+    }
+  }
+  
+  /**
+   * Gets the list of selected secondary therapeutic approaches
+   * @returns Promise<string[]> Array of selected secondary approaches
+   */
+  async getSecondaryTherapeuticApproaches(): Promise<string[]> {
+    try {
+      // Find all secondary approach tags
+      const approachTags = this.page.locator('.bg-gray-100.rounded-full');
+      
+      // Get the count of tags
+      const count = await approachTags.count();
+      
+      // Get the text content of each tag
+      const approaches: string[] = [];
+      for (let i = 0; i < count; i++) {
+        const text = await approachTags.nth(i).textContent();
+        if (text) {
+          // Remove the 'X' button text if present
+          const cleanText = text.replace(/[×✕✖]/g, '').trim();
+          approaches.push(cleanText);
+        }
+      }
+      
+      return approaches;
+    } catch (error) {
+      console.error('Error getting secondary therapeutic approaches:', error);
+      return [];
+    }
+  }
+  
+  /**
    * Updates the profile avatar to a red square image
    */
   async updateAvatarToRedImage() {
