@@ -307,4 +307,70 @@ export class SettingsPageObject {
       return null;
     }
   }
+
+  /**
+   * Toggles the 24-hour clock setting
+   * @returns Promise<boolean> True if the operation was successful
+   */
+  async toggle24HourClock(): Promise<boolean> {
+    try {
+      // Click on the 24-hour clock checkbox
+      await this.page.locator('[data-test="settings-24hr-clock-checkbox"]').click();
+      
+      // Wait for the save animation (checkmark) to appear and disappear
+      await this.page.waitForTimeout(1500);
+      
+      return true;
+    } catch (error) {
+      console.error('Error toggling 24-hour clock setting:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Toggles the US date format setting
+   * @returns Promise<boolean> True if the operation was successful
+   */
+  async toggleUSDateFormat(): Promise<boolean> {
+    try {
+      // Click on the US date format checkbox
+      await this.page.locator('[data-test="settings-us-date-format-checkbox"]').click();
+      
+      // Wait for the save animation (checkmark) to appear and disappear
+      await this.page.waitForTimeout(1500);
+      
+      return true;
+    } catch (error) {
+      console.error('Error toggling US date format setting:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Gets the current state of the 24-hour clock checkbox
+   * @returns Promise<boolean> True if the checkbox is checked
+   */
+  async is24HourClockEnabled(): Promise<boolean> {
+    try {
+      const checkbox = this.page.locator('[data-test="settings-24hr-clock-checkbox"]');
+      return await checkbox.isChecked();
+    } catch (error) {
+      console.error('Error checking 24-hour clock state:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Gets the current state of the US date format checkbox
+   * @returns Promise<boolean> True if the checkbox is checked
+   */
+  async isUSDateFormatEnabled(): Promise<boolean> {
+    try {
+      const checkbox = this.page.locator('[data-test="settings-us-date-format-checkbox"]');
+      return await checkbox.isChecked();
+    } catch (error) {
+      console.error('Error checking US date format state:', error);
+      return false;
+    }
+  }
 }

@@ -69,6 +69,23 @@ test.describe('MyPraxis Settings Page', () => {
     const newCredentials = 'MD Ph.D';
     await settings.updateCredentials(newCredentials);
     
+    // Get initial state of the preferences
+    const initial24HourClock = await settings.is24HourClockEnabled();
+    const initialUSDateFormat = await settings.isUSDateFormatEnabled();
+    
+    // Toggle the 24-hour clock setting
+    await settings.toggle24HourClock();
+    
+    // Toggle the US date format setting
+    await settings.toggleUSDateFormat();
+    
+    // Verify the settings have changed
+    const updated24HourClock = await settings.is24HourClockEnabled();
+    const updatedUSDateFormat = await settings.isUSDateFormatEnabled();
+    
+    expect(updated24HourClock).toBe(!initial24HourClock);
+    expect(updatedUSDateFormat).toBe(!initialUSDateFormat);
+    
     // Select Australia as the country
     const newCountry = 'Australia';
     await settings.selectCountry(newCountry);
@@ -156,5 +173,17 @@ test.describe('MyPraxis Settings Page', () => {
     console.log(`Sidebar displayed name after login: "${sidebarDisplayedNameAfterLogin}"`);
     // Expected format: "Ziggy F" (first name + first letter of last name)
     expect(sidebarDisplayedNameAfterLogin).toBe("Ziggy F");
+    
+    // Verify that the preference settings persisted after logout and login
+    const persisted24HourClock = await settings.is24HourClockEnabled();
+    const persistedUSDateFormat = await settings.isUSDateFormatEnabled();
+    
+    console.log(`24-hour clock setting after login: ${persisted24HourClock}`);
+    console.log(`US date format setting after login: ${persistedUSDateFormat}`);
+    
+    expect(persisted24HourClock).toBe(updated24HourClock);
+    expect(persistedUSDateFormat).toBe(updatedUSDateFormat);
   });
+
+  // TODO: Language switch test (after localization works)
 });

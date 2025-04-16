@@ -1113,6 +1113,7 @@ export function SettingsForm({ setIsNavVisible }: SettingsFormProps) {
               onCheckedChange={(checked) => handleCheckboxChange("use24HourClock", checked as boolean)}
               className="text-gray-500 border-gray-300"
               onKeyDown={(e) => handleCheckboxKeyDown(e, "use24HourClock")}
+              data-test="settings-24hr-clock-checkbox"
             />
             <label 
               htmlFor="use24HourClock" 
@@ -1144,6 +1145,7 @@ export function SettingsForm({ setIsNavVisible }: SettingsFormProps) {
               onCheckedChange={(checked) => handleCheckboxChange("useUSDateFormat", checked as boolean)}
               className="text-gray-500 border-gray-300"
               onKeyDown={(e) => handleCheckboxKeyDown(e, "useUSDateFormat")}
+              data-test="settings-us-date-format-checkbox"
             />
             <label 
               htmlFor="useUSDateFormat" 
