@@ -870,6 +870,7 @@ export default function Page() {
               } ${isMobileView ? "mobile-disabled-button" : ""}`}
               onClick={handleNewSession}
               disabled={clients.length === 0 || isMobileView}
+              data-test="start-recording-button"
             >
               <Mic className="h-4 w-4 mr-2" />
               Start recording
@@ -892,12 +893,13 @@ export default function Page() {
                       variant="ghost"
                       className={getSessionButtonClass(session.id)}
                       onClick={() => handleDetailItemClick(session.id)}
+                      data-test="session-item"
                     >
                       <div className="flex flex-col items-start w-full">
-                        <span className="text-[14px] font-medium text-[#111827]">
+                        <span className="text-[14px] font-medium text-[#111827]" data-test="sessions-list-title">
                           {session.title}
                         </span>
-                        <span className="text-[12px] text-[#6B7280]">
+                        <span className="text-[12px] text-[#6B7280]" data-test="sessions-list-date">
                           {session.date}
                         </span>
                       </div>
@@ -914,9 +916,10 @@ export default function Page() {
                         variant="ghost"
                         className={getSessionButtonClass(date)}
                         onClick={() => handleDetailItemClick(date)}
+                        data-test="session-item"
                       >
                         <div className="flex flex-col items-start w-full">
-                          <span className="text-[14px] font-medium text-[#111827]">
+                          <span className="text-[14px] font-medium text-[#111827]" data-test="session-list-title">
                             {title}
                           </span>
                           <span className="text-[12px] text-[#6B7280]">

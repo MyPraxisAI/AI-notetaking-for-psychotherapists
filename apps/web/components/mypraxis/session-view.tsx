@@ -200,8 +200,8 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
   }
 
   return (
-    <div className="w-full px-6 pt-6 border-r border-[#E5E7EB] bg-white">
-      <div className="flex flex-col h-[calc(100vh-32px)]">
+    <div className="w-full h-full flex flex-col overflow-hidden" data-test="session-view">
+      <div className="flex-1 flex flex-col overflow-hidden">
         <div className="space-y-1 mb-5">
           <div className="flex items-center justify-between group/title">
             <div className="flex items-center gap-2">
@@ -245,12 +245,14 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                   }}
                   className="h-8 text-[24px] font-semibold text-[#111827] tracking-[-0.011em] focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)] [&::-webkit-resizer]:appearance-none after:content-[''] after:absolute after:bottom-1 after:right-1 after:w-3 after:h-3 after:border-b-2 after:border-r-2 after:border-[#6B7280] after:cursor-se-resize relative"
                   autoFocus
+                  data-test="session-title-input"
                 />
               ) : (
                 <>
                   <h2
                     className="text-[24px] font-semibold text-[#111827] tracking-[-0.011em] truncate cursor-pointer hover:text-[#374151] transition-colors"
                     onClick={() => setIsEditingTitle(true)}
+                    data-test="session-title"
                   >
                     {session?.title || "New Session"}
                   </h2>
@@ -267,7 +269,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8 -mr-2">
+                <Button variant="ghost" size="icon" className="h-8 w-8 -mr-2" data-test="session-options-button">
                   <MoreVertical className="h-5 w-5" />
                 </Button>
               </DropdownMenuTrigger>
@@ -275,13 +277,16 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                 <DropdownMenuItem
                   className="text-destructive focus:text-destructive"
                   onClick={() => setIsDeleteModalOpen(true)}
+                  data-test="delete-session-option"
                 >
                   Delete session
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-          <p className="text-[14px] text-[#6B7280]">{session?.date || ""}</p>
+          <span className="text-[14px] text-[#6B7280]" data-test="session-date">
+            {session?.date || ""}
+          </span>
         </div>
 
         <Tabs defaultValue="summary" className="w-full flex-1 flex flex-col">
@@ -531,6 +536,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                   setIsEditingTranscript(true)
                   setEditedTranscript("")
                 }}
+                data-test="add-transcript-button"
               >
                 <span className="flex items-center gap-2">
                   <Plus className="h-4 w-4" />
@@ -545,6 +551,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
           onClose={() => setIsDeleteModalOpen(false)}
           onDelete={handleDeleteSession}
           sessionTitle={session?.title || ""}
+          data-test="delete-session-modal"
         />
       </div>
     </div>

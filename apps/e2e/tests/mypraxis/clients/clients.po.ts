@@ -143,17 +143,31 @@ export class ClientsPageObject {
   }
 
   /**
-   * Check if a client with the given name exists in the client list
-   * @param fullName The full name of the client to check for
-   * @returns Promise<boolean> True if the client exists
+   * Check if a client exists in the list
+   * @param clientName The name of the client to check for
    */
-  async clientExists(fullName: string): Promise<boolean> {
-    try {
-      const clientRow = await this.getClientRowByName(fullName);
-      return clientRow !== null && await clientRow.isVisible();
-    } catch (error) {
-      console.error(`Error checking if client ${fullName} exists:`, error);
-      return false;
+  async clientExists(clientName: string): Promise<boolean> {
+    const clientRow = await this.getClientRowByName(clientName);
+    return !!clientRow;
+  }
+
+  /**
+   * Navigate to a client's page and ensure it's selected
+   * @param clientName The name of the client to navigate to
+   */
+  async navigateToClient(clientName: string): Promise<void> {
+    // Navigate to clients page first
+    await this.goToClientsPage();
+    
+    // Find and click on the client
+    const clientRow = await this.getClientRowByName(clientName);
+    if (!clientRow) {
+      throw new Error(`Client ${clientName} not found`);
     }
+    
+    await clientRow.click();
+    
+    // Wait for the client page to load (simple wait instead of specific element)
+    await this.page.waitForTimeout(1000);
   }
 }
