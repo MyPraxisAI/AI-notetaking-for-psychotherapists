@@ -5,6 +5,9 @@ import { clickMenuItemWithResponsiveHandling } from '../../utils/menu-helpers';
 export class SettingsPageObject {
   private readonly page: Page;
   private readonly auth: AuthPageObject;
+  
+  // Path to the red square PNG file
+  private readonly redSquarePath = '/Users/max/dev/mypraxis-webapp/apps/e2e/tests/fixtures/red-square.png';
 
   constructor(page: Page) {
     this.page = page;
@@ -41,5 +44,71 @@ export class SettingsPageObject {
     
     // Wait for the save animation (checkmark) to appear and disappear
     await this.page.waitForTimeout(1500);
+  }
+  
+  /**
+   * Updates the profile avatar to a red square image
+   */
+  async updateAvatarToRedImage() {
+    try {
+      // Find the file input element for avatar upload
+      const fileInput = this.page.locator('input[type="file"][accept="image/*"]');
+      
+      // Set the file to upload
+      await fileInput.setInputFiles(this.redSquarePath);
+      
+      console.log('Avatar file uploaded successfully');
+      
+      // Wait for the upload to complete and the avatar to update
+      await this.page.waitForTimeout(2000);
+    } catch (error) {
+      console.error('Failed to update avatar:', error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Checks if the avatar has been successfully updated with a custom image
+   * @returns Promise<boolean> True if the avatar has been updated with a custom image
+   */
+  async isAvatarUpdated(): Promise<boolean> {
+    try {
+      // Navigate to a page where the sidebar is visible
+      await this.page.goto('/home/mypraxis');
+      
+      // Wait for the page to load
+      await this.page.waitForLoadState('networkidle');
+      
+      // Use the data-test attribute to find the sidebar avatar
+      const avatarImage = this.page.locator('[data-test="sidebar-avatar-image"]');
+      
+      // Wait for the avatar to be visible
+      await avatarImage.waitFor({ state: 'visible', timeout: 10000 });
+      
+      // Get the src attribute of the avatar image
+      const srcAttribute = await avatarImage.getAttribute('src');
+      
+      if (!srcAttribute) {
+        console.log('No src attribute found on avatar image');
+        return false;
+      }
+            
+      // Check if the avatar URL indicates a custom uploaded image
+      const isUpdated = await this.page.evaluate((src) => {
+        // Check if the URL contains storage/v1/object/public - indicating a user-uploaded image
+        const isStorageUrl = src.includes('storage/v1/object/public');
+        
+        // Check if the URL contains a timestamp parameter or other indicators of a fresh upload
+        const hasTimestamp = src.includes('?');
+        
+        // Consider the avatar updated if it's a storage URL with a timestamp parameter
+        return isStorageUrl && hasTimestamp;
+      }, srcAttribute);
+      
+      return isUpdated;
+    } catch (error) {
+      console.error('Error in isAvatarUpdated:', error);
+      return false;
+    }
   }
 }

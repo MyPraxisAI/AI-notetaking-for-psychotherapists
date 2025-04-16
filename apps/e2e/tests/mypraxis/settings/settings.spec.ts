@@ -66,7 +66,14 @@ test.describe('MyPraxis Settings Page', () => {
     await settings.updateFullName(newFullName);
     console.log(`Updated full name to: ${newFullName}`);
     
+    // Update the avatar to a red image
+    await settings.updateAvatarToRedImage();
+    console.log('Updated avatar to a red image');
     
+    // Verify that the avatar was updated immediately after upload
+    const isAvatarUpdatedAfterUpload = await settings.isAvatarUpdated();
+    console.log(`Is avatar updated after upload? ${isAvatarUpdatedAfterUpload}`);
+    expect(isAvatarUpdatedAfterUpload).toBe(true);
     
     // Log out
     await auth.signOut();
@@ -93,5 +100,10 @@ test.describe('MyPraxis Settings Page', () => {
     // Verify that the full name persisted
     const fullNameInput = page.locator('[data-test="settings-fullname-input"]');
     await expect(fullNameInput).toHaveValue(newFullName);
+    
+    // Verify that the avatar was updated
+    const isAvatarUpdated = await settings.isAvatarUpdated();
+    console.log(`Is avatar updated? ${isAvatarUpdated}`);
+    expect(isAvatarUpdated).toBe(true);
   });
 });

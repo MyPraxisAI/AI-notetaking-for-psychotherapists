@@ -571,11 +571,12 @@ export default function Page() {
             <>
               {/* Avatar - only show when fully loaded */}
               {avatarUrl && isAvatarLoaded ? (
-                <div className="relative h-[32px] w-[32px] rounded-full overflow-hidden">
+                <div className="relative h-[32px] w-[32px] rounded-full overflow-hidden" data-test="sidebar-avatar-container">
                   <img 
                     src={avatarUrl}
                     alt={user.user_metadata?.full_name || ""}
                     className="object-cover w-full h-full"
+                    data-test="sidebar-avatar-image"
                   />
                 </div>
               ) : (
