@@ -65,8 +65,13 @@ test.describe('MyPraxis Settings Page', () => {
     const newFullName = 'Ziggy Freud';
     await settings.updateFullName(newFullName);
     
-    const newCredentials = 'Ph.D ADHD';
+    // Update the professional credentials to "MD Ph.D"
+    const newCredentials = 'MD Ph.D';
     await settings.updateCredentials(newCredentials);
+    
+    // Select Australia as the country
+    const newCountry = 'Australia';
+    await settings.selectCountry(newCountry);
     
     // Verify that the therapist name was updated immediately in the sidebar
     const sidebarDisplayedName = await settings.getSidebarTherapistName();
@@ -109,6 +114,11 @@ test.describe('MyPraxis Settings Page', () => {
     // Verify that the credentials persisted
     const credentialsInput = page.locator('[data-test="settings-credentials-input"]');
     await expect(credentialsInput).toHaveValue(newCredentials);
+    
+    // Verify that the country selection persisted
+    const selectedCountry = await settings.getSelectedCountry();
+    console.log(`Selected country after login: "${selectedCountry}"`);
+    expect(selectedCountry).toBe(newCountry);
     
     // Verify that the avatar was updated
     const isAvatarUpdated = await settings.isAvatarUpdated();

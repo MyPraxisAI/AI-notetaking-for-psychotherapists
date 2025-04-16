@@ -66,6 +66,50 @@ export class SettingsPageObject {
   }
   
   /**
+   * Selects a country from the country dropdown
+   * @param countryName The name of the country to select (e.g., "Australia")
+   */
+  async selectCountry(countryName: string) {
+    try {
+      // Click on the country dropdown to open it
+      await this.page.locator('[data-test="settings-country-select"]').click();
+      
+      // Wait for the dropdown to appear
+      await this.page.waitForTimeout(500);
+      
+      // Click on the country option by its visible text
+      await this.page.getByRole('option', { name: countryName }).click();
+      
+      // Wait for the save animation (checkmark) to appear and disappear
+      await this.page.waitForTimeout(1500);
+      
+      return true;
+    } catch (error) {
+      console.error(`Error selecting country ${countryName}:`, error);
+      return false;
+    }
+  }
+  
+  /**
+   * Gets the currently selected country from the country dropdown
+   * @returns Promise<string | null> The selected country or null if not found
+   */
+  async getSelectedCountry(): Promise<string | null> {
+    try {
+      // Get the text from the country select trigger
+      const countrySelectTrigger = this.page.locator('[data-test="settings-country-select"]');
+      await countrySelectTrigger.waitFor({ state: 'visible', timeout: 5000 });
+      
+      // Get the text content of the select trigger (which shows the selected value)
+      const selectedCountry = await countrySelectTrigger.textContent();
+      return selectedCountry ? selectedCountry.trim() : null;
+    } catch (error) {
+      console.error('Error getting selected country:', error);
+      return null;
+    }
+  }
+  
+  /**
    * Updates the profile avatar to a red square image
    */
   async updateAvatarToRedImage() {
