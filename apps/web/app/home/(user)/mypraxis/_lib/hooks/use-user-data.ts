@@ -3,8 +3,9 @@
 import { useEffect, useState } from 'react';
 import { useUserWorkspace } from '@kit/accounts/hooks/use-user-workspace';
 
-// Define a custom event name for avatar updates
+// Define custom event names for profile updates
 export const AVATAR_UPDATED_EVENT = 'mypraxis:avatar-updated';
+export const NAME_UPDATED_EVENT = 'mypraxis:name-updated';
 
 /**
  * Custom hook to fetch and manage user data with real-time updates
@@ -38,7 +39,7 @@ export function useUserData() {
     }
   }, [initialUser]);
 
-  // Listen for avatar update events
+  // Listen for profile update events (avatar and name)
   useEffect(() => {
     // Handler for avatar update events
     const handleAvatarUpdated = (event: CustomEvent) => {
@@ -57,13 +58,34 @@ export function useUserData() {
         };
       });
     };
+    
+    // Handler for name update events
+    const handleNameUpdated = (event: CustomEvent) => {
+      const { fullName } = event.detail;
+      
+      // Update the user data with the new name
+      setUser(currentUser => {
+        if (!currentUser) return currentUser;
+        
+        return {
+          ...currentUser,
+          user_metadata: {
+            ...currentUser.user_metadata,
+            name: fullName,
+            full_name: fullName
+          }
+        };
+      });
+    };
 
-    // Add event listener
+    // Add event listeners
     window.addEventListener(AVATAR_UPDATED_EVENT, handleAvatarUpdated as EventListener);
+    window.addEventListener(NAME_UPDATED_EVENT, handleNameUpdated as EventListener);
     
     // Clean up
     return () => {
       window.removeEventListener(AVATAR_UPDATED_EVENT, handleAvatarUpdated as EventListener);
+      window.removeEventListener(NAME_UPDATED_EVENT, handleNameUpdated as EventListener);
     };
   }, []);
 

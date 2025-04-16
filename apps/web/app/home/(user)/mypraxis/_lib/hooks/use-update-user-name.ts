@@ -4,6 +4,7 @@ import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useSupabase } from '@kit/supabase/hooks/use-supabase';
 import { z } from 'zod';
+import { NAME_UPDATED_EVENT } from './use-user-data';
 
 // Name validation schema
 export const UserNameSchema = z.object({
@@ -33,7 +34,11 @@ export function useUpdateUserName() {
 
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (_, displayName) => {
+      // Dispatch custom event to update the name in the UI immediately
+      window.dispatchEvent(new CustomEvent(NAME_UPDATED_EVENT, {
+        detail: { fullName: displayName }
+      }));
       toast.success('Name updated successfully');
     },
     onError: (error) => {
