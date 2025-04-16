@@ -927,6 +927,7 @@ export function SettingsForm({ setIsNavVisible }: SettingsFormProps) {
             onKeyDown={(e) => handleKeyDown(e, "credentials")}
             placeholder="e.g. LCSW, LMFT or psychotherapist"
             className="focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)] w-full max-w-md"
+            data-test="settings-credentials-input"
           />
           <p className="text-sm text-muted-foreground">The way you&apos;ll be introduced</p>
         </div>

@@ -47,6 +47,25 @@ export class SettingsPageObject {
   }
   
   /**
+   * Updates the professional credentials in the settings page
+   * @param credentials The new credentials to set
+   */
+  async updateCredentials(credentials: string) {
+    // Locate the credentials input field
+    const credentialsInput = this.page.locator('[data-test="settings-credentials-input"]');
+    
+    // Clear the existing value and enter the new value
+    await credentialsInput.clear();
+    await credentialsInput.fill(credentials);
+    
+    // Trigger blur to save the changes
+    await credentialsInput.blur();
+    
+    // Wait for the save animation (checkmark) to appear and disappear
+    await this.page.waitForTimeout(1500);
+  }
+  
+  /**
    * Updates the profile avatar to a red square image
    */
   async updateAvatarToRedImage() {

@@ -65,6 +65,9 @@ test.describe('MyPraxis Settings Page', () => {
     const newFullName = 'Ziggy Freud';
     await settings.updateFullName(newFullName);
     
+    const newCredentials = 'Ph.D ADHD';
+    await settings.updateCredentials(newCredentials);
+    
     // Verify that the therapist name was updated immediately in the sidebar
     const sidebarDisplayedName = await settings.getSidebarTherapistName();
     // Expected format: "Ziggy F" (first name + first letter of last name)
@@ -102,6 +105,10 @@ test.describe('MyPraxis Settings Page', () => {
     // Verify that the full name persisted
     const fullNameInput = page.locator('[data-test="settings-fullname-input"]');
     await expect(fullNameInput).toHaveValue(newFullName);
+    
+    // Verify that the credentials persisted
+    const credentialsInput = page.locator('[data-test="settings-credentials-input"]');
+    await expect(credentialsInput).toHaveValue(newCredentials);
     
     // Verify that the avatar was updated
     const isAvatarUpdated = await settings.isAvatarUpdated();
