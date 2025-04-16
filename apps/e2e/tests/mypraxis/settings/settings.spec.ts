@@ -61,20 +61,22 @@ test.describe('MyPraxis Settings Page', () => {
     // Navigate to settings page
     await settings.goToSettings();
     
-    // Update the full name
-    const newFullName = `Test User ${Math.random().toString(36).substring(2, 6)}`;
+    // Update the full name to "Ziggy Freud"
+    const newFullName = 'Ziggy Freud';
     await settings.updateFullName(newFullName);
-    console.log(`Updated full name to: ${newFullName}`);
     
+    // Verify that the therapist name was updated immediately in the sidebar
+    const displayedName = await settings.getDisplayedTherapistName();
+    // Expected format: "Ziggy F" (first name + first letter of last name)
+    expect(displayedName).toBe("Ziggy F");
+
     // Update the avatar to a red image
     await settings.updateAvatarToRedImage();
-    console.log('Updated avatar to a red image');
     
     // Verify that the avatar was updated immediately after upload
     const isAvatarUpdatedAfterUpload = await settings.isAvatarUpdated();
-    console.log(`Is avatar updated after upload? ${isAvatarUpdatedAfterUpload}`);
     expect(isAvatarUpdatedAfterUpload).toBe(true);
-    
+
     // Log out
     await auth.signOut();
     
@@ -105,5 +107,11 @@ test.describe('MyPraxis Settings Page', () => {
     const isAvatarUpdated = await settings.isAvatarUpdated();
     console.log(`Is avatar updated? ${isAvatarUpdated}`);
     expect(isAvatarUpdated).toBe(true);
+    
+    // Verify that the therapist name is still updated in the sidebar after login
+    const displayedNameAfterLogin = await settings.getDisplayedTherapistName();
+    console.log(`Displayed name after login: "${displayedNameAfterLogin}"`);
+    // Expected format: "Ziggy F" (first name + first letter of last name)
+    expect(displayedNameAfterLogin).toBe("Ziggy F");
   });
 });

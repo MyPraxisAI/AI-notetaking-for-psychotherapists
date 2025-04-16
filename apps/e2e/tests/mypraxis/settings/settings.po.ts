@@ -111,4 +111,37 @@ export class SettingsPageObject {
       return false;
     }
   }
+  
+  /**
+   * Gets the therapist name currently displayed in the sidebar
+   * @returns Promise<string | null> The displayed therapist name or null if not found
+   */
+  async getDisplayedTherapistName(): Promise<string | null> {
+    try {
+      // Navigate to a page where the sidebar is visible
+      await this.page.goto('/home/mypraxis');
+      
+      // Wait for the page to load
+      await this.page.waitForLoadState('networkidle');
+      
+      // Use the data-test attribute to find the sidebar therapist name
+      const nameElement = this.page.locator('[data-test="sidebar-therapist-name"]');
+      
+      // Wait for the name element to be visible
+      await nameElement.waitFor({ state: 'visible', timeout: 10000 });
+      
+      // Get the text content of the name element
+      const displayedName = await nameElement.textContent();
+      
+      if (!displayedName) {
+        console.log('No text content found in therapist name element');
+        return null;
+      }
+      
+      return displayedName.trim();
+    } catch (error) {
+      console.error('Error in getDisplayedTherapistName:', error);
+      return null;
+    }
+  }
 }

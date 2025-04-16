@@ -586,7 +586,10 @@ export default function Page() {
                   </AvatarFallback>
                 </Avatar>
               )}
-              <span className="text-[14px] font-medium text-[#E5E7EB] tracking-[-0.011em]">
+              <span 
+                className="text-[14px] font-medium text-[#E5E7EB] tracking-[-0.011em]"
+                data-test="sidebar-therapist-name"
+              >
                 {formatTherapistName(user.user_metadata?.full_name || "")}
               </span>
             </>
