@@ -248,16 +248,26 @@ export function SettingsForm({ setIsNavVisible }: SettingsFormProps) {
     
     // For therapist profile fields, use Supabase
     if (field === 'fullName' || field === 'credentials') {
-      // Save to Supabase
+      // Save to Supabase therapist profile
       const promise = updateTherapistFieldMutation.updateField(field, value);
       
-      toast.promise(promise, {
+      // Also update user metadata if it's the full name
+      let userMetadataPromise: Promise<any> = Promise.resolve();
+      if (field === 'fullName') {
+        // Update the user metadata so it's available across the app
+        userMetadataPromise = updateUserName.mutateAsync(value);
+      }
+      
+      // Wait for both updates to complete
+      const combinedPromise = Promise.all([promise, userMetadataPromise]);
+      
+      toast.promise(combinedPromise, {
         loading: `Saving ${field === 'fullName' ? 'name' : 'credentials'}...`,
         success: `${field === 'fullName' ? 'Name' : 'Credentials'} saved successfully`,
         error: (error) => `Failed to save ${field}: ${error.message}`
       });
       
-      promise.then(() => {
+      combinedPromise.then(() => {
         // Show checkmark
         setSavedFields((prev) => new Set(prev).add(field));
         

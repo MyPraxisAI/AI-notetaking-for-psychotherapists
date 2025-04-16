@@ -21,7 +21,10 @@ export function useUpdateUserName() {
   return useMutation({
     mutationFn: async (displayName: string) => {
       const { data, error } = await client.auth.updateUser({
-        data: { name: displayName },
+        data: { 
+          name: displayName,
+          full_name: displayName // Also update full_name to ensure it's available in the sidebar
+        },
       });
 
       if (error) {
