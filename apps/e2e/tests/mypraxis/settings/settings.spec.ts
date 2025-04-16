@@ -186,6 +186,7 @@ test.describe('MyPraxis Settings Page', () => {
   });
 
   // TODO: Language switch test (after localization works)
+  // TODO: Email change test
 
   test('should update password and verify login with new password', async ({ page }) => {
     const auth = new AuthPageObject(page);
