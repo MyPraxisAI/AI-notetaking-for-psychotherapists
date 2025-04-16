@@ -252,7 +252,7 @@ export function SettingsForm({ setIsNavVisible }: SettingsFormProps) {
       const promise = updateTherapistFieldMutation.updateField(field, value);
       
       // Also update user metadata if it's the full name
-      let userMetadataPromise: Promise<any> = Promise.resolve();
+      let userMetadataPromise: Promise<unknown> = Promise.resolve();
       if (field === 'fullName') {
         // Update the user metadata so it's available across the app
         userMetadataPromise = updateUserName.mutateAsync(value);
