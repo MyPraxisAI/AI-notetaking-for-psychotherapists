@@ -294,12 +294,14 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
             <TabsTrigger
               value="summary"
               className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#111827] data-[state=active]:bg-transparent px-4 py-2 font-medium text-[14px] text-[#6B7280] data-[state=active]:text-[#111827] data-[state=active]:shadow-none"
+              data-test="session-tab-summary"
             >
               Summary & Notes
             </TabsTrigger>
             <TabsTrigger
               value="transcript"
               className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#111827] data-[state=active]:bg-transparent px-4 py-2 font-medium text-[14px] text-[#6B7280] data-[state=active]:text-[#111827] data-[state=active]:shadow-none"
+              data-test="session-tab-transcript"
             >
               Transcript
             </TabsTrigger>
@@ -321,6 +323,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                       placeholder="Write anything"
                       className="min-h-[72px] resize-vertical focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)] [&::-webkit-resizer]:appearance-none after:content-[''] after:absolute after:bottom-1 after:right-1 after:w-3 after:h-3 after:border-b-2 after:border-r-2 after:border-[#6B7280] after:cursor-se-resize relative"
                       autoFocus
+                      data-test="session-note-input"
                     />
                   </div>
                 ) : userNote && userNote.trim() ? (
@@ -328,6 +331,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                     <div
                       className="rounded-lg bg-[#FFF9E8] p-6 text-[14px] leading-[1.6] min-h-[100px] cursor-pointer"
                       onClick={() => setIsEditing(true)}
+                      data-test="session-note-value"
                     >
                       {userNote}
                     </div>
@@ -345,6 +349,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                     variant="ghost"
                     className="w-full h-[100px] border border-dashed border-input hover:border-input hover:bg-accent"
                     onClick={() => setIsEditing(true)}
+                    data-test="session-add-note-button"
                   >
                     Click to add a note
                   </Button>
@@ -498,6 +503,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                   className="min-h-[300px] resize-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)]"
                   placeholder="Paste or type transcript here..."
                   autoFocus
+                  data-test="session-transcript-input"
                 />
                 <div className="flex justify-end">
                   <Button
@@ -511,7 +517,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
               </div>
             ) : session?.transcript ? (
               <div className="relative group">
-                <div className="rounded-lg bg-[#FFF9E8] px-6 pb-6 pt-7 text-[14px] leading-[1.6] whitespace-pre-wrap">
+                <div className="rounded-lg bg-[#FFF9E8] px-6 pb-6 pt-7 text-[14px] leading-[1.6] whitespace-pre-wrap" data-test="session-transcript-value">
                   {session.transcript?.content}
                 </div>
                 <div className="absolute right-2 top-[7px] flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -536,7 +542,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                   setIsEditingTranscript(true)
                   setEditedTranscript("")
                 }}
-                data-test="add-transcript-button"
+                data-test="session-add-transcript-button"
               >
                 <span className="flex items-center gap-2">
                   <Plus className="h-4 w-4" />

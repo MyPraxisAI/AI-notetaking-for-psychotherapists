@@ -107,7 +107,7 @@ test.describe('MyPraxis Sessions', () => {
     // The test passes if we can navigate to the client successfully and the sessions list is empty
   });
   
-  test('should be able to create and update a new session', async ({ page }) => {
+  test('should be able to create and update a session', async ({ page }) => {
     const auth = new AuthPageObject(page);
     const sessions = new SessionsPageObject(page);
     const clients = new ClientsPageObject(page);
@@ -169,5 +169,71 @@ test.describe('MyPraxis Sessions', () => {
     // Verify the session date in the session list is also today's date
     const sessionListDate = await page.locator('[data-test="sessions-list-date"]', { hasText: todayStr }).textContent();
     expect(sessionListDate?.trim()).toBe(todayStr);
+
+    // Switch to "Summary & Notes" tab and add a note
+    await page.locator('[data-test="session-tab-summary"]').click();
+    const note = 'This is a test note.';
+    // Click the add note button if present to reveal the input
+    const addNoteButton = page.locator('[data-test="session-add-note-button"]');
+    await addNoteButton.click();
+    const noteInput = page.locator('[data-test="session-note-input"]');
+    await noteInput.waitFor({ state: 'visible', timeout: 3000 });
+    await noteInput.fill(note);
+    await noteInput.blur();
+    // Wait for the input to disappear and the note to be rendered
+    await noteInput.waitFor({ state: 'detached', timeout: 3000 });
+    const noteValue = page.locator('[data-test="session-note-value"]');
+    await expect(noteValue).toHaveText(note);
+
+    // Switch to "Transcript" tab and add a transcript
+    await page.locator('[data-test="session-tab-transcript"]').click();
+    const transcript = 'This is a test transcript.';
+    // Click the add transcript button if present to reveal the input
+    const addTranscriptButton = page.locator('[data-test="session-add-transcript-button"]');
+    await addTranscriptButton.click();
+    const transcriptInput = page.locator('[data-test="session-transcript-input"]');
+    await transcriptInput.waitFor({ state: 'visible', timeout: 3000 });
+    await transcriptInput.fill(transcript);
+    await transcriptInput.blur();
+    // Wait for the input to disappear and the transcript to be rendered
+    await transcriptInput.waitFor({ state: 'detached', timeout: 3000 });
+    const transcriptValue = page.locator('[data-test="session-transcript-value"]');
+    await expect(transcriptValue).toHaveText(transcript);
+
+    ///////////////////////////// Logout and Login /////////////////////////////
+
+    // Log out
+    await auth.signOut();
+    await page.waitForTimeout(1000);
+
+    // Log back in
+    await page.goto('/auth/sign-in', { timeout: 10000 });
+    await auth.signIn({ email, password });
+    await page.waitForURL('/home/mypraxis');
+
+    ////////////////////////// Revalidate session data ///////////////////////////////////
+  
+    // Navigate to sessions page and open the same session by title
+    await sessions.clickSession(sessionTitle);
+
+    // Re-validate session title
+    const sessionTitleEl2 = page.locator('[data-test="session-title"]');
+    await expect(sessionTitleEl2).toHaveText(sessionTitle);
+
+    // Re-validate session date
+    const sessionDateEl2 = page.locator('[data-test="session-date"]');
+    if (sessionDate) {
+      await expect(sessionDateEl2).toHaveText(sessionDate);
+    }
+
+    // Re-validate note
+    await page.locator('[data-test="session-tab-summary"]').click();
+    const noteValue2 = page.locator('[data-test="session-note-value"]');
+    await expect(noteValue2).toHaveText(note);
+
+    // Re-validate transcript
+    await page.locator('[data-test="session-tab-transcript"]').click();
+    const transcriptValue2 = page.locator('[data-test="session-transcript-value"]');
+    await expect(transcriptValue2).toHaveText(transcript);
   });
 });

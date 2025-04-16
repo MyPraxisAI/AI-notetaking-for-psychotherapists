@@ -77,6 +77,7 @@ export class AuthPageObject {
     await this.page.waitForTimeout(500);
     return expect(async () => {
       const res = await this.mailbox.visitMailbox(email, params);
+      // console.log('MAX MAIL DEBUG Visit email link result', res);
 
       expect(res).not.toBeNull();
     }).toPass();
