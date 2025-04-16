@@ -373,4 +373,34 @@ export class SettingsPageObject {
       return false;
     }
   }
+
+  /**
+   * Updates the password in the settings page
+   * @param newPassword The new password to set
+   * @param confirmPassword The confirmation of the new password (defaults to the same as newPassword)
+   * @returns Promise<boolean> True if the operation was successful
+   */
+  async updatePassword(newPassword: string, confirmPassword: string = newPassword): Promise<boolean> {
+    try {
+      // Enter the new password
+      const passwordInput = this.page.locator('[data-test="settings-password-input"]');
+      await passwordInput.fill(newPassword);
+      
+      // Enter the confirmation password
+      const confirmPasswordInput = this.page.locator('[data-test="settings-confirm-password-input"]');
+      await confirmPasswordInput.fill(confirmPassword);
+      
+      // Click the change password button
+      const changePasswordButton = this.page.locator('[data-test="settings-change-password-button"]');
+      await changePasswordButton.click();
+      
+      // Wait for the save animation (checkmark) to appear and disappear
+      await this.page.waitForTimeout(2000);
+      
+      return true;
+    } catch (error) {
+      console.error('Error updating password:', error);
+      return false;
+    }
+  }
 }

@@ -111,4 +111,24 @@ export class AuthPageObject {
     await this.page.fill('[name="repeatPassword"]', password);
     await this.page.click('[type="submit"]');
   }
+  
+  /**
+   * Attempts to sign in with credentials that are expected to fail
+   * @param params The login credentials
+   * @returns Promise<boolean> True if the login failed as expected (still on login page)
+   */
+  async attemptInvalidSignIn(params: { email: string; password: string }): Promise<boolean> {
+    await this.page.waitForTimeout(500);
+
+    await this.page.fill('input[name="email"]', params.email);
+    await this.page.fill('input[name="password"]', params.password);
+    await this.page.click('button[type="submit"]');
+    
+    // Wait a moment for the form submission to complete
+    await this.page.waitForTimeout(1000);
+    
+    // Check if we're still on the sign-in page (login failed)
+    const currentUrl = this.page.url();
+    return currentUrl.includes('/auth/sign-in');
+  }
 }

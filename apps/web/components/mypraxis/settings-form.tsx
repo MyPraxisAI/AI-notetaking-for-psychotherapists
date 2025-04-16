@@ -1172,6 +1172,7 @@ export function SettingsForm({ setIsNavVisible }: SettingsFormProps) {
                     ? "opacity-100" 
                     : "opacity-0"
                 } text-green-500`} 
+                data-test="settings-password-saved-checkmark"
               />
             </div>
           </div>
@@ -1187,6 +1188,7 @@ export function SettingsForm({ setIsNavVisible }: SettingsFormProps) {
             placeholder="Enter new password"
             autoComplete="new-password"
             className="focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)] w-full max-w-md"
+            data-test="settings-password-input"
           />
           <Input
             ref={confirmPasswordRef}
@@ -1202,6 +1204,7 @@ export function SettingsForm({ setIsNavVisible }: SettingsFormProps) {
             className={`focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)] w-full max-w-md ${
               !validation.passwordMatch ? "border-red-500" : ""
             }`}
+            data-test="settings-confirm-password-input"
           />
           {!validation.passwordMatch && (
             <p className="text-sm text-red-500 mt-1">Passwords do not match</p>
@@ -1229,6 +1232,7 @@ export function SettingsForm({ setIsNavVisible }: SettingsFormProps) {
                 });
               }
             }}
+            data-test="settings-change-password-button"
           >
             {updatePassword.isPending ? "Updating..." : "Change Password"}
           </Button>
