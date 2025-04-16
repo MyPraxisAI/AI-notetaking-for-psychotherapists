@@ -59,7 +59,7 @@ export function ProfileForm({ clientId, onNameChange, onClientDeleted }: Profile
   }
 
   const validatePhone = (phone: string) => {
-    return /^\d*$/.test(phone)
+    return /^[\d+]*$/.test(phone)
   }
 
   // Modify the saveField function to update the savedValues state
@@ -170,7 +170,7 @@ export function ProfileForm({ clientId, onNameChange, onClientDeleted }: Profile
         <h2 className="text-[24px] font-semibold text-[#111827] tracking-[-0.011em]">Client Profile</h2>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8 -mr-2">
+            <Button variant="ghost" size="icon" className="h-8 w-8 -mr-2" data-test="client-more-options">
               <MoreVertical className="h-5 w-5" />
             </Button>
           </DropdownMenuTrigger>
@@ -178,13 +178,14 @@ export function ProfileForm({ clientId, onNameChange, onClientDeleted }: Profile
             <DropdownMenuItem
               className="text-destructive focus:text-destructive"
               onClick={() => setIsDeleteModalOpen(true)}
+              data-test="delete-client-button"
             >
               Delete client
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      <div className="mt-5 space-y-4">
+      <div className="mt-5 space-y-4" data-test="client-form">
         <div className="relative space-y-3">
           <div className="flex items-center">
             <Label htmlFor="fullName">Full Name</Label>
@@ -194,7 +195,8 @@ export function ProfileForm({ clientId, onNameChange, onClientDeleted }: Profile
                   savedFields.has("fullName") 
                     ? "opacity-100" 
                     : "opacity-0"
-                } text-green-500`} 
+                } text-green-500`}
+                data-test="client-fullname-saved-check"
               />
             </div>
           </div>
@@ -207,6 +209,7 @@ export function ProfileForm({ clientId, onNameChange, onClientDeleted }: Profile
             onKeyDown={(e) => handleKeyDown(e, "fullName")}
             placeholder="Enter full name"
             className="focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)]"
+            data-test="client-fullname-input"
           />
         </div>
 
@@ -219,7 +222,8 @@ export function ProfileForm({ clientId, onNameChange, onClientDeleted }: Profile
                   savedFields.has("email") 
                     ? "opacity-100" 
                     : "opacity-0"
-                } text-green-500`} 
+                } text-green-500`}
+                data-test="client-email-saved-check"
               />
             </div>
           </div>
@@ -232,6 +236,7 @@ export function ProfileForm({ clientId, onNameChange, onClientDeleted }: Profile
             onBlur={(e) => handleBlur(e, "email", false, true)}
             onKeyDown={(e) => handleKeyDown(e, "email")}
             placeholder="Enter email address"
+            data-test="client-email-input"
             className={
               !validation.email
                 ? "border-red-500 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)]"
@@ -250,7 +255,8 @@ export function ProfileForm({ clientId, onNameChange, onClientDeleted }: Profile
                   savedFields.has("phone") 
                     ? "opacity-100" 
                     : "opacity-0"
-                } text-green-500`} 
+                } text-green-500`}
+                data-test="client-phone-saved-check"
               />
             </div>
           </div>
@@ -262,13 +268,14 @@ export function ProfileForm({ clientId, onNameChange, onClientDeleted }: Profile
             onBlur={(e) => handleBlur(e, "phone", true)}
             onKeyDown={(e) => handleKeyDown(e, "phone")}
             placeholder="Enter phone number"
+            data-test="client-phone-input"
             className={
               !validation.phone
                 ? "border-red-500 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)]"
                 : "focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)]"
             }
           />
-          {!validation.phone && <p className="text-red-500 text-sm mt-1">Please enter numbers only</p>}
+          {!validation.phone && <p className="text-red-500 text-sm mt-1">Please enter numbers or + character only</p>}
         </div>
       </div>
 

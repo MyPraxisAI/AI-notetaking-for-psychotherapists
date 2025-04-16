@@ -604,7 +604,7 @@ export default function Page() {
         {/* Main Navigation */}
         <div className="flex-1 flex flex-col">
           <div className="px-2 mb-[1px]">
-            <Button variant="ghost" className={getButtonClass("clients")} onClick={() => handleMenuClick("clients")}>
+            <Button variant="ghost" className={getButtonClass("clients")} onClick={() => handleMenuClick("clients")} data-test="clients-nav-button">
               <Users2 className="h-3.5 w-3.5" />
               Clients
             </Button>
@@ -654,7 +654,7 @@ export default function Page() {
             <div className="mt-4 px-2">
               <Button
                 variant="ghost"
-                data-test="settings-button"
+                data-test="settings-nav-button"
                 className={getButtonClass("settings")}
                 onClick={() => handleMenuClick("settings")}
               >
@@ -727,6 +727,7 @@ export default function Page() {
             variant="ghost"
             className={`${isSmallScreen ? 'ml-2 flex-grow' : 'w-[80%] mx-auto'} justify-center gap-2 text-[14px] font-medium text-white bg-[#FFBA00] border border-[#E5E7EB] hover:bg-[#FFBA00]/90 transition-colors duration-150 h-8 px-3 rounded-md min-w-fit`}
             onClick={handleNewClient}
+            data-test="new-client-button"
           >
             <Plus className="h-4 w-4 flex-shrink-0" />
             <span className="whitespace-nowrap">New client</span>
@@ -737,13 +738,13 @@ export default function Page() {
           {clients.map((client) => (
             <div key={client.id} className="relative group hover:bg-[#F3F4F6] rounded">
               <Button
+                key={client.id}
                 variant="ghost"
-                className={`${getClientButtonClass(client.id)} ${
-                  client.id === "mike" ? "justify-between" : "justify-start"
-                } group-hover:bg-transparent`}
+                className={getClientButtonClass(client.id)}
                 onClick={() => handleClientClick(client.id)}
+                data-test={`client-row-${client.id}`}
               >
-                <span>{client.fullName}</span>
+                <span data-test="client-name-cell">{client.fullName}</span>
                 {client.id === "mike" && (
                   <Badge
                     variant="secondary"

@@ -89,7 +89,7 @@ export function DeleteClientModal({ isOpen, onClose, onDelete, clientName }: Del
           <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button variant="destructive" onClick={handleDelete}>
+          <Button variant="destructive" onClick={handleDelete} data-test="confirm-delete-button">
             Delete Client
           </Button>
         </DialogFooter>
