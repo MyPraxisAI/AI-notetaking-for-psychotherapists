@@ -66,9 +66,9 @@ test.describe('MyPraxis Settings Page', () => {
     await settings.updateFullName(newFullName);
     
     // Verify that the therapist name was updated immediately in the sidebar
-    const displayedName = await settings.getDisplayedTherapistName();
+    const sidebarDisplayedName = await settings.getSidebarTherapistName();
     // Expected format: "Ziggy F" (first name + first letter of last name)
-    expect(displayedName).toBe("Ziggy F");
+    expect(sidebarDisplayedName).toBe("Ziggy F");
 
     // Update the avatar to a red image
     await settings.updateAvatarToRedImage();
@@ -109,9 +109,9 @@ test.describe('MyPraxis Settings Page', () => {
     expect(isAvatarUpdated).toBe(true);
     
     // Verify that the therapist name is still updated in the sidebar after login
-    const displayedNameAfterLogin = await settings.getDisplayedTherapistName();
-    console.log(`Displayed name after login: "${displayedNameAfterLogin}"`);
+    const sidebarDisplayedNameAfterLogin = await settings.getSidebarTherapistName();
+    console.log(`Sidebar displayed name after login: "${sidebarDisplayedNameAfterLogin}"`);
     // Expected format: "Ziggy F" (first name + first letter of last name)
-    expect(displayedNameAfterLogin).toBe("Ziggy F");
+    expect(sidebarDisplayedNameAfterLogin).toBe("Ziggy F");
   });
 });

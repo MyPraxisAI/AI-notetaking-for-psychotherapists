@@ -116,7 +116,7 @@ export class SettingsPageObject {
    * Gets the therapist name currently displayed in the sidebar
    * @returns Promise<string | null> The displayed therapist name or null if not found
    */
-  async getDisplayedTherapistName(): Promise<string | null> {
+  async getSidebarTherapistName(): Promise<string | null> {
     try {
       // Navigate to a page where the sidebar is visible
       await this.page.goto('/home/mypraxis');
@@ -140,7 +140,7 @@ export class SettingsPageObject {
       
       return displayedName.trim();
     } catch (error) {
-      console.error('Error in getDisplayedTherapistName:', error);
+      console.error('Error in getSidebarTherapistName:', error);
       return null;
     }
   }
