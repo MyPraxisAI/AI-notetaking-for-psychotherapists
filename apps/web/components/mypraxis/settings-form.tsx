@@ -983,6 +983,7 @@ export function SettingsForm({ setIsNavVisible }: SettingsFormProps) {
             placeholder="Select primary approach"
             secondaryApproaches={settings.secondaryTherapeuticApproaches}
             filterSecondary={true}
+            testId="settings-primary-therapeutic-approach-select"
           />
         </div>
         
@@ -1034,6 +1035,7 @@ export function SettingsForm({ setIsNavVisible }: SettingsFormProps) {
               secondaryApproaches={settings.secondaryTherapeuticApproaches}
               filterPrimary={true}
               filterSecondary={true}
+              testId="settings-secondary-therapeutic-approach-select"
             />
           )}
           

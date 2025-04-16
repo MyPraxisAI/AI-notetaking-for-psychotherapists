@@ -73,6 +73,10 @@ test.describe('MyPraxis Settings Page', () => {
     const newCountry = 'Australia';
     await settings.selectCountry(newCountry);
     
+    // Select Gestalt Therapy as the primary therapeutic approach
+    const newApproach = 'Gestalt Therapy';
+    await settings.selectTherapeuticApproach(newApproach);
+    
     // Verify that the therapist name was updated immediately in the sidebar
     const sidebarDisplayedName = await settings.getSidebarTherapistName();
     // Expected format: "Ziggy F" (first name + first letter of last name)
@@ -85,7 +89,7 @@ test.describe('MyPraxis Settings Page', () => {
     const isAvatarUpdatedAfterUpload = await settings.isAvatarUpdated();
     expect(isAvatarUpdatedAfterUpload).toBe(true);
 
-    // Log out
+    // Sign out, then sign back in
     await auth.signOut();
     
     // Wait to be redirected to the sign-in page
@@ -103,6 +107,8 @@ test.describe('MyPraxis Settings Page', () => {
     // Navigate to settings page again
     await settings.goToSettings();
     
+    ///////////////////////////// Verify that the fields updated to the new values /////////////////////////////
+
     // Verify that the email on the settings page matches the one used for registration
     const emailInput = page.locator('[data-test="settings-email-input"]');
     await expect(emailInput).toHaveValue(email);
@@ -119,6 +125,11 @@ test.describe('MyPraxis Settings Page', () => {
     const selectedCountry = await settings.getSelectedCountry();
     console.log(`Selected country after login: "${selectedCountry}"`);
     expect(selectedCountry).toBe(newCountry);
+    
+    // Verify that the therapeutic approach selection persisted
+    const selectedApproach = await settings.getSelectedTherapeuticApproach();
+    console.log(`Selected therapeutic approach after login: "${selectedApproach}"`);
+    expect(selectedApproach).toBe(newApproach);
     
     // Verify that the avatar was updated
     const isAvatarUpdated = await settings.isAvatarUpdated();

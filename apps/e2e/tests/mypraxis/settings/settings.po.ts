@@ -110,6 +110,50 @@ export class SettingsPageObject {
   }
   
   /**
+   * Selects a primary therapeutic approach from the dropdown
+   * @param approachName The name of the therapeutic approach to select (e.g., "Gestalt Therapy")
+   */
+  async selectTherapeuticApproach(approachName: string) {
+    try {
+      // Click on the primary therapeutic approach dropdown to open it
+      await this.page.locator('[data-test="settings-primary-therapeutic-approach-select"]').click();
+      
+      // Wait for the dropdown to appear
+      await this.page.waitForTimeout(500);
+      
+      // Click on the approach option by its visible text
+      await this.page.getByRole('option', { name: approachName }).click();
+      
+      // Wait for the save animation (checkmark) to appear and disappear
+      await this.page.waitForTimeout(1500);
+      
+      return true;
+    } catch (error) {
+      console.error(`Error selecting therapeutic approach ${approachName}:`, error);
+      return false;
+    }
+  }
+  
+  /**
+   * Gets the currently selected primary therapeutic approach
+   * @returns Promise<string | null> The selected approach or null if not found
+   */
+  async getSelectedTherapeuticApproach(): Promise<string | null> {
+    try {
+      // Get the text from the primary therapeutic approach select trigger
+      const approachSelectTrigger = this.page.locator('[data-test="settings-primary-therapeutic-approach-select"]');
+      await approachSelectTrigger.waitFor({ state: 'visible', timeout: 5000 });
+      
+      // Get the text content of the select trigger (which shows the selected value)
+      const selectedApproach = await approachSelectTrigger.textContent();
+      return selectedApproach ? selectedApproach.trim() : null;
+    } catch (error) {
+      console.error('Error getting selected therapeutic approach:', error);
+      return null;
+    }
+  }
+  
+  /**
    * Updates the profile avatar to a red square image
    */
   async updateAvatarToRedImage() {
