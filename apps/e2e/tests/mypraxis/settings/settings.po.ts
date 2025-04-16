@@ -1,13 +1,14 @@
 import { Page } from '@playwright/test';
 import { AuthPageObject } from '../../authentication/auth.po';
 import { clickMenuItemWithResponsiveHandling } from '../../utils/menu-helpers';
+import path from 'path';
 
 export class SettingsPageObject {
   private readonly page: Page;
   private readonly auth: AuthPageObject;
   
-  // Path to the red square PNG file
-  private readonly redSquarePath = '/Users/max/dev/mypraxis-webapp/apps/e2e/tests/fixtures/red-square.png';
+  // Path to the red square PNG file using relative path
+  private readonly redSquarePath = path.join(__dirname, '../../fixtures/red-square.png');
 
   constructor(page: Page) {
     this.page = page;
