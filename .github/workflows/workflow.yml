@@ -48,7 +48,7 @@ jobs:
   test:
     name: ⚫️ Test
     timeout-minutes: 15
-    runs-on: ubuntu-latest-4-cores
+    runs-on: ubuntu-latest-m
     if: ${{ vars.ENABLE_E2E_JOB == 'true' }}
     env:
       # commenting this one out - it's coming from .env.test
