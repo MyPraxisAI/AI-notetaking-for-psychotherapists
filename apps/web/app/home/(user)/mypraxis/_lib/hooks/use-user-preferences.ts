@@ -1,7 +1,6 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
 import { useSupabase } from '@kit/supabase/hooks/use-supabase';
 import { useUserWorkspace } from '@kit/accounts/hooks/use-user-workspace';
 
@@ -73,7 +72,7 @@ export function useUpdateMyPraxisUserPreferences() {
 
   return useMutation({
     mutationKey,
-    mutationFn: async ({ field, value }: { field: string; value: any }) => {
+    mutationFn: async ({ field, value }: { field: keyof UserPreferences; value: string | boolean }) => {
       if (!accountId) {
         throw new Error('Account not found');
       }
@@ -91,7 +90,7 @@ export function useUpdateMyPraxisUserPreferences() {
         }
 
         // Prepare the data to update
-        const updateData: Record<string, any> = {
+        const updateData: Record<string, string | boolean> = {
           account_id: accountId,
         };
 
@@ -122,13 +121,13 @@ export function useUpdateMyPraxisUserPreferences() {
           .from('user_preferences')
           .upsert({
             account_id: accountId,
-            ...(field === 'language' ? { language: value } : {}),
-            ...(field === 'use24HourClock' ? { use_24hr_clock: value } : {}),
-            ...(field === 'useUSDateFormat' ? { use_us_date_format: value } : {}),
-            // Include existing values for fields we're not updating
-            ...(currentData && field !== 'language' ? { language: currentData.language } : {}),
-            ...(currentData && field !== 'use24HourClock' ? { use_24hr_clock: currentData.use_24hr_clock } : {}),
-            ...(currentData && field !== 'useUSDateFormat' ? { use_us_date_format: currentData.use_us_date_format } : {}),
+          ...(field === 'language' ? { language: value as string } : {}),
+          ...(field === 'use24HourClock' ? { use_24hr_clock: value as boolean } : {}),
+          ...(field === 'useUSDateFormat' ? { use_us_date_format: value as boolean } : {}),
+          // Include existing values for fields we're not updating
+          ...(currentData && field !== 'language' ? { language: currentData.language } : {}),
+          ...(currentData && field !== 'use24HourClock' ? { use_24hr_clock: currentData.use_24hr_clock } : {}),
+          ...(currentData && field !== 'useUSDateFormat' ? { use_us_date_format: currentData.use_us_date_format } : {}),
           }, {
             onConflict: 'account_id',
             ignoreDuplicates: false
@@ -144,7 +143,7 @@ export function useUpdateMyPraxisUserPreferences() {
         throw error;
       }
     },
-    onSuccess: (data) => {
+    onSuccess: (_data) => {
       // Invalidate the user preferences query to refetch the data
       if (accountId) {
         queryClient.invalidateQueries({
@@ -161,7 +160,7 @@ export function useUpdateMyPraxisUserPreferences() {
 export function useUpdatePreferenceField() {
   const updateMutation = useUpdateMyPraxisUserPreferences();
 
-  const updatePreference = async (field: string, value: any) => {
+  const updatePreference = async (field: keyof UserPreferences, value: UserPreferences[keyof UserPreferences]) => {
     return updateMutation.mutateAsync({ field, value });
   };
 

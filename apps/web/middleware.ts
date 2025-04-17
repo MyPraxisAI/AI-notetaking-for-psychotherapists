@@ -143,9 +143,7 @@ function getPatterns() {
     {
       pattern: new URLPattern({ pathname: '/' }),
       handler: async (req: NextRequest, res: NextResponse) => {
-        const {
-          data: { user },
-        } = await getUser(req, res);
+        await getUser(req, res);
 
         // No need to do anything here as the page component will handle the redirect
         // This pattern is just to ensure consistency with the rest of the application

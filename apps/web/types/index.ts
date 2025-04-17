@@ -80,7 +80,7 @@ export type FilterOperator =
 export interface FilterCondition<T> {
   field: keyof T
   operator: FilterOperator
-  value: any
+  value: string | number | boolean | null | undefined
 }
 
 /**

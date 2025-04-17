@@ -6,7 +6,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useTransition } from 'react';
 import { useTranslation } from 'react-i18next';
 import { X } from 'lucide-react';
-import { z } from 'zod';
 
 import { PersonalAccountSettingsContainer } from '@kit/accounts/personal-account-settings';
 import {
@@ -20,7 +19,6 @@ import {
 } from '@kit/ui/form';
 import { Input } from '@kit/ui/input';
 import { Button } from '@kit/ui/button';
-import { Textarea } from '@kit/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -41,7 +39,7 @@ const ApproachTag = ({
   onRemove
 }: { 
   approach: string;
-  therapeuticApproaches: any[];
+  therapeuticApproaches: Array<{ id: string; name: string; title: string }>;
   onRemove: (approach: string) => void;
 }) => {
   const { t } = useTranslation();
@@ -69,7 +67,7 @@ const ApproachTag = ({
 const GeoLocalitiesOptions = ({ 
   geoLocalities 
 }: { 
-  geoLocalities: any[]; 
+  geoLocalities: Array<{ id: string; name: string }>;
 }) => {
   const { t } = useTranslation();
   
@@ -101,7 +99,7 @@ const ApproachOptions = ({
   primaryApproach, 
   secondaryApproaches 
 }: { 
-  therapeuticApproaches: any[]; 
+  therapeuticApproaches: Array<{ id: string; name: string; title: string }>;
   primaryApproach: string; 
   secondaryApproaches: string[]; 
 }) => {
@@ -229,7 +227,7 @@ export function EnhancedSettingsContainer(props: {
   };
 }) {
   const [activeTab, setActiveTab] = useState('account');
-  const [isPending, startTransition] = useTransition();
+  const [isPending, _startTransition] = useTransition();
   const { i18n } = useTranslation();
   
   // Get available languages from i18n
@@ -269,12 +267,12 @@ export function EnhancedSettingsContainer(props: {
   // Fetch reference data
   const { 
     data: therapeuticApproaches, 
-    isLoading: isLoadingApproaches 
+    isLoading: _isLoadingApproaches 
   } = useTherapeuticApproaches();
   
   const { 
     data: geoLocalities, 
-    isLoading: isLoadingLocalities 
+    isLoading: _isLoadingLocalities 
   } = useGeoLocalities();
 
   // Update forms when data is loaded
@@ -421,7 +419,7 @@ export function EnhancedSettingsContainer(props: {
                           <Input placeholder="e.g. LCSW, LMFT or psychotherapist" {...field} />
                         </FormControl>
                         <FormDescription>
-                          The way you'll be introduced
+                          The way you&apos;ll be introduced
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -436,7 +434,7 @@ export function EnhancedSettingsContainer(props: {
                         <FormLabel>Geographic Locality</FormLabel>
                         <Select 
                           onValueChange={field.onChange} 
-                          defaultValue={field.value}
+                          defaultValue={field.value || undefined}
                         >
                           <FormControl>
                             <SelectTrigger>
@@ -473,7 +471,7 @@ export function EnhancedSettingsContainer(props: {
                               professionalInfoForm.setValue('secondaryTherapeuticApproaches', updatedSecondary);
                             }
                           }} 
-                          defaultValue={field.value}
+                          defaultValue={field.value || undefined}
                         >
                           <FormControl>
                             <SelectTrigger>
@@ -481,30 +479,12 @@ export function EnhancedSettingsContainer(props: {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {(() => {
-                              const { t } = useTranslation();
-                              
-                              // Create a sorted copy of the approaches
-                              const sortedApproaches = [...therapeuticApproaches].sort((a, b) => {
-                                // Always put 'other' at the end
-                                if (a.name === 'other') return 1;
-                                if (b.name === 'other') return -1;
-                                
-                                // Sort by translated values
-                                const aTranslated = t(`mypraxis:therapeuticApproaches.${a.name}`, { defaultValue: a.title });
-                                const bTranslated = t(`mypraxis:therapeuticApproaches.${b.name}`, { defaultValue: b.title });
-                                return aTranslated.localeCompare(bTranslated);
-                              });
-                              
-                              return sortedApproaches.map(approach => (
-                                <SelectItem key={approach.id} value={approach.id}>
-                                  <Trans
-                                    i18nKey={`mypraxis:therapeuticApproaches.${approach.name}`}
-                                    values={{ defaultValue: approach.title }}
-                                  />
-                                </SelectItem>
-                              ));
-                            })()} 
+                            <ApproachOptions 
+                              therapeuticApproaches={therapeuticApproaches} 
+                              primaryApproach={field.value || ''} 
+                              secondaryApproaches={[]} 
+                            />
+                          
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -567,7 +547,7 @@ export function EnhancedSettingsContainer(props: {
                               {/* Extract this to a separate component to avoid hook issues */}
                               <ApproachOptions 
                                 therapeuticApproaches={therapeuticApproaches} 
-                                primaryApproach={professionalInfoForm.watch('primaryTherapeuticApproach')} 
+                                primaryApproach={professionalInfoForm.watch('primaryTherapeuticApproach') || ''} 
                                 secondaryApproaches={field.value || []} 
                               />
                             </SelectContent>
@@ -673,7 +653,7 @@ export function EnhancedSettingsContainer(props: {
                         <FormLabel>Language</FormLabel>
                         <Select 
                           onValueChange={field.onChange} 
-                          defaultValue={field.value}
+                          defaultValue={field.value || undefined}
                         >
                           <FormControl>
                             <SelectTrigger>

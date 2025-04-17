@@ -67,7 +67,7 @@ export function DeleteClientModal({ isOpen, onClose, onDelete, clientName }: Del
             Please type <span className="font-medium">{clientName}</span> to confirm.
           </DialogDescription>
           <DialogDescription className="text-destructive mt-2">
-            All client data will be perpetually deleted. This can't be undone.
+            All client data will be perpetually deleted. This can&apos;t be undone.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
@@ -89,7 +89,7 @@ export function DeleteClientModal({ isOpen, onClose, onDelete, clientName }: Del
           <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button variant="destructive" onClick={handleDelete}>
+          <Button variant="destructive" onClick={handleDelete} data-test="confirm-delete-button">
             Delete Client
           </Button>
         </DialogFooter>

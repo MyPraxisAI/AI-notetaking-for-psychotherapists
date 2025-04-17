@@ -1,4 +1,5 @@
-import { NextResponse } from 'next/server';
+// NextResponse is used implicitly by the enhanceRouteHandler
+import type { NextResponse as _NextResponse } from 'next/server';
 import { enhanceRouteHandler } from '@kit/next/routes';
 import { getLogger } from '@kit/shared/logger';
 import { SupabaseClient } from '@supabase/supabase-js';
@@ -9,11 +10,11 @@ const logger = await getLogger();
 
 // Type assertion to allow access to custom tables
 type CustomClient = SupabaseClient & {
-  from: (table: string) => any;
+  from: (table: string) => ReturnType<SupabaseClient['from']>;
 };
 
 export const GET = enhanceRouteHandler(
-  async ({ request, user }) => {
+  async ({ request: _request, user }) => {
     const ctx = {
       name: 'get-geo-localities',
       userId: user?.id || 'anonymous',

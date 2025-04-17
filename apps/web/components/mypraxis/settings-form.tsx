@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react"
 import { Input } from "@kit/ui/input"
 import { Label } from "@kit/ui/label"
 import { Check } from "lucide-react"
-import { Textarea } from "@kit/ui/textarea"
+
 import { 
   Select,
   SelectContent,
@@ -13,26 +13,23 @@ import {
   SelectValue
 } from "@kit/ui/select"
 import { Checkbox } from "@kit/ui/checkbox"
-import { Avatar, AvatarFallback, AvatarImage } from "@kit/ui/avatar"
 import { Button } from "@kit/ui/button"
 import { toast } from "sonner"
-import { Alert, AlertTitle, AlertDescription } from "@kit/ui/alert"
-import { CheckIcon } from "@radix-ui/react-icons"
+
 
 // Import our custom hooks for user preferences and therapist profile
 import { useMyPraxisUserPreferences, useUpdatePreferenceField } from "../../app/home/(user)/mypraxis/_lib/hooks/use-user-preferences"
 import { useMyPraxisTherapistProfile, useUpdateTherapistField } from "../../app/home/(user)/mypraxis/_lib/hooks/use-therapist-profile"
 import { useUpdatePassword, PasswordSchema } from "../../app/home/(user)/mypraxis/_lib/hooks/use-update-password"
-import { useUpdateUserName, UserNameSchema } from "../../app/home/(user)/mypraxis/_lib/hooks/use-update-user-name"
-import { useUpdateEmail, EmailSchema } from "../../app/home/(user)/mypraxis/_lib/hooks/use-update-email"
+import { useUpdateUserName } from "../../app/home/(user)/mypraxis/_lib/hooks/use-update-user-name"
+import { useUpdateEmail } from "../../app/home/(user)/mypraxis/_lib/hooks/use-update-email"
 import { useUpdateAvatar } from "../../app/home/(user)/mypraxis/_lib/hooks/use-update-avatar"
 import { ImageUploader } from "@kit/ui/image-uploader"
 import { GeoLocalitiesSelect } from "./geo-localities-select"
 import { TherapeuticApproachesSelect } from "./therapeutic-approaches-select"
 import { useTranslation } from "react-i18next"
 import { useUserWorkspace } from "@kit/accounts/hooks/use-user-workspace"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@kit/ui/dropdown-menu"
-import { ChevronDown } from "lucide-react"
+
 import { X } from "lucide-react"
 import { z } from "zod"
 import { Menu } from "lucide-react"
@@ -54,55 +51,16 @@ interface TherapistSettings {
 
 // Define the component props
 interface SettingsFormProps {
-  therapistSettings?: TherapistSettings;
-  onSettingsChange?: (settings: TherapistSettings) => void;
   setIsNavVisible?: (isVisible: boolean) => void;
 }
 
-// Define the countries list
-const countries = [
-  { value: "eu", label: "European Union" },
-  { value: "us", label: "United States" },
-  { value: "ca", label: "Canada" },
-  { value: "uk", label: "United Kingdom" },
-  { value: "nz", label: "New Zealand" },
-  { value: "au", label: "Australia" },
-  { value: "ru", label: "Russian Federation" },
-  { value: "other", label: "Other" },
-];
 
-// Define the therapeutic approaches
-const therapeuticApproaches = [
-  { value: "act", label: "Acceptance and Commitment Therapy (ACT)" },
-  { value: "cbt", label: "Cognitive Behavioral Therapy (CBT)" },
-  { value: "dbt", label: "Dialectical Behavior Therapy (DBT)" },
-  { value: "emdr", label: "Eye Movement Desensitization and Reprocessing (EMDR)" },
-  { value: "eft", label: "Emotionally Focused Therapy (EFT)" },
-  { value: "fst", label: "Family Systems Therapy" },
-  { value: "gt", label: "Gestalt Therapy" },
-  { value: "ifs", label: "Internal Family Systems (IFS)" },
-  { value: "ipt", label: "Interpersonal Therapy (IPT)" },
-  { value: "ja", label: "Jungian Analysis" },
-  { value: "mbct", label: "Mindfulness-Based Cognitive Therapy (MBCT)" },
-  { value: "mi", label: "Motivational Interviewing" },
-  { value: "nt", label: "Narrative Therapy" },
-  { value: "pct", label: "Person-Centered (Rogerian) Therapy" },
-  { value: "pa", label: "Psychoanalysis" },
-  { value: "pdt", label: "Psychodynamic Therapy" },
-  { value: "sfbt", label: "Solution-Focused Brief Therapy (SFBT)" },
-];
 
-// Define the languages
-const languages = [
-  { value: "en", label: "English" },
-  { value: "ru", label: "Russian" },
-];
-
-export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisible }: SettingsFormProps) {
+export function SettingsForm({ setIsNavVisible }: SettingsFormProps) {
   const { t } = useTranslation();
   
-  // Get user data
-  const { user, workspace } = useUserWorkspace();
+  // Get user data from the Makerkit useUserWorkspace hook
+  const { user } = useUserWorkspace();
   
   // Fetch user preferences from Supabase
   const userPreferencesQuery = useMyPraxisUserPreferences();
@@ -116,14 +74,14 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
   const updatePassword = useUpdatePassword();
   const updateUserName = useUpdateUserName();
   const updateEmail = useUpdateEmail();
-  const { updateAvatar, isLoading: isAvatarLoading } = useUpdateAvatar();
+  const { updateAvatar, isLoading: _isAvatarLoading } = useUpdateAvatar();
   
   // Extract data and loading state from the queries
   const preferences = userPreferencesQuery.data;
   const isLoadingPreferences = userPreferencesQuery.isLoading;
   
   const therapistProfile = therapistProfileQuery.data;
-  const isLoadingTherapistProfile = therapistProfileQuery.isLoading;
+  const _isLoadingTherapistProfile = therapistProfileQuery.isLoading;
   
   // State for settings
   const [settings, setSettings] = useState<TherapistSettings>({
@@ -177,9 +135,8 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
   const passwordRef = useRef<HTMLInputElement>(null);
   const confirmPasswordRef = useRef<HTMLInputElement>(null);
 
-  // Timeout refs for saved fields
+  // Timeout ref for saved fields
   const saveTimeout = useRef<NodeJS.Timeout | null>(null);
-  const savedTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Initialize with user data
   useEffect(() => {
@@ -273,11 +230,6 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
     };
     
     setSettings(updatedSettings);
-    
-    // Call the onSettingsChange prop if provided
-    if (onSettingsChange) {
-      onSettingsChange(updatedSettings);
-    }
   };
 
   // Handle input blur
@@ -296,16 +248,26 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
     
     // For therapist profile fields, use Supabase
     if (field === 'fullName' || field === 'credentials') {
-      // Save to Supabase
+      // Save to Supabase therapist profile
       const promise = updateTherapistFieldMutation.updateField(field, value);
       
-      toast.promise(promise, {
+      // Also update user metadata if it's the full name
+      let userMetadataPromise: Promise<unknown> = Promise.resolve();
+      if (field === 'fullName') {
+        // Update the user metadata so it's available across the app
+        userMetadataPromise = updateUserName.mutateAsync(value);
+      }
+      
+      // Wait for both updates to complete
+      const combinedPromise = Promise.all([promise, userMetadataPromise]);
+      
+      toast.promise(combinedPromise, {
         loading: `Saving ${field === 'fullName' ? 'name' : 'credentials'}...`,
         success: `${field === 'fullName' ? 'Name' : 'Credentials'} saved successfully`,
         error: (error) => `Failed to save ${field}: ${error.message}`
       });
       
-      promise.then(() => {
+      combinedPromise.then(() => {
         // Show checkmark
         setSavedFields((prev) => new Set(prev).add(field));
         
@@ -328,7 +290,7 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
         }));
       });
     } else {
-      // For other fields, use localStorage
+      // For other fields, use Supabase hooks
       saveField(field, value);
     }
   };
@@ -386,11 +348,6 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
         return newSet;
       });
     }, 1000);
-    
-    // Call the onSettingsChange prop if provided
-    if (onSettingsChange) {
-      onSettingsChange(updatedSettings);
-    }
   };
 
   // Handle password confirm blur
@@ -561,7 +518,7 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
         }));
       });
     } else {
-      // For other fields, use localStorage
+      // For other fields, use Supabase hooks
       saveField(field, value);
     }
   };
@@ -613,11 +570,6 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
         primaryTherapeuticApproach: value,
         secondaryTherapeuticApproaches: updatedSettings.secondaryTherapeuticApproaches
       }));
-      
-      // Call the onSettingsChange prop if provided
-      if (onSettingsChange) {
-        onSettingsChange(updatedSettings);
-      }
     });
   };
 
@@ -678,11 +630,6 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
         });
       }, 1000);
     });
-    
-    // Call the onSettingsChange prop if provided
-    if (onSettingsChange) {
-      onSettingsChange(updatedSettings);
-    }
   };
   
   // Handle secondary therapeutic approach removal
@@ -727,11 +674,6 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
         });
       }, 1000);
     });
-    
-    // Call the onSettingsChange prop if provided
-    if (onSettingsChange) {
-      onSettingsChange(updatedSettings);
-    }
   };
 
   // Handle checkbox change
@@ -782,17 +724,14 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
         }));
       });
     } else {
-      // For other fields, use localStorage
-      // Save to localStorage
-      localStorage.setItem("therapistSettings", JSON.stringify(updatedSettings));
-      
+      // For other checkbox fields (if any in the future), handle appropriately
       // Update saved values
       setSavedValues((prev) => ({
         ...prev,
         [field]: checked,
       }));
       
-      // Show checkmark with appropriate color
+      // Show checkmark
       setSavedFields((prev) => new Set(prev).add(field));
 
       // Clear checkmark after 1 second
@@ -806,11 +745,6 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
           return newSet;
         });
       }, 1000);
-    }
-    
-    // Call the onSettingsChange prop if provided
-    if (onSettingsChange) {
-      onSettingsChange(updatedSettings);
     }
   };
 
@@ -833,7 +767,7 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
 
   // Handle avatar upload - now handled by useUpdateAvatar hook
   const handleAvatarChange = (file: File | null) => {
-    updateAvatar(file, user?.user_metadata?.avatar_url || null);
+    updateAvatar(file);
   };
 
   return (
@@ -899,6 +833,7 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
             ref={fullNameRef}
             id="fullName"
             name="fullName"
+            data-test="settings-fullname-input"
             value={settings.fullName}
             onChange={handleInputChange}
             onBlur={(e) => handleBlur(e, "fullName")}
@@ -948,14 +883,13 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
                 id="email"
                 name="email"
                 type="email"
+                data-test="settings-email-input"
                 value={settings.email}
                 onChange={handleInputChange}
                 onBlur={handleEmailBlur}
                 onKeyDown={(e) => handleKeyDown(e, "email")}
                 placeholder="Enter your email address"
-                className={`focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)] w-full max-w-md ${
-                  !validation.email ? "border-red-500" : ""
-                }`}
+                className={`focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)] w-full max-w-md ${!validation.email ? "border-red-500" : ""}`}
               />
               {!validation.email && (
                 <p className="text-sm text-red-500 mt-1">{validation.emailError || "Please enter a valid email address"}</p>
@@ -993,8 +927,9 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
             onKeyDown={(e) => handleKeyDown(e, "credentials")}
             placeholder="e.g. LCSW, LMFT or psychotherapist"
             className="focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)] w-full max-w-md"
+            data-test="settings-credentials-input"
           />
-          <p className="text-sm text-muted-foreground">The way you'll be introduced</p>
+          <p className="text-sm text-muted-foreground">The way you&apos;ll be introduced</p>
         </div>
       </div>
       
@@ -1048,6 +983,7 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
             placeholder="Select primary approach"
             secondaryApproaches={settings.secondaryTherapeuticApproaches}
             filterSecondary={true}
+            testId="settings-primary-therapeutic-approach-select"
           />
         </div>
         
@@ -1075,6 +1011,7 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
                 <div 
                   key={approach} 
                   className="flex items-center bg-gray-100 rounded-full px-3 py-1 text-sm"
+                  data-test="settings-secondary-approach-tag"
                 >
                       {t(`mypraxis:therapeuticApproaches.${approachName}`, { defaultValue: approachName })}
                   <X 
@@ -1099,6 +1036,7 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
               secondaryApproaches={settings.secondaryTherapeuticApproaches}
               filterPrimary={true}
               filterSecondary={true}
+              testId="settings-secondary-therapeutic-approach-select"
             />
           )}
           
@@ -1175,6 +1113,7 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
               onCheckedChange={(checked) => handleCheckboxChange("use24HourClock", checked as boolean)}
               className="text-gray-500 border-gray-300"
               onKeyDown={(e) => handleCheckboxKeyDown(e, "use24HourClock")}
+              data-test="settings-24hr-clock-checkbox"
             />
             <label 
               htmlFor="use24HourClock" 
@@ -1206,6 +1145,7 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
               onCheckedChange={(checked) => handleCheckboxChange("useUSDateFormat", checked as boolean)}
               className="text-gray-500 border-gray-300"
               onKeyDown={(e) => handleCheckboxKeyDown(e, "useUSDateFormat")}
+              data-test="settings-us-date-format-checkbox"
             />
             <label 
               htmlFor="useUSDateFormat" 
@@ -1232,6 +1172,7 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
                     ? "opacity-100" 
                     : "opacity-0"
                 } text-green-500`} 
+                data-test="settings-password-saved-checkmark"
               />
             </div>
           </div>
@@ -1247,6 +1188,7 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
             placeholder="Enter new password"
             autoComplete="new-password"
             className="focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)] w-full max-w-md"
+            data-test="settings-password-input"
           />
           <Input
             ref={confirmPasswordRef}
@@ -1262,6 +1204,7 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
             className={`focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)] w-full max-w-md ${
               !validation.passwordMatch ? "border-red-500" : ""
             }`}
+            data-test="settings-confirm-password-input"
           />
           {!validation.passwordMatch && (
             <p className="text-sm text-red-500 mt-1">Passwords do not match</p>
@@ -1289,6 +1232,7 @@ export function SettingsForm({ therapistSettings, onSettingsChange, setIsNavVisi
                 });
               }
             }}
+            data-test="settings-change-password-button"
           >
             {updatePassword.isPending ? "Updating..." : "Change Password"}
           </Button>
