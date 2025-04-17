@@ -14,6 +14,7 @@ import type { Session } from "../../types/session"
 import { useSession, useUpdateSession, useDeleteSession } from "../../app/home/(user)/mypraxis/_lib/hooks/use-sessions"
 import { useSessionArtifact } from "../../app/home/(user)/mypraxis/_lib/hooks/use-session-artifacts"
 import { toast } from "sonner"
+import ReactMarkdown from "react-markdown"
 
 interface SessionViewProps {
   clientId: string
@@ -423,8 +424,10 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                         </div>
                       ) : therapistSummaryData?.content ? (
                         <div className="relative">
-                          <div className="rounded-lg bg-[#FFF9E8] px-6 pb-6 pt-7 text-[14px] leading-[1.6] whitespace-pre-wrap">
-                            {therapistSummaryData.content}
+                          <div className="rounded-lg bg-[#FFF9E8] px-6 pb-6 pt-7 text-[14px] leading-[1.6]">
+                            <div className="markdown-content">
+                              <ReactMarkdown>{therapistSummaryData.content}</ReactMarkdown>
+                            </div>
                           </div>
                           <div className="absolute right-2 top-[7px] flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                             <Button
@@ -512,8 +515,10 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                         </div>
                       ) : clientSummaryData?.content ? (
                         <div className="relative">
-                          <div className="rounded-lg bg-[#FFF9E8] px-6 pb-6 pt-7 text-[14px] leading-[1.6] whitespace-pre-wrap">
-                            {clientSummaryData.content}
+                          <div className="rounded-lg bg-[#FFF9E8] px-6 pb-6 pt-7 text-[14px] leading-[1.6]">
+                            <div className="markdown-content">
+                              <ReactMarkdown>{clientSummaryData.content}</ReactMarkdown>
+                            </div>
                           </div>
                           <div className="absolute right-2 top-[7px] flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                             <Button
