@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { enhanceRouteHandler } from '@kit/next/routes';
+import { getSupabaseServerClient } from '@kit/supabase/server-client';
+import { getUserLanguage } from '../../../../../../lib/utils/language';
 
 // This route handler returns artifacts for a session
 // It will be enhanced with authentication and error handling
@@ -8,6 +10,12 @@ export const GET = enhanceRouteHandler(
     const { params } = req;
     const { sessionId, type } = params as { sessionId: string; type: string };
 
+    // Define valid artifact types
+    type ArtifactType = 'session_therapist_summary' | 'session_client_summary' | 'client_prep_note' | 'client_conceptualization' | 'client_bio';
+    
+    // Define valid language types
+    type LanguageType = 'en' | 'ru';
+    
     // Validate the artifact type
     if (!['session_therapist_summary', 'session_client_summary'].includes(type)) {
       return NextResponse.json(
@@ -15,41 +23,46 @@ export const GET = enhanceRouteHandler(
         { status: 400 }
       );
     }
+    
+    // Cast the type to a valid artifact type
+    const artifactType = type as ArtifactType;
 
-    // For now, return mock data
-    // In the future, this will check the artifacts table and generate with OpenAI if needed
-    const mockArtifacts = {
-      session_therapist_summary: `## Session Analysis
-      
-The client demonstrated significant progress in addressing their anxiety triggers. Key observations:
-
-1. **Cognitive patterns**: Client is now able to identify catastrophic thinking before it escalates
-2. **Behavioral responses**: Successfully applied breathing techniques in two real-world situations
-3. **Emotional regulation**: Reported decreased intensity of panic symptoms
-
-**Recommendations for next session:**
-- Continue exposure hierarchy work
-- Introduce thought records for documenting cognitive distortions
-- Consider mindfulness practice to complement existing techniques`,
-
-      session_client_summary: `# Session Summary
-
-We worked on understanding your anxiety triggers and practiced some techniques to help manage them. Here's what we covered:
-
-- Identified specific situations that tend to trigger your anxiety
-- Practiced the 4-7-8 breathing technique that you can use anytime
-- Discussed how to recognize when your thoughts are becoming catastrophic
-- Created a simple plan for gradually facing situations that make you anxious
-
-**For next time:** Try using the breathing technique when you notice anxiety starting, and we'll discuss how it went.`,
-    };
-
-    // Add a delay to simulate network/processing time
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-
+    // Get the Supabase client for database access
+    const client = getSupabaseServerClient();
+    
+    // Get the user's preferred language
+    const userLanguage = await getUserLanguage() as LanguageType;
+    
+    // Fetch the artifact from the database
+    const { data: artifact, error } = await client
+      .from('artifacts')
+      .select('content, language')
+      .eq('reference_type', 'session')
+      .eq('reference_id', sessionId)
+      .eq('type', artifactType)
+      .eq('language', userLanguage)
+      .single();
+    
+    // If there's an error or no artifact found
+    if (error || !artifact) {
+      // In the future, this is where we would generate content with OpenAI
+      // For now, return a message that the artifact is missing
+      return NextResponse.json({
+        content: `This ${artifactType.replace('session_', '').replace('_', ' ')} is not available yet.`,
+        language: userLanguage,
+        generated: false,
+        // Add data-test attribute for E2E testing
+        dataTest: `session-artifact-${artifactType}-missing`
+      });
+    }
+    
+    // Return the artifact content
     return NextResponse.json({
-      content: mockArtifacts[type as 'session_therapist_summary' | 'session_client_summary'],
-      language: 'en',
+      content: artifact.content,
+      language: artifact.language,
+      generated: false,
+      // Add data-test attribute for E2E testing
+      dataTest: `session-artifact-${artifactType}`
     });
   },
   {

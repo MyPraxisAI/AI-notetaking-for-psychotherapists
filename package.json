@@ -30,8 +30,10 @@
     "supabase:web:stop": "pnpm --filter web supabase:stop",
     "supabase:web:typegen": "pnpm --filter web supabase:typegen",
     "supabase:web:reset": "pnpm --filter web supabase:reset",
+    "db:reset": "pnpm supabase:web:reset",
     "supabase:web:test": "pnpm --filter web supabase:test",
     "supabase:remigrate": "pnpm run supabase:web:reset && pnpm run supabase:web:typegen",
+    "db:remigrate": "pnpm supabase:remigrate",
     "stripe:listen": "pnpm --filter '@kit/stripe' start",
     "env:generate": "turbo gen env",
     "env:validate": "turbo gen validate-env"
