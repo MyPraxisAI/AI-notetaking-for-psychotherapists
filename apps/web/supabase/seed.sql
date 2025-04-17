@@ -363,7 +363,7 @@ VALUES
 
 -- Add a client for the therapist
 INSERT INTO "public"."clients" ("id", "therapist_id", "full_name", "email", "phone", "created_at", "updated_at")
-VALUES ('e4b930c9-0a76-412e-a836-4bc4849a3271', 'e1b930c9-0a76-412e-a836-4bc4849a3271', 'John Smith', 'john.smith@example.com', '+1-555-123-4567', '2025-03-27 17:55:11.181332+00', '2025-03-27 17:55:11.181332+00');
+VALUES ('e4b930c9-0a76-412e-a836-4bc4849a3271', 'e1b930c9-0a76-412e-a836-4bc4849a3271', 'John Smith', 'john.smith@example.com', '+972541234567', '2025-03-27 17:55:11.181332+00', '2025-03-27 17:55:11.181332+00');
 
 -- Add a therapy session for the client
 INSERT INTO "public"."sessions" ("id", "client_id", "title", "transcript", "note", "created_at", "updated_at")

@@ -1,15 +1,12 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
 import { useSupabase } from '@kit/supabase/hooks/use-supabase';
 import { useUserWorkspace } from '@kit/accounts/hooks/use-user-workspace';
 
 import { 
-  TherapistProfileData, 
   TherapistProfileWithId, 
-  TherapistRecord,
-  TherapistApproach
+  TherapistRecord
 } from '../schemas/therapist';
 
 /**
@@ -76,7 +73,7 @@ export function useMyPraxisTherapistProfile() {
         const approachNames = new Map<string, string>();
         approaches.forEach(approach => {
           if (approach.therapeutic_approaches) {
-            const approachData = approach.therapeutic_approaches as any;
+            const approachData = approach.therapeutic_approaches as { id: string; name: string };
             approachNames.set(approach.approach_id, approachData.name || '');
           }
         });
@@ -85,15 +82,15 @@ export function useMyPraxisTherapistProfile() {
         let geoLocalityName = '';
         
         if (therapistData.geo_locality_id) {
-          const { data: geoLocality, error: geoLocalityError } = await client
+          const { data: geoLocality } = await client
             .from('geo_localities')
             .select('id, name')
             .eq('id', therapistData.geo_locality_id)
             .single();
             
-          if (!geoLocalityError && geoLocality) {
+          if (geoLocality) {
             // Use type assertion with any as an intermediate step for type safety
-            const locality = geoLocality as any;
+            const locality = geoLocality as { id: string; name: string };
             geoLocalityName = locality.name || '';
           }
         }
@@ -206,7 +203,7 @@ export function useUpdateMyPraxisTherapistProfile() {
         throw error;
       }
     },
-    onSuccess: (result) => {
+    onSuccess: (_result) => {
       // Invalidate the therapist profile query to refetch the data
       if (accountId) {
         queryClient.invalidateQueries({
@@ -224,7 +221,7 @@ export function useUpdateTherapistField() {
   const therapistProfileQuery = useMyPraxisTherapistProfile();
   const updateMutation = useUpdateMyPraxisTherapistProfile();
 
-  const updateField = async (field: string, value: any) => {
+  const updateField = async (field: keyof TherapistProfileWithId, value: string | null | string[]) => {
     try {
       const currentProfile = therapistProfileQuery.data;
       
@@ -234,8 +231,8 @@ export function useUpdateTherapistField() {
 
       // Handle UUID fields - convert empty strings to null
       let processedValue = value;
-      if ((field === 'country' || field === 'geoLocality' || field === 'primaryTherapeuticApproach') && 
-          (value === '' || value === undefined)) {
+      if ((field === 'country' || field === 'primaryTherapeuticApproach') && 
+          (value === '' || value === null)) {
         processedValue = null;
       }
 

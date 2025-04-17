@@ -57,6 +57,7 @@ export function GeoLocalitiesSelect({
         id="country"
         className={`w-full max-w-md focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)] ${className}`}
         onKeyDown={onKeyDown}
+        data-test="settings-country-select"
       >
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>

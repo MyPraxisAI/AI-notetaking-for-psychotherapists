@@ -8,6 +8,23 @@ select tests.create_supabase_user('account_owner', 'owner@mypraxis.ai');
 select tests.create_supabase_user('other_owner', 'other@mypraxis.ai');
 select tests.create_supabase_user('unauthorized', 'unauthorized@example.com');
 
+-- Clean up any existing data for these test users to avoid unique constraint violations
+-- Get account IDs for all test users
+DO $$
+DECLARE
+  test_account_ids uuid[];
+BEGIN
+  SELECT ARRAY_AGG(id) INTO test_account_ids FROM public.accounts WHERE primary_owner_user_id IN (
+    tests.get_supabase_uid('account_owner'),
+    tests.get_supabase_uid('other_owner'),
+    tests.get_supabase_uid('unauthorized')
+  );
+  
+  -- Delete records from tables with unique constraints on account_id
+  DELETE FROM public.therapists WHERE account_id = ANY(test_account_ids);
+  DELETE FROM public.user_preferences WHERE account_id = ANY(test_account_ids);
+END $$;
+
 -- Test anon access to all tables
 set local role anon;
 

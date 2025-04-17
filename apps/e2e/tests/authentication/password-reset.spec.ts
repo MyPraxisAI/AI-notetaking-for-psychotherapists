@@ -56,15 +56,14 @@ test.describe('Password Reset Flow', () => {
 
     await auth.signOut();
 
-    await page.waitForURL('/');
-    await page.goto('/auth/sign-in');
+    await page.waitForURL('/auth/sign-in');
 
     await auth.signIn({
       email,
       password: newPassword,
     });
 
-    await page.waitForURL('/home', {
+    await page.waitForURL('/home/mypraxis', {
       timeout: 2000,
     });
   });

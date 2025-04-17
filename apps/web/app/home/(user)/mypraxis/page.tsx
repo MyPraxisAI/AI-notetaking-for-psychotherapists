@@ -1,37 +1,31 @@
 "use client"
 
 import { useEffect, useState, useRef } from "react"
-import { Avatar, AvatarFallback, AvatarImage } from "@kit/ui/avatar"
+import { Avatar, AvatarFallback } from "@kit/ui/avatar"
 import { Badge } from "@kit/ui/badge"
 import { Button } from "@kit/ui/button"
 import { useSignOut } from '@kit/supabase/hooks/use-sign-out'
 import { useUserData } from './_lib/hooks/use-user-data'
-import { useCreateSession, useSessions, useSession, useUpdateSession, useDeleteSession } from "./_lib/hooks/use-sessions"
+import { useCreateSession, useSessions } from "./_lib/hooks/use-sessions"
 import { SessionWithId } from "./_lib/schemas/session"
 import {
   Users2,
-  Mail,
-  Video,
+
   Settings,
   Wallet,
   HelpCircle,
   Gift,
   LogOut,
   Plus,
-  Zap,
   ClipboardEdit,
-  Layout,
-  GitBranch,
   Menu,
   Edit2,
   Mic,
-  FileText,
   User,
   ClipboardList,
   Brain,
   ChevronLeft,
   ChevronRight,
-  X,
 } from "lucide-react"
 import { PrepNote } from "../../../../components/mypraxis/prep-note"
 import { ClientOverview } from "../../../../components/mypraxis/client-overview"
@@ -40,22 +34,10 @@ import { ProfileForm } from "../../../../components/mypraxis/profile-form"
 import { SettingsForm } from "../../../../components/mypraxis/settings-form"
 import { SessionView } from "../../../../components/mypraxis/session-view"
 import { useClients, useCreateClient, useDeleteClient } from "./_lib/hooks/use-clients"
-import { ClientWithId } from "./_lib/schemas/client"
 
-// Define TherapistSettings type
-interface TherapistSettings {
-  fullName: string;
-  email: string;
-  avatar: string;
-  credentials: string;
-  country: string;
-  primaryTherapeuticApproach: string;
-  secondaryTherapeuticApproaches: string[];
-  language: string;
-  use24HourClock: boolean;
-  useUSDateFormat: boolean;
-  password?: string;
-}
+
+// Menu item type
+
 
 type MenuItem = "clients" | "settings" | "billing" | "help" | "gift" | "logout"
 
@@ -98,11 +80,11 @@ export default function Page() {
   const [selectedItem, setSelectedItem] = useState<MenuItem>("clients")
   const [selectedClient, setSelectedClient] = useState<ClientId>("")
   const [selectedDetailItem, setSelectedDetailItem] = useState<DetailItem>("prep-note")
-  const { data: clients = [], isLoading: isLoadingClients } = useClients()
+  const { data: clients = [], isLoading: _isLoadingClients } = useClients()
   const [sessions, setSessions] = useState<Session[]>([])
   
   // Get user data from Supabase with improved loading state handling
-  const { user, refreshUserData, isDataReady } = useUserData()
+  const { user, refreshUserData: _refreshUserData, isDataReady } = useUserData()
   
   // Track avatar image loading state
   const [isAvatarLoaded, setIsAvatarLoaded] = useState(false)
@@ -121,7 +103,7 @@ export default function Page() {
   }, [avatarUrl])
   
   // Fetch sessions for the selected client from Supabase
-  const { data: sessionsData, isLoading: isLoadingSessions } = useSessions(selectedClient)
+  const { data: sessionsData, isLoading: _isLoadingSessions } = useSessions(selectedClient)
   
   // Update sessions state when Supabase data changes
   useEffect(() => {
@@ -142,33 +124,18 @@ export default function Page() {
       setSessions(mappedSessions)
     }
   }, [sessionsData])
-  const [selectedSession, setSelectedSessionState] = useState<string | null>(null)
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [_selectedSession, setSelectedSessionState] = useState<string | null>(null)
+  const [_isDeleteModalOpen, _setIsDeleteModalOpen] = useState(false)
   const [isNavVisible, setIsNavVisible] = useState(true)
   const [isClientListVisible, setIsClientListVisible] = useState(true)
   const [isDetailsColumnVisible, setIsDetailsColumnVisible] = useState(true)
   const [isSmallScreen, setIsSmallScreen] = useState(false)
   const [isMobileView, setIsMobileView] = useState(false)
   const isNavVisibleRef = useRef(true)
+  const isInitialNavVisibilitySet = useRef(false)
 
   // Track newly created clients
-  const [newClientIds, setNewClientIds] = useState<Set<string>>(new Set())
-
-  // Therapist settings state
-  const [therapistSettings, setTherapistSettings] = useState<TherapistSettings>({
-    fullName: user?.user_metadata?.full_name || "",
-    email: user?.email || "",
-    avatar: user?.user_metadata?.avatar_url || "",
-    credentials: user?.user_metadata?.credentials || "",
-    country: user?.user_metadata?.country || "",
-    primaryTherapeuticApproach: user?.user_metadata?.primary_therapeutic_approach || "",
-    secondaryTherapeuticApproaches: user?.user_metadata?.secondary_therapeutic_approaches || [],
-    language: user?.user_metadata?.language || "",
-    use24HourClock: user?.user_metadata?.use_24_hour_clock || false,
-    useUSDateFormat: user?.user_metadata?.use_us_date_format || false
-  })
-
-  const isInitialNavVisibilitySet = useRef(false)
+  const [_newClientIds, setNewClientIds] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     // Set initial selected client when clients are loaded
@@ -181,12 +148,6 @@ export default function Page() {
     }
 
     // Sessions are now loaded via the useSessions hook above
-
-    // Load therapist settings from localStorage
-    const savedTherapistSettings = localStorage.getItem("therapistSettings")
-    if (savedTherapistSettings) {
-      setTherapistSettings(JSON.parse(savedTherapistSettings))
-    }
 
     // Load selected menu item from localStorage
     const savedMenuItem = localStorage.getItem("selectedMenuItem")
@@ -212,7 +173,7 @@ export default function Page() {
 
   useEffect(() => {
     const handleSessionTitleChange = (event: CustomEvent) => {
-      const { clientId, sessionId, title, session } = event.detail
+      const { clientId: _clientId, sessionId, title } = event.detail
       setSessions((prev) => prev.map((s) => (s.id === sessionId ? { ...s, title } : s)))
 
       // Update demo sessions if needed
@@ -349,7 +310,7 @@ export default function Page() {
   }
 
   // Name changes are handled directly in the ProfileForm component via the useUpdateClient hook
-  const handleNameChange = (name: string) => {
+  const handleNameChange = (_name: string) => {
     // This function is now just a placeholder for any UI updates needed when a name changes
     // The actual data update is handled by the useUpdateClient hook in ProfileForm
   }
@@ -465,11 +426,6 @@ export default function Page() {
     }
   }
 
-  const handleTherapistSettingsChange = (updatedSettings: TherapistSettings) => {
-    setTherapistSettings(updatedSettings);
-    localStorage.setItem("therapistSettings", JSON.stringify(updatedSettings));
-  };
-
   const formatTherapistName = (fullName: string) => {
     if (!fullName) return "Therapist";
     
@@ -497,11 +453,7 @@ export default function Page() {
 
     // If settings is selected, show settings form
     if (selectedItem === "settings") {
-      return <SettingsForm 
-        therapistSettings={therapistSettings} 
-        onSettingsChange={handleTherapistSettingsChange} 
-        setIsNavVisible={setIsNavVisible}
-      />
+      return <SettingsForm setIsNavVisible={setIsNavVisible} />
     }
 
     // Rest of the existing renderContent logic...
@@ -619,22 +571,26 @@ export default function Page() {
             <>
               {/* Avatar - only show when fully loaded */}
               {avatarUrl && isAvatarLoaded ? (
-                <div className="relative h-[32px] w-[32px] rounded-full overflow-hidden">
+                <div className="relative h-[32px] w-[32px] rounded-full overflow-hidden" data-test="sidebar-avatar-container">
                   <img 
                     src={avatarUrl}
-                    alt={user.user_metadata?.full_name || therapistSettings.fullName}
+                    alt={user.user_metadata?.full_name || ""}
                     className="object-cover w-full h-full"
+                    data-test="sidebar-avatar-image"
                   />
                 </div>
               ) : (
                 <Avatar className="h-[32px] w-[32px] bg-[#22C55E] text-white">
                   <AvatarFallback className="bg-[#22C55E] text-white font-medium">
-                    {getTherapistInitials(user.user_metadata?.full_name || therapistSettings.fullName)}
+                    {getTherapistInitials(user.user_metadata?.full_name || "")}
                   </AvatarFallback>
                 </Avatar>
               )}
-              <span className="text-[14px] font-medium text-[#E5E7EB] tracking-[-0.011em]">
-                {formatTherapistName(user.user_metadata?.full_name || therapistSettings.fullName)}
+              <span 
+                className="text-[14px] font-medium text-[#E5E7EB] tracking-[-0.011em]"
+                data-test="sidebar-therapist-name"
+              >
+                {formatTherapistName(user.user_metadata?.full_name || "")}
               </span>
             </>
           ) : (
@@ -648,7 +604,7 @@ export default function Page() {
         {/* Main Navigation */}
         <div className="flex-1 flex flex-col">
           <div className="px-2 mb-[1px]">
-            <Button variant="ghost" className={getButtonClass("clients")} onClick={() => handleMenuClick("clients")}>
+            <Button variant="ghost" className={getButtonClass("clients")} onClick={() => handleMenuClick("clients")} data-test="clients-nav-button">
               <Users2 className="h-3.5 w-3.5" />
               Clients
             </Button>
@@ -698,6 +654,7 @@ export default function Page() {
             <div className="mt-4 px-2">
               <Button
                 variant="ghost"
+                data-test="settings-nav-button"
                 className={getButtonClass("settings")}
                 onClick={() => handleMenuClick("settings")}
               >
@@ -714,6 +671,7 @@ export default function Page() {
             <div className="px-2">
               <Button
                 variant="ghost"
+                data-test="logout-button"
                 className={getButtonClass("logout")}
                 onClick={() => {
                   handleMenuClick("logout"); // Call the main handler
@@ -758,6 +716,7 @@ export default function Page() {
             <Button
               variant="ghost"
               size="icon"
+              data-test="nav-menu-button"
               className="h-8 w-8 flex-shrink-0"
               onClick={() => setIsNavVisible(!isNavVisible)}
             >
@@ -768,6 +727,7 @@ export default function Page() {
             variant="ghost"
             className={`${isSmallScreen ? 'ml-2 flex-grow' : 'w-[80%] mx-auto'} justify-center gap-2 text-[14px] font-medium text-white bg-[#FFBA00] border border-[#E5E7EB] hover:bg-[#FFBA00]/90 transition-colors duration-150 h-8 px-3 rounded-md min-w-fit`}
             onClick={handleNewClient}
+            data-test="new-client-button"
           >
             <Plus className="h-4 w-4 flex-shrink-0" />
             <span className="whitespace-nowrap">New client</span>
@@ -778,13 +738,13 @@ export default function Page() {
           {clients.map((client) => (
             <div key={client.id} className="relative group hover:bg-[#F3F4F6] rounded">
               <Button
+                key={client.id}
                 variant="ghost"
-                className={`${getClientButtonClass(client.id)} ${
-                  client.id === "mike" ? "justify-between" : "justify-start"
-                } group-hover:bg-transparent`}
+                className={getClientButtonClass(client.id)}
                 onClick={() => handleClientClick(client.id)}
+                data-test={`client-row-${client.id}`}
               >
-                <span>{client.fullName}</span>
+                <span data-test="client-name-cell">{client.fullName}</span>
                 {client.id === "mike" && (
                   <Badge
                     variant="secondary"
@@ -910,6 +870,7 @@ export default function Page() {
               } ${isMobileView ? "mobile-disabled-button" : ""}`}
               onClick={handleNewSession}
               disabled={clients.length === 0 || isMobileView}
+              data-test="start-recording-button"
             >
               <Mic className="h-4 w-4 mr-2" />
               Start recording
@@ -932,12 +893,13 @@ export default function Page() {
                       variant="ghost"
                       className={getSessionButtonClass(session.id)}
                       onClick={() => handleDetailItemClick(session.id)}
+                      data-test="session-item"
                     >
                       <div className="flex flex-col items-start w-full">
-                        <span className="text-[14px] font-medium text-[#111827]">
+                        <span className="text-[14px] font-medium text-[#111827]" data-test="sessions-list-title">
                           {session.title}
                         </span>
-                        <span className="text-[12px] text-[#6B7280]">
+                        <span className="text-[12px] text-[#6B7280]" data-test="sessions-list-date">
                           {session.date}
                         </span>
                       </div>
@@ -954,9 +916,10 @@ export default function Page() {
                         variant="ghost"
                         className={getSessionButtonClass(date)}
                         onClick={() => handleDetailItemClick(date)}
+                        data-test="session-item"
                       >
                         <div className="flex flex-col items-start w-full">
-                          <span className="text-[14px] font-medium text-[#111827]">
+                          <span className="text-[14px] font-medium text-[#111827]" data-test="session-list-title">
                             {title}
                           </span>
                           <span className="text-[12px] text-[#6B7280]">

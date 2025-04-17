@@ -1,8 +1,6 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { z } from 'zod';
-import { toast } from 'sonner';
 
 // Import Supabase client hook
 import { useSupabase } from '@kit/supabase/hooks/use-supabase';
@@ -10,7 +8,7 @@ import { useSupabase } from '@kit/supabase/hooks/use-supabase';
 // Import the useUserWorkspace hook from Makerkit
 import { useUserWorkspace } from '@kit/accounts/hooks/use-user-workspace';
 
-import { TherapistProfileSchema, TherapistProfileData, TherapistRecord, DatabaseRecord } from '../schemas';
+import { TherapistProfileData, TherapistRecord } from '../schemas';
 
 // Using TherapistProfileData type from shared schemas with optional id
 export interface TherapistProfileWithId extends TherapistProfileData {
@@ -161,7 +159,7 @@ export function useUpdateTherapistProfile() {
         const allApproaches = [
           processedData.primaryTherapeuticApproach,
           ...processedData.secondaryTherapeuticApproaches
-        ].filter(Boolean); // Remove null/undefined values
+        ].filter((approach): approach is string => !!approach); // Remove null/undefined values and ensure string type
 
         // Insert approaches with priority
         if (allApproaches.length > 0) {

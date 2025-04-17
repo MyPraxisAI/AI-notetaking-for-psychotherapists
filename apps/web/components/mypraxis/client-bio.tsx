@@ -41,17 +41,17 @@ export function ClientBio({ clientName }: ClientBioProps) {
             harmony in the family and supporting his parents during financially challenging times.
           </p>
           <p>
-            His grandmother's death when he was in college was a significant loss, as she had been his primary emotional
+            His grandmother&apos;s death when he was in college was a significant loss, as she had been his primary emotional
             support. This event coincided with a period of academic struggle, reinforcing his belief that he needs to be
-            self-reliant and avoid "burdening" others with his problems.
+            self-reliant and avoid &quot;burdening&quot; others with his problems.
           </p>
           <p>
-            Mike's relationship with his wife Sarah is generally supportive, though he admits to withholding his feelings
-            to "protect" her from his stress. He is deeply committed to being present for his two children (ages 8 and
+            Mike&apos;s relationship with his wife Sarah is generally supportive, though he admits to withholding his feelings
+            to &quot;protect&quot; her from his stress. He is deeply committed to being present for his two children (ages 8 and
             5), which adds to his anxiety about work performance and financial stability.
           </p>
           <p>
-            Recent progress includes Mike's willingness to delegate more at work and communicate his needs more openly
+            Recent progress includes Mike&apos;s willingness to delegate more at work and communicate his needs more openly
             with his wife. He has begun practicing mindfulness techniques to manage his anxiety and is showing increased
             self-awareness about his perfectionist tendencies.
           </p>

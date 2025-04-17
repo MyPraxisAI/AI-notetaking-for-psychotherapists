@@ -21,6 +21,7 @@ interface TherapeuticApproachesSelectProps {
   secondaryApproaches?: string[];
   filterPrimary?: boolean;
   filterSecondary?: boolean;
+  testId?: string; // Data-test attribute for testing
 }
 
 export function TherapeuticApproachesSelect({
@@ -32,7 +33,8 @@ export function TherapeuticApproachesSelect({
   primaryApproach = '',
   secondaryApproaches = [],
   filterPrimary = false,
-  filterSecondary = false
+  filterSecondary = false,
+  testId = 'settings-therapeutic-approach-select'
 }: TherapeuticApproachesSelectProps) {
   const { data: therapeuticApproaches, isLoading } = useTherapeuticApproaches();
   const [approaches, setApproaches] = useState<TherapeuticApproach[]>([]);
@@ -77,8 +79,10 @@ export function TherapeuticApproachesSelect({
       onValueChange={onValueChange}
     >
       <SelectTrigger 
+        id="primaryTherapeuticApproach"
         className={`w-full max-w-md focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)] ${className}`}
         onKeyDown={onKeyDown}
+        data-test={testId}
       >
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>

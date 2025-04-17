@@ -1,6 +1,6 @@
 import { Page, expect } from '@playwright/test';
 import { TOTP } from 'totp-generator';
-
+import { clickMenuItemWithResponsiveHandling } from '../utils/menu-helpers';
 import { Mailbox } from '../utils/mailbox';
 
 export class AuthPageObject {
@@ -21,8 +21,11 @@ export class AuthPageObject {
   }
 
   async signOut() {
-    await this.page.click('[data-test="account-dropdown-trigger"]');
-    await this.page.click('[data-test="account-dropdown-sign-out"]');
+    // Use the utility function to handle responsive menu interactions
+    await clickMenuItemWithResponsiveHandling(
+      this.page,
+      '[data-test="logout-button"]'
+    );
   }
 
   async signIn(params: { email: string; password: string }) {
@@ -74,6 +77,7 @@ export class AuthPageObject {
     await this.page.waitForTimeout(500);
     return expect(async () => {
       const res = await this.mailbox.visitMailbox(email, params);
+      // console.log('MAX MAIL DEBUG Visit email link result', res);
 
       expect(res).not.toBeNull();
     }).toPass();
@@ -107,5 +111,25 @@ export class AuthPageObject {
     await this.page.fill('[name="password"]', password);
     await this.page.fill('[name="repeatPassword"]', password);
     await this.page.click('[type="submit"]');
+  }
+  
+  /**
+   * Attempts to sign in with credentials that are expected to fail
+   * @param params The login credentials
+   * @returns Promise<boolean> True if the login failed as expected (still on login page)
+   */
+  async attemptInvalidSignIn(params: { email: string; password: string }): Promise<boolean> {
+    await this.page.waitForTimeout(500);
+
+    await this.page.fill('input[name="email"]', params.email);
+    await this.page.fill('input[name="password"]', params.password);
+    await this.page.click('button[type="submit"]');
+    
+    // Wait a moment for the form submission to complete
+    await this.page.waitForTimeout(1000);
+    
+    // Check if we're still on the sign-in page (login failed)
+    const currentUrl = this.page.url();
+    return currentUrl.includes('/auth/sign-in');
   }
 }
