@@ -2,6 +2,12 @@ import { NextResponse } from 'next/server';
 import { enhanceRouteHandler } from '@kit/next/routes';
 import { getSupabaseServerClient } from '@kit/supabase/server-client';
 import { getUserLanguage } from '../../../../../../lib/utils/language';
+import { 
+  generateArtifact, 
+  saveArtifact, 
+  ArtifactType, 
+  LanguageType 
+} from '../../../../../../lib/utils/openai';
 
 // This route handler returns artifacts for a session
 // It will be enhanced with authentication and error handling
@@ -10,11 +16,7 @@ export const GET = enhanceRouteHandler(
     const { params } = req;
     const { sessionId, type } = params as { sessionId: string; type: string };
 
-    // Define valid artifact types
-    type ArtifactType = 'session_therapist_summary' | 'session_client_summary' | 'client_prep_note' | 'client_conceptualization' | 'client_bio';
-    
-    // Define valid language types
-    type LanguageType = 'en' | 'ru';
+    // Use the ArtifactType and LanguageType from the openai utility
     
     // Validate the artifact type
     if (!['session_therapist_summary', 'session_client_summary'].includes(type)) {
@@ -43,17 +45,65 @@ export const GET = enhanceRouteHandler(
       .eq('language', userLanguage)
       .single();
     
-    // If there's an error or no artifact found
+    // If there's an error or no artifact found, generate it with OpenAI
     if (error || !artifact) {
-      // In the future, this is where we would generate content with OpenAI
-      // For now, return a message that the artifact is missing
-      return NextResponse.json({
-        content: `This ${artifactType.replace('session_', '').replace('_', ' ')} is not available yet.`,
-        language: userLanguage,
-        generated: false,
-        // Add data-test attribute for E2E testing
-        dataTest: `session-artifact-${artifactType}-missing`
-      });
+      try {
+        // Get the session data needed for generation
+        const { data: session } = await client
+          .from('sessions')
+          .select('transcript, note')
+          .eq('id', sessionId)
+          .single();
+        
+        if (!session || (!session.transcript && !session.note)) {
+          // If there's no session or neither transcript nor note, we can't generate an artifact
+          return NextResponse.json({
+            content: `This ${artifactType.replace('session_', '').replace('_', ' ')} cannot be generated without a transcript and notes.`,
+            language: userLanguage,
+            generated: false,
+            dataTest: `session-artifact-${artifactType}-missing-data`
+          });
+        }
+        
+        // Generate the artifact content using OpenAI
+        const generatedContent = await generateArtifact(
+          artifactType,
+          userLanguage as LanguageType,
+          {
+            session_transcript: session.transcript || '',
+            session_note: session.note || ''
+          }
+        );
+        
+        // Save the generated artifact to the database
+        await saveArtifact(
+          client,
+          sessionId,
+          'session',
+          artifactType,
+          generatedContent,
+          userLanguage as LanguageType
+        );
+        
+        // Return the generated content
+        return NextResponse.json({
+          content: generatedContent,
+          language: userLanguage,
+          generated: true,
+          dataTest: `session-artifact-${artifactType}-generated`
+        });
+      } catch (generationError) {
+        console.error('Error generating artifact:', generationError);
+        
+        // Return an error message if generation fails
+        return NextResponse.json({
+          content: `Unable to generate this ${artifactType.replace('session_', '').replace('_', ' ')}. Please try again later.`,
+          language: userLanguage,
+          generated: false,
+          error: true,
+          dataTest: `session-artifact-${artifactType}-error`
+        }, { status: 500 });
+      }
     }
     
     // Return the artifact content

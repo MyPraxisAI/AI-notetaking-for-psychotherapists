@@ -1,6 +1,7 @@
 import { getSupabaseServerClient } from '@kit/supabase/server-client';
 import { createAccountsApi } from '@kit/accounts/api';
 
+
 /**
  * Get the user's preferred language from their preferences
  * Falls back to 'en' if no preference is found
@@ -24,9 +25,13 @@ export async function getUserLanguage(): Promise<string> {
       .eq('account_id', workspace.id)
       .single();
     
-    // Ensure we always return a string, not null
-    const language = preferences?.language;
-    return typeof language === 'string' ? language : 'en';
+    // Check if we have preferences and a language value
+    if (preferences && typeof preferences.language === 'string') {
+      return preferences.language;
+    }
+    
+    // Default to English if no language preference is found
+    return 'en';
   } catch (error) {
     console.error('Error getting user language:', error);
     return 'en'; // Default to English on error

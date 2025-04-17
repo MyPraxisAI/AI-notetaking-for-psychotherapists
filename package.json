@@ -48,15 +48,13 @@
   },
   "devDependencies": {
     "@manypkg/cli": "^0.23.0",
+    "@tailwindcss/typography": "^0.5.16",
     "@turbo/gen": "^2.4.4",
     "cross-env": "^7.0.3",
     "prettier": "^3.5.3",
-    "turbo": "2.4.4",
-    "typescript": "^5.8.2"
-  },
-  "dependencies": {
-    "@tailwindcss/typography": "^0.5.16",
     "react-markdown": "^10.1.0",
-    "web": "^0.0.2"
+    "turbo": "2.4.4",
+    "typescript": "^5.8.2",
+    "web": "^0.1.0"
   }
 }
