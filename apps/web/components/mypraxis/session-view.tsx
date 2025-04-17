@@ -5,13 +5,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@kit/ui/tabs"
 import { sessionTranscripts } from "../../data/mypraxis/session-transcripts"
 import { Textarea } from "@kit/ui/textarea"
 import { Label } from "@kit/ui/label"
-import { Check, Edit2, Plus, Copy, MoreVertical } from "lucide-react"
+import { Check, Edit2, Plus, Copy, MoreVertical, Loader2 } from "lucide-react"
 import { Button } from "@kit/ui/button"
 import { Input } from "@kit/ui/input"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@kit/ui/dropdown-menu"
 import { DeleteSessionModal } from "../mypraxis/delete-session-modal"
 import type { Session } from "../../types/session"
 import { useSession, useUpdateSession, useDeleteSession } from "../../app/home/(user)/mypraxis/_lib/hooks/use-sessions"
+import { useSessionArtifact } from "../../app/home/(user)/mypraxis/_lib/hooks/use-session-artifacts"
 import { toast } from "sonner"
 
 interface SessionViewProps {
@@ -42,6 +43,18 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
 
   // Use the session hook from Supabase to load session data
   const { data: sessionData, isLoading: _isLoadingSession } = useSession(sessionId)
+  
+  // Fetch therapist summary when therapist tab is active
+  const { 
+    data: therapistSummaryData, 
+    isLoading: isLoadingTherapistSummary 
+  } = useSessionArtifact(sessionId, 'session_therapist_summary', !!sessionData?.transcript && summaryView === 'therapist')
+  
+  // Fetch client summary when client tab is active
+  const { 
+    data: clientSummaryData, 
+    isLoading: isLoadingClientSummary 
+  } = useSessionArtifact(sessionId, 'session_client_summary', !!sessionData?.transcript && summaryView === 'client')
 
   // Update local state when session data changes
   useEffect(() => {
@@ -401,6 +414,39 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                             autoFocus
                           />
                         </div>
+                      ) : isLoadingTherapistSummary ? (
+                        <div className="rounded-lg bg-[#FFF9E8] px-6 py-6 text-[14px] text-muted-foreground flex items-center justify-center min-h-[100px]">
+                          <div className="flex items-center gap-2">
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            <span>Generating therapist summary...</span>
+                          </div>
+                        </div>
+                      ) : therapistSummaryData?.content ? (
+                        <div className="relative">
+                          <div className="rounded-lg bg-[#FFF9E8] px-6 pb-6 pt-7 text-[14px] leading-[1.6] whitespace-pre-wrap">
+                            {therapistSummaryData.content}
+                          </div>
+                          <div className="absolute right-2 top-[7px] flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6 hover:bg-transparent"
+                              onClick={() => handleCopyText(therapistSummaryData.content)}
+                              data-test="copy-therapist-summary-button"
+                            >
+                              {isCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6 hover:bg-transparent"
+                              onClick={() => setIsEditingTherapistSummary(true)}
+                              data-test="edit-therapist-summary-button"
+                            >
+                              <Edit2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
                       ) : session?.summary?.therapist ? (
                         <div className="relative">
                           <div className="rounded-lg bg-[#FFF9E8] px-6 pb-6 pt-7 text-[14px] leading-[1.6] whitespace-pre-wrap">
@@ -456,6 +502,39 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                             }}
                             autoFocus
                           />
+                        </div>
+                      ) : isLoadingClientSummary ? (
+                        <div className="rounded-lg bg-[#FFF9E8] px-6 py-6 text-[14px] text-muted-foreground flex items-center justify-center min-h-[100px]">
+                          <div className="flex items-center gap-2">
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            <span>Generating client summary...</span>
+                          </div>
+                        </div>
+                      ) : clientSummaryData?.content ? (
+                        <div className="relative">
+                          <div className="rounded-lg bg-[#FFF9E8] px-6 pb-6 pt-7 text-[14px] leading-[1.6] whitespace-pre-wrap">
+                            {clientSummaryData.content}
+                          </div>
+                          <div className="absolute right-2 top-[7px] flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6 hover:bg-transparent"
+                              onClick={() => handleCopyText(clientSummaryData.content, true)}
+                              data-test="copy-client-summary-button"
+                            >
+                              {isClientSummaryCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6 hover:bg-transparent"
+                              onClick={() => setIsEditingClientSummary(true)}
+                              data-test="edit-client-summary-button"
+                            >
+                              <Edit2 className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </div>
                       ) : session?.summary?.client ? (
                         <div className="relative">
