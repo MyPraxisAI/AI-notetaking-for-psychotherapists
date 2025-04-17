@@ -66,7 +66,7 @@ test.describe('Auth flow', () => {
 
     await auth.signOut();
 
-    await page.waitForURL('/auth/sign-in');
+    await page.waitForURL('/auth/sign-in', { timeout: 10000 });
   });
 });
 

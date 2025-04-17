@@ -31,9 +31,9 @@ export default defineConfig({
   /* Number of retries for failed tests */
   retries: process.env.CI ? 3 : 1,
   /* Limit parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
+  workers: 1,  // always force 1 for now // process.env.CI ? 1 : undefined,
   /* Maximum number of test failures before stopping the run */
-  maxFailures: process.env.MAX_FAILURES ? parseInt(process.env.MAX_FAILURES) : 0,
+  maxFailures: process.env.MAX_FAILURES ? parseInt(process.env.MAX_FAILURES) : 10,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: 'html',
   /* Ignore billing tests if the environment variable is not set. */
