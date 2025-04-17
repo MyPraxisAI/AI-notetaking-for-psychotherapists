@@ -21,7 +21,7 @@ export class SettingsPageObject {
     // Use the improved clickMenuItemWithResponsiveHandling utility
     await clickMenuItemWithResponsiveHandling(
       this.page,
-      '[data-test="settings-button"]'
+      '[data-test="settings-nav-button"]'
     );
     
     // Wait for the settings form to be rendered
