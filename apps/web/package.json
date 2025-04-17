@@ -63,6 +63,7 @@
     "@tanstack/react-table": "^8.21.2",
     "@types/nunjucks": "^3.2.6",
     "date-fns": "^4.1.0",
+    "js-tiktoken": "^1.0.19",
     "langchain": "^0.3.22",
     "lucide-react": "^0.477.0",
     "next": "15.2.1",

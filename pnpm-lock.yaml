@@ -12,19 +12,16 @@ importers:
 
   .:
     dependencies:
-      '@tailwindcss/typography':
-        specifier: ^0.5.16
-        version: 0.5.16
-      react-markdown:
-        specifier: ^10.1.0
-        version: 10.1.0(@types/react@19.0.10)(react@19.0.0)
-      web:
-        specifier: ^0.0.2
-        version: 0.0.2
+      js-tiktoken:
+        specifier: ^1.0.19
+        version: 1.0.19
     devDependencies:
       '@manypkg/cli':
         specifier: ^0.23.0
         version: 0.23.0
+      '@tailwindcss/typography':
+        specifier: ^0.5.16
+        version: 0.5.16
       '@turbo/gen':
         specifier: ^2.4.4
         version: 2.4.4(@types/node@22.13.9)(typescript@5.8.2)
@@ -34,12 +31,18 @@ importers:
       prettier:
         specifier: ^3.5.3
         version: 3.5.3
+      react-markdown:
+        specifier: ^10.1.0
+        version: 10.1.0(@types/react@19.0.10)(react@19.0.0)
       turbo:
         specifier: 2.4.4
         version: 2.4.4
       typescript:
         specifier: ^5.8.2
         version: 5.8.2
+      web:
+        specifier: ^0.0.2
+        version: 0.0.2
 
   apps/dev-tool:
     dependencies:
@@ -224,6 +227,9 @@ importers:
       date-fns:
         specifier: ^4.1.0
         version: 4.1.0
+      js-tiktoken:
+        specifier: ^1.0.19
+        version: 1.0.19
       langchain:
         specifier: ^0.3.22
         version: 0.3.22(@langchain/core@0.3.45(openai@4.95.0(ws@8.18.0)(zod@3.24.2)))(axios@1.7.7)(handlebars@4.7.8)(openai@4.95.0(ws@8.18.0)(zod@3.24.2))(ws@8.18.0)

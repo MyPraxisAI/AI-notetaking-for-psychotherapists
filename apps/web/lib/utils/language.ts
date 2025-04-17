@@ -26,8 +26,8 @@ export async function getUserLanguage(): Promise<string> {
       .single();
     
     // Check if we have preferences and a language value
-    if (preferences && typeof preferences.language === 'string') {
-      return preferences.language;
+    if (preferences?.language) {
+      return preferences.language as string;
     }
     
     // Default to English if no language preference is found

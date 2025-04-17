@@ -1,5 +1,10 @@
 import { ChatOpenAI } from '@langchain/openai';
-import nunjucks from 'nunjucks';
+import * as nunjucks from 'nunjucks';
+import { encodingForModel } from 'js-tiktoken';
+
+// For structured logging
+import { getLogger } from '@kit/shared/logger';
+import { getSupabaseServerClient } from '@kit/supabase/server-client';
 
 // Define the artifact types
 export type ArtifactType = 
@@ -195,12 +200,43 @@ export function getOpenAIClient() {
  * @param variables Template variables
  * @returns Generated artifact content
  */
+/**
+ * Estimate token count for a string using tiktoken
+ * @param text Text to estimate tokens for
+ * @returns Estimated token count
+ */
+function estimateTokenCount(text: string): number {
+  try {
+    // Use cl100k_base encoding which is used by gpt-4 models
+    const enc = encodingForModel('gpt-4');
+    const tokens = enc.encode(text);
+    // Note: js-tiktoken doesn't have a free method like the Python version
+    // We rely on JavaScript's garbage collection
+    return tokens.length;
+  } catch (error) {
+    // Fallback to character-based estimation if tiktoken fails
+    // Rough estimate: 4 characters per token
+    return Math.ceil(text.length / 4);
+  }
+}
+
 export async function generateArtifact(
   type: ArtifactType,
   language: LanguageType,
   variables: Record<string, string>
 ): Promise<string> {
+  // Create a logger instance
+  const logger = getLogger();
+  const ctx = {
+    name: 'generate-artifact',
+    type,
+    language,
+    artifactGeneration: true
+  };
+  
   try {
+    console.log(`Starting generation of ${type} artifact`);
+    
     // Get the OpenAI client
     const model = getOpenAIClient();
     
@@ -218,10 +254,27 @@ export async function generateArtifact(
       language,
     });
     
-    // Generate the artifact content
-    const response = await model.invoke(prompt);
+    // Estimate token count
+    const tokenCount = estimateTokenCount(prompt);
+    console.log(`Sending request to OpenAI API`, { tokenCount, modelName: 'gpt-4o-mini' });
     
-    return response.content.toString();
+    // Generate the artifact content
+    const startTime = Date.now();
+    const response = await model.invoke(prompt);
+    const duration = Date.now() - startTime;
+    
+    // Estimate response token count
+    const responseText = response.content.toString();
+    const responseTokenCount = estimateTokenCount(responseText);
+    
+    console.log(`Successfully generated ${type} artifact`, { 
+      duration: `${duration}ms`,
+      promptTokens: tokenCount,
+      responseTokens: responseTokenCount,
+      totalTokens: tokenCount + responseTokenCount
+    });
+    
+    return responseText;
   } catch (error) {
     console.error(`Error generating ${type} artifact:`, error);
     throw new Error(`Failed to generate ${type} artifact`);
@@ -233,6 +286,15 @@ export async function generateArtifact(
  * @param client Supabase client
  * @param referenceId Session or client ID
  * @param referenceType 'session' or 'client'
+ * @param type Artifact type
+ * @param content Artifact content
+ * @returns Success status
+ */
+/**
+ * Save an artifact to the database
+ * @param client Supabase client
+ * @param referenceId ID of the reference (session or client)
+ * @param referenceType Type of reference ('session' or 'client')
  * @param type Artifact type
  * @param content Artifact content
  * @param language Language of the artifact
@@ -247,25 +309,47 @@ export async function saveArtifact(
   language: LanguageType
 ): Promise<boolean> {
   try {
-    // Insert the artifact into the database
-    const { error } = await client
-      .from('artifacts')
-      .insert({
-        reference_id: referenceId,
-        reference_type: referenceType,
-        type,
-        content,
-        language,
-      });
+    console.log(`Saving ${type} artifact to database`);
     
-    if (error) {
-      console.error('Error saving artifact to database:', error);
-      return false;
+    // Check if the artifact already exists
+    const { data: existingArtifact } = await client
+      .from('artifacts')
+      .select('id')
+      .eq('reference_id', referenceId)
+      .eq('reference_type', referenceType)
+      .eq('type', type)
+      .eq('language', language)
+      .single();
+    
+    if (existingArtifact) {
+      // Update existing artifact
+      console.log(`Updating existing ${type} artifact`);
+      const { error } = await client
+        .from('artifacts')
+        .update({ content })
+        .eq('id', existingArtifact.id);
+      
+      if (error) throw error;
+    } else {
+      // Create new artifact
+      console.log(`Creating new ${type} artifact`);
+      const { error } = await client
+        .from('artifacts')
+        .insert({
+          reference_id: referenceId,
+          reference_type: referenceType,
+          type,
+          content,
+          language
+        });
+      
+      if (error) throw error;
     }
     
+    console.log(`Successfully saved ${type} artifact`);
     return true;
   } catch (error) {
-    console.error('Error saving artifact to database:', error);
+    console.error(`Error saving ${type} artifact:`, error);
     return false;
   }
 }

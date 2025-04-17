@@ -58,7 +58,7 @@ export const GET = enhanceRouteHandler(
         if (!session || (!session.transcript && !session.note)) {
           // If there's no session or neither transcript nor note, we can't generate an artifact
           return NextResponse.json({
-            content: `This ${artifactType.replace('session_', '').replace('_', ' ')} cannot be generated without a transcript and notes.`,
+            content: `This ${artifactType.replace('session_', '').replace('_', ' ')} cannot be generated without either a transcript or session notes.`,
             language: userLanguage,
             generated: false,
             dataTest: `session-artifact-${artifactType}-missing-data`

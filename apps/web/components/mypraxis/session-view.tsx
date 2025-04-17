@@ -49,13 +49,21 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
   const { 
     data: therapistSummaryData, 
     isLoading: isLoadingTherapistSummary 
-  } = useSessionArtifact(sessionId, 'session_therapist_summary', !!sessionData?.transcript && summaryView === 'therapist')
+  } = useSessionArtifact(
+    sessionId, 
+    'session_therapist_summary', 
+    !!(sessionData?.transcript || sessionData?.note) && summaryView === 'therapist'
+  )
   
   // Fetch client summary when client tab is active
   const { 
     data: clientSummaryData, 
     isLoading: isLoadingClientSummary 
-  } = useSessionArtifact(sessionId, 'session_client_summary', !!sessionData?.transcript && summaryView === 'client')
+  } = useSessionArtifact(
+    sessionId, 
+    'session_client_summary', 
+    !!(sessionData?.transcript || sessionData?.note) && summaryView === 'client'
+  )
 
   // Update local state when session data changes
   useEffect(() => {
@@ -475,8 +483,8 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                           </div>
                         </div>
                       ) : (
-                        <div className="rounded-lg bg-[#FFF9E8] px-6 py-6 text-[14px] text-muted-foreground">
-                          Therapist summary will be generated automatically once you add a transcript to this session
+                        <div className="rounded-lg bg-[#FFF9E8] px-6 py-6 text-[14px] text-muted-foreground" data-test="therapist-summary-placeholder">
+                          Therapist summary will be generated automatically once you add either a transcript or session notes
                         </div>
                       )}
                     </div>
@@ -566,8 +574,8 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                           </div>
                         </div>
                       ) : (
-                        <div className="rounded-lg bg-[#FFF9E8] px-6 py-6 text-[14px] text-muted-foreground">
-                          Client summary will be generated automatically once you add a transcript to this session
+                        <div className="rounded-lg bg-[#FFF9E8] px-6 py-6 text-[14px] text-muted-foreground" data-test="client-summary-placeholder">
+                          Client summary will be generated automatically once you add either a transcript or session notes
                         </div>
                       )}
                     </div>
