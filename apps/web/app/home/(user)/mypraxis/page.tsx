@@ -558,7 +558,7 @@ export default function Page() {
       {/* Navigation Column */}
       <nav className={`nav-column bg-[#111827] text-white w-[182px] min-w-[182px] max-w-[182px] flex flex-col px-3 ${
         isNavVisible ? 'visible' : ''
-      }`}>
+      } h-screen overflow-hidden`}>
         {/* Avatar Section */}
         <div className="flex items-center gap-3 p-4 mb-4">
           {/* Show loading skeleton until data is ready and avatar is loaded (if applicable) */}
@@ -709,7 +709,7 @@ export default function Page() {
       {/* Clients Column */}
       <div className={`client-list-column min-w-0 ${
         isClientListVisible && selectedItem !== "settings" ? 'visible w-[20%] min-w-[182px] max-w-[250px]' : 'w-0 overflow-hidden'
-      } border-r border-[#E5E7EB] bg-white flex flex-col relative transition-all duration-300`}>
+      } border-r border-[#E5E7EB] bg-white flex flex-col relative transition-all duration-300 h-screen overflow-y-auto`}>
         {/* Top section with burger menu and new client button */}
         <div className="flex items-center justify-between px-2.5 pt-3 pb-2">
           {isSmallScreen && (
@@ -807,7 +807,7 @@ export default function Page() {
           </div>
         </div>
         
-        <div className="column-3-content">
+        <div className="column-3-content p-5">
           {renderContent()}
         </div>
       </div>
@@ -821,7 +821,7 @@ export default function Page() {
       {/* Details Column */}
       <div className={`column-4 w-[250px] min-w-[200px] max-w-[250px] border-l border-[#E5E7EB] bg-white flex flex-col ${
         !isDetailsColumnVisible || selectedItem === "settings" ? "hidden" : ""
-      }`}>
+      } h-screen overflow-y-auto`}>
         <div className="px-5 pt-5 relative">
           {/* Navigation Menu */}
           <div className="space-y-0.5">
