@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState, useTransition } from "react"
+import { useQueryClient } from "@tanstack/react-query"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@kit/ui/tabs"
 import { sessionTranscripts } from "../../data/mypraxis/session-transcripts"
 import { Textarea } from "@kit/ui/textarea"
@@ -32,8 +33,12 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
   const [isCopied, setIsCopied] = useState(false)
   const [isClientSummaryCopied, setIsClientSummaryCopied] = useState(false)
   const [summaryView, setSummaryView] = useState<"therapist" | "client">("therapist")
-  const [editedClientSummary, setEditedClientSummary] = useState<string | null>(null)
   const [editedTherapistSummary, setEditedTherapistSummary] = useState<string | null>(null)
+  const [editedClientSummary, setEditedClientSummary] = useState<string | null>(null)
+  const [therapistSummary, setTherapistSummary] = useState<string | null>(null)
+  const [clientSummary, setClientSummary] = useState<string | null>(null)
+  const [isLoadingTherapistSummary, setIsLoadingTherapistSummary] = useState(false)
+  const [isLoadingClientSummary, setIsLoadingClientSummary] = useState(false)
   const [session, setSession] = useState<Session | null>(null)
   const [isEditingTitle, setIsEditingTitle] = useState(false) // Added state for title editing
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
@@ -49,7 +54,8 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
   // Fetch therapist summary when therapist tab is active
   const { 
     data: therapistSummaryData, 
-    isLoading: isLoadingTherapistSummary 
+    isLoading: isLoadingTherapistSummaryQuery,
+    refetch: refetchTherapistSummary
   } = useSessionArtifact(
     sessionId, 
     'session_therapist_summary', 
@@ -59,20 +65,21 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
   // Fetch client summary when client tab is active
   const { 
     data: clientSummaryData, 
-    isLoading: isLoadingClientSummary 
+    isLoading: isLoadingClientSummaryQuery,
+    refetch: refetchClientSummary
   } = useSessionArtifact(
     sessionId, 
     'session_client_summary', 
     !!(sessionData?.transcript || sessionData?.note) && summaryView === 'client'
   )
-
+  
   // Update local state when session data changes
   useEffect(() => {
     if (sessionData) {
       // Convert SessionWithId to Session format
       const formattedSession: Session = {
         id: sessionData.id,
-        date: new Date(sessionData.createdAt).toISOString().split('T')[0]!,
+        date: new Date(sessionData.createdAt).toISOString().split('T')[0] || '',
         title: sessionData.title,
         createdAt: sessionData.createdAt,
         transcript: sessionData.transcript ? {
@@ -85,22 +92,53 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
       
       setSession(formattedSession)
       setUserNote(sessionData.note || "")
-      
-      // For demo sessions, handle summaries (to be implemented in future)
-      if (sessionId.match(/^\d{4}-\d{2}-\d{2}$/)) {
-        const demoSession = sessionTranscripts[clientId as "mike"]?.[sessionId as keyof typeof sessionTranscripts["mike"]]
-        if (demoSession?.summary?.client) {
-          setEditedClientSummary(demoSession.summary.client)
-        }
-        if (demoSession?.summary?.therapist) {
-          setEditedTherapistSummary(demoSession.summary.therapist)
-        }
-      }
     }
-  }, [sessionData, clientId, sessionId])
+  }, [sessionData])
+  
+  // Update local summary state when query data changes
+  useEffect(() => {
+    if (therapistSummaryData) {
+      setTherapistSummary(therapistSummaryData.content)
+      setIsLoadingTherapistSummary(false)
+    }
+  }, [therapistSummaryData])
+  
+  useEffect(() => {
+    if (clientSummaryData) {
+      setClientSummary(clientSummaryData.content)
+      setIsLoadingClientSummary(false)
+    }
+  }, [clientSummaryData])
+  
+  // Initialize loading states based on query loading state
+  useEffect(() => {
+    setIsLoadingTherapistSummary(isLoadingTherapistSummaryQuery)
+  }, [isLoadingTherapistSummaryQuery])
+  
+  useEffect(() => {
+    setIsLoadingClientSummary(isLoadingClientSummaryQuery)
+  }, [isLoadingClientSummaryQuery])
+  
+  // Reset and refetch summaries when content changes
+  const resetAndRefetchSummaries = () => {
+    // Reset the local state for summaries
+    setEditedTherapistSummary(null)
+    setEditedClientSummary(null)
+    
+    // Explicitly set loading states to true
+    setIsLoadingTherapistSummary(true)
+    setIsLoadingClientSummary(true)
+    
+    // Clear any existing summary data from the UI
+    setTherapistSummary(null)
+    setClientSummary(null)
+  }
 
   // Use React's useTransition for pending state
   const [isPending, startTransition] = useTransition()
+  
+  // Get the query client for invalidating queries
+  const queryClient = useQueryClient()
 
   const handleSaveNote = (note: string) => {
     if (session) {
@@ -135,6 +173,12 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
           saveTimeout.current = setTimeout(() => {
             setIsSaved(false);
           }, 2000);
+          
+          // Reset summaries first to show loading state
+          resetAndRefetchSummaries()
+          
+          // Invalidate artifacts in the cache
+          queryClient.invalidateQueries({ queryKey: ['session', sessionId, 'artifact'] })
         } catch (error) {
           // Error handling - revert to previous state
           setSession(previousSession);
@@ -192,6 +236,12 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
           
           // Success handling
           toast.success("Transcript saved");
+          
+          // Reset summaries first to show loading state
+          resetAndRefetchSummaries()
+          
+          // Invalidate artifacts in the cache
+          queryClient.invalidateQueries({ queryKey: ['session', sessionId, 'artifact'] })
         } catch (error) {
           // Error handling - revert to previous state
           setSession(previousSession);
@@ -406,7 +456,10 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                     onClick={() => setIsEditing(true)}
                     data-test="session-add-note-button"
                   >
+                  <span className="flex items-center gap-2">
+                    <Plus className="h-4 w-4" />
                     Click to add a note
+                  </span>
                   </Button>
                 )}
               </div>
@@ -463,11 +516,11 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                             <span>Generating therapist summary...</span>
                           </div>
                         </div>
-                      ) : therapistSummaryData?.content ? (
+                      ) : therapistSummary ? (
                         <div className="relative">
                           <div className="rounded-lg bg-[#FFF9E8] px-6 pb-6 pt-7 text-[14px] leading-[1.6]">
                             <div className="markdown-content">
-                              <ReactMarkdown>{therapistSummaryData.content}</ReactMarkdown>
+                              <ReactMarkdown>{therapistSummary || ''}</ReactMarkdown>
                             </div>
                           </div>
                           <div className="absolute right-2 top-[7px] flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -475,7 +528,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                               variant="ghost"
                               size="icon"
                               className="h-6 w-6 hover:bg-transparent"
-                              onClick={() => handleCopyText(therapistSummaryData.content)}
+                              onClick={() => handleCopyText(therapistSummary || '')}
                               data-test="copy-therapist-summary-button"
                             >
                               {isCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
@@ -554,11 +607,11 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                             <span>Generating client summary...</span>
                           </div>
                         </div>
-                      ) : clientSummaryData?.content ? (
+                      ) : clientSummary ? (
                         <div className="relative">
                           <div className="rounded-lg bg-[#FFF9E8] px-6 pb-6 pt-7 text-[14px] leading-[1.6]">
                             <div className="markdown-content">
-                              <ReactMarkdown>{clientSummaryData.content}</ReactMarkdown>
+                              <ReactMarkdown>{clientSummary || ''}</ReactMarkdown>
                             </div>
                           </div>
                           <div className="absolute right-2 top-[7px] flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
