@@ -22,10 +22,15 @@ import { createPromptApi } from '../../app/home/(user)/mypraxis/_lib/api/prompt-
 
 /**
  * Initialize the OpenAI client
- * @param parameters Optional parameters to override defaults
+ * @param options Configuration options including model name and parameters
  * @returns ChatOpenAI instance
  */
-function getOpenAIClient(parameters: Record<string, any> = {}) {
+function getOpenAIClient(options: {
+  model?: string;
+  temperature?: number;
+  max_tokens?: number;
+  [key: string]: any;
+} = {}) {
   // Get the OpenAI API key from environment variables
   const apiKey = process.env.OPENAI_API_KEY;
   
@@ -35,9 +40,9 @@ function getOpenAIClient(parameters: Record<string, any> = {}) {
   
   // Initialize the OpenAI client with API key from environment
   return new ChatOpenAI({
-    modelName: parameters.model || 'gpt-4o-mini',
-    temperature: parameters.temperature || 0.7,
-    maxTokens: parameters.max_tokens,
+    modelName: options.model || 'gpt-4o-mini',
+    temperature: options.temperature || 0.7,
+    maxTokens: options.max_tokens,
     openAIApiKey: apiKey,
   });
 }
@@ -100,8 +105,16 @@ export async function generateArtifact(
     // Get model parameters from the database
     const modelParameters = promptData.parameters || { temperature: 0.7 };
     
-    // Get the OpenAI client with the parameters from the database
-    const model = getOpenAIClient(modelParameters);
+    // Get the OpenAI client with the model from the model column and parameters from the parameters column
+    const clientOptions = {
+      ...modelParameters,
+      model: promptData.model // Explicitly use the model column, not parameters.model
+    };
+    
+    // Log the options being passed to the OpenAI client
+    console.log('OpenAI client options:', clientOptions);
+    
+    const model = getOpenAIClient(clientOptions);
     
     // Log the prompt data
     const logger = await getLogger();
@@ -137,11 +150,13 @@ export async function generateArtifact(
     
     // Estimate token count
     const tokenCount = estimateTokenCount(prompt);
-    console.log(`Sending request to OpenAI API`, { tokenCount, modelName: 'gpt-4o-mini' });
+    console.log(`Sending request to OpenAI API`, { tokenCount, modelName: promptData.model });
     
     // Generate the artifact content
     const startTime = Date.now();
+    console.log(`Starting OpenAI request with model: ${promptData.model}`);
     const response = await model.invoke(prompt);
+    console.log('OpenAI response:', response);
     const duration = Date.now() - startTime;
     
     // Estimate response token count
