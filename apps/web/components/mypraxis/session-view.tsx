@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState, useTransition } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@kit/ui/tabs"
 import { sessionTranscripts } from "../../data/mypraxis/session-transcripts"
 import { Textarea } from "@kit/ui/textarea"
@@ -11,8 +11,9 @@ import { Input } from "@kit/ui/input"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@kit/ui/dropdown-menu"
 import { DeleteSessionModal } from "../mypraxis/delete-session-modal"
 import type { Session } from "../../types/session"
-import { useSession, useUpdateSession, useDeleteSession } from "../../app/home/(user)/mypraxis/_lib/hooks/use-sessions"
+import { useSession, useDeleteSession } from "../../app/home/(user)/mypraxis/_lib/hooks/use-sessions"
 import { useSessionArtifact } from "../../app/home/(user)/mypraxis/_lib/hooks/use-session-artifacts"
+import { updateSessionAction } from "../../app/home/(user)/mypraxis/_lib/server/server-actions"
 import { toast } from "sonner"
 import ReactMarkdown from "react-markdown"
 
@@ -98,34 +99,50 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
     }
   }, [sessionData, clientId, sessionId])
 
-  // Use the update session hook from Supabase
-  const updateSessionMutation = useUpdateSession()
+  // Use React's useTransition for pending state
+  const [isPending, startTransition] = useTransition()
 
   const handleSaveNote = (note: string) => {
     if (session) {
+      // Optimistically update the UI
+      const previousSession = { ...session };
+      
       // Update the session with the new note
-      updateSessionMutation.mutate({
-        id: sessionId,
-        clientId,
-        title: session.title,
-        transcript: session.transcript?.content || '',
-        note: note, // Save the note properly
-        createdAt: session.createdAt
-      }, {
-        onSuccess: () => {
-          setIsSaved(true)
+      const updatedSession = {
+        ...session,
+        notes: { userNote: note }
+      };
+      
+      setSession(updatedSession);
+      setIsSaved(true);
+      
+      // Use startTransition to indicate pending state
+      startTransition(async () => {
+        try {
+          // Call the server action directly
+          await updateSessionAction({
+            id: sessionId,
+            clientId,
+            title: session.title,
+            transcript: session.transcript?.content || '',
+            note: note
+          });
+          
+          // Success handling
           if (saveTimeout.current) {
-            clearTimeout(saveTimeout.current)
+            clearTimeout(saveTimeout.current);
           }
           saveTimeout.current = setTimeout(() => {
-            setIsSaved(false)
-          }, 2000)
-        },
-        onError: (error) => {
-          toast.error("Failed to save note")
-          console.error("Error saving note:", error)
+            setIsSaved(false);
+          }, 2000);
+        } catch (error) {
+          // Error handling - revert to previous state
+          setSession(previousSession);
+          setIsSaved(false);
+          toast.error("Failed to save note");
+          console.error("Error saving note:", error);
         }
-      })
+      });
     }
   }
 
@@ -149,24 +166,40 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
 
   const handleSaveTranscript = () => {
     if (session) {
+      // Optimistically update the UI
+      const previousSession = { ...session };
+      
       // Update the session with the new transcript
-      updateSessionMutation.mutate({
-        id: sessionId,
-        clientId,
-        title: session.title,
-        transcript: editedTranscript, // Save the transcript as plain text
-        note: session.notes?.userNote || '',
-        createdAt: session.createdAt
-      }, {
-        onSuccess: () => {
-          setIsEditingTranscript(false)
-          toast.success('Transcript saved successfully')
-        },
-        onError: (error) => {
-          toast.error('Failed to save transcript')
-          console.error('Error saving transcript:', error)
+      const updatedSession = {
+        ...session,
+        transcript: { content: editedTranscript }
+      };
+      
+      setSession(updatedSession);
+      setIsEditingTranscript(false);
+      
+      // Use startTransition to indicate pending state
+      startTransition(async () => {
+        try {
+          // Call the server action directly
+          await updateSessionAction({
+            id: sessionId,
+            clientId,
+            title: session.title,
+            transcript: editedTranscript,
+            note: session.notes?.userNote || ''
+          });
+          
+          // Success handling
+          toast.success("Transcript saved");
+        } catch (error) {
+          // Error handling - revert to previous state
+          setSession(previousSession);
+          setIsEditingTranscript(true);
+          toast.error("Failed to save transcript");
+          console.error("Error saving transcript:", error);
         }
-      })
+      });
     }
   }
 
