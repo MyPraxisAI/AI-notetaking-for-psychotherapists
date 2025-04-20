@@ -27,14 +27,10 @@ interface SessionViewProps {
 export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps) {
   const [userNote, setUserNote] = useState("")
   const [isEditing, setIsEditing] = useState(false)
-  const [isEditingClientSummary, setIsEditingClientSummary] = useState(false)
-  const [isEditingTherapistSummary, setIsEditingTherapistSummary] = useState(false)
-  const [_isSaved, setIsSaved] = useState(false)
+
   const [isCopied, setIsCopied] = useState(false)
   const [isClientSummaryCopied, setIsClientSummaryCopied] = useState(false)
   const [summaryView, setSummaryView] = useState<"therapist" | "client">("therapist")
-  const [editedTherapistSummary, setEditedTherapistSummary] = useState<string | null>(null)
-  const [editedClientSummary, setEditedClientSummary] = useState<string | null>(null)
   const [therapistSummary, setTherapistSummary] = useState<string | null>(null)
   const [clientSummary, setClientSummary] = useState<string | null>(null)
   const [isLoadingTherapistSummary, setIsLoadingTherapistSummary] = useState(false)
@@ -122,8 +118,8 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
   // Reset and refetch summaries when content changes
   const resetAndRefetchSummaries = () => {
     // Reset the local state for summaries
-    setEditedTherapistSummary(null)
-    setEditedClientSummary(null)
+    setTherapistSummary(null)
+    setClientSummary(null)
     
     // Explicitly set loading states to true
     setIsLoadingTherapistSummary(true)
@@ -152,7 +148,6 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
       };
       
       setSession(updatedSession);
-      setIsSaved(true);
       
       // Use startTransition to indicate pending state
       startTransition(async () => {
@@ -167,53 +162,29 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
           });
           
           // Success handling
-          if (saveTimeout.current) {
-            clearTimeout(saveTimeout.current);
-          }
-          saveTimeout.current = setTimeout(() => {
-            setIsSaved(false);
-          }, 2000);
+          toast.success("Note saved");
           
-          // Reset summaries first to show loading state
-          resetAndRefetchSummaries()
+          // Reset and refetch summaries
+          resetAndRefetchSummaries();
           
           // Invalidate artifacts in the cache
-          queryClient.invalidateQueries({ queryKey: ['session', sessionId, 'artifact'] })
+          queryClient.invalidateQueries({ queryKey: ['session', sessionId, 'artifact'] });
           
           // Force refetch of summaries
           setTimeout(() => {
             if (summaryView === 'therapist') {
-              refetchTherapistSummary()
+              refetchTherapistSummary();
             } else {
-              refetchClientSummary()
+              refetchClientSummary();
             }
-          }, 500) // Small delay to ensure the invalidation has completed
+          }, 500); // Small delay to ensure the invalidation has completed
         } catch (error) {
           // Error handling - revert to previous state
           setSession(previousSession);
-          setIsSaved(false);
           toast.error("Failed to save note");
           console.error("Error saving note:", error);
         }
       });
-    }
-  }
-
-  const handleSaveClientSummary = (_summary: string) => {
-    if (session) {
-      // Client summary will be implemented in a future update
-      // For now, just update the UI state
-      setIsEditingClientSummary(false)
-      toast.info('Client summaries will be saved in a future update')
-    }
-  }
-
-  const handleSaveTherapistSummary = (_summary: string) => {
-    if (session) {
-      // Therapist summary will be implemented in a future update
-      // For now, just update the UI state
-      setIsEditingTherapistSummary(false)
-      toast.info('Therapist summaries will be saved in a future update')
     }
   }
 
@@ -503,30 +474,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                   </TabsList>
                   <TabsContent value="therapist" className="mt-3">
                     <div className="relative group">
-                      {isEditingTherapistSummary ? (
-                        <div className="relative">
-                          <Textarea
-                            value={editedTherapistSummary || ""}
-                            onChange={(e) => setEditedTherapistSummary(e.target.value)}
-                            onBlur={() => {
-                              if (editedTherapistSummary) {
-                                handleSaveTherapistSummary(editedTherapistSummary)
-                              }
-                            }}
-                            className="resize-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)]"
-                            style={{
-                              height: editedTherapistSummary
-                                ? `${
-                                    editedTherapistSummary.split("\n").reduce((acc, line) => {
-                                      return acc + Math.ceil(line.length / 65) // Approximate characters per line
-                                    }, 2) * 24
-                                  }px`
-                                : "100px",
-                            }}
-                            autoFocus
-                          />
-                        </div>
-                      ) : isLoadingTherapistSummary ? (
+                      {isLoadingTherapistSummary ? (
                         <div className="rounded-lg bg-[#FFF9E8] px-6 py-6 text-[14px] text-muted-foreground flex items-center justify-center min-h-[100px]">
                           <div className="flex items-center gap-2">
                             <Loader2 className="h-4 w-4 animate-spin" />
@@ -550,15 +498,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                             >
                               {isCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                             </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-6 w-6 hover:bg-transparent"
-                              onClick={() => setIsEditingTherapistSummary(true)}
-                              data-test="edit-therapist-summary-button"
-                            >
-                              <Edit2 className="h-4 w-4" />
-                            </Button>
+
                           </div>
                         </div>
                       ) : session?.summary?.therapist ? (
@@ -575,14 +515,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                             >
                               {isCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                             </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-6 w-6 hover:bg-transparent"
-                              onClick={() => setIsEditingTherapistSummary(true)}
-                            >
-                              <Edit2 className="h-4 w-4" />
-                            </Button>
+
                           </div>
                         </div>
                       ) : (
@@ -594,30 +527,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                   </TabsContent>
                   <TabsContent value="client" className="mt-3">
                     <div className="relative group">
-                      {isEditingClientSummary ? (
-                        <div className="relative">
-                          <Textarea
-                            value={editedClientSummary || ""}
-                            onChange={(e) => setEditedClientSummary(e.target.value)}
-                            onBlur={() => {
-                              if (editedClientSummary) {
-                                handleSaveClientSummary(editedClientSummary)
-                              }
-                            }}
-                            className="resize-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)]"
-                            style={{
-                              height: editedClientSummary
-                                ? `${
-                                    editedClientSummary.split("\n").reduce((acc, line) => {
-                                      return acc + Math.ceil(line.length / 65) // Approximate characters per line
-                                    }, 2) * 24
-                                  }px`
-                                : "100px",
-                            }}
-                            autoFocus
-                          />
-                        </div>
-                      ) : isLoadingClientSummary ? (
+                      {isLoadingClientSummary ? (
                         <div className="rounded-lg bg-[#FFF9E8] px-6 py-6 text-[14px] text-muted-foreground flex items-center justify-center min-h-[100px]">
                           <div className="flex items-center gap-2">
                             <Loader2 className="h-4 w-4 animate-spin" />
@@ -641,15 +551,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                             >
                               {isClientSummaryCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                             </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-6 w-6 hover:bg-transparent"
-                              onClick={() => setIsEditingClientSummary(true)}
-                              data-test="edit-client-summary-button"
-                            >
-                              <Edit2 className="h-4 w-4" />
-                            </Button>
+
                           </div>
                         </div>
                       ) : session?.summary?.client ? (
@@ -666,14 +568,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                             >
                               {isClientSummaryCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                             </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-6 w-6 hover:bg-transparent"
-                              onClick={() => setIsEditingClientSummary(true)}
-                            >
-                              <Edit2 className="h-4 w-4" />
-                            </Button>
+
                           </div>
                         </div>
                       ) : (
