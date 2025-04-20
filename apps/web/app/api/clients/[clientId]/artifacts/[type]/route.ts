@@ -3,6 +3,7 @@ import { enhanceRouteHandler } from '@kit/next/routes';
 import { getSupabaseServerClient } from '@kit/supabase/server-client';
 import { getUserLanguage } from '../../../../../../lib/utils/language';
 import type { ArtifactType, LanguageType } from '../../../../../../lib/utils/openai';
+import { generateArtifact, saveArtifact } from '../../../../../../lib/utils/openai';
 
 // This route handler returns artifacts for a client
 export const GET = enhanceRouteHandler(
@@ -27,21 +28,75 @@ export const GET = enhanceRouteHandler(
     // Get the user's preferred language
     const userLanguage = await getUserLanguage() as LanguageType;
     
-    // For now, return mocked values based on the artifact type
-    // In a real implementation, we would:
-    // 1. Check if the artifact exists in the database
-    // 2. If not, generate it with OpenAI
-    // 3. Save it to the database
-    // 4. Return it
+    // Check if the artifact already exists in the database
+    const { data: existingArtifact } = await client
+      .from('artifacts')
+      .select('content, language')
+      .eq('reference_type', 'client')
+      .eq('reference_id', clientId)
+      .eq('type', artifactType)
+      .single();
     
-    // Simulate a delay to show loading state
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    // If the artifact exists, return it
+    if (existingArtifact) {
+      return NextResponse.json({
+        content: existingArtifact.content,
+        language: existingArtifact.language,
+        generated: true,
+        dataTest: `client-artifact-${artifactType}`
+      });
+    }
     
-    // Return mocked content based on the artifact type
-    let mockedContent = '';
+    // If the artifact doesn't exist, generate it
+    try {
+      let content = '';
+      
+      // Generate content based on the artifact type
+      if (artifactType === 'client_conceptualization') {
+        // Get all sessions for the client
+        const { data: sessions } = await client
+          .from('sessions')
+          .select('id, title, note, transcript, created_at')
+          .eq('client_id', clientId)
+          .order('created_at', { ascending: true });
+        
+        // Format session contents for the prompt
+        const formattedSessionContents = sessions && sessions.length > 0 ? 
+          sessions.map((session, index) => {
+            const sessionNumber = index + 1;
+            const date = new Date(session.created_at).toLocaleDateString();
+            
+            let content = `## Session ${sessionNumber} - ${date} - ${session.title || 'Untitled'}\n\n`;
+            
+            if (session.transcript) {
+              content += `### Transcript:\n${session.transcript}\n\n`;
+            }
+            
+            if (session.note) {
+              content += `### Therapist Notes:\n${session.note}\n\n`;
+            }
+            
+            return content;
+          }).join('---\n\n') : 'No session data available.';
+        
+        // Generate the conceptualization using OpenAI
+        content = await generateArtifact(
+          artifactType,
+          userLanguage,
+          {
+            session_full_contents: formattedSessionContents,
+            session_summaries: '' // Not implemented yet, YSTM-578
+          }
+        );
+        
+        // Save the generated artifact to the database
+        await saveArtifact(client, clientId, 'client', artifactType, content, userLanguage);
+      } else {
+        // For now, use mocked content for other artifact types
+        // In a real implementation, we would generate these as well
     
-    if (artifactType === 'client_prep_note') {
-      mockedContent = `# Session Preparation Note
+        if (artifactType === 'client_prep_note') {
+          content = `# Session Preparation Note
 
 ## Client Goals
 - Continue working on anxiety management techniques
@@ -55,29 +110,8 @@ export const GET = enhanceRouteHandler(
 
 ## Notes from Previous Session
 Client reported improved sleep after implementing evening routine. Still struggling with work-related stress. Responded well to validation of feelings around family dynamics.`;
-    } else if (artifactType === 'client_conceptualization') {
-      mockedContent = `# Case Conceptualization
-
-## Presenting Problems
-Client presents with generalized anxiety disorder (GAD) and social anxiety symptoms. Reports frequent worry, difficulty concentrating, and avoidance of social situations. Physical symptoms include tension, fatigue, and sleep disturbance.
-
-## Relevant History
-- Family history of anxiety disorders (mother)
-- Academic pressure from early childhood
-- Bullying experiences in middle school
-- High-pressure work environment
-
-## Psychological Mechanisms
-Client's anxiety appears maintained by:
-1. Catastrophic thinking patterns
-2. Avoidance behaviors reinforcing fear
-3. Perfectionism and high self-criticism
-4. Limited emotional regulation skills
-
-## Treatment Approach
-Using CBT framework to address cognitive distortions and develop coping skills. Incorporating mindfulness techniques to improve present-moment awareness and reduce rumination.`;
-    } else if (artifactType === 'client_bio') {
-      mockedContent = `# Client Biography
+        } else if (artifactType === 'client_bio') {
+          content = `# Client Biography
 
 ## Personal Background
 34-year-old software engineer, married with one child (age 5). Lives in urban area. Identifies as introverted and analytical. Enjoys reading, hiking, and strategy games.
@@ -94,14 +128,25 @@ Seeking therapy for anxiety management and work-life balance. Reports increasing
 
 ## Treatment History
 Brief CBT in 2023 for work stress with reported benefit. Currently taking Sertraline 50mg daily, prescribed by PCP.`;
-    }
+        }
+        
+        // Save the mocked artifact to the database
+        await saveArtifact(client, clientId, 'client', artifactType, content, userLanguage);
+      }
     
-    return NextResponse.json({
-      content: mockedContent,
-      language: userLanguage,
-      generated: false,
-      dataTest: `client-artifact-${artifactType}`
-    });
+      return NextResponse.json({
+        content: content,
+        language: userLanguage,
+        generated: true,
+        dataTest: `client-artifact-${artifactType}`
+      });
+    } catch (error) {
+      console.error('Error generating artifact:', error);
+      return NextResponse.json(
+        { error: 'Failed to generate artifact' },
+        { status: 500 }
+      );
+    }
   },
   {
     auth: true,
