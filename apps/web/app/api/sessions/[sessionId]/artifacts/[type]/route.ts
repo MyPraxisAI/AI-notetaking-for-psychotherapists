@@ -68,7 +68,6 @@ export const GET = enhanceRouteHandler(
         // Generate the artifact content using OpenAI
         const generatedContent = await generateArtifact(
           artifactType,
-          userLanguage as LanguageType,
           {
             session_transcript: session.transcript || '',
             session_note: session.note || ''

@@ -5,6 +5,7 @@ import { encodingForModel } from 'js-tiktoken';
 // For structured logging
 import { getLogger } from '@kit/shared/logger';
 import { getSupabaseServerClient } from '@kit/supabase/server-client';
+import { getUserLanguage, getFullLanguageName } from './language';
 
 // Define the artifact types
 export type ArtifactType = 
@@ -73,15 +74,16 @@ function estimateTokenCount(text: string): number {
 /**
  * Generate an artifact using OpenAI
  * @param type Artifact type
- * @param language Language for the artifact
  * @param variables Template variables
  * @returns Generated artifact content
  */
 export async function generateArtifact(
   type: ArtifactType,
-  language: LanguageType,
   variables: Record<string, string>
 ): Promise<string> {
+  // Get the user's preferred language
+  const language = await getUserLanguage() as LanguageType;
+  
   // Create a logger instance
   const logger = getLogger();
   const ctx = {
@@ -136,7 +138,7 @@ export async function generateArtifact(
         
     const prompt = env.renderString(templateString, {
       ...variables,
-      language,
+      language: getFullLanguageName(language), // Convert language code to full name
       primary_therapeutic_approach: primaryApproach
     });
     

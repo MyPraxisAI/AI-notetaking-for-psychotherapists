@@ -81,7 +81,6 @@ export const GET = enhanceRouteHandler(
         // Generate the conceptualization using OpenAI
         content = await generateArtifact(
           artifactType,
-          userLanguage,
           {
             full_session_contents: formattedFullSessionContents,
             session_summaries: '' // Not implemented yet, YSTM-578
@@ -137,7 +136,6 @@ export const GET = enhanceRouteHandler(
           // Generate the conceptualization
           conceptualizationContent = await generateArtifact(
             'client_conceptualization',
-            userLanguage,
             {
               full_session_contents: formattedFullSessionContents,
               session_summaries: '' // Not implemented yet, YSTM-578
@@ -176,7 +174,6 @@ export const GET = enhanceRouteHandler(
         // Generate the prep note using OpenAI
         content = await generateArtifact(
           artifactType,
-          userLanguage,
           {
             conceptualization: conceptualizationContent,
             last_session_content: lastSessionContent

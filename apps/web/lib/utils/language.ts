@@ -1,6 +1,15 @@
 import { getSupabaseServerClient } from '@kit/supabase/server-client';
 import { createAccountsApi } from '@kit/accounts/api';
 
+/**
+ * Map of language codes to full language names
+ */
+const LANGUAGE_NAMES: Record<string, string> = {
+  'en': 'English',
+  'ru': 'Russian',
+  // Add more languages as needed
+};
+
 
 /**
  * Get the user's preferred language from their preferences
@@ -34,6 +43,15 @@ export async function getUserLanguage(): Promise<string> {
     return 'en';
   } catch (error) {
     console.error('Error getting user language:', error);
-    return 'en'; // Default to English on error
+    return 'en'; // Default to English in case of error
   }
+}
+
+/**
+ * Convert a language code to its full language name
+ * @param code Language code (e.g., 'en', 'ru')
+ * @returns Full language name (e.g., 'English', 'Russian')
+ */
+export function getFullLanguageName(code: string): string {
+  return LANGUAGE_NAMES[code] || 'English'; // Default to English if code not found
 }
