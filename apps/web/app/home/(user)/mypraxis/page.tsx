@@ -26,6 +26,7 @@ import {
   Brain,
   ChevronLeft,
   ChevronRight,
+  Loader2,
 } from "lucide-react"
 import { PrepNote } from "../../../../components/mypraxis/prep-note"
 import { ClientOverview } from "../../../../components/mypraxis/client-overview"
@@ -33,6 +34,7 @@ import { ClientBio } from "../../../../components/mypraxis/client-bio"
 import { ProfileForm } from "../../../../components/mypraxis/profile-form"
 import { SettingsForm } from "../../../../components/mypraxis/settings-form"
 import { SessionView } from "../../../../components/mypraxis/session-view"
+import dynamic from "next/dynamic"
 import { useClients, useCreateClient, useDeleteClient } from "./_lib/hooks/use-clients"
 
 
@@ -483,14 +485,39 @@ export default function Page() {
     // Otherwise, render the appropriate tab content
     switch (selectedDetailItem) {
       case "overview":
-        return <ClientOverview clientId={selectedClient} />
+        // Import the ClientConceptualization component dynamically
+        const ClientConceptualization = dynamic(
+          () => import('../../../../components/mypraxis/client-conceptualization').then(mod => mod.ClientConceptualization),
+          {
+            loading: () => <div className="flex items-center justify-center h-full"><Loader2 className="h-6 w-6 animate-spin" /></div>,
+            ssr: false
+          }
+        );
+        return <ClientConceptualization clientId={selectedClient} />
       case "client-bio":
-        return <ClientBio 
+        // Import the ClientBio component dynamically
+        const ClientBioDynamic = dynamic(
+          () => import('../../../../components/mypraxis/client-bio').then(mod => mod.ClientBio),
+          {
+            loading: () => <div className="flex items-center justify-center h-full"><Loader2 className="h-6 w-6 animate-spin" /></div>,
+            ssr: false
+          }
+        );
+        return <ClientBioDynamic 
+          clientId={selectedClient}
           clientName={clients.find((c) => c.id === selectedClient)?.fullName || ""} 
         />
       case "prep-note":
       default:
-        return <PrepNote clientId={selectedClient} />
+        // Import the ClientPrepNote component dynamically
+        const ClientPrepNote = dynamic(
+          () => import('../../../../components/mypraxis/client-prep-note').then(mod => mod.ClientPrepNote),
+          {
+            loading: () => <div className="flex items-center justify-center h-full"><Loader2 className="h-6 w-6 animate-spin" /></div>,
+            ssr: false
+          }
+        );
+        return <ClientPrepNote clientId={selectedClient} />
     }
   }
 
