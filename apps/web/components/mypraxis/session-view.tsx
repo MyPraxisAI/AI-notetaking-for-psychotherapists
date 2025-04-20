@@ -129,6 +129,20 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
     setTherapistSummary(null)
     setClientSummary(null)
   }
+  
+  // Force refresh all client artifacts
+  const refreshClientArtifacts = () => {
+    // Invalidate all client artifacts in the cache
+    queryClient.invalidateQueries({ queryKey: ['client', clientId, 'artifact'] })
+    
+    // Force refetch by setting stale time to 0 for all client artifacts
+    queryClient.setQueryDefaults(['client', clientId, 'artifact'], {
+      staleTime: 0
+    })
+    
+    // Manually refetch all client artifact queries
+    queryClient.refetchQueries({ queryKey: ['client', clientId, 'artifact'] })
+  }
 
   // Use React's useTransition for pending state
   const [isPending, startTransition] = useTransition()
@@ -167,8 +181,11 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
           // Reset and refetch summaries
           resetAndRefetchSummaries();
           
-          // Invalidate artifacts in the cache
+          // Invalidate session artifacts in the cache
           queryClient.invalidateQueries({ queryKey: ['session', sessionId, 'artifact'] });
+          
+          // Force refresh all client artifacts
+          refreshClientArtifacts();
           
           // Force refetch of summaries
           setTimeout(() => {
@@ -217,8 +234,11 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
           // Reset summaries first to show loading state
           resetAndRefetchSummaries()
           
-          // Invalidate artifacts in the cache
+          // Invalidate session artifacts in the cache
           queryClient.invalidateQueries({ queryKey: ['session', sessionId, 'artifact'] })
+          
+          // Force refresh all client artifacts
+          refreshClientArtifacts()
           
           // Force refetch of summaries
           setTimeout(() => {

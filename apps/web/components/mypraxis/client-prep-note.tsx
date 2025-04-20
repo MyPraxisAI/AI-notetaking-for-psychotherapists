@@ -4,19 +4,44 @@ import { useClientArtifact } from '../../app/home/(user)/mypraxis/_lib/hooks/use
 import { Loader2, Copy, Check } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { Button } from '@kit/ui/button';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface ClientPrepNoteProps {
   clientId: string;
 }
 
 export function ClientPrepNote({ clientId }: ClientPrepNoteProps) {
+  const queryClient = useQueryClient();
+  
   // Fetch the prep note for the client
   const { 
     data: prepNoteData, 
     isLoading: isLoadingPrepNote,
-    error
+    error,
+    refetch
   } = useClientArtifact(clientId, 'client_prep_note', !!clientId);
+  
+  // Force refetch when component mounts or becomes visible
+  useEffect(() => {
+    // Force refetch when component mounts
+    refetch();
+    
+    // Also refetch when component becomes visible
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        // Reset cache and force refetch
+        queryClient.resetQueries({ queryKey: ['client', clientId, 'artifact', 'client_prep_note'] });
+        refetch();
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [clientId, refetch, queryClient]);
   
   // Copy functionality
   const [isCopied, setIsCopied] = useState(false);

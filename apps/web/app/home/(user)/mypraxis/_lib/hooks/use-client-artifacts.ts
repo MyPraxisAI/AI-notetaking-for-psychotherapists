@@ -35,6 +35,6 @@ export function useClientArtifact(
       }
     },
     enabled: !!clientId && enabled,
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 0, // Force refetch when invalidated
   });
 }

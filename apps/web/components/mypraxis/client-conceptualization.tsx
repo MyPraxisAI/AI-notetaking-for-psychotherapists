@@ -4,19 +4,44 @@ import { useClientArtifact } from '../../app/home/(user)/mypraxis/_lib/hooks/use
 import { Loader2, Copy, Check } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { Button } from '@kit/ui/button';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface ClientConceptualizationProps {
   clientId: string;
 }
 
 export function ClientConceptualization({ clientId }: ClientConceptualizationProps) {
+  const queryClient = useQueryClient();
+  
   // Fetch the conceptualization for the client
   const { 
     data: conceptualizationData, 
     isLoading: isLoadingConceptualization,
-    error
+    error,
+    refetch
   } = useClientArtifact(clientId, 'client_conceptualization', !!clientId);
+  
+  // Force refetch when component mounts or becomes visible
+  useEffect(() => {
+    // Force refetch when component mounts
+    refetch();
+    
+    // Also refetch when component becomes visible
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        // Reset cache and force refetch
+        queryClient.resetQueries({ queryKey: ['client', clientId, 'artifact', 'client_conceptualization'] });
+        refetch();
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [clientId, refetch, queryClient]);
   
   // Copy functionality
   const [isCopied, setIsCopied] = useState(false);
