@@ -48,10 +48,12 @@ export async function getUserLanguage(): Promise<string> {
 }
 
 /**
- * Convert a language code to its full language name
+ * Convert language code to full language name
  * @param code Language code (e.g., 'en', 'ru')
  * @returns Full language name (e.g., 'English', 'Russian')
  */
-export function getFullLanguageName(code: string): string {
-  return LANGUAGE_NAMES[code] || 'English'; // Default to English if code not found
+export function getFullLanguageName(code: string | null): string {
+  // Default to 'English' if code is null or not found in the map
+  if (!code) return 'English';
+  return LANGUAGE_NAMES[code] || 'English';
 }

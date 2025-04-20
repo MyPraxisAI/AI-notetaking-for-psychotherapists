@@ -1,5 +1,5 @@
 import { SupabaseClient } from '@supabase/supabase-js';
-import { ArtifactType } from '../../../../../lib/utils/openai';
+import { ArtifactType } from '../../../../../../lib/utils/artifacts';
 
 /**
  * Interface for prompt data from the database

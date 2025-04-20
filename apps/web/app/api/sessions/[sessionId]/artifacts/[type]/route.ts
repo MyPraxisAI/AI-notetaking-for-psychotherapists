@@ -7,7 +7,7 @@ import {
   saveArtifact, 
   ArtifactType, 
   LanguageType 
-} from '../../../../../../lib/utils/openai';
+} from '../../../../../../lib/utils/artifacts';
 
 // This route handler returns artifacts for a session
 // It will be enhanced with authentication and error handling

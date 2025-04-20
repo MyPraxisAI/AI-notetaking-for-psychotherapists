@@ -2,8 +2,8 @@ import { NextResponse } from 'next/server';
 import { enhanceRouteHandler } from '@kit/next/routes';
 import { getSupabaseServerClient } from '@kit/supabase/server-client';
 import { getUserLanguage } from '../../../../../../lib/utils/language';
-import type { ArtifactType, LanguageType } from '../../../../../../lib/utils/openai';
-import { generateArtifact, saveArtifact } from '../../../../../../lib/utils/openai';
+import type { ArtifactType, LanguageType } from '../../../../../../lib/utils/artifacts';
+import { generateArtifact, saveArtifact } from '../../../../../../lib/utils/artifacts';
 
 // This route handler returns artifacts for a client
 export const GET = enhanceRouteHandler(
