@@ -67,18 +67,44 @@ export const updateSessionAction = enhanceAction(
           noteChanged
         });
 
-        const { error: deleteError } = await client
+        // Delete session artifacts
+        const { error: deleteSessionArtifactsError } = await client
           .from('artifacts')
           .delete()
           .eq('reference_id', data.id)
           .eq('reference_type', 'session');
 
-        if (deleteError) {
-          console.error('Failed to delete artifacts', deleteError);
+        if (deleteSessionArtifactsError) {
+          console.error('Failed to delete session artifacts', deleteSessionArtifactsError);
           // Don't throw here, as the session update was successful
           // Just log the error and continue
         } else {
-          console.log('Successfully deleted artifacts');
+          console.log('Successfully deleted session artifacts');
+        }
+        
+        // Also delete client artifacts
+        // First get the client ID for this session
+        const { data: sessionData, error: sessionError } = await client
+          .from('sessions')
+          .select('client_id')
+          .eq('id', data.id)
+          .single();
+        
+        if (sessionError) {
+          console.error('Failed to fetch client ID for session', sessionError);
+        } else if (sessionData?.client_id) {
+          // Delete all client artifacts
+          const { error: deleteClientArtifactsError } = await client
+            .from('artifacts')
+            .delete()
+            .eq('reference_id', sessionData.client_id)
+            .eq('reference_type', 'client');
+          
+          if (deleteClientArtifactsError) {
+            console.error('Failed to delete client artifacts', deleteClientArtifactsError);
+          } else {
+            console.log('Successfully deleted client artifacts');
+          }
         }
       } else {
         console.log('Content unchanged, skipping artifact deletion');

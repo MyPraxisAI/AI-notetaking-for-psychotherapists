@@ -10,7 +10,6 @@ export const GET = enhanceRouteHandler(
   async (req) => {
     const { params } = req;
     const { clientId, type } = params as { clientId: string; type: string };
-
     // Validate the artifact type
     if (!['client_prep_note', 'client_conceptualization', 'client_bio'].includes(type)) {
       return NextResponse.json(
@@ -60,8 +59,8 @@ export const GET = enhanceRouteHandler(
           .eq('client_id', clientId)
           .order('created_at', { ascending: true });
         
-        // Format session contents for the prompt
-        const formattedSessionContents = sessions && sessions.length > 0 ? 
+        // Format full session contents for the prompt
+        const formattedFullSessionContents = sessions && sessions.length > 0 ? 
           sessions.map((session, index) => {
             const sessionNumber = index + 1;
             const date = new Date(session.created_at).toLocaleDateString();
@@ -84,34 +83,112 @@ export const GET = enhanceRouteHandler(
           artifactType,
           userLanguage,
           {
-            session_full_contents: formattedSessionContents,
+            full_session_contents: formattedFullSessionContents,
             session_summaries: '' // Not implemented yet, YSTM-578
           }
         );
         
         // Save the generated artifact to the database
         await saveArtifact(client, clientId, 'client', artifactType, content, userLanguage);
-      } else {
-        // For now, use mocked content for other artifact types
-        // In a real implementation, we would generate these as well
-    
-        if (artifactType === 'client_prep_note') {
-          content = `# Session Preparation Note
-
-## Client Goals
-- Continue working on anxiety management techniques
-- Discuss recent family conflict
-- Review homework from last session
-
-## Therapist Focus Areas
-- Assess progress with breathing exercises
-- Explore underlying triggers for recent panic attacks
-- Introduce thought recording exercise if appropriate
-
-## Notes from Previous Session
-Client reported improved sleep after implementing evening routine. Still struggling with work-related stress. Responded well to validation of feelings around family dynamics.`;
-        } else if (artifactType === 'client_bio') {
-          content = `# Client Biography
+      } else if (artifactType === 'client_prep_note') {
+        // Get the client's conceptualization
+        let conceptualizationContent = '';
+        
+        // Check if conceptualization exists
+        const { data: existingConceptualization } = await client
+          .from('artifacts')
+          .select('content')
+          .eq('reference_type', 'client')
+          .eq('reference_id', clientId)
+          .eq('type', 'client_conceptualization')
+          .single();
+        
+        if (existingConceptualization?.content) {
+          // Use existing conceptualization
+          conceptualizationContent = existingConceptualization.content;
+        } else {
+          // Generate conceptualization if it doesn't exist
+          // Get all sessions for the client
+          const { data: allSessions } = await client
+            .from('sessions')
+            .select('id, title, note, transcript, created_at')
+            .eq('client_id', clientId)
+            .order('created_at', { ascending: true });
+          
+          // Format full session contents for the prompt
+          const formattedFullSessionContents = allSessions && allSessions.length > 0 ? 
+            allSessions.map((session, index) => {
+              const sessionNumber = index + 1;
+              const date = new Date(session.created_at).toLocaleDateString();
+              
+              let sessionContent = `## Session ${sessionNumber} - ${date} - ${session.title || 'Untitled'}\n\n`;
+              
+              if (session.transcript) {
+                sessionContent += `### Transcript:\n${session.transcript}\n\n`;
+              }
+              
+              if (session.note) {
+                sessionContent += `### Therapist Notes:\n${session.note}\n\n`;
+              }
+              
+              return sessionContent;
+            }).join('---\n\n') : 'No session data available.';
+          
+          // Generate the conceptualization
+          conceptualizationContent = await generateArtifact(
+            'client_conceptualization',
+            userLanguage,
+            {
+              full_session_contents: formattedFullSessionContents,
+              session_summaries: '' // Not implemented yet, YSTM-578
+            }
+          );
+          
+          // Save the generated conceptualization
+          await saveArtifact(client, clientId, 'client', 'client_conceptualization', conceptualizationContent, userLanguage);
+        }
+        
+        // Get the last session content
+        const { data: lastSession } = await client
+          .from('sessions')
+          .select('title, note, transcript, created_at')
+          .eq('client_id', clientId)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single();
+        
+        // Format last session content
+        let lastSessionContent = 'No previous session data available.';
+        
+        if (lastSession) {
+          const date = new Date(lastSession.created_at).toLocaleDateString();
+          lastSessionContent = `# Last Session - ${date} - ${lastSession.title || 'Untitled'}\n\n`;
+          
+          if (lastSession.transcript) {
+            lastSessionContent += `## Transcript:\n${lastSession.transcript}\n\n`;
+          }
+          
+          if (lastSession.note) {
+            lastSessionContent += `## Therapist Notes:\n${lastSession.note}\n\n`;
+          }
+        }
+        
+        // Generate the prep note using OpenAI
+        content = await generateArtifact(
+          artifactType,
+          userLanguage,
+          {
+            conceptualization: conceptualizationContent,
+            last_session_content: lastSessionContent
+          }
+        );
+        
+        // Save the generated artifact to the database
+        await saveArtifact(client, clientId, 'client', artifactType, content, userLanguage);
+      } else if (artifactType === 'client_bio') {
+        // For now, use mocked content for client bio
+        // In a real implementation, we would generate this as well
+        content = `# Client Biography
 
 ## Personal Background
 34-year-old software engineer, married with one child (age 5). Lives in urban area. Identifies as introverted and analytical. Enjoys reading, hiking, and strategy games.
@@ -128,12 +205,12 @@ Seeking therapy for anxiety management and work-life balance. Reports increasing
 
 ## Treatment History
 Brief CBT in 2023 for work stress with reported benefit. Currently taking Sertraline 50mg daily, prescribed by PCP.`;
-        }
-        
-        // Save the mocked artifact to the database
-        await saveArtifact(client, clientId, 'client', artifactType, content, userLanguage);
       }
-    
+      
+      // Save the generated artifact to the database
+      await saveArtifact(client, clientId, 'client', artifactType, content, userLanguage);
+      
+      // Return the generated artifact
       return NextResponse.json({
         content: content,
         language: userLanguage,
