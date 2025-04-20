@@ -179,6 +179,15 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
           
           // Invalidate artifacts in the cache
           queryClient.invalidateQueries({ queryKey: ['session', sessionId, 'artifact'] })
+          
+          // Force refetch of summaries
+          setTimeout(() => {
+            if (summaryView === 'therapist') {
+              refetchTherapistSummary()
+            } else {
+              refetchClientSummary()
+            }
+          }, 500) // Small delay to ensure the invalidation has completed
         } catch (error) {
           // Error handling - revert to previous state
           setSession(previousSession);
@@ -209,7 +218,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
   }
 
   const handleSaveTranscript = () => {
-    if (session) {
+    if (session && editedTranscript !== undefined) {
       // Optimistically update the UI
       const previousSession = { ...session };
       
@@ -234,14 +243,22 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
             note: session.notes?.userNote || ''
           });
           
-          // Success handling
-          toast.success("Transcript saved");
-          
           // Reset summaries first to show loading state
           resetAndRefetchSummaries()
           
           // Invalidate artifacts in the cache
           queryClient.invalidateQueries({ queryKey: ['session', sessionId, 'artifact'] })
+          
+          // Force refetch of summaries
+          setTimeout(() => {
+            if (summaryView === 'therapist') {
+              refetchTherapistSummary()
+            } else {
+              refetchClientSummary()
+            }
+          }, 500) // Small delay to ensure the invalidation has completed
+          
+          toast.success("Transcript saved");
         } catch (error) {
           // Error handling - revert to previous state
           setSession(previousSession);
