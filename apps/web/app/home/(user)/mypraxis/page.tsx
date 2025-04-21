@@ -140,38 +140,39 @@ export default function Page() {
   const [_newClientIds, setNewClientIds] = useState<Set<string>>(new Set())
 
   useEffect(() => {
-    // Set initial selected client when clients are loaded
-    if (clients.length > 0 && !selectedClient) {
-      const initialClient = clients[0]
-      if (initialClient) {
-        setSelectedClient(setClientId(initialClient.id))
-        localStorage.setItem("selectedClient", initialClient.id)
-      }
-    }
-
-    // Sessions are now loaded via the useSessions hook above
-
     // Load selected menu item from localStorage
     const savedMenuItem = localStorage.getItem("selectedMenuItem")
     if (savedMenuItem && isMenuItem(savedMenuItem)) {
       setSelectedItem(savedMenuItem as MenuItem)
     }
 
-    // Load selected client from localStorage
-    const savedClient = localStorage.getItem("selectedClient")
-    if (savedClient) {
-      setSelectedClient(setClientId(savedClient))
-    }
-
+    // Load selected detail item from localStorage
     const savedDetailItem = localStorage.getItem("selectedDetailItem")
     if (savedDetailItem && isDetailItem(savedDetailItem)) {
       setSelectedDetailItem(savedDetailItem as DetailItem)
     }
 
-    // Session selection is now handled via state only
-
+    // Handle client selection with validation against available clients
+    if (clients.length > 0) {
+      const savedClient = localStorage.getItem("selectedClient")
+      
+      // Check if the saved client exists in the available clients
+      const savedClientExists = savedClient && clients.some(client => client.id === savedClient)
+      
+      if (savedClientExists) {
+        // If saved client exists, select it
+        setSelectedClient(setClientId(savedClient!))
+      } else {
+        // If no valid saved client or no selection, select the first available client
+        const initialClient = clients[0]
+        setSelectedClient(setClientId(initialClient.id))
+        localStorage.setItem("selectedClient", initialClient.id)
+        console.log(`Auto-selected first available client: ${initialClient.id}`)
+      }
+    }
+    
     // Sessions are now loaded via the useSessions hook
-  }, [selectedClient]) // Added selectedClient to dependencies
+  }, [clients]) // Changed dependency to clients to ensure this runs when client list changes
 
   useEffect(() => {
     const handleSessionTitleChange = (event: CustomEvent) => {
