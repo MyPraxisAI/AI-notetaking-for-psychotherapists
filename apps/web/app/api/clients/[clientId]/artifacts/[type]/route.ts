@@ -119,7 +119,6 @@ async function generateFullSessionContents(client: any, clientId: string): Promi
     console.error('Error fetching sessions:', error);
   }
 
-  console.log(`Found ${sessions?.length || 0} sessions for client ${clientId}`);
   // Format the session data for the prompt
   return sessions && sessions.length > 0 ? sessions.map((session: any) => {
     const date = new Date(session.created_at).toLocaleDateString();

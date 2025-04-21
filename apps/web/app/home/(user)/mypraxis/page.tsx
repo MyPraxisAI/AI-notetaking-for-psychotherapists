@@ -458,7 +458,7 @@ export default function Page() {
       return <SettingsForm setIsNavVisible={setIsNavVisible} />
     }
 
-    // Rest of the existing renderContent logic...
+    // Profile tab
     if (selectedDetailItem === "profile") {
       return (
         <ProfileForm clientId={selectedClient} onNameChange={handleNameChange} onClientDeleted={handleClientDeleted} />
@@ -482,42 +482,67 @@ export default function Page() {
       return <SessionView clientId={selectedClient} sessionId={selectedDetailItem} />
     }
 
-    // Otherwise, render the appropriate tab content
+    // Create loading component for reuse
+    const LoadingComponent = () => (
+      <div className="flex items-center justify-center h-full">
+        <Loader2 className="h-6 w-6 animate-spin" />
+      </div>
+    )
+
+    // Only render the component for the selected tab
+    // This prevents unnecessary data fetching for tabs that aren't visible
     switch (selectedDetailItem) {
-      case "overview":
+      case "overview": {
         // Import the ClientConceptualization component dynamically
         const ClientConceptualization = dynamic(
           () => import('../../../../components/mypraxis/client-conceptualization').then(mod => mod.ClientConceptualization),
           {
-            loading: () => <div className="flex items-center justify-center h-full"><Loader2 className="h-6 w-6 animate-spin" /></div>,
+            loading: LoadingComponent,
             ssr: false
           }
-        );
+        )
         return <ClientConceptualization clientId={selectedClient} />
-      case "client-bio":
+      }
+      
+      case "client-bio": {
         // Import the ClientBio component dynamically
-        const ClientBioDynamic = dynamic(
+        const ClientBio = dynamic(
           () => import('../../../../components/mypraxis/client-bio').then(mod => mod.ClientBio),
           {
-            loading: () => <div className="flex items-center justify-center h-full"><Loader2 className="h-6 w-6 animate-spin" /></div>,
+            loading: LoadingComponent,
             ssr: false
           }
-        );
-        return <ClientBioDynamic 
+        )
+        return <ClientBio 
           clientId={selectedClient}
           clientName={clients.find((c) => c.id === selectedClient)?.fullName || ""} 
         />
-      case "prep-note":
-      default:
+      }
+      
+      case "prep-note": {
         // Import the ClientPrepNote component dynamically
         const ClientPrepNote = dynamic(
           () => import('../../../../components/mypraxis/client-prep-note').then(mod => mod.ClientPrepNote),
           {
-            loading: () => <div className="flex items-center justify-center h-full"><Loader2 className="h-6 w-6 animate-spin" /></div>,
+            loading: LoadingComponent,
             ssr: false
           }
-        );
+        )
         return <ClientPrepNote clientId={selectedClient} />
+      }
+      
+      default:
+        // Fallback to prep-note if no other tab is selected
+        // This should never happen with the current implementation
+        // but provides a safety fallback
+        const ClientPrepNoteFallback = dynamic(
+          () => import('../../../../components/mypraxis/client-prep-note').then(mod => mod.ClientPrepNote),
+          {
+            loading: LoadingComponent,
+            ssr: false
+          }
+        )
+        return <ClientPrepNoteFallback clientId={selectedClient} />
     }
   }
 
