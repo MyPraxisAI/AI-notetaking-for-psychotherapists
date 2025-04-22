@@ -6,6 +6,7 @@ import { getSupabaseServerClient } from '@kit/supabase/server-client';
 import { SessionSchema } from '../schemas/session';
 import { getLogger } from '@kit/shared/logger';
 import { generateContent } from '@/lib/utils/artifacts';
+import { createSessionApi } from '../api/session-api';
 import type { User, SupabaseClient } from '@supabase/supabase-js';
 
 // Schema for updating a session
@@ -78,19 +79,14 @@ async function generateSessionTitle(
       return false;
     }
     
-    // Then update the session metadata using the function
-    const { error: metadataUpdateError } = await client
-      .rpc('update_session_metadata', {
-        p_session_id: sessionId,
-        p_metadata: JSON.stringify({
-          title_initialized: true
-        })
-      });
+    // Then update the session metadata using the session API
+    const sessionApi = createSessionApi(client);
+    const metadataUpdateSuccess = await sessionApi.markTitleAsInitialized(sessionId);
     
-    if (metadataUpdateError) {
-      console.error('Failed to update session metadata', metadataUpdateError);
+    if (!metadataUpdateSuccess) {
       // Don't return false here as the title was successfully updated
       // Just log the error and continue
+      console.error('Failed to update session metadata');
     }
     
     console.log('Successfully generated and updated session title', { generatedTitle });
@@ -121,7 +117,7 @@ export const updateSessionAction = enhanceAction(
       // 1. Get the current session data to compare
       const { data: currentSession, error: fetchError } = await client
         .from('sessions')
-        .select('transcript, note')
+        .select('transcript, note, title, metadata')
         .eq('id', data.id)
         .single();
 
@@ -133,6 +129,7 @@ export const updateSessionAction = enhanceAction(
       // 2. Check if content has actually changed
       const transcriptChanged = data.transcript !== currentSession.transcript;
       const noteChanged = data.note !== currentSession.note;
+      const titleChanged = data.title !== currentSession.title;
       const contentChanged = transcriptChanged || noteChanged;
 
       // 3. Update the session data
@@ -144,6 +141,26 @@ export const updateSessionAction = enhanceAction(
           note: data.note
         })
         .eq('id', data.id);
+        
+      // 3a. If title was manually changed, update metadata to mark title as initialized
+      if (titleChanged && !updateError) {
+        const titleInitialized = currentSession.metadata?.title_initialized === true;
+        
+        // Only update if title_initialized is not already set
+        if (!titleInitialized) {
+          // Use the session API to update metadata
+          const sessionApi = createSessionApi(client);
+          const metadataUpdateSuccess = await sessionApi.markTitleAsInitialized(data.id);
+          
+          if (!metadataUpdateSuccess) {
+            console.error('Failed to update title_initialized metadata');
+            // Don't throw here as the session update was successful
+            // Just log the error and continue
+          } else {
+            console.log('Successfully marked title as initialized after manual edit');
+          }
+        }
+      }
 
       if (updateError) {
         console.error('Failed to update session', updateError);
