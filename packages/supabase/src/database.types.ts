@@ -144,6 +144,7 @@ export type Database = {
           content: string | null
           created_at: string
           id: string
+          language: Database["public"]["Enums"]["language"]
           reference_id: string
           reference_type: Database["public"]["Enums"]["artifact_reference_type"]
           type: Database["public"]["Enums"]["artifact_type"]
@@ -154,6 +155,7 @@ export type Database = {
           content?: string | null
           created_at?: string
           id?: string
+          language?: Database["public"]["Enums"]["language"]
           reference_id: string
           reference_type: Database["public"]["Enums"]["artifact_reference_type"]
           type: Database["public"]["Enums"]["artifact_type"]
@@ -164,6 +166,7 @@ export type Database = {
           content?: string | null
           created_at?: string
           id?: string
+          language?: Database["public"]["Enums"]["language"]
           reference_id?: string
           reference_type?: Database["public"]["Enums"]["artifact_reference_type"]
           type?: Database["public"]["Enums"]["artifact_type"]
@@ -327,18 +330,21 @@ export type Database = {
           created_at: string
           id: string
           name: string
+          title: string
           updated_at: string
         }
         Insert: {
           created_at?: string
           id?: string
           name: string
+          title: string
           updated_at?: string
         }
         Update: {
           created_at?: string
           id?: string
           name?: string
+          title?: string
           updated_at?: string
         }
         Relationships: []
@@ -677,6 +683,7 @@ export type Database = {
           created_at: string
           id: string
           note: string | null
+          title: string | null
           transcript: string | null
           updated_at: string
         }
@@ -686,6 +693,7 @@ export type Database = {
           created_at?: string
           id?: string
           note?: string | null
+          title?: string | null
           transcript?: string | null
           updated_at?: string
         }
@@ -695,6 +703,7 @@ export type Database = {
           created_at?: string
           id?: string
           note?: string | null
+          title?: string | null
           transcript?: string | null
           updated_at?: string
         }
@@ -888,6 +897,7 @@ export type Database = {
           account_id: string
           created_at: string
           credentials: string | null
+          full_professional_name: string | null
           geo_locality_id: string | null
           id: string
           updated_at: string
@@ -896,6 +906,7 @@ export type Database = {
           account_id: string
           created_at?: string
           credentials?: string | null
+          full_professional_name?: string | null
           geo_locality_id?: string | null
           id?: string
           updated_at?: string
@@ -904,6 +915,7 @@ export type Database = {
           account_id?: string
           created_at?: string
           credentials?: string | null
+          full_professional_name?: string | null
           geo_locality_id?: string | null
           id?: string
           updated_at?: string
@@ -912,21 +924,21 @@ export type Database = {
           {
             foreignKeyName: "therapists_account_id_fkey"
             columns: ["account_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "accounts"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "therapists_account_id_fkey"
             columns: ["account_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "user_account_workspace"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "therapists_account_id_fkey"
             columns: ["account_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "user_accounts"
             referencedColumns: ["id"]
           },
@@ -1037,21 +1049,21 @@ export type Database = {
           {
             foreignKeyName: "user_preferences_account_id_fkey"
             columns: ["account_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "accounts"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "user_preferences_account_id_fkey"
             columns: ["account_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "user_account_workspace"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "user_preferences_account_id_fkey"
             columns: ["account_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "user_accounts"
             referencedColumns: ["id"]
           },
@@ -1396,6 +1408,7 @@ export type Database = {
         | "client_conceptualization"
         | "client_bio"
       billing_provider: "stripe" | "lemon-squeezy" | "paddle"
+      language: "en" | "ru"
       notification_channel: "in_app" | "email"
       notification_type: "info" | "warning" | "error"
       payment_status: "pending" | "succeeded" | "failed"

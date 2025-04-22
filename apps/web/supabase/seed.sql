@@ -382,7 +382,28 @@ Client: I''ve done it a couple of times. It''s interesting to see my thoughts wr
 Therapist: That''s exactly what we''re looking for. Let''s build on that awareness today and discuss some additional cognitive techniques you might find helpful for managing those work stressors.', 'Client showing improvement with stress management techniques. Mindfulness exercises are helping, and client is gaining insight through thought journaling. Continue working on cognitive restructuring for work-related anxiety.', '2025-03-27 17:55:11.181332+00', '2025-03-27 17:55:11.181332+00');
 
 -- Add artifacts for the client and session
-INSERT INTO "public"."artifacts" ("id", "reference_type", "reference_id", "type", "content", "created_at", "updated_at")
+INSERT INTO "public"."artifacts" ("id", "reference_type", "reference_id", "type", "content", "created_at", "updated_at", "language")
 VALUES 
-('e6b930c9-0a76-412e-a836-4bc4849a3271', 'client', 'e4b930c9-0a76-412e-a836-4bc4849a3271', 'client_bio', 'John is a 35-year-old software developer experiencing work-related stress and anxiety.', '2025-03-27 17:55:11.181332+00', '2025-03-27 17:55:11.181332+00'),
-('e7b930c9-0a76-412e-a836-4bc4849a3271', 'session', 'f5b930c9-0a76-412e-a836-4bc4849a3271', 'session_therapist_summary', 'Client reported reduced anxiety levels. Continuing with mindfulness exercises.', '2025-03-27 17:55:11.181332+00', '2025-03-27 17:55:11.181332+00');
+('e6b930c9-0a76-412e-a836-4bc4849a3271', 'client', 'e4b930c9-0a76-412e-a836-4bc4849a3271', 'client_bio', 'John is a 35-year-old software developer experiencing work-related stress and anxiety.', '2025-03-27 17:55:11.181332+00', '2025-03-27 17:55:11.181332+00', 'en'),
+('e7b930c9-0a76-412e-a836-4bc4849a3271', 'session', 'f5b930c9-0a76-412e-a836-4bc4849a3271', 'session_therapist_summary', E'## Session Analysis
+      
+The client demonstrated significant progress in addressing their anxiety triggers. Key observations:
+
+1. **Cognitive patterns**: Client is now able to identify catastrophic thinking before it escalates
+2. **Behavioral responses**: Successfully applied breathing techniques in two real-world situations
+3. **Emotional regulation**: Reported decreased intensity of panic symptoms
+
+**Recommendations for next session:**
+- Continue exposure hierarchy work
+- Introduce thought records for documenting cognitive distortions
+- Consider mindfulness practice to complement existing techniques', '2025-03-27 17:55:11.181332+00', '2025-03-27 17:55:11.181332+00', 'en'),
+('e8b930c9-0a76-412e-a836-4bc4849a3271', 'session', 'f5b930c9-0a76-412e-a836-4bc4849a3271', 'session_client_summary', E'# Session Summary
+
+We worked on understanding your anxiety triggers and practiced some techniques to help manage them. Here\'s what we covered:
+
+- Identified specific situations that tend to trigger your anxiety
+- Practiced the 4-7-8 breathing technique that you can use anytime
+- Discussed how to recognize when your thoughts are becoming catastrophic
+- Created a simple plan for gradually facing situations that make you anxious
+
+**For next time:** Try using the breathing technique when you notice anxiety starting, and we\'ll discuss how it went.', '2025-03-27 17:55:11.181332+00', '2025-03-27 17:55:11.181332+00', 'en');

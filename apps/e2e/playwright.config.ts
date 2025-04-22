@@ -1,4 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
+import path from 'path';
 
 const enableBillingTests = process.env.ENABLE_BILLING_TESTS === 'true';
 
@@ -23,6 +24,8 @@ if (!enableBillingTests) {
  * See https://playwright.dev/docs/test-configuration.
  */
 export default defineConfig({
+  /* Global setup script to run before all tests */
+  globalSetup: path.join(__dirname, 'global-setup.ts'),
   testDir: './tests',
   /* Run tests in files in parallel */
   fullyParallel: true,
