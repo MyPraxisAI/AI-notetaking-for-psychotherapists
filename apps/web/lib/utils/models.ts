@@ -4,7 +4,7 @@
  * and provides a unified interface for text generation.
  */
 
-import { getOpenAIClient, estimateTokenCount } from './openai-client';
+import { aiService } from './ai-service';
 
 // Define the supported model providers
 export type ModelProvider = 'openai' | 'anthropic' | 'google';
@@ -49,7 +49,7 @@ export async function generateLLMResponse(
   });
   
   // Estimate prompt token count
-  const promptTokens = estimateTokenCount(prompt);
+  const promptTokens = aiService.estimateTokenCount(prompt);
   
   // Start timing
   const startTime = Date.now();
@@ -89,9 +89,9 @@ async function generateWithOpenAI(
   promptTokens: number
 ): Promise<GenerationResult> {
   // Initialize OpenAI client with options
-  const client = getOpenAIClient({
+  const client = aiService.getOpenAIClient({
     temperature: options.temperature,
-    max_tokens: options.maxTokens,
+    maxTokens: options.maxTokens,
     ...options
   });
   
@@ -106,7 +106,7 @@ async function generateWithOpenAI(
   const content = response.content.toString();
   
   // Estimate completion token count
-  const completionTokens = estimateTokenCount(content);
+  const completionTokens = aiService.estimateTokenCount(content);
   
   // Log success
   console.log(`Successfully generated text with ${options.provider}`, { 
