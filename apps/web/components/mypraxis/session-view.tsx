@@ -1,5 +1,6 @@
 "use client"
 
+import "../../styles/markdown.css"
 import { useEffect, useRef, useState, useTransition } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@kit/ui/tabs"
@@ -150,13 +151,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
   // Get the query client for invalidating queries
   const queryClient = useQueryClient()
   
-  /**
-   * Helper function to clean title text by removing surrounding quotes
-   */
-  const cleanTitleText = (title: string) => {
-    // Remove surrounding double quotes if present
-    return title.replace(/^"(.*)"$/, '$1');
-  }
+
   
   /**
    * Handle saving the session title
@@ -255,7 +250,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                   detail: { 
                     clientId, 
                     sessionId, 
-                    title: cleanTitleText(result.session.title), 
+                    title: result.session.title, 
                     session: result.session 
                   },
                 }),
@@ -342,7 +337,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                   detail: { 
                     clientId, 
                     sessionId, 
-                    title: cleanTitleText(result.session.title), 
+                    title: result.session.title, 
                     session: result.session 
                   },
                 }),
@@ -438,7 +433,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
           <div className="flex items-center gap-2">
             {isEditingTitle ? (
               <Input
-                value={session?.title ? cleanTitleText(session.title) : ""}
+                value={session?.title || ""}
                 onChange={(e) => {
                   const value = e.target.value
                   if (session) {
@@ -489,7 +484,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                   onClick={() => setIsEditingTitle(true)}
                   data-test="session-title"
                 >
-                  {session?.title ? cleanTitleText(session.title) : "New Session"}
+                  {session?.title || "New Session"}
                 </h2>
                 <Button
                   variant="ghost"
