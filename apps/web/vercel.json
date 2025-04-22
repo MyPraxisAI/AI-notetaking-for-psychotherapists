@@ -1,18 +1,12 @@
 {
   "functions": {
-    "api/*": {
+    "app/api/**/*": {
       "maxDuration": 60
     },
-    "api/*/*": {
-      "maxDuration": 60
-    },
-    "api/*/*/*": {
-      "maxDuration": 60
-    },
-    "api/clients/*/artifacts/*": {
+    "app/api/clients/[clientId]/artifacts/[type]/route": {
       "maxDuration": 300
     },
-    "api/sessions/*/artifacts/*": {
+    "app/api/sessions/[sessionId]/artifacts/[type]/route": {
       "maxDuration": 300
     }
   },
