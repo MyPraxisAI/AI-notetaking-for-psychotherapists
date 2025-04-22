@@ -482,17 +482,19 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                     <TabsTrigger
                       value="therapist"
                       className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#111827] data-[state=active]:bg-transparent px-4 py-2 font-medium text-[14px] text-[#6B7280] data-[state=active]:text-[#111827] data-[state=active]:shadow-none"
+                      data-test="session-tab-therapist-summary"
                     >
                       Therapist Summary
                     </TabsTrigger>
                     <TabsTrigger
                       value="client"
                       className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#111827] data-[state=active]:bg-transparent px-4 py-2 font-medium text-[14px] text-[#6B7280] data-[state=active]:text-[#111827] data-[state=active]:shadow-none"
+                      data-test="session-tab-client-summary"
                     >
                       Client Summary
                     </TabsTrigger>
                   </TabsList>
-                  <TabsContent value="therapist" className="mt-3">
+                  <TabsContent value="therapist" className="mt-3" data-test="session-therapist-summary">
                     <div className="relative group">
                       {isLoadingTherapistSummary ? (
                         <div className="rounded-lg bg-[#FFF9E8] px-6 py-6 text-[14px] text-muted-foreground flex items-center justify-center min-h-[100px]">
@@ -545,7 +547,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                       )}
                     </div>
                   </TabsContent>
-                  <TabsContent value="client" className="mt-3">
+                  <TabsContent value="client" className="mt-3" data-test="session-client-summary">
                     <div className="relative group">
                       {isLoadingClientSummary ? (
                         <div className="rounded-lg bg-[#FFF9E8] px-6 py-6 text-[14px] text-muted-foreground flex items-center justify-center min-h-[100px]">

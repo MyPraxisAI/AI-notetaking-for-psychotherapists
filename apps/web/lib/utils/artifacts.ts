@@ -78,11 +78,18 @@ export async function generateArtifact(
     const primaryApproach = therapeuticApproach.title;
         
     // Render the prompt template with variables
-    const prompt = env.renderString(templateString, {
+    let prompt = env.renderString(templateString, {
       ...variables,
       language: getFullLanguageName(language), // Convert language code to full name
       primary_therapeutic_approach: primaryApproach
     });
+    
+    // If mock services are enabled, inject the artifact type as a marker
+    // This helps the mock implementation identify which response to return
+    if (process.env.MOCK_EXTERNAL_SERVICES === 'true') {
+      console.log(`Injecting artifact type marker '${type}' for mock detection`);
+      prompt = `${type}\n${prompt}`;
+    }
     
     // Log the prompt variables
     console.log('Prompt template variables', { type, primaryApproach });
