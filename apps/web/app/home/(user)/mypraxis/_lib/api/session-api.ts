@@ -5,7 +5,7 @@ import { SupabaseClient } from '@supabase/supabase-js';
  */
 interface SessionMetadata {
   title_initialized?: boolean;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 /**

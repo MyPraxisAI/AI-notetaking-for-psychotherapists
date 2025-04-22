@@ -4,6 +4,7 @@ import "../../styles/markdown.css"
 import { useEffect, useRef, useState, useTransition } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@kit/ui/tabs"
+import { SessionMetadata } from "../../types/session"
 import { sessionTranscripts as _sessionTranscripts } from "../../data/mypraxis/session-transcripts"
 import { Textarea } from "@kit/ui/textarea"
 import { Label } from "@kit/ui/label"
@@ -179,7 +180,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
             // Update the session with the returned data
             setSession({
               ...session,
-              title: result.session.title,
+              title: result.session.title || '',
               // Add any other fields that might have been updated
             });
           }
@@ -230,7 +231,15 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
           // If we got updated session data back, update our local state
           if (result.success && result.session) {
             // Update the session with the returned data including the potentially auto-generated title
-            setSession(result.session);
+            // Convert the database record to a Session object
+            setSession({
+              ...session,
+              id: result.session.id,
+              title: result.session.title || '',
+              transcript: result.session.transcript ? { content: result.session.transcript } : undefined,
+              notes: result.session.note ? { userNote: result.session.note } : undefined,
+              metadata: result.session.metadata as SessionMetadata | undefined
+            });
             
             // Update localStorage and dispatch event for column-4 list if title changed
             if (session.title !== result.session.title) {
@@ -250,7 +259,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                   detail: { 
                     clientId, 
                     sessionId, 
-                    title: result.session.title, 
+                    title: result.session.title || '', 
                     session: result.session 
                   },
                 }),
@@ -317,7 +326,15 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
           // If we got updated session data back, update our local state
           if (result.success && result.session) {
             // Update the session with the returned data including the potentially auto-generated title
-            setSession(result.session);
+            // Convert the database record to a Session object
+            setSession({
+              ...session,
+              id: result.session.id,
+              title: result.session.title || '',
+              transcript: result.session.transcript ? { content: result.session.transcript } : undefined,
+              notes: result.session.note ? { userNote: result.session.note } : undefined,
+              metadata: result.session.metadata as SessionMetadata | undefined
+            });
             
             // Update localStorage and dispatch event for column-4 list if title changed
             if (session.title !== result.session.title) {
@@ -337,7 +354,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                   detail: { 
                     clientId, 
                     sessionId, 
-                    title: result.session.title, 
+                    title: result.session.title || '', 
                     session: result.session 
                   },
                 }),

@@ -1,3 +1,8 @@
+export interface SessionMetadata {
+  title_initialized?: boolean;
+  [key: string]: unknown; // Allow additional properties
+}
+
 export interface Session {
   id: string
   date: string
@@ -14,6 +19,7 @@ export interface Session {
   notes?: {
     userNote: string
   }
+  metadata?: SessionMetadata
 }
 
 export interface SessionsState {

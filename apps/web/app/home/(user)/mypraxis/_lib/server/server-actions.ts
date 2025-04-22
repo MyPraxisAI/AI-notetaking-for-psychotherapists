@@ -3,7 +3,7 @@
 import { z } from 'zod';
 import { enhanceAction } from '@kit/next/actions';
 import { getSupabaseServerClient } from '@kit/supabase/server-client';
-import { SessionSchema } from '../schemas/session';
+import { SessionSchema, SessionMetadata } from '../schemas/session';
 import { getLogger } from '@kit/shared/logger';
 import { generateContent } from '@/lib/utils/artifacts';
 import { createSessionApi } from '../api/session-api';
@@ -120,11 +120,13 @@ export const updateSessionAction = enhanceAction(
         .select('transcript, note, title, metadata')
         .eq('id', data.id)
         .single();
-
+        
       if (fetchError) {
         console.error('Failed to fetch current session data', fetchError);
         throw new Error('Failed to fetch current session data');
       }
+
+
 
       // 2. Check if content has actually changed
       const transcriptChanged = data.transcript !== currentSession.transcript;
@@ -144,7 +146,9 @@ export const updateSessionAction = enhanceAction(
         
       // 3a. If title was manually changed, update metadata to mark title as initialized
       if (titleChanged && !updateError) {
-        const titleInitialized = currentSession.metadata?.title_initialized === true;
+        // Handle metadata safely, checking if it exists and has the title_initialized property
+        const metadata = currentSession.metadata as SessionMetadata | null;
+        const titleInitialized = metadata?.title_initialized === true;
         
         // Only update if title_initialized is not already set
         if (!titleInitialized) {
