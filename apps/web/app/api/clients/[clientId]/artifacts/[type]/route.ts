@@ -208,6 +208,7 @@ async function getOrCreateArtifact(
   userLanguage: LanguageType
 ): Promise<{ content: string; language: string; isNew: boolean }> {
   try {
+    console.log(`[Artifact:${artifactType}] Checking if artifact exists for client ${clientId}`);
     // Check if the artifact already exists in the database
     const { data: existingArtifact } = await client
       .from('artifacts')
@@ -219,6 +220,7 @@ async function getOrCreateArtifact(
     
     // If the artifact exists, return it
     if (existingArtifact) {
+      console.log(`[Artifact:${artifactType}] Found existing artifact for client ${clientId}`);
       return {
         content: existingArtifact.content,
         language: existingArtifact.language,
@@ -227,12 +229,14 @@ async function getOrCreateArtifact(
     }
     
     // If the artifact doesn't exist, generate it
-    console.log(`${artifactType} not found, generating one...`);
+    console.log(`[Artifact:${artifactType}] Not found for client ${clientId}, generating new artifact...`);
     
     // Get the prompt template to extract variables
+    console.log(`[Artifact:${artifactType}] Fetching prompt template`);
     const promptApi = createPromptApi(client);
     const promptData = await promptApi.getPromptByArtifactType(artifactType);
     const templateString = promptData.template;
+    console.log(`[Artifact:${artifactType}] Using model: ${promptData.model}`);
     
     // Extract variables from the template
     const variables = extractTemplateVariables(templateString);
@@ -244,7 +248,18 @@ async function getOrCreateArtifact(
     const variableData = await generateVariableData(client, clientId, artifactType, variables);
     
     // Generate the artifact using the variable data
-    const content = await generateArtifact(artifactType, variableData);
+    console.log(`[Artifact:${artifactType}] Starting artifact generation with OpenAI`);
+    const startTime = Date.now();
+    let content;
+    try {
+      content = await generateArtifact(artifactType, variableData);
+      const duration = Date.now() - startTime;
+      console.log(`[Artifact:${artifactType}] Generation completed successfully in ${duration}ms`);
+    } catch (genError) {
+      const duration = Date.now() - startTime;
+      console.error(`[Artifact:${artifactType}] Generation failed after ${duration}ms:`, genError);
+      throw genError;
+    }
     
     // Save the generated artifact to the database
     await saveArtifact(client, clientId, 'client', artifactType, content, userLanguage);
@@ -255,8 +270,22 @@ async function getOrCreateArtifact(
       isNew: true
     };
   } catch (error) {
-    console.error(`Error getting or creating ${artifactType}:`, error);
-    throw new Error(`Failed to get or create ${artifactType}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    console.error(`[Artifact:${artifactType}] Error getting or creating artifact for client ${clientId}:`, error);
+    
+    // Check for timeout errors specifically
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const isTimeout = errorMessage.includes('timeout') || errorMessage.includes('timed out');
+    
+    if (isTimeout) {
+      console.error(`[Artifact:${artifactType}] Request timed out. This could be due to high server load or an issue with the OpenAI API.`);
+      return {
+        content: `We're sorry, but we couldn't generate this content at the moment due to high demand. Please try again later.`,
+        language: userLanguage,
+        isNew: true
+      };
+    }
+    
+    throw new Error(`Failed to get or create ${artifactType}: ${errorMessage}`);
   }
 }
 

@@ -41,10 +41,11 @@ export async function generateArtifact(
   };
   
   try {
-    console.log(`Starting generation of ${type} artifact`);
+    console.log(`[Artifact:${type}] Starting generation process`);
     
     // Get the Supabase client
     const client = getSupabaseServerClient();
+    console.log(`[Artifact:${type}] Supabase client initialized`);
     
     // Get the template for the artifact type from the database
     const promptApi = createPromptApi(client);
@@ -62,7 +63,7 @@ export async function generateArtifact(
     };
     
     // Log the prompt data
-    console.log('Using prompt from database', { 
+    console.log(`[Artifact:${type}] Using prompt from database`, { 
       type, 
       model: promptData.model, 
       provider: promptData.provider 
@@ -88,23 +89,34 @@ export async function generateArtifact(
     // If mock services are enabled, inject the artifact type as a marker
     // This helps the mock implementation identify which response to return
     if (process.env.MOCK_EXTERNAL_SERVICES === 'true') {
-      console.log(`Injecting artifact type marker '${type}' for mock detection`);
+      console.log(`[Artifact:${type}] Using mock services, injecting artifact type marker`);
       prompt = `${type}\n${prompt}`;
     }
     
     // Log the prompt variables
-    console.log('Prompt template variables', { type, primaryApproach });
+    console.log(`[Artifact:${type}] Prompt template variables`, { type, primaryApproach });
     
     // In development, log the full prompt
     if (process.env.NODE_ENV === 'development') {
-      console.log('Rendered Prompt:', prompt);
+      console.log(`[Artifact:${type}] Rendered Prompt:`, prompt);
     }
     
-    // Generate the artifact content using the model layer
-    const result = await generateLLMResponse(prompt, generationOptions);
+    console.log(`[Artifact:${type}] Starting LLM request with model: ${promptData.model}`);
+    
+    // Generate the artifact content using the model layer with timeout handling
+    let result;
+    try {
+      const startTime = Date.now();
+      result = await generateLLMResponse(prompt, generationOptions);
+      const duration = Date.now() - startTime;
+      console.log(`[Artifact:${type}] LLM request completed in ${duration}ms`);
+    } catch (error) {
+      console.error(`[Artifact:${type}] LLM request failed:`, error);
+      throw error;
+    }
     
     // Log generation results
-    console.log(`Successfully generated ${type} artifact`, { 
+    console.log(`[Artifact:${type}] Successfully generated artifact`, { 
       duration: `${result.duration}ms`,
       promptTokens: result.promptTokens,
       completionTokens: result.completionTokens,

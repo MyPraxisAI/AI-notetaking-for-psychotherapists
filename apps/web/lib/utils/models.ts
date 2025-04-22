@@ -95,11 +95,30 @@ async function generateWithOpenAI(
     ...options
   });
   
-  // Call the model
+  // Call the model with improved error handling
   console.log(`Starting OpenAI request with model: ${options.model}`);
   // Type assertion for the client
   const typedClient = client as { invoke: (prompt: string) => Promise<{ content: string }> };
-  const response = await typedClient.invoke(prompt);
+  
+  let response;
+  try {
+    // Set up a timeout promise to compete with the OpenAI call
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('OpenAI request timed out after 55 seconds')), 55000);
+    });
+    
+    // Race the OpenAI call against the timeout
+    response = await Promise.race([
+      typedClient.invoke(prompt),
+      timeoutPromise
+    ]) as { content: string };
+    
+    console.log(`OpenAI request completed successfully for model: ${options.model}`);
+  } catch (error) {
+    console.error(`OpenAI request failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    console.error('Error details:', error);
+    throw error;
+  }
   
   // Calculate duration
   const duration = Date.now() - startTime;

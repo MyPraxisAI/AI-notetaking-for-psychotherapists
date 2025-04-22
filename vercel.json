@@ -1,0 +1,14 @@
+{
+  "functions": {
+    "api/**/*": {
+      "maxDuration": 60
+    },
+    "api/clients/*/artifacts/**": {
+      "maxDuration": 90
+    },
+    "api/sessions/*/artifacts/**": {
+      "maxDuration": 90
+    }
+  },
+  "ignoreCommand": "node -e \"process.exit(process.platform === 'darwin' ? 0 : 1)\""
+}
