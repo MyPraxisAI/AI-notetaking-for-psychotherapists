@@ -69,6 +69,8 @@ class AIService {
         temperature: options.temperature || 0.7,
         maxTokens: options.maxTokens,
         openAIApiKey: apiKey,
+        timeout: 60000, // 60 second timeout
+        maxRetries: 3,  // Retry 3 times on failure
       });
     }
     
