@@ -635,6 +635,48 @@ export type Database = {
           },
         ]
       }
+      prompts: {
+        Row: {
+          active: boolean | null
+          artifact_type: Database["public"]["Enums"]["artifact_type"] | null
+          created_at: string
+          description: string | null
+          id: string
+          model: string
+          name: string | null
+          parameters: Json | null
+          provider: string
+          template: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean | null
+          artifact_type?: Database["public"]["Enums"]["artifact_type"] | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          model: string
+          name?: string | null
+          parameters?: Json | null
+          provider: string
+          template: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean | null
+          artifact_type?: Database["public"]["Enums"]["artifact_type"] | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          model?: string
+          name?: string | null
+          parameters?: Json | null
+          provider?: string
+          template?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       role_permissions: {
         Row: {
           id: number
@@ -682,6 +724,7 @@ export type Database = {
           client_id: string
           created_at: string
           id: string
+          metadata: Json | null
           note: string | null
           title: string | null
           transcript: string | null
@@ -692,6 +735,7 @@ export type Database = {
           client_id: string
           created_at?: string
           id?: string
+          metadata?: Json | null
           note?: string | null
           title?: string | null
           transcript?: string | null
@@ -702,6 +746,7 @@ export type Database = {
           client_id?: string
           created_at?: string
           id?: string
+          metadata?: Json | null
           note?: string | null
           title?: string | null
           transcript?: string | null
@@ -1321,6 +1366,13 @@ export type Database = {
         Args: {
           target_account_id: string
           new_owner_id: string
+        }
+        Returns: undefined
+      }
+      update_session_metadata: {
+        Args: {
+          p_session_id: string
+          p_metadata: Json
         }
         Returns: undefined
       }
