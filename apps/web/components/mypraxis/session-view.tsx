@@ -149,6 +149,63 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
   
   // Get the query client for invalidating queries
   const queryClient = useQueryClient()
+  
+  /**
+   * Helper function to clean title text by removing surrounding quotes
+   */
+  const cleanTitleText = (title: string) => {
+    // Remove surrounding double quotes if present
+    return title.replace(/^"(.*)"$/, '$1');
+  }
+  
+  /**
+   * Handle saving the session title
+   * @param title The title to save
+   */
+  const handleSaveTitle = (title: string) => {
+    if (session) {
+      // Store the previous session for rollback if needed
+      const previousSession = { ...session }
+      
+      // Use startTransition to indicate pending state
+      startTransition(async () => {
+        try {
+          // Call the server action directly
+          const result = await updateSessionAction({
+            id: sessionId,
+            clientId,
+            title: title,
+            transcript: session.transcript?.content || '',
+            note: session.notes?.userNote || ''
+          });
+          
+          // If we got updated session data back, update our local state
+          if (result.success && result.session) {
+            // Update the session with the returned data
+            setSession({
+              ...session,
+              title: result.session.title,
+              // Add any other fields that might have been updated
+            });
+          }
+          
+          // Hide the title editing UI
+          setIsEditingTitle(false);
+          
+          // Show success toast
+          toast.success("Title saved");
+        } catch (error) {
+          // Error handling - revert to previous state
+          setSession(previousSession);
+          toast.error("Failed to save title");
+          console.error("Error saving title:", error);
+        }
+      });
+    } else {
+      // Just hide the editing UI if there's no session
+      setIsEditingTitle(false);
+    }
+  }
 
   const handleSaveNote = (note: string) => {
     if (session) {
@@ -167,13 +224,44 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
       startTransition(async () => {
         try {
           // Call the server action directly
-          await updateSessionAction({
+          const result = await updateSessionAction({
             id: sessionId,
             clientId,
             title: session.title,
             transcript: session.transcript?.content || '',
             note: note
           });
+          
+          // If we got updated session data back, update our local state
+          if (result.success && result.session) {
+            // Update the session with the returned data including the potentially auto-generated title
+            setSession(result.session);
+            
+            // Update localStorage and dispatch event for column-4 list if title changed
+            if (session.title !== result.session.title) {
+              const sessionsData = localStorage.getItem("sessions")
+              if (sessionsData) {
+                const sessions = JSON.parse(sessionsData)
+                if (!sessions[clientId]) {
+                  sessions[clientId] = {}
+                }
+                sessions[clientId][sessionId] = result.session
+                localStorage.setItem("sessions", JSON.stringify(sessions))
+              }
+
+              // Force parent update with the cleaned title
+              window.dispatchEvent(
+                new CustomEvent("sessionTitleChanged", {
+                  detail: { 
+                    clientId, 
+                    sessionId, 
+                    title: cleanTitleText(result.session.title), 
+                    session: result.session 
+                  },
+                }),
+              )
+            }
+          }
           
           // Success handling
           toast.success("Note saved");
@@ -223,13 +311,44 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
       startTransition(async () => {
         try {
           // Call the server action directly
-          await updateSessionAction({
+          const result = await updateSessionAction({
             id: sessionId,
             clientId,
             title: session.title,
             transcript: editedTranscript,
             note: session.notes?.userNote || ''
           });
+          
+          // If we got updated session data back, update our local state
+          if (result.success && result.session) {
+            // Update the session with the returned data including the potentially auto-generated title
+            setSession(result.session);
+            
+            // Update localStorage and dispatch event for column-4 list if title changed
+            if (session.title !== result.session.title) {
+              const sessionsData = localStorage.getItem("sessions")
+              if (sessionsData) {
+                const sessions = JSON.parse(sessionsData)
+                if (!sessions[clientId]) {
+                  sessions[clientId] = {}
+                }
+                sessions[clientId][sessionId] = result.session
+                localStorage.setItem("sessions", JSON.stringify(sessions))
+              }
+
+              // Force parent update with the cleaned title
+              window.dispatchEvent(
+                new CustomEvent("sessionTitleChanged", {
+                  detail: { 
+                    clientId, 
+                    sessionId, 
+                    title: cleanTitleText(result.session.title), 
+                    session: result.session 
+                  },
+                }),
+              )
+            }
+          }
           
           // Reset summaries first to show loading state
           resetAndRefetchSummaries()
@@ -319,17 +438,18 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
           <div className="flex items-center gap-2">
             {isEditingTitle ? (
               <Input
-                value={session?.title || ""}
+                value={session?.title ? cleanTitleText(session.title) : ""}
                 onChange={(e) => {
                   const value = e.target.value
                   if (session) {
+                    // Optimistically update the UI
                     const updatedSession = {
                       ...session,
                       title: value,
                     }
                     setSession(updatedSession)
-
-                    // Update localStorage
+                    
+                    // Update localStorage and dispatch event for column-4 list
                     const sessionsData = localStorage.getItem("sessions")
                     if (sessionsData) {
                       const sessions = JSON.parse(sessionsData)
@@ -348,11 +468,14 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                     )
                   }
                 }}
-                onBlur={() => setIsEditingTitle(false)}
+                onBlur={() => {
+                  // Save the title when the input loses focus
+                  handleSaveTitle(session?.title || "")
+                }}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     e.preventDefault()
-                    setIsEditingTitle(false)
+                    handleSaveTitle(session?.title || "")
                   }
                 }}
                 className="h-8 text-[24px] font-semibold text-[#111827] tracking-[-0.011em] focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)] [&::-webkit-resizer]:appearance-none after:content-[''] after:absolute after:bottom-1 after:right-1 after:w-3 after:h-3 after:border-b-2 after:border-r-2 after:border-[#6B7280] after:cursor-se-resize relative"
@@ -366,13 +489,14 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                   onClick={() => setIsEditingTitle(true)}
                   data-test="session-title"
                 >
-                  {session?.title || "New Session"}
+                  {session?.title ? cleanTitleText(session.title) : "New Session"}
                 </h2>
                 <Button
                   variant="ghost"
                   size="icon"
                   className="h-7 w-7 opacity-0 group-hover/title:opacity-100 transition-opacity"
                   onClick={() => setIsEditingTitle(true)}
+                  data-test="edit-session-title-button"
                 >
                   <Edit2 className="h-4 w-4" />
                 </Button>
