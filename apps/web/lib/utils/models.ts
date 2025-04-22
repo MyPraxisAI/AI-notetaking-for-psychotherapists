@@ -17,7 +17,7 @@ export interface GenerationOptions {
   temperature?: number;
   maxTokens?: number;
   provider: ModelProvider;
-  [key: string]: any;
+  [key: string]: string | number | boolean | undefined;
 }
 
 /**
@@ -97,7 +97,9 @@ async function generateWithOpenAI(
   
   // Call the model
   console.log(`Starting OpenAI request with model: ${options.model}`);
-  const response = await client.invoke(prompt);
+  // Type assertion for the client
+  const typedClient = client as { invoke: (prompt: string) => Promise<{ content: string }> };
+  const response = await typedClient.invoke(prompt);
   
   // Calculate duration
   const duration = Date.now() - startTime;

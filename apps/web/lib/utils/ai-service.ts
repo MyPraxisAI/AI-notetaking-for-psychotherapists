@@ -9,7 +9,7 @@ export interface OpenAIClientOptions {
   model?: string;
   temperature?: number;
   maxTokens?: number;
-  [key: string]: any;
+  [key: string]: string | number | boolean | undefined;
 }
 
 /**
@@ -20,7 +20,7 @@ export interface OpenAIClientOptions {
 class AIService {
   private static instance: AIService;
   private readonly useMocks: boolean;
-  private cachedClients: Map<string, any> = new Map();
+  private cachedClients: Map<string, unknown> = new Map();
 
   private constructor() {
     // Check environment once during initialization
@@ -41,7 +41,7 @@ class AIService {
    * Get an OpenAI client instance
    * Will return either a real or mock client based on environment configuration
    */
-  public getOpenAIClient(options: OpenAIClientOptions = {}): any {
+  public getOpenAIClient(options: OpenAIClientOptions = {}): unknown {
     const cacheKey = this.getCacheKey(options);
     
     // Return cached client if available
@@ -88,7 +88,7 @@ class AIService {
       const enc = encodingForModel('gpt-4');
       const tokens = enc.encode(text);
       return tokens.length;
-    } catch (error) {
+    } catch {
       // Fallback to character-based estimation if tiktoken fails
       // Rough estimate: 4 characters per token
       console.log('Tiktoken encoding failed, using character-based estimation');

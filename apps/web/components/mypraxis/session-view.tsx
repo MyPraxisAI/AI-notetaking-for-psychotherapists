@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useTransition } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@kit/ui/tabs"
-import { sessionTranscripts } from "../../data/mypraxis/session-transcripts"
+import { sessionTranscripts as _sessionTranscripts } from "../../data/mypraxis/session-transcripts"
 import { Textarea } from "@kit/ui/textarea"
 import { Label } from "@kit/ui/label"
 import { Check, Edit2, Plus, Copy, MoreVertical, Loader2 } from "lucide-react"
@@ -40,7 +40,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [isEditingTranscript, setIsEditingTranscript] = useState(false)
   const [editedTranscript, setEditedTranscript] = useState<string>("")
-  const saveTimeout = useRef<NodeJS.Timeout | undefined>(undefined)
+  const _saveTimeout = useRef<NodeJS.Timeout | undefined>(undefined)
   const copyTimeout = useRef<NodeJS.Timeout | undefined>(undefined)
   const clientCopyTimeout = useRef<NodeJS.Timeout | undefined>(undefined)
 
@@ -145,7 +145,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
   }
 
   // Use React's useTransition for pending state
-  const [isPending, startTransition] = useTransition()
+  const [_isPending, startTransition] = useTransition()
   
   // Get the query client for invalidating queries
   const queryClient = useQueryClient()
@@ -567,7 +567,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                             variant="ghost"
                             size="icon"
                             className="h-6 w-6 hover:bg-transparent"
-                            onClick={() => handleCopyText(clientSummaryData.content, true)}
+                            onClick={() => handleCopyText(clientSummaryData?.content || '', true)}
                             data-test="copy-client-summary-button"
                           >
                             {isClientSummaryCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}

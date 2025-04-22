@@ -31,7 +31,7 @@ export async function getUserLanguage(): Promise<string> {
     const { data: preferences } = await client
       .from('user_preferences')
       .select('language')
-      .eq('account_id', workspace.id)
+      .eq('account_id', workspace.id || '')
       .single();
     
     // Check if we have preferences and a language value

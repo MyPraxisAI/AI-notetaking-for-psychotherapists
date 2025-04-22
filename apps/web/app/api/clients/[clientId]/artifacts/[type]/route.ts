@@ -5,6 +5,7 @@ import { getUserLanguage } from '../../../../../../lib/utils/language';
 import type { ArtifactType, LanguageType } from '../../../../../../lib/utils/artifacts';
 import { generateArtifact, saveArtifact } from '../../../../../../lib/utils/artifacts';
 import { createPromptApi } from '../../../../../../app/home/(user)/mypraxis/_lib/api/prompt-api';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 /**
  * Extract variables from a template string
@@ -19,7 +20,7 @@ function extractTemplateVariables(templateString: string): string[] {
   while ((match = variableRegex.exec(templateString)) !== null) {
     const variableName = match[1];
     // Skip global variables that are handled at a lower level
-    if (variableName !== 'language' && variableName !== 'primary_therapeutic_approach') {
+    if (variableName && variableName !== 'language' && variableName !== 'primary_therapeutic_approach') {
       variables.add(variableName);
     }
   }
@@ -57,7 +58,7 @@ function validateTemplateVariables(variables: string[]): void {
  * @returns Object mapping variable names to their values
  */
 async function generateVariableData(
-  client: any,
+  client: SupabaseClient,
   clientId: string,
   artifactType: ArtifactType,
   variables: string[]
@@ -80,11 +81,11 @@ async function generateVariableData(
  * @returns Generated value for the variable
  */
 async function generateVariableValue(
-  client: any,
+  client: SupabaseClient,
   clientId: string,
   variableName: string
 ): Promise<string> {
-  const variableGenerators: Record<string, (client: any, clientId: string) => Promise<string>> = {
+  const variableGenerators: Record<string, (client: SupabaseClient, clientId: string) => Promise<string>> = {
     full_session_contents: generateFullSessionContents,
     last_session_content: generateLastSessionContent,
     session_summaries: generateSessionSummaries,
@@ -106,7 +107,7 @@ async function generateVariableValue(
  * @param clientId Client ID
  * @returns Formatted session contents
  */
-async function generateFullSessionContents(client: any, clientId: string): Promise<string> {
+async function generateFullSessionContents(client: SupabaseClient, clientId: string): Promise<string> {
   // Get all sessions for the client
   console.log(`Fetching sessions for client ${clientId}`);
   const { data: sessions, error } = await client
@@ -120,7 +121,7 @@ async function generateFullSessionContents(client: any, clientId: string): Promi
   }
 
   // Format the session data for the prompt
-  return sessions && sessions.length > 0 ? sessions.map((session: any) => {
+  return sessions && sessions.length > 0 ? sessions.map((session: { id: string; title?: string; transcript?: string; note?: string; created_at: string }) => {
     const date = new Date(session.created_at).toLocaleDateString();
     let content = `## Session on ${date} - ${session.title || 'Untitled'}\n\n`;
     
@@ -142,7 +143,7 @@ async function generateFullSessionContents(client: any, clientId: string): Promi
  * @param clientId Client ID
  * @returns Formatted last session content
  */
-async function generateLastSessionContent(client: any, clientId: string): Promise<string> {
+async function generateLastSessionContent(client: SupabaseClient, clientId: string): Promise<string> {
   // Get the most recent session for the client
   console.log(`Fetching most recent session for client ${clientId}`);
   const { data: lastSession, error } = await client
@@ -187,7 +188,7 @@ async function generateLastSessionContent(client: any, clientId: string): Promis
  * @param clientId Client ID
  * @returns Empty string (not implemented yet)
  */
-async function generateSessionSummaries(client: any, clientId: string): Promise<string> {
+async function generateSessionSummaries(_client: SupabaseClient, _clientId: string): Promise<string> {
   // Not implemented yet, YSTM-578
   return '';
 }
@@ -201,7 +202,7 @@ async function generateSessionSummaries(client: any, clientId: string): Promise<
  * @returns Artifact content and metadata
  */
 async function getOrCreateArtifact(
-  client: any,
+  client: SupabaseClient,
   clientId: string,
   artifactType: ArtifactType,
   userLanguage: LanguageType
@@ -265,7 +266,7 @@ async function getOrCreateArtifact(
  * @param clientId Client ID
  * @returns Client conceptualization content
  */
-async function generateClientConceptualization(client: any, clientId: string): Promise<string> {
+async function generateClientConceptualization(client: SupabaseClient, clientId: string): Promise<string> {
   // Get the user's preferred language
   const userLanguage = await getUserLanguage() as LanguageType;
   
@@ -286,7 +287,7 @@ async function generateClientConceptualization(client: any, clientId: string): P
  * @param clientId Client ID
  * @returns Client bio content
  */
-async function generateClientBio(client: any, clientId: string): Promise<string> {
+async function generateClientBio(client: SupabaseClient, clientId: string): Promise<string> {
   // Get the user's preferred language
   const userLanguage = await getUserLanguage() as LanguageType;
   

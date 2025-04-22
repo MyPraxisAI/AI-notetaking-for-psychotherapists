@@ -5,6 +5,7 @@ import { enhanceAction } from '@kit/next/actions';
 import { getSupabaseServerClient } from '@kit/supabase/server-client';
 import { SessionSchema } from '../schemas/session';
 import { getLogger } from '@kit/shared/logger';
+import type { User } from '@supabase/supabase-js';
 
 // Schema for updating a session
 const UpdateSessionSchema = SessionSchema.extend({
@@ -18,10 +19,10 @@ type UpdateSessionData = z.infer<typeof UpdateSessionSchema>;
  * Server action to update a session and delete related artifacts if content changed
  */
 export const updateSessionAction = enhanceAction(
-  async function updateSessionAction(data: UpdateSessionData, user: any) {
+  async function updateSessionAction(data: UpdateSessionData, user: User) {
     const client = getSupabaseServerClient();
-    const logger = getLogger();
-    const ctx = {
+    const _logger = getLogger();
+    const _ctx = {
       name: 'update-session',
       sessionId: data.id,
       userId: user?.id

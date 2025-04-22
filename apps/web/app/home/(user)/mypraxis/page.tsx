@@ -28,9 +28,9 @@ import {
   ChevronRight,
   Loader2,
 } from "lucide-react"
-import { PrepNote } from "../../../../components/mypraxis/prep-note"
-import { ClientOverview } from "../../../../components/mypraxis/client-overview"
-import { ClientBio } from "../../../../components/mypraxis/client-bio"
+import { PrepNote as _PrepNote } from "../../../../components/mypraxis/prep-note"
+import { ClientOverview as _ClientOverview } from "../../../../components/mypraxis/client-overview"
+import { ClientBio as _ClientBio } from "../../../../components/mypraxis/client-bio"
 import { ProfileForm } from "../../../../components/mypraxis/profile-form"
 import { SettingsForm } from "../../../../components/mypraxis/settings-form"
 import { SessionView } from "../../../../components/mypraxis/session-view"
@@ -165,9 +165,11 @@ export default function Page() {
       } else {
         // If no valid saved client or no selection, select the first available client
         const initialClient = clients[0]
-        setSelectedClient(setClientId(initialClient.id))
-        localStorage.setItem("selectedClient", initialClient.id)
-        console.log(`Auto-selected first available client: ${initialClient.id}`)
+        if (initialClient) {
+          setSelectedClient(setClientId(initialClient.id))
+          localStorage.setItem("selectedClient", initialClient.id)
+          console.log(`Auto-selected first available client: ${initialClient.id}`)
+        }
       }
     }
     
@@ -532,7 +534,7 @@ export default function Page() {
         return <ClientPrepNote clientId={selectedClient} />
       }
       
-      default:
+      default: {
         // Fallback to prep-note if no other tab is selected
         // This should never happen with the current implementation
         // but provides a safety fallback
@@ -544,6 +546,7 @@ export default function Page() {
           }
         )
         return <ClientPrepNoteFallback clientId={selectedClient} />
+      }
     }
   }
 

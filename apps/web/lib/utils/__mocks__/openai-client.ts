@@ -141,19 +141,21 @@ Lives with spouse who is described as supportive but sometimes frustrated by cli
  * Determine which mock response to return based on the prompt content
  */
 function getMockResponseForPrompt(prompt: string): string {
-  if (prompt.includes('session_therapist_summary')) {
-    return mockResponses.session_therapist_summary;
-  } else if (prompt.includes('session_client_summary')) {
-    return mockResponses.session_client_summary;
-  } else if (prompt.includes('client_prep_note')) {
-    return mockResponses.client_prep_note || mockResponses.default;
-  } else if (prompt.includes('client_conceptualization')) {
-    return mockResponses.client_conceptualization || mockResponses.default;
-  } else if (prompt.includes('client_bio')) {
-    return mockResponses.client_bio || mockResponses.default;
+  const defaultResponse = 'This is a mock response for testing purposes.';
+  let response = defaultResponse;
+  if (prompt.includes('session_therapist_summary') && mockResponses.session_therapist_summary) {
+    response = mockResponses.session_therapist_summary;
+  } else if (prompt.includes('session_client_summary') && mockResponses.session_client_summary) {
+    response = mockResponses.session_client_summary;
+  } else if (prompt.includes('client_prep_note') && mockResponses.client_prep_note) {
+    response = mockResponses.client_prep_note;
+  } else if (prompt.includes('client_conceptualization') && mockResponses.client_conceptualization) {
+    response = mockResponses.client_conceptualization;  
+  } else if (prompt.includes('client_bio') && mockResponses.client_bio) {
+    response = mockResponses.client_bio;
   }
   
-  return mockResponses.default;
+  return response;
 }
 
 /**
@@ -164,13 +166,13 @@ class MockChatOpenAI {
   temperature: number;
   maxTokens?: number;
   
-  constructor(options: any) {
+  constructor(options: { modelName?: string; temperature?: number; maxTokens?: number }) {
     this.modelName = options.modelName || 'gpt-4o-mini';
     this.temperature = options.temperature || 0.7;
     this.maxTokens = options.maxTokens;
   }
   
-  async invoke(messages: any): Promise<any> {
+  async invoke(messages: string | Array<{ content: string }> | { content: string }): Promise<{ content: string; role: string }> {
     let promptContent: string;
     
     // Handle both string and array inputs
@@ -203,8 +205,8 @@ export function getOpenAIClient(options: {
   model?: string;
   temperature?: number;
   max_tokens?: number;
-  [key: string]: any;
-} = {}): any {  
+  [key: string]: string | number | boolean | undefined;
+} = {}): MockChatOpenAI {  
   // Always return the mock in test environments
   return new MockChatOpenAI({
     modelName: options.model || 'gpt-4o-mini',

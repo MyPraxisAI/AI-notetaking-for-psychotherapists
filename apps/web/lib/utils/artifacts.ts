@@ -2,6 +2,7 @@ import * as nunjucks from 'nunjucks';
 import { getLogger } from '@kit/shared/logger';
 import { getSupabaseServerClient } from '@kit/supabase/server-client';
 import { getUserLanguage, getFullLanguageName } from './language';
+import { SupabaseClient } from '@supabase/supabase-js';
 import { generateLLMResponse } from './models';
 import { createPromptApi } from '../../app/home/(user)/mypraxis/_lib/api/prompt-api';
 import { createTherapistApi } from '../../app/home/(user)/mypraxis/_lib/api/therapist-api';
@@ -31,8 +32,8 @@ export async function generateArtifact(
   const language = await getUserLanguage() as LanguageType;
   
   // Create a logger instance
-  const logger = getLogger();
-  const ctx = {
+  const _logger = getLogger();
+  const _ctx = {
     name: 'generate-artifact',
     type,
     language,
@@ -128,7 +129,7 @@ export async function generateArtifact(
  * @returns Success status
  */
 export async function saveArtifact(
-  client: any,
+  client: SupabaseClient,
   referenceId: string,
   referenceType: 'session' | 'client',
   type: ArtifactType,
