@@ -26,13 +26,15 @@ import {
   Brain,
   ChevronLeft,
   ChevronRight,
+  Loader2,
 } from "lucide-react"
-import { PrepNote } from "../../../../components/mypraxis/prep-note"
-import { ClientOverview } from "../../../../components/mypraxis/client-overview"
-import { ClientBio } from "../../../../components/mypraxis/client-bio"
+import { PrepNote as _PrepNote } from "../../../../components/mypraxis/prep-note"
+import { ClientOverview as _ClientOverview } from "../../../../components/mypraxis/client-overview"
+import { ClientBio as _ClientBio } from "../../../../components/mypraxis/client-bio"
 import { ProfileForm } from "../../../../components/mypraxis/profile-form"
 import { SettingsForm } from "../../../../components/mypraxis/settings-form"
 import { SessionView } from "../../../../components/mypraxis/session-view"
+import dynamic from "next/dynamic"
 import { useClients, useCreateClient, useDeleteClient } from "./_lib/hooks/use-clients"
 
 
@@ -138,38 +140,41 @@ export default function Page() {
   const [_newClientIds, setNewClientIds] = useState<Set<string>>(new Set())
 
   useEffect(() => {
-    // Set initial selected client when clients are loaded
-    if (clients.length > 0 && !selectedClient) {
-      const initialClient = clients[0]
-      if (initialClient) {
-        setSelectedClient(setClientId(initialClient.id))
-        localStorage.setItem("selectedClient", initialClient.id)
-      }
-    }
-
-    // Sessions are now loaded via the useSessions hook above
-
     // Load selected menu item from localStorage
     const savedMenuItem = localStorage.getItem("selectedMenuItem")
     if (savedMenuItem && isMenuItem(savedMenuItem)) {
       setSelectedItem(savedMenuItem as MenuItem)
     }
 
-    // Load selected client from localStorage
-    const savedClient = localStorage.getItem("selectedClient")
-    if (savedClient) {
-      setSelectedClient(setClientId(savedClient))
-    }
-
+    // Load selected detail item from localStorage
     const savedDetailItem = localStorage.getItem("selectedDetailItem")
     if (savedDetailItem && isDetailItem(savedDetailItem)) {
       setSelectedDetailItem(savedDetailItem as DetailItem)
     }
 
-    // Session selection is now handled via state only
-
+    // Handle client selection with validation against available clients
+    if (clients.length > 0) {
+      const savedClient = localStorage.getItem("selectedClient")
+      
+      // Check if the saved client exists in the available clients
+      const savedClientExists = savedClient && clients.some(client => client.id === savedClient)
+      
+      if (savedClientExists) {
+        // If saved client exists, select it
+        setSelectedClient(setClientId(savedClient!))
+      } else {
+        // If no valid saved client or no selection, select the first available client
+        const initialClient = clients[0]
+        if (initialClient) {
+          setSelectedClient(setClientId(initialClient.id))
+          localStorage.setItem("selectedClient", initialClient.id)
+          console.log(`Auto-selected first available client: ${initialClient.id}`)
+        }
+      }
+    }
+    
     // Sessions are now loaded via the useSessions hook
-  }, [selectedClient]) // Added selectedClient to dependencies
+  }, [clients]) // Changed dependency to clients to ensure this runs when client list changes
 
   useEffect(() => {
     const handleSessionTitleChange = (event: CustomEvent) => {
@@ -456,7 +461,7 @@ export default function Page() {
       return <SettingsForm setIsNavVisible={setIsNavVisible} />
     }
 
-    // Rest of the existing renderContent logic...
+    // Profile tab
     if (selectedDetailItem === "profile") {
       return (
         <ProfileForm clientId={selectedClient} onNameChange={handleNameChange} onClientDeleted={handleClientDeleted} />
@@ -480,17 +485,68 @@ export default function Page() {
       return <SessionView clientId={selectedClient} sessionId={selectedDetailItem} />
     }
 
-    // Otherwise, render the appropriate tab content
+    // Create loading component for reuse
+    const LoadingComponent = () => (
+      <div className="flex items-center justify-center h-full">
+        <Loader2 className="h-6 w-6 animate-spin" />
+      </div>
+    )
+
+    // Only render the component for the selected tab
+    // This prevents unnecessary data fetching for tabs that aren't visible
     switch (selectedDetailItem) {
-      case "overview":
-        return <ClientOverview clientId={selectedClient} />
-      case "client-bio":
+      case "overview": {
+        // Import the ClientConceptualization component dynamically
+        const ClientConceptualization = dynamic(
+          () => import('../../../../components/mypraxis/client-conceptualization').then(mod => mod.ClientConceptualization),
+          {
+            loading: LoadingComponent,
+            ssr: false
+          }
+        )
+        return <ClientConceptualization clientId={selectedClient} />
+      }
+      
+      case "client-bio": {
+        // Import the ClientBio component dynamically
+        const ClientBio = dynamic(
+          () => import('../../../../components/mypraxis/client-bio').then(mod => mod.ClientBio),
+          {
+            loading: LoadingComponent,
+            ssr: false
+          }
+        )
         return <ClientBio 
+          clientId={selectedClient}
           clientName={clients.find((c) => c.id === selectedClient)?.fullName || ""} 
         />
-      case "prep-note":
-      default:
-        return <PrepNote clientId={selectedClient} />
+      }
+      
+      case "prep-note": {
+        // Import the ClientPrepNote component dynamically
+        const ClientPrepNote = dynamic(
+          () => import('../../../../components/mypraxis/client-prep-note').then(mod => mod.ClientPrepNote),
+          {
+            loading: LoadingComponent,
+            ssr: false
+          }
+        )
+        return <ClientPrepNote clientId={selectedClient} />
+      }
+      
+      default: {
+        // Fallback to prep-note if no other tab is selected
+        // This should never happen with the current implementation
+        // but provides a safety fallback
+        const ClientPrepNoteFallback = dynamic(
+          () => import('../../../../components/mypraxis/client-prep-note').then(mod => mod.ClientPrepNote),
+          {
+            loading: LoadingComponent,
+            ssr: false
+          }
+        )
+        return <ClientPrepNoteFallback clientId={selectedClient} />
+      }
     }
   }
 
@@ -558,7 +614,7 @@ export default function Page() {
       {/* Navigation Column */}
       <nav className={`nav-column bg-[#111827] text-white w-[182px] min-w-[182px] max-w-[182px] flex flex-col px-3 ${
         isNavVisible ? 'visible' : ''
-      }`}>
+      } h-screen overflow-hidden`}>
         {/* Avatar Section */}
         <div className="flex items-center gap-3 p-4 mb-4">
           {/* Show loading skeleton until data is ready and avatar is loaded (if applicable) */}
@@ -709,7 +765,7 @@ export default function Page() {
       {/* Clients Column */}
       <div className={`client-list-column min-w-0 ${
         isClientListVisible && selectedItem !== "settings" ? 'visible w-[20%] min-w-[182px] max-w-[250px]' : 'w-0 overflow-hidden'
-      } border-r border-[#E5E7EB] bg-white flex flex-col relative transition-all duration-300`}>
+      } border-r border-[#E5E7EB] bg-white flex flex-col relative transition-all duration-300 h-screen overflow-y-auto`}>
         {/* Top section with burger menu and new client button */}
         <div className="flex items-center justify-between px-2.5 pt-3 pb-2">
           {isSmallScreen && (
@@ -807,7 +863,7 @@ export default function Page() {
           </div>
         </div>
         
-        <div className="column-3-content">
+        <div className="column-3-content p-5">
           {renderContent()}
         </div>
       </div>
@@ -821,7 +877,7 @@ export default function Page() {
       {/* Details Column */}
       <div className={`column-4 w-[250px] min-w-[200px] max-w-[250px] border-l border-[#E5E7EB] bg-white flex flex-col ${
         !isDetailsColumnVisible || selectedItem === "settings" ? "hidden" : ""
-      }`}>
+      } h-screen overflow-y-auto`}>
         <div className="px-5 pt-5 relative">
           {/* Navigation Menu */}
           <div className="space-y-0.5">
