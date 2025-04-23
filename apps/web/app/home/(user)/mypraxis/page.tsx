@@ -34,6 +34,7 @@ import { ClientBio as _ClientBio } from "../../../../components/mypraxis/client-
 import { ProfileForm } from "../../../../components/mypraxis/profile-form"
 import { SettingsForm } from "../../../../components/mypraxis/settings-form"
 import { SessionView } from "../../../../components/mypraxis/session-view"
+import { RecordingModal } from "../../../../components/mypraxis/recording-modal"
 import dynamic from "next/dynamic"
 import { useClients, useCreateClient, useDeleteClient } from "./_lib/hooks/use-clients"
 
@@ -289,6 +290,10 @@ export default function Page() {
 
   const createSession = useCreateSession()
 
+  const [isRecordingModalOpen, setIsRecordingModalOpen] = useState(false)
+  const [newSessionId, setNewSessionId] = useState<string | null>(null)
+
+  // Core function to create a new session without opening the recording modal
   const handleNewSession = () => {
     if (!selectedClient) return
 
@@ -313,8 +318,32 @@ export default function Page() {
       }
     })
   }
+  
+  // Temporary function for the recording workflow - will be refactored in future
+  const handleRecordingSession = () => {
+    if (!selectedClient) return
+    setIsRecordingModalOpen(true)
+  }
+  
+  // Handle recording modal close
+  const handleRecordingModalClose = () => {
+    setIsRecordingModalOpen(false)
+  }
+  
+  // Handle recording save
+  const handleRecordingSave = () => {
+    setIsRecordingModalOpen(false)
+    
+    // Navigate to the Transcript tab
+    // Find the session element and trigger a click on the Transcript tab
+    setTimeout(() => {
+      const transcriptTab = document.querySelector('[data-test="transcript-tab"]');
+      if (transcriptTab && transcriptTab instanceof HTMLElement) {
+        transcriptTab.click();
+      }
+    }, 100);
+  }
 
-  // Name changes are handled directly in the ProfileForm component via the useUpdateClient hook
   const handleNameChange = (_name: string) => {
     // This function is now just a placeholder for any UI updates needed when a name changes
     // The actual data update is handled by the useUpdateClient hook in ProfileForm
@@ -464,7 +493,12 @@ export default function Page() {
     // Profile tab
     if (selectedDetailItem === "profile") {
       return (
-        <ProfileForm clientId={selectedClient} onNameChange={handleNameChange} onClientDeleted={handleClientDeleted} />
+        <ProfileForm 
+          clientId={selectedClient} 
+          onNameChange={handleNameChange} 
+          onClientDeleted={handleClientDeleted} 
+          onNewSession={handleNewSession}
+        />
       )
     }
 
@@ -771,8 +805,6 @@ export default function Page() {
           {isSmallScreen && (
             <Button
               variant="ghost"
-              size="icon"
-              data-test="nav-menu-button"
               className="h-8 w-8 flex-shrink-0"
               onClick={() => setIsNavVisible(!isNavVisible)}
             >
@@ -924,7 +956,7 @@ export default function Page() {
               className={`w-full bg-[#22C55E] hover:bg-[#22C55E]/90 text-white text-[14px] font-medium h-auto py-2.5 transition-colors duration-150 border border-[#E5E7EB] ${
                 clients.length === 0 ? "opacity-50 cursor-not-allowed" : ""
               } ${isMobileView ? "mobile-disabled-button" : ""}`}
-              onClick={handleNewSession}
+              onClick={handleRecordingSession}
               disabled={clients.length === 0 || isMobileView}
               data-test="start-recording-button"
             >
@@ -991,6 +1023,17 @@ export default function Page() {
           </div>
         </div>
       </div>
+
+      {/* Recording Modal */}
+      <RecordingModal
+        isOpen={isRecordingModalOpen}
+        onClose={handleRecordingModalClose}
+        onSave={handleRecordingSave}
+        clientId={selectedClient}
+        clientName={clients.find(c => c.id === selectedClient)?.fullName || ""}
+        clients={clients}
+        createSession={handleNewSession}
+      />
     </div>
   )
 }
