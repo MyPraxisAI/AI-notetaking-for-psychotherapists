@@ -1,14 +1,14 @@
 'use strict';
 
 /**
- * Mock implementation of the OpenAI client for testing
- * This file will be automatically used by Jest when tests import from '../openai-client'
+ * Mock implementation of the Google Genai client for testing
+ * This file provides mock implementations for Google's Gemini models
  */
 
 import { getMockResponses, getMockResponseForPrompt } from './mock-responses';
 
-// Get mock responses with OpenAI provider name
-const mockResponses = getMockResponses('OpenAI', 'gpt-4o-mini');
+// Get mock responses with Google Gemini provider name
+const mockResponses = getMockResponses('Google', 'gemini-2.0-flash');
 
 // Use the shared function to get responses
 function getResponseForPrompt(prompt: string): string {
@@ -16,17 +16,17 @@ function getResponseForPrompt(prompt: string): string {
 }
 
 /**
- * Mock implementation of the ChatOpenAI class
+ * Mock implementation of the ChatGoogleGenerativeAI class
  */
-class MockChatOpenAI {
+class MockChatGoogleGenerativeAI {
   modelName: string;
   temperature: number;
-  maxTokens?: number;
+  maxOutputTokens?: number;
   
-  constructor(options: { modelName?: string; temperature?: number; maxTokens?: number }) {
-    this.modelName = options.modelName || 'gpt-4o-mini';
+  constructor(options: { modelName?: string; temperature?: number; maxOutputTokens?: number }) {
+    this.modelName = options.modelName || 'gemini-2.0-flash';
     this.temperature = options.temperature || 0.7;
-    this.maxTokens = options.maxTokens;
+    this.maxOutputTokens = options.maxOutputTokens;
   }
   
   async invoke(messages: string | Array<{ content: string }> | { content: string }): Promise<{ content: string; role: string }> {
@@ -56,18 +56,18 @@ class MockChatOpenAI {
 }
 
 /**
- * Initialize the mock OpenAI client
+ * Initialize the mock Google Genai client
  */
-export function getOpenAIClient(options: {
+export function getGoogleGenAIClient(options: {
   model?: string;
   temperature?: number;
-  max_tokens?: number;
+  maxOutputTokens?: number;
   [key: string]: string | number | boolean | undefined;
-} = {}): MockChatOpenAI {  
+} = {}): MockChatGoogleGenerativeAI {  
   // Always return the mock in test environments
-  return new MockChatOpenAI({
-    modelName: options.model || 'gpt-4o-mini',
+  return new MockChatGoogleGenerativeAI({
+    modelName: options.model || 'gemini-2.0-flash',
     temperature: options.temperature || 0.7,
-    maxTokens: options.max_tokens
+    maxOutputTokens: options.maxOutputTokens
   });
 }
