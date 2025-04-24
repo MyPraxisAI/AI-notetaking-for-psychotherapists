@@ -53,6 +53,7 @@
     "@kit/supabase": "workspace:*",
     "@kit/team-accounts": "workspace:*",
     "@kit/ui": "workspace:*",
+    "@langchain/google-genai": "^0.2.4",
     "@langchain/openai": "^0.5.5",
     "@makerkit/data-loader-supabase-core": "^0.0.8",
     "@makerkit/data-loader-supabase-nextjs": "^1.2.3",
