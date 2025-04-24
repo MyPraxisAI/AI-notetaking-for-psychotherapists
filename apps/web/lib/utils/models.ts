@@ -6,6 +6,9 @@
 
 import { aiService } from './ai-service';
 
+// Default timeout for model requests in milliseconds (2 minutes)
+const DEFAULT_MODEL_TIMEOUT_MS = 120000;
+
 // Define the supported model providers
 export type ModelProvider = 'openai' | 'anthropic' | 'google';
 
@@ -112,7 +115,10 @@ async function generateWithGoogle(
   try {
     // Set up a timeout promise to compete with the Google call
     const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('Google request timed out after 55 seconds')), 55000);
+      setTimeout(
+        () => reject(new Error(`Google request timed out after ${DEFAULT_MODEL_TIMEOUT_MS / 60000} minutes`)), 
+        DEFAULT_MODEL_TIMEOUT_MS
+      );
     });
     
     // Race the Google call against the timeout
@@ -186,7 +192,10 @@ async function generateWithOpenAI(
   try {
     // Set up a timeout promise to compete with the OpenAI call
     const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('OpenAI request timed out after 55 seconds')), 55000);
+      setTimeout(
+        () => reject(new Error(`OpenAI request timed out after ${DEFAULT_MODEL_TIMEOUT_MS / 60000} minutes`)), 
+        DEFAULT_MODEL_TIMEOUT_MS
+      );
     });
     
     // Race the OpenAI call against the timeout
