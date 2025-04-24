@@ -8,7 +8,7 @@
 import { getMockResponses, getMockResponseForPrompt } from './mock-responses';
 
 // Get mock responses with Google Gemini provider name
-const mockResponses = getMockResponses('Google', 'gemini-pro');
+const mockResponses = getMockResponses('Google', 'gemini-2.0-flash');
 
 // Use the shared function to get responses
 function getResponseForPrompt(prompt: string): string {
@@ -24,7 +24,7 @@ class MockChatGoogleGenerativeAI {
   maxOutputTokens?: number;
   
   constructor(options: { modelName?: string; temperature?: number; maxOutputTokens?: number }) {
-    this.modelName = options.modelName || 'gemini-pro';
+    this.modelName = options.modelName || 'gemini-2.0-flash';
     this.temperature = options.temperature || 0.7;
     this.maxOutputTokens = options.maxOutputTokens;
   }
@@ -66,7 +66,7 @@ export function getGoogleGenAIClient(options: {
 } = {}): MockChatGoogleGenerativeAI {  
   // Always return the mock in test environments
   return new MockChatGoogleGenerativeAI({
-    modelName: options.model || 'gemini-pro',
+    modelName: options.model || 'gemini-2.0-flash',
     temperature: options.temperature || 0.7,
     maxOutputTokens: options.maxOutputTokens
   });
