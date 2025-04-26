@@ -368,12 +368,57 @@ export function RecordingModal({
   }
   
   const handleStartRecording = async () => {
+    console.log('Starting recording...')
     const newRecordingId = await startRecording()
+    console.log('Recording ID received:', newRecordingId)
     
     if (newRecordingId) {
+      // Explicitly log the recordingId state to verify it's set
+      console.log('Current recordingId state:', recordingId)
+      console.log('New recordingId to be used:', newRecordingId)
+      
+      // Store the recordingId in a ref to ensure it's available in the closure
+      const currentRecordingId = newRecordingId
+      
       // Start the MediaRecorder
       if (mediaRecorder.current) {
+        console.log('Starting MediaRecorder with 5-second chunks')
+        
+        // Update the ondataavailable handler to use the current recordingId
+        mediaRecorder.current.ondataavailable = async (event) => {
+          console.log('ondataavailable event triggered', {
+            dataSize: event.data.size,
+            stateRecordingId: recordingId,
+            currentRecordingId,
+            timer
+          })
+          
+          if (event.data.size > 0) {
+            audioChunks.current.push(event.data)
+            const chunkEndTime = timer
+            
+            // Use the current recordingId directly instead of relying on state
+            console.log(`Processing chunk with recordingId: ${currentRecordingId}`)
+            
+            try {
+              // Modified uploadAudioChunk call to use currentRecordingId
+              await uploadAudioChunkWithId(event.data, audioChunks.current.length - 1, 0, chunkEndTime, currentRecordingId)
+            } catch (err) {
+              console.error('Error uploading chunk:', err)
+            }
+          }
+        }
+        
         mediaRecorder.current.start(5000) // Capture in 5-second chunks
+        
+        // Request data immediately to test the ondataavailable handler
+        setTimeout(() => {
+          if (mediaRecorder.current && mediaRecorder.current.state === 'recording') {
+            console.log('Requesting initial data from MediaRecorder')
+            mediaRecorder.current.requestData()
+          }
+        }, 1000)
+        
         setIsRecording(true)
         setModalState("recording")
         
@@ -381,7 +426,71 @@ export function RecordingModal({
         timerInterval.current = setInterval(() => {
           setTimer(prev => prev + 1)
         }, 1000)
+        
+        console.log('Recording started successfully')
+      } else {
+        console.error('MediaRecorder is not initialized')
       }
+    } else {
+      console.error('Failed to get recording ID')
+    }
+  }
+  
+  // Helper function to upload chunk with explicit recordingId
+  const uploadAudioChunkWithId = async (blob: Blob, chunkNumber: number, startTime: number, endTime: number, explicitRecordingId: string) => {
+    console.log(`Uploading chunk ${chunkNumber} with explicit recordingId: ${explicitRecordingId}`)
+    
+    try {
+      // Create a FormData object to send the audio chunk
+      const formData = new FormData()
+
+      // Get the file extension based on the blob type
+      const fileExtension = blob.type.includes('webm') ? 'webm' :
+                           blob.type.includes('ogg') ? 'ogg' : 'bin'
+                           
+      // Add the audio file with appropriate filename
+      const filename = `chunk-${explicitRecordingId}-${chunkNumber}.${fileExtension}`
+      formData.append('audioFile', blob, filename)
+      
+      // Add metadata
+      formData.append('chunkNumber', chunkNumber.toString())
+      formData.append('startTime', startTime.toString())
+      formData.append('endTime', endTime.toString())
+      formData.append('duration', (endTime - startTime).toString())
+      formData.append('mimeType', blob.type)
+      formData.append('size', blob.size.toString())
+      
+      // Log the request details
+      const url = `/api/recordings/${explicitRecordingId}/chunk`
+      console.log(`Sending chunk to ${url}`, {
+        chunkNumber,
+        size: blob.size,
+        startTime,
+        endTime,
+        mimeType: blob.type
+      })
+      
+      // Send the chunk to the server
+      const response = await fetch(url, {
+        method: 'POST',
+        body: formData
+      })
+      
+      console.log(`Server response for chunk ${chunkNumber}:`, {
+        status: response.status,
+        statusText: response.statusText
+      })
+      
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to upload audio chunk')
+      }
+      
+      console.log(`Chunk ${chunkNumber} uploaded successfully`)
+      return true
+    } catch (err) {
+      console.error(`Chunk ${chunkNumber} upload error:`, err)
+      return false
     }
   }
   
