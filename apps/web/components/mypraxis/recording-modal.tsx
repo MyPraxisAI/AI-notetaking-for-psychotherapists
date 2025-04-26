@@ -526,7 +526,6 @@ export function RecordingModal({
       formData.append('chunkNumber', chunkNumber.toString())
       formData.append('startTime', startTime.toString())
       formData.append('endTime', endTime.toString())
-      // Duration can be computed on the server from start/end times
       formData.append('mimeType', blob.type)
       formData.append('size', blob.size.toString())
       
@@ -535,7 +534,6 @@ export function RecordingModal({
         chunkNumber: formData.get('chunkNumber'),
         startTime: formData.get('startTime'),
         endTime: formData.get('endTime'),
-        duration: formData.get('duration'),
         mimeType: formData.get('mimeType'),
         size: formData.get('size')
       })
