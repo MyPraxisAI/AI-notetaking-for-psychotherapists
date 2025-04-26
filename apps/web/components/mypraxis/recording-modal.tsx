@@ -89,6 +89,28 @@ export function RecordingModal({
     }
   }, []);
   
+  // Manage heartbeats whenever recordingId exists and modal is open
+  useEffect(() => {
+    // Only start heartbeat if we have a recording ID and the modal is open
+    if (recordingId && isOpen && (modalState === "recording" || modalState === "paused")) {
+      // Send initial heartbeat immediately
+      sendHeartbeat();
+      
+      // Setup interval for heartbeats every 30 seconds
+      heartbeatInterval.current = setInterval(() => {
+        sendHeartbeat();
+      }, 30000);
+      
+      // Cleanup function
+      return () => {
+        if (heartbeatInterval.current) {
+          clearInterval(heartbeatInterval.current);
+          heartbeatInterval.current = null;
+        }
+      };
+    }
+  }, [recordingId, isOpen, modalState]);
+  
   // API functions for recording
   const startRecording = async () => {
     try {
@@ -308,19 +330,8 @@ export function RecordingModal({
   }
   
   const cleanupRecording = () => {
-    // Clear intervals
-    if (timerInterval.current) {
-      clearInterval(timerInterval.current)
-      timerInterval.current = null
-    }
-    
-    if (heartbeatInterval.current) {
-      clearInterval(heartbeatInterval.current)
-      heartbeatInterval.current = null
-    }
-    
-    // Stop MediaRecorder if active
-    if (mediaRecorder.current && mediaRecorder.current.state !== 'inactive') {
+    // Stop media recorder if active
+    if (mediaRecorder.current && mediaRecorder.current.state !== "inactive") {
       mediaRecorder.current.stop()
     }
     
@@ -329,9 +340,24 @@ export function RecordingModal({
       mediaRecorder.current.stream.getTracks().forEach(track => track.stop())
     }
     
-    setIsRecording(false)
-    setTimer(0)
+    // Clear media recorder and audio chunks
+    mediaRecorder.current = null
     audioChunks.current = []
+    
+    // Reset recording state
+    setIsRecording(false)
+    setRecordingId(null)
+    setTimer(0)
+    setModalState("initial")
+    setError(null)
+    
+    // Clear intervals
+    if (timerInterval.current) {
+      clearInterval(timerInterval.current)
+      timerInterval.current = null
+    }
+    
+    // Note: Heartbeat interval is managed by the useEffect
   }
   
   const handleMicrophoneAccess = async () => {
@@ -355,52 +381,65 @@ export function RecordingModal({
         timerInterval.current = setInterval(() => {
           setTimer(prev => prev + 1)
         }, 1000)
-        
-        // Start heartbeat
-        heartbeatInterval.current = setInterval(() => {
-          sendHeartbeat()
-        }, 30000) // Send heartbeat every 30 seconds
       }
     }
   }
   
   const handlePauseRecording = async () => {
-    const result = await pauseRecording()
-    
-    if (result) {
-      // Pause the MediaRecorder
-      if (mediaRecorder.current && mediaRecorder.current.state === 'recording') {
-        mediaRecorder.current.requestData() // Get any remaining data
-        mediaRecorder.current.pause()
-      }
+    try {
+      setIsProcessing(true)
       
-      // Clear timer interval
       if (timerInterval.current) {
         clearInterval(timerInterval.current)
         timerInterval.current = null
       }
       
-      setIsRecording(false)
-      setModalState("paused")
+      const result = await pauseRecording()
+      
+      if (result) {
+        // Pause the MediaRecorder
+        if (mediaRecorder.current && mediaRecorder.current.state === 'recording') {
+          mediaRecorder.current.requestData() // Get any remaining data
+          mediaRecorder.current.pause()
+        }
+        
+        setIsRecording(false)
+        setModalState("paused")
+        setIsProcessing(false)
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to pause recording')
+      toast.error(err instanceof Error ? err.message : 'Failed to pause recording')
+      setIsProcessing(false)
     }
   }
   
   const handleResumeRecording = async () => {
-    const result = await resumeRecording()
-    
-    if (result) {
-      // Resume the MediaRecorder
-      if (mediaRecorder.current && mediaRecorder.current.state === 'paused') {
-        mediaRecorder.current.resume()
+    try {
+      setIsProcessing(true)
+      
+      const result = await resumeRecording()
+      
+      if (result) {
+        // Resume the MediaRecorder
+        if (mediaRecorder.current && mediaRecorder.current.state === 'paused') {
+          mediaRecorder.current.resume()
+        }
+        
+        setIsRecording(true)
+        setModalState("recording")
+        
+        // Restart timer
+        timerInterval.current = setInterval(() => {
+          setTimer(prev => prev + 1)
+        }, 1000)
+        
+        setIsProcessing(false)
       }
-      
-      setIsRecording(true)
-      setModalState("recording")
-      
-      // Restart timer
-      timerInterval.current = setInterval(() => {
-        setTimer(prev => prev + 1)
-      }, 1000)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to resume recording')
+      toast.error(err instanceof Error ? err.message : 'Failed to resume recording')
+      setIsProcessing(false)
     }
   }
   
