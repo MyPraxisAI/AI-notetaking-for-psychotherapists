@@ -5,6 +5,7 @@ import { Button } from "@kit/ui/button"
 import { Mic, Pause, Play, X, Loader2 } from "lucide-react"
 import { Switch } from "@kit/ui/switch"
 import { Label } from "@kit/ui/label"
+import { toast } from "sonner"
 import {
   Select,
   SelectContent,
@@ -62,7 +63,15 @@ export function RecordingModal({
   const [selectedDevice, setSelectedDevice] = useState("MacBook Air Microphone (Built-in)")
   const [timer, setTimer] = useState(0)
   const [isRecording, setIsRecording] = useState(false)
+  const [recordingId, setRecordingId] = useState<string | null>(null)
+  const [isProcessing, setIsProcessing] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const timerInterval = useRef<NodeJS.Timeout | null>(null)
+  const heartbeatInterval = useRef<NodeJS.Timeout | null>(null)
+  
+  // MediaRecorder state
+  const mediaRecorder = useRef<MediaRecorder | null>(null)
+  const audioChunks = useRef<Blob[]>([])
   
   useEffect(() => {
     if (!document.getElementById('recording-modal-styles')) {
@@ -80,6 +89,158 @@ export function RecordingModal({
     }
   }, []);
   
+  // API functions for recording
+  const startRecording = async () => {
+    try {
+      setIsProcessing(true)
+      setError(null)
+      
+      const response = await fetch('/api/recordings/start', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ clientId: selectedClient })
+      })
+      
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to start recording')
+      }
+      
+      const data = await response.json()
+      setRecordingId(data.recording.id)
+      return data.recording.id
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to start recording')
+      toast.error(err instanceof Error ? err.message : 'Failed to start recording')
+      return null
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+  
+  const pauseRecording = async () => {
+    if (!recordingId) return
+    
+    try {
+      setIsProcessing(true)
+      setError(null)
+      
+      const response = await fetch(`/api/recordings/${recordingId}/pause`, {
+        method: 'POST'
+      })
+      
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to pause recording')
+      }
+      
+      return await response.json()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to pause recording')
+      toast.error(err instanceof Error ? err.message : 'Failed to pause recording')
+      return null
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+  
+  const resumeRecording = async () => {
+    if (!recordingId) return
+    
+    try {
+      setIsProcessing(true)
+      setError(null)
+      
+      const response = await fetch(`/api/recordings/${recordingId}/resume`, {
+        method: 'POST'
+      })
+      
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to resume recording')
+      }
+      
+      return await response.json()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to resume recording')
+      toast.error(err instanceof Error ? err.message : 'Failed to resume recording')
+      return null
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+  
+  const completeRecording = async () => {
+    if (!recordingId) return
+    
+    try {
+      setIsProcessing(true)
+      setError(null)
+      
+      const response = await fetch(`/api/recordings/${recordingId}/complete`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ createSession: true })
+      })
+      
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to complete recording')
+      }
+      
+      return await response.json()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to complete recording')
+      toast.error(err instanceof Error ? err.message : 'Failed to complete recording')
+      return null
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+  
+  const sendHeartbeat = async () => {
+    if (!recordingId) return
+    
+    try {
+      const response = await fetch(`/api/recordings/${recordingId}/heartbeat`, {
+        method: 'POST'
+      })
+      
+      if (!response.ok) {
+        console.error('Failed to send heartbeat')
+      }
+    } catch (err) {
+      console.error('Heartbeat error:', err)
+    }
+  }
+  
+  const uploadAudioChunk = async (blob: Blob, chunkNumber: number, startTime: number, endTime: number) => {
+    if (!recordingId) return
+    
+    try {
+      const formData = new FormData()
+      formData.append('audioFile', blob, `chunk-${chunkNumber}.webm`)
+      formData.append('chunkNumber', chunkNumber.toString())
+      formData.append('startTime', startTime.toString())
+      formData.append('endTime', endTime.toString())
+      
+      const response = await fetch(`/api/recordings/${recordingId}/chunk`, {
+        method: 'POST',
+        body: formData
+      })
+      
+      if (!response.ok) {
+        console.error('Failed to upload audio chunk')
+      }
+    } catch (err) {
+      console.error('Chunk upload error:', err)
+    }
+  }
+
   useEffect(() => {
     if (isOpen) {
       setModalState("initial")
@@ -87,13 +248,52 @@ export function RecordingModal({
       setSelectedClientName(clientName)
       setTimer(0)
       setIsRecording(false)
+      setRecordingId(null)
+      setError(null)
+      audioChunks.current = []
       
       if (timerInterval.current) {
         clearInterval(timerInterval.current)
         timerInterval.current = null
       }
+      
+      if (heartbeatInterval.current) {
+        clearInterval(heartbeatInterval.current)
+        heartbeatInterval.current = null
+      }
     }
   }, [isOpen, clientId, clientName])
+  
+  // Setup MediaRecorder and audio handling
+  const setupMediaRecorder = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      mediaRecorder.current = new MediaRecorder(stream, { mimeType: 'audio/webm' })
+      
+      let chunkNumber = 0
+      let chunkStartTime = 0
+      
+      mediaRecorder.current.ondataavailable = async (event) => {
+        if (event.data.size > 0 && recordingId) {
+          audioChunks.current.push(event.data)
+          const chunkEndTime = timer
+          
+          // Upload the chunk
+          await uploadAudioChunk(event.data, chunkNumber, chunkStartTime, chunkEndTime)
+          
+          // Prepare for next chunk
+          chunkNumber++
+          chunkStartTime = chunkEndTime
+        }
+      }
+      
+      return true
+    } catch (err) {
+      console.error('Error accessing microphone:', err)
+      toast.error('Could not access microphone. Please check permissions.')
+      return false
+    }
+  }
   
   const handleClose = () => {
     if (isRecording || modalState === "paused") {
@@ -102,60 +302,128 @@ export function RecordingModal({
         onClose()
       }
     } else {
+      cleanupRecording()
       onClose()
     }
   }
   
   const cleanupRecording = () => {
+    // Clear intervals
     if (timerInterval.current) {
       clearInterval(timerInterval.current)
       timerInterval.current = null
     }
+    
+    if (heartbeatInterval.current) {
+      clearInterval(heartbeatInterval.current)
+      heartbeatInterval.current = null
+    }
+    
+    // Stop MediaRecorder if active
+    if (mediaRecorder.current && mediaRecorder.current.state !== 'inactive') {
+      mediaRecorder.current.stop()
+    }
+    
+    // Stop all tracks in the stream
+    if (mediaRecorder.current && mediaRecorder.current.stream) {
+      mediaRecorder.current.stream.getTracks().forEach(track => track.stop())
+    }
+    
     setIsRecording(false)
     setTimer(0)
+    audioChunks.current = []
   }
   
-  const handleMicrophoneAccess = () => {
-    setModalState("soundCheck")
-  }
-  
-  const handleStartRecording = () => {
-    setIsRecording(true)
-    setModalState("recording")
-    
-    timerInterval.current = setInterval(() => {
-      setTimer(prev => prev + 1)
-    }, 1000)
-  }
-  
-  const handlePauseRecording = () => {
-    if (timerInterval.current) {
-      clearInterval(timerInterval.current)
-      timerInterval.current = null
+  const handleMicrophoneAccess = async () => {
+    const success = await setupMediaRecorder()
+    if (success) {
+      setModalState("soundCheck")
     }
-    setIsRecording(false)
-    setModalState("paused")
   }
   
-  const handleResumeRecording = () => {
-    setIsRecording(true)
-    setModalState("recording")
+  const handleStartRecording = async () => {
+    const newRecordingId = await startRecording()
     
-    timerInterval.current = setInterval(() => {
-      setTimer(prev => prev + 1)
-    }, 1000)
+    if (newRecordingId) {
+      // Start the MediaRecorder
+      if (mediaRecorder.current) {
+        mediaRecorder.current.start(5000) // Capture in 5-second chunks
+        setIsRecording(true)
+        setModalState("recording")
+        
+        // Start timer
+        timerInterval.current = setInterval(() => {
+          setTimer(prev => prev + 1)
+        }, 1000)
+        
+        // Start heartbeat
+        heartbeatInterval.current = setInterval(() => {
+          sendHeartbeat()
+        }, 30000) // Send heartbeat every 30 seconds
+      }
+    }
   }
   
-  const handleSaveSession = () => {
+  const handlePauseRecording = async () => {
+    const result = await pauseRecording()
+    
+    if (result) {
+      // Pause the MediaRecorder
+      if (mediaRecorder.current && mediaRecorder.current.state === 'recording') {
+        mediaRecorder.current.requestData() // Get any remaining data
+        mediaRecorder.current.pause()
+      }
+      
+      // Clear timer interval
+      if (timerInterval.current) {
+        clearInterval(timerInterval.current)
+        timerInterval.current = null
+      }
+      
+      setIsRecording(false)
+      setModalState("paused")
+    }
+  }
+  
+  const handleResumeRecording = async () => {
+    const result = await resumeRecording()
+    
+    if (result) {
+      // Resume the MediaRecorder
+      if (mediaRecorder.current && mediaRecorder.current.state === 'paused') {
+        mediaRecorder.current.resume()
+      }
+      
+      setIsRecording(true)
+      setModalState("recording")
+      
+      // Restart timer
+      timerInterval.current = setInterval(() => {
+        setTimer(prev => prev + 1)
+      }, 1000)
+    }
+  }
+  
+  const handleSaveSession = async () => {
     setModalState("saving")
     
-    setTimeout(() => {
+    // Stop the MediaRecorder and get final data
+    if (mediaRecorder.current && mediaRecorder.current.state !== 'inactive') {
+      mediaRecorder.current.requestData() // Get any remaining data
+      mediaRecorder.current.stop()
+    }
+    
+    // Complete the recording in the API
+    const result = await completeRecording()
+    
+    if (result) {
       cleanupRecording()
-      if (createSession) {
-        createSession(selectedClient)
-      }
+      toast.success('Recording saved successfully')
       onSave()
-    }, 1000)
+    } else {
+      setModalState("paused")
+      toast.error('Failed to save recording. Please try again.')
+    }
   }
   
   const formatTime = (seconds: number) => {
@@ -285,13 +553,29 @@ export function RecordingModal({
             </div>
             
             <div className="p-6">
+              {error && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-md text-sm">
+                  {error}
+                </div>
+              )}
+              
               {modalState === "initial" && (
                 <Button 
                   className="w-full bg-green-500 hover:bg-green-600 text-white"
                   onClick={handleMicrophoneAccess}
+                  disabled={isProcessing}
                 >
-                  <Mic className="mr-2 h-5 w-5" />
-                  Allow Microphone Access
+                  {isProcessing ? (
+                    <>
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      Checking Microphone...
+                    </>
+                  ) : (
+                    <>
+                      <Mic className="mr-2 h-5 w-5" />
+                      Allow Microphone Access
+                    </>
+                  )}
                 </Button>
               )}
               
@@ -299,9 +583,19 @@ export function RecordingModal({
                 <Button 
                   className="w-full bg-green-500 hover:bg-green-600 text-white"
                   onClick={handleStartRecording}
+                  disabled={isProcessing}
                 >
-                  <Mic className="mr-2 h-5 w-5" />
-                  Record
+                  {isProcessing ? (
+                    <>
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      Starting Recording...
+                    </>
+                  ) : (
+                    <>
+                      <Mic className="mr-2 h-5 w-5" />
+                      Record
+                    </>
+                  )}
                 </Button>
               )}
               
@@ -309,9 +603,19 @@ export function RecordingModal({
                 <Button 
                   className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800"
                   onClick={handlePauseRecording}
+                  disabled={isProcessing}
                 >
-                  <Pause className="mr-2 h-5 w-5" />
-                  Pause
+                  {isProcessing ? (
+                    <>
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      Pausing...
+                    </>
+                  ) : (
+                    <>
+                      <Pause className="mr-2 h-5 w-5" />
+                      Pause
+                    </>
+                  )}
                 </Button>
               )}
               
@@ -320,16 +624,28 @@ export function RecordingModal({
                   <Button 
                     className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800"
                     onClick={handleResumeRecording}
+                    disabled={isProcessing}
                   >
-                    <Play className="mr-2 h-5 w-5" />
-                    Resume
+                    {isProcessing ? (
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                    ) : (
+                      <>
+                        <Play className="mr-2 h-5 w-5" />
+                        Resume
+                      </>
+                    )}
                   </Button>
                   
                   <Button 
                     className="flex-1 bg-green-500 hover:bg-green-600 text-white"
                     onClick={handleSaveSession}
+                    disabled={isProcessing}
                   >
-                    Save Session
+                    {isProcessing ? (
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                    ) : (
+                      'Save Session'
+                    )}
                   </Button>
                 </div>
               )}
@@ -340,7 +656,7 @@ export function RecordingModal({
                   disabled
                 >
                   <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  Save Session
+                  Saving Recording...
                 </Button>
               )}
             </div>
