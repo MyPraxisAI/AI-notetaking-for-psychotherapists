@@ -69,6 +69,9 @@ export function RecordingModal({
   const timerInterval = useRef<NodeJS.Timeout | null>(null)
   const heartbeatInterval = useRef<NodeJS.Timeout | null>(null)
   
+  // Use a ref to track the current timer value for direct access
+  const currentTimerRef = useRef<number>(0)
+  
   // MediaRecorder state
   const mediaRecorder = useRef<MediaRecorder | null>(null)
   const audioChunks = useRef<Blob[]>([])
@@ -289,30 +292,42 @@ export function RecordingModal({
   // Setup MediaRecorder and audio handling
   const setupMediaRecorder = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-      mediaRecorder.current = new MediaRecorder(stream, { mimeType: 'audio/webm' })
-      
-      let chunkNumber = 0
-      let chunkStartTime = 0
-      
-      mediaRecorder.current.ondataavailable = async (event) => {
-        if (event.data.size > 0 && recordingId) {
-          audioChunks.current.push(event.data)
-          const chunkEndTime = timer
-          
-          // Upload the chunk
-          await uploadAudioChunk(event.data, chunkNumber, chunkStartTime, chunkEndTime)
-          
-          // Prepare for next chunk
-          chunkNumber++
-          chunkStartTime = chunkEndTime
+      // Request audio with specific constraints for better quality
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+          sampleRate: 48000,
+          channelCount: 1 // Mono for voice clarity
         }
+      })
+      
+      // Find the best supported mime type
+      const mimeTypes = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus', 'audio/ogg']
+      const selectedMimeType = mimeTypes.find(type => MediaRecorder.isTypeSupported(type)) || 'audio/webm'
+      
+      console.log(`Using MIME type: ${selectedMimeType} for recording`)
+      
+      // Create the MediaRecorder with optimal settings
+      mediaRecorder.current = new MediaRecorder(stream, { 
+        mimeType: selectedMimeType,
+        audioBitsPerSecond: 128000 // 128 kbps for good quality voice
+      })
+      
+      // Add error handler
+      mediaRecorder.current.onerror = (event) => {
+        console.error('MediaRecorder error:', event)
+        toast.error('Error during recording. Please try again.')
+        setError('Recording error occurred. Please try again.')
       }
       
+      console.log('MediaRecorder initialized successfully')
       return true
     } catch (err) {
       console.error('Error accessing microphone:', err)
       toast.error('Could not access microphone. Please check permissions.')
+      setError(err instanceof Error ? err.message : 'Failed to access microphone')
       return false
     }
   }
@@ -369,6 +384,17 @@ export function RecordingModal({
   
   const handleStartRecording = async () => {
     console.log('Starting recording...')
+    
+    // Reset timer to 0 before starting
+    setTimer(0)
+    currentTimerRef.current = 0
+    
+    // Reset audio chunks
+    audioChunks.current = []
+    
+    // Store the recording start time for precise timing
+    const recordingStartTime = performance.now()
+    
     const newRecordingId = await startRecording()
     console.log('Recording ID received:', newRecordingId)
     
@@ -384,47 +410,81 @@ export function RecordingModal({
       if (mediaRecorder.current) {
         console.log('Starting MediaRecorder with 5-second chunks')
         
+        // Initialize chunk tracking variables
+        let chunkNumber = 0;
+        
+        // Use performance.now() for precise timing
+        const recordingStartTime = performance.now();
+        let chunkStartTimeMs = recordingStartTime;
+        
         // Update the ondataavailable handler to use the current recordingId
         mediaRecorder.current.ondataavailable = async (event) => {
+          // Get precise current time using performance.now()
+          const currentTimeMs = performance.now();
+          
+          // Calculate seconds since recording started (as floating point for precision)
+          const chunkStartTimeSec = (chunkStartTimeMs - recordingStartTime) / 1000;
+          const chunkEndTimeSec = (currentTimeMs - recordingStartTime) / 1000;
+          
           console.log('ondataavailable event triggered', {
             dataSize: event.data.size,
             stateRecordingId: recordingId,
             currentRecordingId,
-            timer
+            timerState: timer,
+            chunkNumber,
+            chunkStartTimeSec,
+            chunkEndTimeSec
           })
           
           if (event.data.size > 0) {
-            audioChunks.current.push(event.data)
-            const chunkEndTime = timer
+            // Add to audio chunks array
+            audioChunks.current.push(event.data);
+            
+            // Calculate duration in seconds (floating point)
+            const durationSec = chunkEndTimeSec - chunkStartTimeSec;
             
             // Use the current recordingId directly instead of relying on state
-            console.log(`Processing chunk with recordingId: ${currentRecordingId}`)
+            console.log(`Processing chunk ${chunkNumber}: ${chunkStartTimeSec.toFixed(3)}s to ${chunkEndTimeSec.toFixed(3)}s (duration: ${durationSec.toFixed(3)}s) with recordingId: ${currentRecordingId}`);
             
             try {
-              // Modified uploadAudioChunk call to use currentRecordingId
-              await uploadAudioChunkWithId(event.data, audioChunks.current.length - 1, 0, chunkEndTime, currentRecordingId)
+              // Modified uploadAudioChunk call to use currentRecordingId and precise timing
+              await uploadAudioChunkWithId(
+                event.data, 
+                chunkNumber, 
+                chunkStartTimeSec, 
+                chunkEndTimeSec, 
+                currentRecordingId
+              );
+              
+              // Prepare for next chunk
+              chunkNumber++;
+              chunkStartTimeMs = currentTimeMs;
+              console.log(`Next chunk will start at ${(chunkStartTimeMs - recordingStartTime) / 1000}s`);
             } catch (err) {
-              console.error('Error uploading chunk:', err)
+              console.error(`Error uploading chunk ${chunkNumber}:`, err);
             }
           }
         }
         
-        mediaRecorder.current.start(5000) // Capture in 5-second chunks
+        // Start the MediaRecorder with 5-second chunks
+        mediaRecorder.current.start(5000);
         
         // Request data immediately to test the ondataavailable handler
         setTimeout(() => {
           if (mediaRecorder.current && mediaRecorder.current.state === 'recording') {
-            console.log('Requesting initial data from MediaRecorder')
-            mediaRecorder.current.requestData()
+            console.log('Requesting initial data from MediaRecorder');
+            mediaRecorder.current.requestData();
           }
         }, 1000)
         
         setIsRecording(true)
         setModalState("recording")
         
-        // Start timer
+        // Start timer with synchronized ref
         timerInterval.current = setInterval(() => {
-          setTimer(prev => prev + 1)
+          const newTime = currentTimerRef.current + 1;
+          currentTimerRef.current = newTime;
+          setTimer(newTime);
         }, 1000)
         
         console.log('Recording started successfully')
@@ -437,8 +497,18 @@ export function RecordingModal({
   }
   
   // Helper function to upload chunk with explicit recordingId
-  const uploadAudioChunkWithId = async (blob: Blob, chunkNumber: number, startTime: number, endTime: number, explicitRecordingId: string) => {
-    console.log(`Uploading chunk ${chunkNumber} with explicit recordingId: ${explicitRecordingId}`)
+  const uploadAudioChunkWithId = async (
+    blob: Blob, 
+    chunkNumber: number, 
+    startTime: number, // Now a floating-point value in seconds
+    endTime: number,   // Now a floating-point value in seconds
+    explicitRecordingId: string
+  ) => {
+    console.log(`Uploading chunk ${chunkNumber} with explicit recordingId: ${explicitRecordingId}`, {
+      startTime: startTime.toFixed(3),
+      endTime: endTime.toFixed(3),
+      duration: (endTime - startTime).toFixed(3)
+    })
     
     try {
       // Create a FormData object to send the audio chunk
@@ -452,13 +522,23 @@ export function RecordingModal({
       const filename = `chunk-${explicitRecordingId}-${chunkNumber}.${fileExtension}`
       formData.append('audioFile', blob, filename)
       
-      // Add metadata
+      // Add metadata - ensure these are properly set
       formData.append('chunkNumber', chunkNumber.toString())
       formData.append('startTime', startTime.toString())
       formData.append('endTime', endTime.toString())
-      formData.append('duration', (endTime - startTime).toString())
+      // Duration can be computed on the server from start/end times
       formData.append('mimeType', blob.type)
       formData.append('size', blob.size.toString())
+      
+      // Double-check the FormData values
+      console.log('FormData values:', {
+        chunkNumber: formData.get('chunkNumber'),
+        startTime: formData.get('startTime'),
+        endTime: formData.get('endTime'),
+        duration: formData.get('duration'),
+        mimeType: formData.get('mimeType'),
+        size: formData.get('size')
+      })
       
       // Log the request details
       const url = `/api/recordings/${explicitRecordingId}/chunk`
@@ -610,6 +690,13 @@ export function RecordingModal({
   
   return (
     <>
+      {/* Hidden element to track timer value for accurate chunk timing */}
+      <div 
+        id="recording-timer" 
+        data-seconds={timer} 
+        style={{ display: 'none' }}
+      ></div>
+      
       <div 
         className={`recording-modal-overlay ${isOpen ? 'active' : ''}`}
         onClick={handleClose}
