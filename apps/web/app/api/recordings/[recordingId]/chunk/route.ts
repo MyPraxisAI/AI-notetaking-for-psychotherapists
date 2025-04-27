@@ -63,8 +63,13 @@ export const POST = enhanceRouteHandler(
       // Format chunk number with leading zeros (e.g., 0001, 0002, etc.)
       const paddedChunkNumber = chunkNumber.toString().padStart(4, '0');
       
-      // Define the storage path: {account_id}/{recording_id}/chunk-{0-padded chunk number}.webm
-      const storagePath = `${accountId}/${recordingId}/chunk-${paddedChunkNumber}.webm`;
+      // Determine file extension based on MIME type
+      const fileExtension = mimeType.includes('webm') ? 'webm' : 
+                           mimeType.includes('ogg') ? 'ogg' : 
+                           'webm'; // Default to webm if unknown
+      
+      // Define the storage path: {account_id}/{recording_id}/chunk-{0-padded chunk number}.<extension>
+      const storagePath = `${accountId}/${recordingId}/chunk-${paddedChunkNumber}.${fileExtension}`;
       const storageBucket = 'recordings';
       
       logger.info({ 

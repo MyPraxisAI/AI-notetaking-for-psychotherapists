@@ -514,8 +514,13 @@ export function RecordingModal({
       // Create a FormData object to send the audio chunk
       const formData = new FormData()
       
-      // Add the audio blob with a properly formatted filename
-      formData.append('audio', blob, `chunk-${chunkNumber.toString().padStart(3, '0')}.webm`)
+      // Determine file extension based on MIME type
+      const fileExtension = blob.type.includes('webm') ? 'webm' : 
+                            blob.type.includes('ogg') ? 'ogg' : 
+                            'webm'; // Default to webm if unknown
+      
+      // Add the audio blob with a properly formatted filename and correct extension
+      formData.append('audio', blob, `chunk-${chunkNumber.toString().padStart(3, '0')}.${fileExtension}`)
       
       // Add metadata - ensure these are properly set
       formData.append('chunkNumber', chunkNumber.toString())

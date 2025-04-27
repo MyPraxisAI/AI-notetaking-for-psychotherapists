@@ -121,7 +121,7 @@ BEGIN;
     false,
     false,
     104857600, -- 100MB file size limit
-    ARRAY['audio/webm']
+    ARRAY['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus', 'audio/ogg']
   )
   ON CONFLICT (id) DO NOTHING;
 
