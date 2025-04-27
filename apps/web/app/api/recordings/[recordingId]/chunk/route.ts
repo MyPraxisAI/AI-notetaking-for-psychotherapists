@@ -57,24 +57,88 @@ export const POST = enhanceRouteHandler(
         );
       }
       
-      // This is a mock implementation - in a real implementation, we would:
       // 1. Parse the multipart form data to get the audio file and metadata
+      const { chunkNumber, startTime, endTime, mimeType, audioFile } = await parseFormData(request);
+      
+      // Format chunk number with leading zeros (e.g., 0001, 0002, etc.)
+      const paddedChunkNumber = chunkNumber.toString().padStart(4, '0');
+      
+      // Define the storage path: {account_id}/{recording_id}/chunk-{0-padded chunk number}.webm
+      const storagePath = `${accountId}/${recordingId}/chunk-${paddedChunkNumber}.webm`;
+      const storageBucket = 'recordings';
+      
+      logger.info({ 
+        ...ctx, 
+        accountId, 
+        chunkNumber, 
+        startTime, 
+        endTime, 
+        storagePath 
+      }, 'Processing chunk upload');
+      
       // 2. Upload the audio file to Supabase Storage
+      const { data: uploadData, error: uploadError } = await client.storage
+        .from(storageBucket)
+        .upload(storagePath, audioFile, {
+          contentType: mimeType || 'audio/webm',
+          upsert: true // Overwrite if exists
+        });
+      
+      if (uploadError) {
+        logger.error({ ...ctx, error: uploadError }, 'Error uploading chunk to storage');
+        return Response.json({ error: 'Failed to upload audio chunk' }, { status: 500 });
+      }
+      
       // 3. Create a record in the recordings_chunks table
+      const { data: chunkData, error: insertError } = await client
+        .from('recordings_chunks')
+        .insert({
+          recording_id: recordingId,
+          account_id: accountId,
+          chunk_number: chunkNumber,
+          start_time: startTime,
+          end_time: endTime,
+          storage_bucket: storageBucket,
+          storage_path: storagePath
+        })
+        .select('id')
+        .single();
       
-      // Mock implementation - just log and return success
-      logger.info({ ...ctx, accountId }, 'Mock chunk upload received');
+      if (insertError) {
+        logger.error({ ...ctx, error: insertError }, 'Error inserting chunk record');
+        return Response.json({ error: 'Failed to record chunk metadata' }, { status: 500 });
+      }
       
-      // Return a mock response
+      // Return success response with chunk ID
       return Response.json({
-        chunkId: '00000000-0000-0000-0000-000000000000',
-        status: 'pending',
-        message: 'Mock chunk upload - implementation pending'
+        chunkId: chunkData.id,
+        status: 'success',
+        message: 'Chunk uploaded successfully'
       });
     } catch (error) {
-      logger.error({ error, ...ctx }, 'Unexpected error processing chunk upload');
+      // Handle specific error types
+      if (error instanceof Error) {
+        if (error.message === 'Missing required chunk data') {
+          logger.warn({ ...ctx, error: error.message }, 'Invalid chunk data received');
+          return Response.json(
+            { error: 'Invalid chunk data', details: error.message },
+            { status: 400 }
+          );
+        }
+      }
+      
+      // Log the full error for debugging
+      logger.error({ 
+        error: error instanceof Error ? { message: error.message, stack: error.stack } : error, 
+        ...ctx 
+      }, 'Unexpected error processing chunk upload');
+      
+      // Return a user-friendly error message
       return Response.json(
-        { error: 'Internal server error' },
+        { 
+          error: 'Failed to process audio chunk', 
+          message: error instanceof Error ? error.message : 'Unknown error'
+        },
         { status: 500 }
       );
     }
@@ -84,19 +148,28 @@ export const POST = enhanceRouteHandler(
   }
 );
 
-// Helper function to parse multipart form data (to be implemented)
+// Helper function to parse multipart form data
 async function parseFormData(request: Request) {
-  // This would parse the multipart form data to extract:
-  // - chunkNumber: The sequential number of this chunk
-  // - startTime: Start timestamp of this chunk
-  // - endTime: End timestamp of this chunk
-  // - audioFile: The WebM audio blob
+  const formData = await request.formData();
   
-  // For now, return mock data
+  // Extract metadata
+  const chunkNumber = parseInt(formData.get('chunkNumber') as string, 10);
+  const startTime = parseFloat(formData.get('startTime') as string);
+  const endTime = parseFloat(formData.get('endTime') as string);
+  const mimeType = formData.get('mimeType') as string;
+  
+  // Get the audio file
+  const audioFile = formData.get('audio') as File;
+  
+  if (!audioFile || !chunkNumber || isNaN(startTime) || isNaN(endTime)) {
+    throw new Error('Missing required chunk data');
+  }
+  
   return {
-    chunkNumber: 1,
-    startTime: 0,
-    endTime: 5,
-    audioFile: null
+    chunkNumber,
+    startTime,
+    endTime,
+    mimeType,
+    audioFile
   };
 }
