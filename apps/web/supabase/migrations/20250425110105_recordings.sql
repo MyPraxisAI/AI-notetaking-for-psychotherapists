@@ -10,8 +10,7 @@ CREATE TABLE public.recordings (
     session_id UUID REFERENCES public.sessions(id) ON DELETE CASCADE,
     last_heartbeat_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
     status public.recording_status NOT NULL DEFAULT 'recording',
-    storage_bucket TEXT,
-    storage_prefix TEXT
+    standalone_chunks BOOLEAN NOT NULL DEFAULT false
 );
 
 -- Add RLS policies for recordings
