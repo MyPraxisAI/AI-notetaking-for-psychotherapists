@@ -411,7 +411,7 @@ export function RecordingModal({
         console.log('Starting MediaRecorder with 5-second chunks')
         
         // Initialize chunk tracking variables
-        let chunkNumber = 0;
+        let chunkNumber = 1;
         
         // Use performance.now() for precise timing
         const recordingStartTime = performance.now();
