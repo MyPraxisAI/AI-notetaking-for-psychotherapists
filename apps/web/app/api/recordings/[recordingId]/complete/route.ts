@@ -5,6 +5,7 @@ import { getLogger } from '@kit/shared/logger';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { getSupabaseServerClient } from '@kit/supabase/server-client';
 import { getUserPersonalAccount } from '../../../_lib/get-user-account';
+import { queueAudioTranscribe } from '../../../../../lib/aws/sqs';
 import { z } from 'zod';
 
 // Initialize logger properly with await
@@ -55,7 +56,7 @@ export const POST = enhanceRouteHandler(
       // Check if the recording exists and belongs to the user
       const { data: recording, error: fetchError } = await client
         .from('recordings')
-        .select('id, status, client_id')
+        .select('id, status, client_id, standalone_chunks')
         .eq('id', recordingId)
         .eq('account_id', accountId)
         .single();
@@ -129,6 +130,30 @@ export const POST = enhanceRouteHandler(
         
         // Include sessionId as part of the context object
         logger.info({ ...ctx, sessionId }, 'Recording completed successfully');
+        
+        try {
+          await queueAudioTranscribe({
+            recordingId,
+            accountId,
+            standaloneChunks: recording.standalone_chunks ?? false,
+          });
+          
+          logger.info({ 
+            ...ctx, 
+            sessionId, 
+            standaloneChunks: recording.standalone_chunks ?? false 
+          }, 'Audio transcription task queued successfully');
+        } catch (queueError) {
+          // Log the error but don't fail the request
+          logger.error({ 
+            ...ctx, 
+            error: queueError,
+            errorMessage: queueError instanceof Error ? queueError.message : String(queueError) 
+          }, 'Error queuing audio processing tasks');
+          
+          // We'll still return success since the recording was completed
+          // The audio processing can be retried later if needed
+        }
         
         return Response.json({ 
           recording: updatedRecording,
