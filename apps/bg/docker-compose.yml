@@ -1,0 +1,88 @@
+# version is now obsolete in recent Docker Compose versions
+
+networks:
+  localstack-net:
+    driver: bridge
+
+services:
+  # LocalStack for AWS services emulation
+  localstack:
+    image: localstack/localstack:latest
+    container_name: localstack
+    networks:
+      localstack-net:
+        aliases:
+          - localhost.localstack.cloud
+          - sqs.us-east-1.localhost.localstack.cloud
+    ports:
+      - "4566:4566"      # LocalStack edge port
+      - "4510-4559:4510-4559"  # external services port range
+    environment:
+      - SERVICES=sqs,s3
+      - DEBUG=1
+      - DATA_DIR=/tmp/localstack/data
+      - PERSISTENCE=0
+      - AWS_DEFAULT_REGION=us-east-1
+      - HOSTNAME_EXTERNAL=localstack
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+    # Removed volume mount to fix the 'Device or resource busy' error
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # Your application
+  app:
+    build: .
+    networks:
+      - localstack-net
+    depends_on:
+      localstack:
+        condition: service_healthy
+    env_file:
+      - env.development
+    volumes:
+      - ./:/app
+      - /app/node_modules
+    command: npm start
+    ports:
+      - "8080:8080"
+      
+  # Service for sending test messages
+  test-message:
+    build:
+      context: .
+      target: build
+    networks:
+      - localstack-net
+    depends_on:
+      localstack:
+        condition: service_healthy
+    command: ["npx", "ts-node", "src/scripts/send-test-message.ts"]
+    env_file:
+      - env.development
+    volumes:
+      - ./:/app
+      - /app/node_modules
+      
+  # Development service with TypeScript support (better debugging)
+  dev:
+    build:
+      context: .
+      target: build
+    networks:
+      - localstack-net
+    depends_on:
+      localstack:
+        condition: service_healthy
+    env_file:
+      - env.development
+    volumes:
+      - ./:/app
+      - /app/node_modules
+    command: ["npx", "ts-node", "src/index.ts"]
+    ports:
+      - "8080:8080"
