@@ -26,7 +26,6 @@ services:
       - HOSTNAME_EXTERNAL=localstack
       - AWS_ACCESS_KEY_ID=test
       - AWS_SECRET_ACCESS_KEY=test
-    # Removed volume mount to fix the 'Device or resource busy' error
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
       interval: 5s
