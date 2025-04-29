@@ -14,9 +14,126 @@ import { DeleteSessionModal } from "../mypraxis/delete-session-modal"
 import type { Session } from "../../types/session"
 import { useSession, useDeleteSession } from "../../app/home/(user)/mypraxis/_lib/hooks/use-sessions"
 import { useSessionArtifact } from "../../app/home/(user)/mypraxis/_lib/hooks/use-session-artifacts"
+import { useRecordingStatus } from "../../app/home/(user)/mypraxis/_lib/hooks/use-recording-status"
 import { updateSessionAction } from "../../app/home/(user)/mypraxis/_lib/server/server-actions"
 import { toast } from "sonner"
 import ReactMarkdown from "react-markdown"
+
+interface TranscriptContentProps {
+  clientId: string
+  sessionId: string
+  session: Session | null
+  onEditTranscript: (content: string) => void
+}
+
+/**
+ * Component to handle all transcript states:
+ * 1. Transcript exists - show the transcript with edit button
+ * 2. Recording is processing - show "Transcription in progress..."
+ * 3. No transcript or recording - show "Add transcript" button
+ */
+function TranscriptContent({ clientId, sessionId, session, onEditTranscript }: TranscriptContentProps) {
+  console.log(`[TranscriptContent] Rendering for sessionId: ${sessionId}, has transcript: ${!!session?.transcript}`);
+  
+  const { data: recordingStatus, isLoading: isLoadingRecording } = useRecordingStatus(sessionId)
+  console.log(`[TranscriptContent] Recording status:`, recordingStatus);
+  
+  const queryClient = useQueryClient()
+  
+  // Setup polling for session data when a recording is being processed
+  useEffect(() => {
+    console.log(`[TranscriptContent] useEffect running, recordingStatus:`, recordingStatus);
+    
+    // If we have a recording being processed, set up polling for the session data
+    if (recordingStatus?.isProcessing) {
+      console.log(`[TranscriptContent] Recording is processing, setting up polling for sessionId: ${sessionId}`);
+      
+      // Poll every 2 seconds while processing
+      const intervalId = setInterval(() => {
+        console.log(`[TranscriptContent] Polling for session data for sessionId: ${sessionId}`);
+        queryClient.invalidateQueries({ queryKey: ['session', sessionId] });
+      }, 2000);
+      
+      // Clean up the interval when the component unmounts or recording status changes
+      return () => {
+        console.log(`[TranscriptContent] Cleaning up polling interval for sessionId: ${sessionId}`);
+        clearInterval(intervalId);
+      };
+    } else if (recordingStatus !== undefined) {
+      // If recording status is defined but not processing, do a one-time refresh
+      // This handles the case when processing has just completed
+      console.log(`[TranscriptContent] Recording status changed, refreshing session data for sessionId: ${sessionId}`);
+      queryClient.invalidateQueries(['session', sessionId]);
+    }
+  }, [recordingStatus, sessionId, queryClient])
+  
+  // If we have a transcript, show it
+  if (session?.transcript) {
+    return (
+      <div className="relative group">
+        <div 
+          className="rounded-lg bg-[#FFF9E8] px-6 pb-6 pt-7 text-[14px] leading-[1.6] whitespace-pre-wrap cursor-pointer" 
+          onClick={() => onEditTranscript(session.transcript?.content || "")}
+          data-test="session-transcript-value"
+        >
+          {session.transcript.content}
+        </div>
+        <div className="absolute right-2 top-[7px] flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6 hover:bg-transparent"
+            onClick={() => onEditTranscript(session.transcript?.content || "")}
+          >
+            <Edit2 className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+    )
+  }
+  
+
+  
+  // Show loading state while we check for recording status
+  if (isLoadingRecording) {    
+    return (
+      <div className="w-full h-[100px] flex items-center justify-center">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    )
+  }
+  
+  // If a recording is being processed, show the "Transcription in progress..." UI
+  if (recordingStatus?.isProcessing) {    
+    return (
+      <div className="w-full h-[150px] border border-dashed border-input bg-muted/20 rounded-md flex flex-col items-center justify-center p-6 space-y-2">
+        <div className="flex items-center justify-center space-x-2">
+          <Loader2 className="h-5 w-5 animate-spin text-primary" />
+          <h3 className="text-lg font-medium">Transcription in progress...</h3>
+        </div>
+        <p className="text-sm text-muted-foreground text-center max-w-md">
+          We're processing your recording. This may take a few minutes depending on the length of the session.
+          The transcript will appear here automatically when it's ready.
+        </p>
+      </div>
+    )
+  }
+  
+  // Otherwise, show the "Add transcript" button
+  return (
+    <Button
+      variant="ghost"
+      className="w-full h-[100px] border border-dashed border-input hover:border-input hover:bg-accent"
+      onClick={() => onEditTranscript("")}
+      data-test="session-add-transcript-button"
+    >
+      <span className="flex items-center gap-2">
+        <Plus className="h-4 w-4" />
+        Click to add a transcript
+      </span>
+    </Button>
+  )
+}
 
 interface SessionViewProps {
   clientId: string
@@ -176,7 +293,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
   }
 
   // Use React's useTransition for pending state
-  const [_isPending, startTransition] = useTransition()
+  const [isPending, startTransition] = useTransition()
   
   // Get the query client for invalidating queries
   const queryClient = useQueryClient()
@@ -393,7 +510,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                         });
                         
                         // Invalidate queries to refresh data
-                        queryClient.invalidateQueries(['session', sessionId]);
+                        queryClient.invalidateQueries({ queryKey: ['session', sessionId] });
                         
                         toast.success("Session title updated");
                       } catch (error) {
@@ -419,7 +536,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                           });
                           
                           // Invalidate queries to refresh data
-                          queryClient.invalidateQueries(['session', sessionId]);
+                          queryClient.invalidateQueries({ queryKey: ['session', sessionId] });
                           
                           toast.success("Session title updated");
                         } catch (error) {
@@ -476,7 +593,12 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
         </span>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full" data-session-id={sessionId}>
+      <Tabs 
+        value={activeTab} 
+        onValueChange={(value) => setActiveTab(value as "summary" | "transcript")} 
+        className="w-full" 
+        data-session-id={sessionId}
+      >
         <TabsList className="w-full justify-start border-b rounded-none h-auto p-0 bg-transparent">
           <TabsTrigger
             value="summary"
@@ -681,62 +803,38 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
           </div>
         </TabsContent>
 
-        <TabsContent value="transcript" className="mt-5">
+        <TabsContent value="transcript" className="relative" data-tab="transcript">
           {isEditingTranscript ? (
             <div className="relative">
               <Textarea
-                value={editedTranscript || session?.transcript?.content || ""}
+                value={editedTranscript}
                 onChange={(e) => setEditedTranscript(e.target.value)}
-                onBlur={() => handleSaveTranscript()}
-                className="min-h-[300px] resize-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)]"
-                placeholder="Paste or type transcript here..."
+                onBlur={() => {
+                  setIsEditingTranscript(false)
+                  handleSaveTranscript()
+                }}
+                className="min-h-[300px] resize-vertical focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)] [&::-webkit-resizer]:appearance-none after:content-[''] after:absolute after:bottom-1 after:right-1 after:w-3 after:h-3 after:border-b-2 after:border-r-2 after:border-[#6B7280] after:cursor-se-resize relative font-mono text-sm"
+                placeholder="Enter transcript..."
                 autoFocus
-                data-test="session-transcript-input"
+                data-test="session-transcript-editor"
               />
-              <div className="flex justify-end">
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => handleSaveTranscript()}
-                >
-                  Save
-                </Button>
-              </div>
-            </div>
-          ) : session?.transcript ? (
-            <div className="relative group">
-              <div className="rounded-lg bg-[#FFF9E8] px-6 pb-6 pt-7 text-[14px] leading-[1.6] whitespace-pre-wrap" data-test="session-transcript-value">
-                {session.transcript?.content}
-              </div>
-              <div className="absolute right-2 top-[7px] flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-6 w-6 hover:bg-transparent"
-                  onClick={() => {
-                    setIsEditingTranscript(true)
-                    setEditedTranscript(session.transcript?.content || "")
-                  }}
-                >
-                  <Edit2 className="h-4 w-4" />
-                </Button>
-              </div>
+              {isPending && (
+                <div className="absolute right-3 bottom-3 flex items-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Saving...
+                </div>
+              )}
             </div>
           ) : (
-            <Button
-              variant="ghost"
-              className="w-full h-[100px] border border-dashed border-input hover:border-input hover:bg-accent"
-              onClick={() => {
+            <TranscriptContent
+              clientId={clientId}
+              sessionId={sessionId}
+              session={session}
+              onEditTranscript={(content) => {
                 setIsEditingTranscript(true)
-                setEditedTranscript("")
+                setEditedTranscript(content)
               }}
-              data-test="session-add-transcript-button"
-            >
-              <span className="flex items-center gap-2">
-                <Plus className="h-4 w-4" />
-                Click to add a transcript
-              </span>
-            </Button>
+            />
           )}
         </TabsContent>
       </Tabs>
