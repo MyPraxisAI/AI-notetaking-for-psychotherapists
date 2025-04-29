@@ -17,7 +17,7 @@ import type { Session } from "../../types/session"
 import { useSession, useDeleteSession } from "../../app/home/(user)/mypraxis/_lib/hooks/use-sessions"
 import { useSessionArtifact } from "../../app/home/(user)/mypraxis/_lib/hooks/use-session-artifacts"
 import { useRecordingStatus } from "../../app/home/(user)/mypraxis/_lib/hooks/use-recording-status"
-import { updateSessionAction } from "../../app/home/(user)/mypraxis/_lib/server/server-actions"
+import { updateSessionAction, generateSessionTitleAction } from "../../app/home/(user)/mypraxis/_lib/server/server-actions"
 import { toast } from "sonner"
 import ReactMarkdown from "react-markdown"
 
@@ -26,6 +26,7 @@ interface TranscriptContentProps {
   sessionId: string
   session: Session | null
   onEditTranscript: (content: string) => void
+  handleSessionUpdate: (result: { success: boolean, session?: any }, currentSession: any) => void
 }
 
 /**
@@ -34,40 +35,65 @@ interface TranscriptContentProps {
  * 2. Recording is processing - show "Transcription in progress..."
  * 3. No transcript or recording - show "Add transcript" button
  */
-function TranscriptContent({ clientId, sessionId, session, onEditTranscript }: TranscriptContentProps) {
+function TranscriptContent({ clientId, sessionId, session, onEditTranscript, handleSessionUpdate }: TranscriptContentProps) {
   console.log(`[TranscriptContent] Rendering for sessionId: ${sessionId}, has transcript: ${!!session?.transcript}`);
   
   const { data: recordingStatus, isLoading: isLoadingRecording } = useRecordingStatus(sessionId)
   console.log(`[TranscriptContent] Recording status:`, recordingStatus);
   
+  // Add useTransition hook for async operations
+  const [isPending, startTransition] = useTransition()
+  
   const queryClient = useQueryClient()
   
-  // Setup polling for session data when a recording is being processed
+  // Track polling interval ID to ensure proper cleanup
+  const recordingStatusIntervalIdRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Handle transcript title generation when recording is complete
   useEffect(() => {
     console.log(`[TranscriptContent] useEffect running, recordingStatus:`, recordingStatus);
     
-    // If we have a recording being processed, set up polling for the session data
-    if (recordingStatus?.isProcessing) {
-      console.log(`[TranscriptContent] Recording is processing, setting up polling for sessionId: ${sessionId}`);
+    // If recording status is defined and not processing
+    if (recordingStatus !== undefined && !recordingStatus.isProcessing) {
+      // Invalidate session data to ensure we have the latest transcript
+      console.log(`[TranscriptContent] Recording completed, invalidating session data for sessionId: ${sessionId}`);
+      queryClient.invalidateQueries({ queryKey: ['session', sessionId] });
       
-      // Poll every 2 seconds while processing
-      const intervalId = setInterval(() => {
-        console.log(`[TranscriptContent] Polling for session data for sessionId: ${sessionId}`);
-        queryClient.invalidateQueries({ queryKey: ['session', sessionId] });
-      }, 2000);
       
-      // Clean up the interval when the component unmounts or recording status changes
-      return () => {
-        console.log(`[TranscriptContent] Cleaning up polling interval for sessionId: ${sessionId}`);
-        clearInterval(intervalId);
-      };
-    } else if (recordingStatus !== undefined) {
-      // If recording status is defined but not processing, do a one-time refresh
-      // This handles the case when processing has just completed
-      console.log(`[TranscriptContent] Recording status changed, refreshing session data for sessionId: ${sessionId}`);
-      queryClient.invalidateQueries(['session', sessionId]);
+      // Check if we have a transcript
+      if (session?.transcript) {
+        console.log(`[TranscriptContent] Transcript available, generating title for sessionId: ${sessionId}`);
+        
+        // Generate a title for the session now that the transcript is available
+        startTransition(async () => {
+          try {
+            const result = await generateSessionTitleAction({
+              id: sessionId,
+              clientId: clientId
+            });
+          
+            if (result.success && result.session) {
+              console.log(`[TranscriptContent] Title generation successful: ${result.session.title}`);
+            
+              // Update the parent session component
+              if (session) {
+              // This will update the parent SessionView component
+                handleSessionUpdate(result, session);
+              }
+            
+              // The parent component will be updated via handleSessionUpdate
+              // No need to maintain local state as it will be passed down as props
+            }
+          } catch (error) {
+            console.error("[TranscriptContent] Error generating title:", error);
+          }
+        });
+      }
     }
-  }, [recordingStatus, sessionId, queryClient])
+
+    // No cleanup needed as we're using React Query's built-in refetchInterval
+    return () => {};
+  }, [recordingStatus, sessionId, queryClient, session]);
   
   // If we have a transcript, show it
   if (session?.transcript) {
@@ -300,6 +326,58 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
   // Get the query client for invalidating queries
   const queryClient = useQueryClient()
   
+  /**
+   * Helper method to update the session with data from a server action response
+   * @param result The result from a server action
+   * @param currentSession The current session state
+   */
+  const handleSessionUpdate = (result: { success: boolean, session?: any }, currentSession: any) => {
+    if (result.success && result.session) {
+      // Update the session with the returned data including the potentially auto-generated title
+      // Convert the database record to a Session object
+      const updatedSession = {
+        ...currentSession,
+        id: result.session.id,
+        title: result.session.title || '',
+        transcript: result.session.transcript ? { content: result.session.transcript } : undefined,
+        notes: result.session.note ? { userNote: result.session.note } : undefined,
+        metadata: result.session.metadata as SessionMetadata | undefined
+      }
+      
+      // Update the session state
+      setSession(updatedSession)
+      
+      // Update localStorage and dispatch event for column-4 list if title changed
+      if (currentSession.title !== result.session.title) {
+        const sessionsData = localStorage.getItem("sessions")
+        if (sessionsData) {
+          const sessions = JSON.parse(sessionsData)
+          if (!sessions[clientId]) {
+            sessions[clientId] = {}
+          }
+          sessions[clientId][sessionId] = result.session
+          localStorage.setItem("sessions", JSON.stringify(sessions))
+        }
+
+        // Force parent update with the new title
+        window.dispatchEvent(
+          new CustomEvent("sessionTitleChanged", {
+            detail: { 
+              clientId, 
+              sessionId, 
+              title: result.session.title || '', 
+              session: result.session 
+            },
+          }),
+        )
+      }
+      
+      return updatedSession
+    }
+    
+    return currentSession
+  }
+  
 
   
   /**
@@ -323,15 +401,8 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
             note: session.notes?.userNote || ''
           });
           
-          // If we got updated session data back, update our local state
-          if (result.success && result.session) {
-            // Update the session with the returned data
-            setSession({
-              ...session,
-              title: result.session.title || '',
-              // Add any other fields that might have been updated
-            });
-          }
+          // Update the session with the returned data
+          handleSessionUpdate(result, session)
           
           // Hide the title editing UI
           setIsEditingTitle(false);
@@ -376,44 +447,8 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
             note: note
           });
           
-          // If we got updated session data back, update our local state
-          if (result.success && result.session) {
-            // Update the session with the returned data including the potentially auto-generated title
-            // Convert the database record to a Session object
-            setSession({
-              ...session,
-              id: result.session.id,
-              title: result.session.title || '',
-              transcript: result.session.transcript ? { content: result.session.transcript } : undefined,
-              notes: result.session.note ? { userNote: result.session.note } : undefined,
-              metadata: result.session.metadata as SessionMetadata | undefined
-            });
-            
-            // Update localStorage and dispatch event for column-4 list if title changed
-            if (session.title !== result.session.title) {
-              const sessionsData = localStorage.getItem("sessions")
-              if (sessionsData) {
-                const sessions = JSON.parse(sessionsData)
-                if (!sessions[clientId]) {
-                  sessions[clientId] = {}
-                }
-                sessions[clientId][sessionId] = result.session
-                localStorage.setItem("sessions", JSON.stringify(sessions))
-              }
-
-              // Force parent update with the cleaned title
-              window.dispatchEvent(
-                new CustomEvent("sessionTitleChanged", {
-                  detail: { 
-                    clientId, 
-                    sessionId, 
-                    title: result.session.title || '', 
-                    session: result.session 
-                  },
-                }),
-              )
-            }
-          }
+          // Update the session with the returned data
+          handleSessionUpdate(result, session);
           
           // Success handling
           toast.success("Note saved");
@@ -471,44 +506,8 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
             note: session.notes?.userNote || ''
           });
           
-          // If we got updated session data back, update our local state
-          if (result.success && result.session) {
-            // Update the session with the returned data including the potentially auto-generated title
-            // Convert the database record to a Session object
-            setSession({
-              ...session,
-              id: result.session.id,
-              title: result.session.title || '',
-              transcript: result.session.transcript ? { content: result.session.transcript } : undefined,
-              notes: result.session.note ? { userNote: result.session.note } : undefined,
-              metadata: result.session.metadata as SessionMetadata | undefined
-            });
-            
-            // Update localStorage and dispatch event for column-4 list if title changed
-            if (session.title !== result.session.title) {
-              const sessionsData = localStorage.getItem("sessions")
-              if (sessionsData) {
-                const sessions = JSON.parse(sessionsData)
-                if (!sessions[clientId]) {
-                  sessions[clientId] = {}
-                }
-                sessions[clientId][sessionId] = result.session
-                localStorage.setItem("sessions", JSON.stringify(sessions))
-              }
-
-              // Force parent update with the cleaned title
-              window.dispatchEvent(
-                new CustomEvent("sessionTitleChanged", {
-                  detail: { 
-                    clientId, 
-                    sessionId, 
-                    title: result.session.title || '', 
-                    session: result.session 
-                  },
-                }),
-              )
-            }
-          }
+          // Update the session with the returned data
+          handleSessionUpdate(result, session);
           
           // Reset summaries first to show loading state
           resetAndRefetchSummaries()
@@ -922,6 +921,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
               clientId={clientId}
               sessionId={sessionId}
               session={session}
+              handleSessionUpdate={handleSessionUpdate}
               onEditTranscript={(content) => {
                 setIsEditingTranscript(true)
                 setEditedTranscript(content)

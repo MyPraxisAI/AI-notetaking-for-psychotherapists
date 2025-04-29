@@ -42,7 +42,7 @@ export function useRecordingStatus(sessionId: string | null) {
           throw recordingError;
         }
 
-        // If recording exists, check if it's being processed
+        // Recording exists, set isProcessing to true
         if (recordingData) {
           console.log(`[useRecordingStatus] Recording found for sessionId: ${sessionId}, setting isProcessing: true`);
           return { isProcessing: true };
@@ -60,6 +60,10 @@ export function useRecordingStatus(sessionId: string | null) {
     
     // Set a short stale time to ensure the data is considered fresh for a short time
     staleTime: 500,
+    
+    // Add automatic polling while the query is enabled
+    refetchInterval: 2000,
+    refetchIntervalInBackground: false,
     
     // Only enable the query if we have the required parameters
     enabled: !!sessionId && !!accountId,

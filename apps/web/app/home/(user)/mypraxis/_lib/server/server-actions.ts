@@ -17,6 +17,14 @@ const UpdateSessionSchema = SessionSchema.extend({
 
 type UpdateSessionData = z.infer<typeof UpdateSessionSchema>;
 
+// Schema for generating a session title
+const GenerateTitleSchema = z.object({
+  id: z.string(),
+  clientId: z.string()
+});
+
+type GenerateTitleData = z.infer<typeof GenerateTitleSchema>;
+
 /**
  * Generate a title for a session if it hasn't been initialized yet
  * @param client Supabase client
@@ -99,6 +107,84 @@ async function generateSessionTitle(
     return false;
   }
 }
+
+/**
+ * Server action to generate a title for a session
+ */
+export const generateSessionTitleAction = enhanceAction(
+  async function (data: GenerateTitleData, user: User) {
+    const client = getSupabaseServerClient();
+    const logger = await getLogger('generateSessionTitleAction');
+    const ctx = { sessionId: data.id, userId: user.id };
+    
+    try {
+      logger.info(ctx, 'Generating session title');
+      
+      // 1. Get the current session data
+      const { data: currentSession, error: fetchError } = await client
+        .from('sessions')
+        .select('note, title, metadata')
+        .eq('id', data.id)
+        .single();
+      
+      if (fetchError) {
+        logger.error({ ...ctx, error: fetchError }, 'Failed to fetch session data');
+        throw new Error('Failed to fetch session data');
+      }
+      
+      // 1b. Get the transcript from the transcripts table
+      let transcriptContent = null;
+      const { data: transcriptData, error: transcriptError } = await client
+        .from('transcripts')
+        .select('content')
+        .eq('session_id', data.id)
+        .maybeSingle();
+      
+      if (transcriptError) {
+        logger.warn({ ...ctx, error: transcriptError }, 'Failed to fetch transcript data');
+        // Don't throw here, we'll just proceed with a null transcript
+      } else if (transcriptData) {
+        transcriptContent = transcriptData.content;
+      }
+      
+      // 2. Call the helper function to generate the title
+      const success = await generateSessionTitle(
+        client,
+        data.id,
+        transcriptContent,
+        currentSession.note
+      );
+      
+      // 3. If successful, fetch the updated session to return
+      if (success) {
+        const { data: updatedSession, error: fetchUpdatedError } = await client
+          .from('sessions')
+          .select('id, title, transcript, note, metadata')
+          .eq('id', data.id)
+          .single();
+        
+        if (fetchUpdatedError) {
+          logger.error({ ...ctx, error: fetchUpdatedError }, 'Failed to fetch updated session');
+          return { success: true };
+        }
+        
+        return { 
+          success: true,
+          session: updatedSession
+        };
+      }
+      
+      return { success };
+    } catch (error) {
+      logger.error({ ...ctx, error }, 'Error generating session title');
+      throw error;
+    }
+  },
+  {
+    auth: true,
+    schema: GenerateTitleSchema,
+  }
+);
 
 /**
  * Server action to update a session and delete related artifacts if content changed
