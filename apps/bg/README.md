@@ -114,7 +114,7 @@ aws ecs register-task-definition \
   --memory 2048 \
   --execution-role-arn arn:aws:iam::YOUR_AWS_ACCOUNT_ID:role/ecsTaskExecutionRole \
   --task-role-arn arn:aws:iam::YOUR_AWS_ACCOUNT_ID:role/ecsTaskRole \
-  --container-definitions "[{\"name\":\"bg-workers\",\"image\":\"YOUR_AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/bg-workers:latest\",\"essential\":true,\"portMappings\":[{\"containerPort\":8080,\"hostPort\":8080}],\"environment\":[{\"name\":\"AWS_REGION\",\"value\":\"us-east-1\"},{\"name\":\"SQS_QUEUE_NAME\",\"value\":\"your-production-queue-name\"},{\"name\":\"SQS_QUEUE_URL\",\"value\":\"YOUR_SQS_QUEUE_URL\"}],\"healthCheck\":{\"command\":[\"CMD-SHELL\",\"curl -f http://localhost:8080/health || exit 1\"],\"interval\":30,\"timeout\":5,\"retries\":3,\"startPeriod\":60}}]"
+  --container-definitions "[{\"name\":\"bg-workers\",\"image\":\"YOUR_AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/bg-workers:latest\",\"essential\":true,\"portMappings\":[{\"containerPort\":8080,\"hostPort\":8080}],\"environment\":[{\"name\":\"AWS_REGION\",\"value\":\"us-east-1\"},{\"name\":\"SQS_QUEUE_NAME\",\"value\":\"your-production-queue-name\"}],\"healthCheck\":{\"command\":[\"CMD-SHELL\",\"curl -f http://localhost:8080/health || exit 1\"],\"interval\":30,\"timeout\":5,\"retries\":3,\"startPeriod\":60}}]"
 ```
 
 3. Create a Fargate service:

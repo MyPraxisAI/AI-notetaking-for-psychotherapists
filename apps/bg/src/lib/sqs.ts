@@ -6,8 +6,7 @@ import { SQSConfig, SQSMessage } from '../types';
  */
 export function initSQSClient(config?: Partial<SQSConfig>): AWS.SQS {
   // Determine if we're running locally with LocalStack
-  const isLocalDevelopment = process.env.NODE_ENV === 'development' || 
-    (process.env.SQS_QUEUE_URL && (process.env.SQS_QUEUE_URL.includes('localstack') || process.env.SQS_QUEUE_URL.includes('localhost')));
+  const isLocalDevelopment = process.env.NODE_ENV === 'development';
 
   // Configure AWS
   const awsConfig: AWS.SQS.ClientConfiguration = {
@@ -49,6 +48,10 @@ export class SQSQueueManager {
   public queueUrl: string | undefined;
   private isLocalDevelopment: boolean;
   private receiveParams: AWS.SQS.ReceiveMessageRequest;
+  
+  // Initialization tracking
+  private initialized = false;
+  private initializationPromise: Promise<void> | null = null;
 
   /**
    * Create a new SQS Queue Manager
@@ -58,9 +61,8 @@ export class SQSQueueManager {
   constructor(queueName?: string, options: SQSQueueManagerOptions = {}) {
     this.sqs = initSQSClient();
     this.queueName = queueName || process.env.SQS_QUEUE_NAME || 'mypraxis-background-tasks-dev';
-    this.queueUrl = process.env.SQS_QUEUE_URL;
     this.isLocalDevelopment = process.env.NODE_ENV === 'development' || 
-      !!(process.env.SQS_QUEUE_URL && (process.env.SQS_QUEUE_URL?.includes('localstack') || process.env.SQS_QUEUE_URL?.includes('localhost')));
+      !!(process.env.AWS_ENDPOINT && (process.env.AWS_ENDPOINT?.includes('localstack') || process.env.AWS_ENDPOINT?.includes('localhost')));
     
     // Default receive parameters
     this.receiveParams = {
@@ -72,10 +74,49 @@ export class SQSQueueManager {
   }
 
   /**
-   * Ensures the SQS queue exists, creating it if necessary
-   * @returns The queue URL
+   * Ensures the SQS Queue Manager is initialized
+   * This method is called internally by other methods that need the queue to be ready
    */
-  async ensureQueueExists(): Promise<string> {
+  private async ensureInitialized(): Promise<void> {
+    // If already initialized, return immediately
+    if (this.initialized) return;
+    
+    // If initialization is in progress, wait for it to complete
+    if (this.initializationPromise) {
+      return this.initializationPromise;
+    }
+    
+    // Start initialization
+    console.log('Starting SQS Queue Manager initialization...');
+    this.initializationPromise = this.ensureQueueExists().then(() => {
+      this.initialized = true;
+      console.log('SQS Queue Manager initialization complete');
+    }).catch(err => {
+      // Reset initialization promise on error so it can be retried
+      this.initializationPromise = null;
+      console.error('SQS Queue Manager initialization failed:', err);
+      throw err;
+    });
+    
+    return this.initializationPromise;
+  }
+
+  /**
+   * Helper method to get the ARN of a queue from its URL
+   */
+  private async getQueueArn(queueUrl: string): Promise<string> {
+    const result = await this.sqs.getQueueAttributes({
+      QueueUrl: queueUrl,
+      AttributeNames: ['QueueArn']
+    }).promise();
+    
+    return result.Attributes!.QueueArn;
+  }
+
+  /**
+   * Ensures the queue exists, creating it if necessary
+   */
+  async ensureQueueExists(): Promise<void> {    
     // First try to get the queue URL if it exists
     try {
       console.log(`Checking if queue '${this.queueName}' exists...`);
@@ -86,7 +127,7 @@ export class SQSQueueManager {
       const data = await this.sqs.getQueueUrl(getQueueUrlParams).promise();
       this.queueUrl = data.QueueUrl || '';
       console.log(`Found existing queue: ${this.queueUrl}`);
-      return this.queueUrl;
+      return;
     } catch (error: any) {
       // Queue doesn't exist or other error occurred
       if (error.code !== 'AWS.SimpleQueueService.NonExistentQueue') {
@@ -102,26 +143,47 @@ export class SQSQueueManager {
       // Only create the queue in development mode
       if (this.isLocalDevelopment) {
         try {
-          console.log(`Creating SQS queue '${this.queueName}'...`);
+          // First, create a Dead Letter Queue
+          const dlqName = `${this.queueName}-dlq`;
+          console.log(`Creating Dead Letter Queue '${dlqName}'...`);
+          const dlqResult = await this.sqs.createQueue({
+            QueueName: dlqName,
+            Attributes: {
+              'MessageRetentionPeriod': '1209600', // 14 days for the DLQ
+            }
+          }).promise();
+
+          const dlqUrl = dlqResult.QueueUrl!;
+          console.log(`DLQ created successfully: ${dlqUrl}`);
+          
+          // Get the ARN of the DLQ
+          const dlqArn = await this.getQueueArn(dlqUrl);
+          console.log(`DLQ ARN: ${dlqArn}`);
+          
+          // Now create the main queue with a redrive policy
+          console.log(`Creating main SQS queue '${this.queueName}'...`);
           const createQueueResult = await this.sqs.createQueue({
             QueueName: this.queueName,
             Attributes: {
               // Default queue settings - adjust as needed
               'MessageRetentionPeriod': '345600', // 4 days
-              'VisibilityTimeout': '30',          // 30 seconds
-              'ReceiveMessageWaitTimeSeconds': '20' // Long polling
+              'VisibilityTimeout': '120',         // 2 minutes - increased for audio processing
+              'ReceiveMessageWaitTimeSeconds': '20', // Long polling
+              'RedrivePolicy': JSON.stringify({
+                deadLetterTargetArn: dlqArn,
+                maxReceiveCount: '5'  // Maximum number of retries before sending to DLQ
+              })
             }
           }).promise();
           
+          // Set the queue URL from the create result
           this.queueUrl = createQueueResult.QueueUrl!;
           console.log(`SQS queue created successfully: ${this.queueUrl}`);
           
-          // If the queue URL wasn't provided in env vars, use the one we just created
-          if (!process.env.SQS_QUEUE_URL) {
-            process.env.SQS_QUEUE_URL = this.queueUrl;
-          }
+          // Store the queue URL for future reference
+          console.log(`Queue URL: ${this.queueUrl}`);
           
-          return this.queueUrl;
+          return;
         } catch (createError) {
           console.error('Error creating SQS queue:', createError);
           throw createError;
@@ -138,6 +200,9 @@ export class SQSQueueManager {
    * @param receiptHandle - The receipt handle of the message to delete
    */
   async deleteMessage(receiptHandle: string): Promise<void> {
+    // Ensure the queue is initialized before deleting a message
+    await this.ensureInitialized();
+    
     const deleteParams: AWS.SQS.DeleteMessageRequest = {
       QueueUrl: this.queueUrl!,
       ReceiptHandle: receiptHandle
@@ -159,10 +224,9 @@ export class SQSQueueManager {
    * @returns The send message result
    */
   async sendMessage(messageBody: any, messageAttributes: Record<string, AWS.SQS.MessageAttributeValue> = {}): Promise<AWS.SQS.SendMessageResult> {
-    if (!this.queueUrl) {
-      await this.ensureQueueExists();
-    }
-
+    // Ensure the queue is initialized before sending a message
+    await this.ensureInitialized();
+    
     const params: AWS.SQS.SendMessageRequest = {
       QueueUrl: this.queueUrl!,
       MessageBody: typeof messageBody === 'string' ? messageBody : JSON.stringify(messageBody),
@@ -171,7 +235,7 @@ export class SQSQueueManager {
 
     try {
       const result = await this.sqs.sendMessage(params).promise();
-      console.log(`Message sent successfully: ${result.MessageId}`);
+      console.log(`Message sent to queue: ${result.MessageId}`);
       return result;
     } catch (error) {
       console.error('Error sending message to SQS:', error);
@@ -184,10 +248,9 @@ export class SQSQueueManager {
    * @returns Array of messages
    */
   async receiveMessages(): Promise<SQSMessage[]> {
-    if (!this.queueUrl) {
-      await this.ensureQueueExists();
-    }
-
+    // Ensure the queue is initialized before receiving messages
+    await this.ensureInitialized();
+    
     // Ensure we have the latest queue URL
     this.receiveParams.QueueUrl = this.queueUrl || '';
     

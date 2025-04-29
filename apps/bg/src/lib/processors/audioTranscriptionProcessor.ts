@@ -100,13 +100,9 @@ export class AudioTranscriptionProcessor {
       const chunkFiles = await this.downloadChunks(chunks, tempDir);
       console.log(`Downloaded ${chunkFiles.length} audio chunks to ${tempDir}`);
       
-      // 4. Create a file list for FFmpeg
-      const fileListPath = path.join(tempDir, 'filelist.txt');
-      await this.createFileList(chunkFiles, fileListPath);
-      
-      // 5. Combine the chunks using FFmpeg
+      // 4. Combine the chunks using FFmpeg
       const outputFilePath = path.join(tempDir, `${recordingId}.webm`);
-      await this.combineAudioChunks(fileListPath, outputFilePath, standaloneChunks);
+      await this.combineAudioChunks(chunkFiles, outputFilePath, standaloneChunks);
       console.log(`Combined audio chunks into ${outputFilePath}`);
       
       // TODO: Send to transcription service
@@ -241,52 +237,48 @@ export class AudioTranscriptionProcessor {
   }
   
   /**
-   * Create a file list for FFmpeg
+   * Create input arguments for FFmpeg
    * @param chunkFiles - Array of paths to the chunk files
-   * @param fileListPath - Path to write the file list
+   * @returns Input arguments for FFmpeg
    */
-  private async createFileList(chunkFiles: string[], fileListPath: string): Promise<void> {
-    // Create a file with the list of input files for FFmpeg
-    const fileListContent = chunkFiles.map(file => `file '${file}'`).join('\n');
-    await fs.promises.writeFile(fileListPath, fileListContent);
+  private createInputArgs(chunkFiles: string[]): string {
+    // Create input arguments for FFmpeg (-i file1 -i file2 ...)
+    return chunkFiles.map(file => `-i "${file}"`).join(' ');
   }
   
   /**
    * Combine audio chunks using FFmpeg
-   * @param fileListPath - Path to the file list
+   * @param chunkFiles - Array of paths to the chunk files
    * @param outputFilePath - Path to write the combined audio file
    * @param standaloneChunks - Whether the chunks are standalone (complete WebM files) or not
    */
-  private async combineAudioChunks(fileListPath: string, outputFilePath: string, standaloneChunks: boolean): Promise<void> {
+  private async combineAudioChunks(chunkFiles: string[], outputFilePath: string, standaloneChunks: boolean): Promise<void> {
     const execPromise = promisify(exec);
     
     try {
       let command: string;
       
       if (standaloneChunks) {
-        // For standalone chunks, use the concat demuxer which works with complete files
-        // -f concat: Use the concat demuxer
-        // -safe 0: Don't require safe filenames
-        // -i: Input file list
-        // -c copy: Copy the audio streams without re-encoding
-        command = `ffmpeg -f concat -safe 0 -i "${fileListPath}" -c copy "${outputFilePath}"`;
+        // For standalone chunks, create a filter complex for concatenation
+        // This approach works well for complete WebM files
+        const inputArgs = this.createInputArgs(chunkFiles);
+        const filterComplex = `"concat=n=${chunkFiles.length}:v=0:a=1[outa]"`;
+        
+        command = `ffmpeg -hide_banner ${inputArgs} -filter_complex ${filterComplex} -map "[outa]" "${outputFilePath}"`;
       } else {
-        // For non-standalone chunks, use the concat filter which works at the stream level
-        // This approach decodes and re-encodes the audio, which is necessary for incomplete chunks
-        // Generate a complex filter for concatenation
-        const inputFiles = fs.readFileSync(fileListPath, 'utf8')
-          .split('\n')
-          .filter(line => line.trim().length > 0)
-          .map(line => line.replace(/^file '(.+)'$/, '$1'));
+        // For non-standalone chunks, try direct binary concatenation
+        // First, create a temporary file to hold the concatenated data
+        const tempOutputPath = path.join(path.dirname(outputFilePath), 'temp_concat.webm');
         
-        // Create input arguments for each file
-        const inputArgs = inputFiles.map(file => `-i "${file}"`).join(' ');
+        // Read all chunks and concatenate them
+        const chunks = await Promise.all(chunkFiles.map(file => fs.promises.readFile(file)));
+        const concatenated = Buffer.concat(chunks);
         
-        // Create the filter complex argument
-        const filterComplex = `"concat=n=${inputFiles.length}:v=0:a=1[outa]"`;
+        // Write the concatenated data to a temporary file
+        await fs.promises.writeFile(tempOutputPath, concatenated);
         
-        // Final command with filter complex
-        command = `ffmpeg ${inputArgs} -filter_complex ${filterComplex} -map "[outa]" "${outputFilePath}"`;
+        // Use FFmpeg to validate and possibly fix the concatenated file
+        command = `ffmpeg -hide_banner -i "${tempOutputPath}" -c copy "${outputFilePath}"`;
       }
       
       console.log(`Executing FFmpeg command: ${command}`);

@@ -3,6 +3,14 @@
 import { useState, useEffect, useRef } from "react"
 import { Button } from "@kit/ui/button"
 import { Mic, Pause, Play, X, Loader2 } from "lucide-react"
+
+// Define the interface for audio chunks
+interface AudioChunk {
+  blob: Blob;
+  number: number;
+  startTime: number;
+  endTime: number;
+}
 import { Switch } from "@kit/ui/switch"
 import { Label } from "@kit/ui/label"
 import { toast } from "sonner"
@@ -74,7 +82,10 @@ export function RecordingModal({
   
   // MediaRecorder state
   const mediaRecorder = useRef<MediaRecorder | null>(null)
-  const audioChunks = useRef<Blob[]>([])
+  const audioChunks = useRef<AudioChunk[]>([])
+  
+  // Lock for upload process to prevent concurrent executions
+  const isUploading = useRef<boolean>(false)
   
   useEffect(() => {
     if (!document.getElementById('recording-modal-styles')) {
@@ -119,6 +130,9 @@ export function RecordingModal({
     try {
       setIsProcessing(true)
       setError(null)
+      
+      // Reset audio chunks
+      audioChunks.current = []
       
       const response = await fetch('/api/recordings/start', {
         method: 'POST',
@@ -437,8 +451,14 @@ export function RecordingModal({
           })
           
           if (event.data.size > 0) {
-            // Add to audio chunks array
-            audioChunks.current.push(event.data);
+            // Add to audio chunks array with metadata
+            const chunkData = {
+              blob: event.data,
+              number: chunkNumber,
+              startTime: chunkStartTimeSec,
+              endTime: chunkEndTimeSec
+            };
+            audioChunks.current.push(chunkData);
             
             // Calculate duration in seconds (floating point)
             const durationSec = chunkEndTimeSec - chunkStartTimeSec;
@@ -446,23 +466,16 @@ export function RecordingModal({
             // Use the current recordingId directly instead of relying on state
             console.log(`Processing chunk ${chunkNumber}: ${chunkStartTimeSec.toFixed(3)}s to ${chunkEndTimeSec.toFixed(3)}s (duration: ${durationSec.toFixed(3)}s) with recordingId: ${currentRecordingId}`);
             
-            try {
-              // Modified uploadAudioChunk call to use currentRecordingId and precise timing
-              await uploadAudioChunkWithId(
-                event.data, 
-                chunkNumber, 
-                chunkStartTimeSec, 
-                chunkEndTimeSec, 
-                currentRecordingId
-              );
-              
-              // Prepare for next chunk
-              chunkNumber++;
-              chunkStartTimeMs = currentTimeMs;
-              console.log(`Next chunk will start at ${(chunkStartTimeMs - recordingStartTime) / 1000}s`);
-            } catch (err) {
-              console.error(`Error uploading chunk ${chunkNumber}:`, err);
-            }
+            // Prepare for next chunk - do this immediately, not after upload
+            const currentChunkNumber = chunkNumber;
+            chunkNumber++;
+            chunkStartTimeMs = currentTimeMs;
+            console.log(`Next chunk will start at ${(chunkStartTimeMs - recordingStartTime) / 1000}s`);
+            
+            // Trigger upload of all pending chunks in the background
+            uploadAudioChunks(currentRecordingId).catch(err => {
+              console.error('Error uploading audio chunks:', err);
+            });
           }
         }
         
@@ -496,7 +509,87 @@ export function RecordingModal({
     }
   }
   
-  // Helper function to upload chunk with explicit recordingId
+  // Helper function to upload all pending audio chunks
+  const uploadAudioChunks = async (explicitRecordingId: string) => {
+    // Check if another upload process is already running
+    if (isUploading.current) {
+      console.log('Upload already in progress, skipping this request');
+      return false;
+    }
+    
+    try {
+      // Set the lock to prevent concurrent executions
+      isUploading.current = true;
+      
+      let successCount = 0;
+      let failCount = 0;
+      let totalProcessed = 0;
+      
+      // Process chunks in a loop until the array is empty or we hit a maximum number of attempts
+      // This ensures we catch new chunks added during the upload process
+      const MAX_ITERATIONS = 100; // Safety limit to prevent infinite loops
+      let iterations = 0;
+      
+      console.log(`Starting upload loop for recording: ${explicitRecordingId}`);
+      
+      while (audioChunks.current.length > 0 && iterations < MAX_ITERATIONS) {
+        iterations++;
+        
+        // Get the first chunk in the array
+        const chunk = audioChunks.current[0];
+        
+        // Safety check - this shouldn't happen but TypeScript needs it
+        if (!chunk) {
+          console.warn('Found undefined chunk at index 0, skipping');
+          audioChunks.current.shift(); // Remove the invalid entry
+          continue;
+        }
+        
+        console.log(`Processing chunk ${chunk.number} (iteration ${iterations})`);
+        totalProcessed++;
+        
+        try {
+          // Attempt to upload the chunk
+          const result = await uploadAudioChunkWithId(
+            chunk.blob,
+            chunk.number,
+            chunk.startTime,
+            chunk.endTime,
+            explicitRecordingId
+          );
+          
+          // If successful, remove the chunk from the array
+          if (result) {
+            successCount++;
+            audioChunks.current.shift(); // Remove the first element
+            console.log(`Chunk ${chunk.number} uploaded successfully and removed from queue`);
+          } else {
+            failCount++;
+            console.log(`Chunk ${chunk.number} upload failed, waiting before retry...`);
+            // Wait a bit before retrying the same chunk
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          }
+        } catch (error) {
+          failCount++;
+          console.error(`Error uploading chunk ${chunk.number}:`, error);
+          // Wait a bit before retrying the same chunk
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+      }
+      
+      if (iterations >= MAX_ITERATIONS) {
+        console.warn(`Reached maximum iterations (${MAX_ITERATIONS}) while uploading chunks`);
+      }
+      
+      console.log(`Upload results: ${successCount} succeeded, ${failCount} failed. Remaining chunks: ${audioChunks.current.length}`);
+      return failCount === 0 && audioChunks.current.length === 0;
+    } finally {
+      // Release the lock when done, regardless of success or failure
+      isUploading.current = false;
+    }
+  };
+  
+  // Helper function to upload a single chunk with explicit recordingId
   const uploadAudioChunkWithId = async (
     blob: Blob, 
     chunkNumber: number, 
@@ -590,6 +683,13 @@ export function RecordingModal({
           mediaRecorder.current.pause()
         }
         
+        // Make sure all chunks are uploaded when pausing
+        if (recordingId) {
+          await uploadAudioChunks(recordingId).catch(err => {
+            console.error('Error uploading chunks during pause:', err);
+          });
+        }
+        
         setIsRecording(false)
         setModalState("paused")
         setIsProcessing(false)
@@ -637,6 +737,13 @@ export function RecordingModal({
     if (mediaRecorder.current && mediaRecorder.current.state !== 'inactive') {
       mediaRecorder.current.requestData() // Get any remaining data
       mediaRecorder.current.stop()
+    }
+    
+    // Make sure all chunks are uploaded before completing the recording
+    if (recordingId) {
+      await uploadAudioChunks(recordingId).catch(err => {
+        console.error('Error uploading final chunks:', err);
+      });
     }
     
     // Complete the recording in the API

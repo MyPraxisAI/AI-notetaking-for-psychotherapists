@@ -88,6 +88,16 @@ CREATE INDEX recordings_chunks_recording_id_idx ON public.recordings_chunks (rec
 CREATE INDEX recordings_chunks_time_range_idx ON public.recordings_chunks (start_time, end_time);
 CREATE INDEX recordings_chunks_chunk_number_idx ON public.recordings_chunks (chunk_number);
 
+-- Add unique constraint to ensure chunk_number is unique for a given recording_id
+ALTER TABLE public.recordings_chunks 
+ADD CONSTRAINT recordings_chunks_recording_id_chunk_number_unique 
+UNIQUE (recording_id, chunk_number);
+
+-- Add comment explaining the constraint
+COMMENT ON CONSTRAINT recordings_chunks_recording_id_chunk_number_unique 
+ON public.recordings_chunks 
+IS 'Ensures that chunk_number is unique for each recording_id, preventing duplicate chunk numbers';
+
 -- Create function to extract the first folder component from a storage path
 -- For paths like '{account_id}/{recording_id}/{filename}', this returns the account_id as UUID
 CREATE OR REPLACE FUNCTION public.get_first_path_component_as_uuid(path text)
