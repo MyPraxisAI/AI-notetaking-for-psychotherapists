@@ -11,7 +11,7 @@ interface RecordingStatus {
 /**
  * Hook to check if a recording exists for a session and if it's being processed
  */
-export function useRecordingStatus(sessionId: string | null) {
+export function useRecordingStatus(sessionId: string | null, options?: { disablePolling?: boolean }) {
   const { workspace } = useUserWorkspace();
   const accountId = workspace?.id;
   const client = useSupabase();
@@ -61,8 +61,8 @@ export function useRecordingStatus(sessionId: string | null) {
     // Set a short stale time to ensure the data is considered fresh for a short time
     staleTime: 500,
     
-    // Add automatic polling while the query is enabled
-    refetchInterval: 2000,
+    // Add automatic polling while the query is enabled (unless explicitly disabled)
+    refetchInterval: options?.disablePolling ? false : 2000,
     refetchIntervalInBackground: false,
     
     // Only enable the query if we have the required parameters

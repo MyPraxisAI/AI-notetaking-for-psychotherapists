@@ -38,7 +38,10 @@ interface TranscriptContentProps {
 function TranscriptContent({ clientId, sessionId, session, onEditTranscript, handleSessionUpdate }: TranscriptContentProps) {
   console.log(`[TranscriptContent] Rendering for sessionId: ${sessionId}, has transcript: ${!!session?.transcript}`);
   
-  const { data: recordingStatus, isLoading: isLoadingRecording } = useRecordingStatus(sessionId)
+  // Disable polling if we already have a transcript
+  const { data: recordingStatus, isLoading: isLoadingRecording } = useRecordingStatus(sessionId, {
+    disablePolling: !!session?.transcript
+  })
   console.log(`[TranscriptContent] Recording status:`, recordingStatus);
   
   // Add useTransition hook for async operations
