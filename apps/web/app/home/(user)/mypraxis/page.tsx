@@ -174,7 +174,25 @@ export default function Page() {
       }
     }
     
-    // Sessions are now loaded via the useSessions hook
+    // Load selected session from localStorage
+    const savedSession = localStorage.getItem("selectedSession")
+    if (savedSession) {
+      try {
+        const parsedSession = JSON.parse(savedSession)
+        if (parsedSession && parsedSession.clientId && parsedSession.sessionId) {
+          // Check if the client exists in our list
+          const clientExists = clients.some(client => client.id === parsedSession.clientId)
+          if (clientExists) {
+            // Navigate to the session (this will also handle setting the detail item)
+            navigateToSession(parsedSession.sessionId)
+            console.log(`Restored session from localStorage: ${parsedSession.sessionId}`)
+          }
+        }
+      } catch (error) {
+        console.error("Error parsing saved session:", error)
+        localStorage.removeItem("selectedSession") // Clear invalid data
+      }
+    }
   }, [clients]) // Changed dependency to clients to ensure this runs when client list changes
 
   useEffect(() => {
