@@ -685,9 +685,8 @@ export type Database = {
           id: string
           last_heartbeat_at: string
           session_id: string | null
+          standalone_chunks: boolean
           status: Database["public"]["Enums"]["recording_status"]
-          storage_bucket: string | null
-          storage_prefix: string | null
           updated_at: string
         }
         Insert: {
@@ -697,9 +696,8 @@ export type Database = {
           id?: string
           last_heartbeat_at?: string
           session_id?: string | null
+          standalone_chunks?: boolean
           status?: Database["public"]["Enums"]["recording_status"]
-          storage_bucket?: string | null
-          storage_prefix?: string | null
           updated_at?: string
         }
         Update: {
@@ -709,9 +707,8 @@ export type Database = {
           id?: string
           last_heartbeat_at?: string
           session_id?: string | null
+          standalone_chunks?: boolean
           status?: Database["public"]["Enums"]["recording_status"]
-          storage_bucket?: string | null
-          storage_prefix?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -1201,6 +1198,65 @@ export type Database = {
             columns: ["therapist_id"]
             isOneToOne: false
             referencedRelation: "therapists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transcripts: {
+        Row: {
+          account_id: string
+          content: string | null
+          created_at: string
+          id: string
+          session_id: string
+          transcription_model: string | null
+          updated_at: string
+        }
+        Insert: {
+          account_id: string
+          content?: string | null
+          created_at?: string
+          id?: string
+          session_id: string
+          transcription_model?: string | null
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string
+          content?: string | null
+          created_at?: string
+          id?: string
+          session_id?: string
+          transcription_model?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transcripts_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transcripts_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "user_account_workspace"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transcripts_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "user_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transcripts_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
             referencedColumns: ["id"]
           },
         ]

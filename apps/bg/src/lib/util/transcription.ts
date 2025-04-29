@@ -16,6 +16,7 @@ export interface TranscriptionResult {
   confidence?: number;
   processingTime?: number;
   timestamp: string;
+  model?: string; // The model used for transcription
 }
 
 /**
@@ -83,7 +84,8 @@ export async function transcribeAudio(
       text: transcriptionResponse.text,
       confidence: 0.9, // OpenAI doesn't provide confidence scores, using a default
       processingTime,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      model: `openai/${model}` // Include the provider/model format
     };
     
     console.log(`Transcription completed in ${processingTime.toFixed(2)} seconds`);

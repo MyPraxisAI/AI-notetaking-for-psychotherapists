@@ -21,7 +21,7 @@ type UpdateSessionData = z.infer<typeof UpdateSessionSchema>;
 export const updateSessionAction = enhanceAction(
   async function updateSessionAction(data: UpdateSessionData, user: User) {
     const client = getSupabaseServerClient();
-    const _logger = getLogger();
+    const _logger = await getLogger();
     const _ctx = {
       name: 'update-session',
       sessionId: data.id,
@@ -32,26 +32,49 @@ export const updateSessionAction = enhanceAction(
       // 1. Get the current session data to compare
       const { data: currentSession, error: fetchError } = await client
         .from('sessions')
-        .select('transcript, note')
+        .select('note, account_id')
         .eq('id', data.id)
         .single();
 
       if (fetchError) {
-        console.error('Failed to fetch current session data', fetchError);
+        _logger.error({ ..._ctx, error: fetchError }, 'Failed to fetch current session data');
         throw new Error('Failed to fetch current session data');
+      }
+      
+      // Get the current transcript data from the transcripts table
+      const { data: currentTranscript, error: fetchTranscriptError } = await client
+        .from('transcripts')
+        .select('id, content')
+        .eq('session_id', data.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+        
+      if (fetchTranscriptError && fetchTranscriptError.code !== 'PGRST116') { // PGRST116 is 'no rows returned' which is fine
+        console.error('Failed to fetch transcript data', fetchTranscriptError);
+        // Don't throw here, as there might not be a transcript yet
       }
 
       // 2. Check if content has actually changed
-      const transcriptChanged = data.transcript !== currentSession.transcript;
+      // Normalize transcript content for comparison (trim and handle empty strings)
+      const normalizeContent = (content: string | null | undefined): string | null => {
+        if (content === null || content === undefined) return null;
+        const trimmed = content.trim();
+        return trimmed === '' ? null : trimmed;
+      };
+      
+      const currentTranscriptContent = normalizeContent(currentTranscript?.content);
+      const newTranscriptContent = normalizeContent(data.transcript);
+      const transcriptChanged = currentTranscriptContent !== newTranscriptContent;
+      
       const noteChanged = data.note !== currentSession.note;
       const contentChanged = transcriptChanged || noteChanged;
 
-      // 3. Update the session data
+      // 3. Update the session data (without transcript)
       const { error: updateError } = await client
         .from('sessions')
         .update({
           title: data.title,
-          transcript: data.transcript,
           note: data.note
         })
         .eq('id', data.id);
@@ -60,8 +83,42 @@ export const updateSessionAction = enhanceAction(
         console.error('Failed to update session', updateError);
         throw new Error('Failed to update session');
       }
+      
+      // 4. Update or insert transcript if it has changed
+      if (transcriptChanged && newTranscriptContent) {
+        // Check if a transcript already exists
+        if (currentTranscript) {
+          // Update existing transcript
+          const { error: updateTranscriptError } = await client
+            .from('transcripts')
+            .update({
+              content: newTranscriptContent
+            })
+            .eq('id', currentTranscript.id);
+            
+          if (updateTranscriptError) {
+            _logger.error({ ..._ctx, error: updateTranscriptError }, 'Failed to update transcript');
+            throw new Error('Failed to update transcript');
+          }
+        } else {
+          // Insert new transcript
+          const { error: insertTranscriptError } = await client
+            .from('transcripts')
+            .insert({
+              session_id: data.id,
+              account_id: currentSession.account_id,
+              transcription_model: 'manual',
+              content: newTranscriptContent
+            });
+            
+          if (insertTranscriptError) {
+            _logger.error({ ..._ctx, error: insertTranscriptError }, 'Failed to insert transcript');
+            throw new Error('Failed to insert transcript');
+          }
+        }
+      }
 
-      // 4. If content changed, delete related artifacts
+      // 5. If content changed, delete related artifacts
       if (contentChanged) {
         console.log('Content changed, deleting artifacts', {
           transcriptChanged,

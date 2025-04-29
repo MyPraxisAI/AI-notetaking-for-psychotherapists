@@ -252,6 +252,9 @@ export class AudioTranscriptionProcessor {
     result: TranscriptionResult
   ): Promise<void> {
     const { accountId, recordingId } = task;
+        
+    // Use the model name directly from the TranscriptionResult
+    // It already includes the provider prefix (e.g., 'openai/whisper-1')
     
     try {
       // First, get the session_id from the recording
@@ -271,19 +274,21 @@ export class AudioTranscriptionProcessor {
         throw new Error('Recording does not have an associated session_id');
       }
       
-      // Update the transcript in the sessions table
+      // Insert the transcript into the transcripts table
       const { data, error } = await supabase
-        .from('sessions')
-        .update({ 
-          transcript: result.text
-        })
-        .eq('id', recordingData.session_id);
+        .from('transcripts')
+        .insert({ 
+          session_id: recordingData.session_id,
+          account_id: accountId,
+          transcription_model: result.model || 'openai/whisper-1',
+          content: result.text
+        });
         
       if (error) {
-        console.error('Error updating transcript in sessions table:', error);
-        throw new Error(`Failed to update transcript in sessions table: ${error.message}`);
+        console.error('Error inserting transcript into transcripts table:', error);
+        throw new Error(`Failed to insert transcript into transcripts table: ${error.message}`);
       } else {
-        console.log('Transcript updated in sessions table successfully');
+        console.log('Transcript inserted into transcripts table successfully');
       }
     } catch (error) {
       console.error('Error in Supabase operation:', error);
