@@ -40,6 +40,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [isEditingTranscript, setIsEditingTranscript] = useState(false)
   const [editedTranscript, setEditedTranscript] = useState<string>("")
+  const [activeTab, setActiveTab] = useState<"summary" | "transcript">("summary") // Added state for active tab
   const _saveTimeout = useRef<NodeJS.Timeout | undefined>(undefined)
   const copyTimeout = useRef<NodeJS.Timeout | undefined>(undefined)
   const clientCopyTimeout = useRef<NodeJS.Timeout | undefined>(undefined)
@@ -97,20 +98,17 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
     const handleTabChange = (event: CustomEvent<{ tab: 'transcript' | 'notes', sessionId: string }>) => {
       const { tab, sessionId: targetSessionId } = event.detail;
       
+      
       // Only handle events for this session
       if (targetSessionId === sessionId) {
-        console.log(`SessionView: Received tab change event for session ${sessionId}, tab: ${tab}`);
         
-        // Set the active tab
-        if (tab === 'transcript' || tab === 'notes') {
-          // Find the tab element and set it as active
-          const tabsElement = document.querySelector(`[data-session-id="${sessionId}"] [data-tab="${tab}"]`);
-          if (tabsElement && tabsElement instanceof HTMLElement) {
-            console.log(`Found tab element for ${tab}, clicking it`);
-            tabsElement.click();
-          } else {
-            console.warn(`Tab element for ${tab} not found`);
-          }
+        // Set the active tab directly using state
+        if (tab === 'transcript') {
+          console.log(`Setting active tab to transcript`);
+          setActiveTab('transcript');
+        } else if (tab === 'notes' || tab === 'summary') {
+          console.log(`Setting active tab to summary (notes)`);
+          setActiveTab('summary');
         }
       }
     };
@@ -434,7 +432,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
         </span>
       </div>
 
-      <Tabs defaultValue="summary" className="w-full" data-session-id={sessionId}>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full" data-session-id={sessionId}>
         <TabsList className="w-full justify-start border-b rounded-none h-auto p-0 bg-transparent">
           <TabsTrigger
             value="summary"
