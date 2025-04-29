@@ -7,20 +7,25 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "dev": "ts-node src/index.ts",
-    "dev:docker": "docker-compose up dev",
+    "dev:docker:up": "docker-compose up dev",
+    "dev:docker:build": "docker-compose build dev",
+    "dev:docker:down": "docker-compose down dev",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
+    "@langchain/openai": "^0.5.5",
     "aws-sdk": "^2.1354.0",
-    "dotenv": "^16.0.3"
+    "dotenv": "^16.0.3",
+    "langchain": "^0.3.22",
+    "openai": "^4.96.0"
   },
   "devDependencies": {
-    "@supabase/supabase-js": "^2.49.4",
+    "@supabase/supabase-js": "2.49.1",
     "@types/aws-sdk": "^2.7.0",
     "@types/dotenv": "^8.2.0",
-    "@types/node": "^18.15.11",
+    "@types/node": "^22.13.4",
     "ts-node": "^10.9.1",
-    "typescript": "^5.0.4"
+    "typescript": "^5.8.2"
   },
   "engines": {
     "node": ">=18.0.0"

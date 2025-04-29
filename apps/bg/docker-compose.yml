@@ -65,6 +65,7 @@ services:
     command: ["npx", "ts-node", "src/scripts/send-test-message.ts"]
     env_file:
       - env.development
+      - env.local
     volumes:
       - ./:/app
       - /app/node_modules
@@ -81,6 +82,7 @@ services:
         condition: service_healthy
     env_file:
       - env.development
+      - env.local
     volumes:
       - ./:/app
       - /app/node_modules

@@ -49,7 +49,11 @@ FROM base as dev
 # Install ts-node globally for running TypeScript directly
 RUN npm install -g ts-node typescript
 
-# We'll mount the source code as a volume in docker-compose
+# Copy package files for dependency installation
+COPY package*.json ./
+
+# Install all dependencies from package.json
+RUN npm install
 
 ################ Production Stage ################
 FROM base as prod
