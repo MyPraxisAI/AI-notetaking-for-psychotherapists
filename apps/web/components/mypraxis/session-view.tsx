@@ -379,11 +379,55 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                     )
                   }
                 }}
-                onBlur={() => setIsEditingTitle(false)}
+                onBlur={() => {
+                  setIsEditingTitle(false);
+                  
+                  // Save to database when focus is lost
+                  if (session) {
+                    startTransition(async () => {
+                      try {
+                        await updateSessionAction({
+                          id: sessionId,
+                          clientId: clientId,
+                          title: session.title || '',
+                        });
+                        
+                        // Invalidate queries to refresh data
+                        queryClient.invalidateQueries(['session', sessionId]);
+                        
+                        toast.success("Session title updated");
+                      } catch (error) {
+                        toast.error("Failed to update session title");
+                        console.error("Error updating session title:", error);
+                      }
+                    });
+                  }
+                }}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
-                    e.preventDefault()
-                    setIsEditingTitle(false)
+                    e.preventDefault();
+                    setIsEditingTitle(false);
+                    
+                    // Save to database when Enter is pressed
+                    if (session) {
+                      startTransition(async () => {
+                        try {
+                          await updateSessionAction({
+                            id: sessionId,
+                            clientId: clientId,
+                            title: session.title || '',
+                          });
+                          
+                          // Invalidate queries to refresh data
+                          queryClient.invalidateQueries(['session', sessionId]);
+                          
+                          toast.success("Session title updated");
+                        } catch (error) {
+                          toast.error("Failed to update session title");
+                          console.error("Error updating session title:", error);
+                        }
+                      });
+                    }
                   }
                 }}
                 className="h-8 text-[24px] font-semibold text-[#111827] tracking-[-0.011em] focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)] [&::-webkit-resizer]:appearance-none after:content-[''] after:absolute after:bottom-1 after:right-1 after:w-3 after:h-3 after:border-b-2 after:border-r-2 after:border-[#6B7280] after:cursor-se-resize relative"
