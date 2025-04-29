@@ -106,7 +106,7 @@ export default function Page() {
   }, [avatarUrl])
   
   // Fetch sessions for the selected client from Supabase
-  const { data: sessionsData, isLoading: _isLoadingSessions } = useSessions(selectedClient)
+  const { data: sessionsData, isLoading: _isLoadingSessions, refetch: refetchSessions } = useSessions(selectedClient)
   
   // Update sessions state when Supabase data changes
   useEffect(() => {
@@ -293,6 +293,49 @@ export default function Page() {
   const [isRecordingModalOpen, setIsRecordingModalOpen] = useState(false)
   const [newSessionId, setNewSessionId] = useState<string | null>(null)
 
+  /**
+   * Navigate to a specific session and optionally open a specific tab
+   */
+  const navigateToSession = async (sessionId: string, openTab?: 'transcript' | 'notes') => {
+    console.log(`Navigating to session ${sessionId}${openTab ? ` (${openTab} tab)` : ''}`)
+    
+    // First, ensure we have the session in our sessions list
+    const sessionExists = sessions.some(s => s.id === sessionId);
+    if (!sessionExists) {
+      console.log('Session not found in sessions list, fetching it');
+      // Trigger a refetch of sessions to ensure the new session is loaded
+      await refetchSessions();
+      
+      // Wait a moment for the refetch to complete before continuing
+      await new Promise(resolve => setTimeout(resolve, 300));
+    }
+    
+    // Update selected session state - this is what triggers the view change
+    setSelectedSessionState(sessionId);
+    setSelectedDetailItem(sessionId);
+    localStorage.setItem("selectedDetailItem", sessionId);
+
+    // Save selected session to localStorage for UI state
+    const sessionData = {
+      clientId: selectedClient,
+      sessionId: sessionId
+    };
+    localStorage.setItem("selectedSession", JSON.stringify(sessionData));
+    
+    // If a specific tab was requested, dispatch a custom event
+    if (openTab) {
+      // Create a custom event to signal which tab should be active
+      // This is a more appropriate way to handle internal app navigation
+      // than using data-test attributes which are meant for testing
+      setTimeout(() => {
+        const tabChangeEvent = new CustomEvent('sessionTabChange', {
+          detail: { tab: openTab, sessionId }
+        });
+        window.dispatchEvent(tabChangeEvent);
+      }, 500);
+    }
+  }
+  
   // Core function to create a new session without opening the recording modal
   const handleNewSession = () => {
     if (!selectedClient) return
@@ -304,17 +347,8 @@ export default function Page() {
       note: ""
     }, {
       onSuccess: (newSession: SessionWithId) => {
-        // Update selected session
-        setSelectedSessionState(newSession.id)
-        setSelectedDetailItem(newSession.id)
-        localStorage.setItem("selectedDetailItem", newSession.id)
-
-        // Save selected session to localStorage for UI state
-        const sessionData = {
-          clientId: selectedClient,
-          sessionId: newSession.id
-        }
-        localStorage.setItem("selectedSession", JSON.stringify(sessionData))
+        // Navigate to the new session
+        navigateToSession(newSession.id);
       }
     })
   }
@@ -331,17 +365,17 @@ export default function Page() {
   }
   
   // Handle recording save
-  const handleRecordingSave = () => {
+  const handleRecordingSave = async (sessionId?: string) => {
     setIsRecordingModalOpen(false)
     
-    // Navigate to the Transcript tab
-    // Find the session element and trigger a click on the Transcript tab
-    setTimeout(() => {
-      const transcriptTab = document.querySelector('[data-test="transcript-tab"]');
-      if (transcriptTab && transcriptTab instanceof HTMLElement) {
-        transcriptTab.click();
-      }
-    }, 100);
+    // There should always be a session ID
+    if (!sessionId) {
+      console.warn('No sessionId provided, this should not happen');
+      return;
+    }
+    
+    // Navigate to the session and open the transcript tab
+    await navigateToSession(sessionId, 'transcript');
   }
 
   const handleNameChange = (_name: string) => {

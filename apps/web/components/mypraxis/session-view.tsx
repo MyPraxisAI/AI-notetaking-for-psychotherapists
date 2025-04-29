@@ -91,6 +91,39 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
     }
   }, [sessionData])
   
+  // Listen for custom tab change events
+  useEffect(() => {
+    // Handler for the custom event
+    const handleTabChange = (event: CustomEvent<{ tab: 'transcript' | 'notes', sessionId: string }>) => {
+      const { tab, sessionId: targetSessionId } = event.detail;
+      
+      // Only handle events for this session
+      if (targetSessionId === sessionId) {
+        console.log(`SessionView: Received tab change event for session ${sessionId}, tab: ${tab}`);
+        
+        // Set the active tab
+        if (tab === 'transcript' || tab === 'notes') {
+          // Find the tab element and set it as active
+          const tabsElement = document.querySelector(`[data-session-id="${sessionId}"] [data-tab="${tab}"]`);
+          if (tabsElement && tabsElement instanceof HTMLElement) {
+            console.log(`Found tab element for ${tab}, clicking it`);
+            tabsElement.click();
+          } else {
+            console.warn(`Tab element for ${tab} not found`);
+          }
+        }
+      }
+    };
+    
+    // Add event listener
+    window.addEventListener('sessionTabChange', handleTabChange as EventListener);
+    
+    // Clean up
+    return () => {
+      window.removeEventListener('sessionTabChange', handleTabChange as EventListener);
+    };
+  }, [sessionId])
+  
   // Update local summary state when query data changes
   useEffect(() => {
     if (therapistSummaryData) {
@@ -401,19 +434,21 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
         </span>
       </div>
 
-      <Tabs defaultValue="summary" className="w-full">
+      <Tabs defaultValue="summary" className="w-full" data-session-id={sessionId}>
         <TabsList className="w-full justify-start border-b rounded-none h-auto p-0 bg-transparent">
           <TabsTrigger
             value="summary"
             className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#111827] data-[state=active]:bg-transparent px-4 py-2 font-medium text-[14px] text-[#6B7280] data-[state=active]:text-[#111827] data-[state=active]:shadow-none"
-            data-test="session-tab-summary"
+            data-tab="notes"
+            data-test="notes-tab"
           >
-            Summary & Notes
+            Notes
           </TabsTrigger>
           <TabsTrigger
             value="transcript"
             className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#111827] data-[state=active]:bg-transparent px-4 py-2 font-medium text-[14px] text-[#6B7280] data-[state=active]:text-[#111827] data-[state=active]:shadow-none"
-            data-test="session-tab-transcript"
+            data-tab="transcript"
+            data-test="transcript-tab"
           >
             Transcript
           </TabsTrigger>

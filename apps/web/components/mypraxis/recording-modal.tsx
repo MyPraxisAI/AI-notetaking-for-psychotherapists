@@ -45,7 +45,7 @@ const overlayStyles = `
 interface RecordingModalProps {
   isOpen: boolean
   onClose: () => void
-  onSave: () => void
+  onSave: (sessionId?: string) => Promise<void>
   clientId: string
   clientName: string
   clients: { id: string; fullName: string }[]
@@ -231,7 +231,14 @@ export function RecordingModal({
         throw new Error(errorData.error || 'Failed to complete recording')
       }
       
-      return await response.json()
+      const data = await response.json()
+      
+      // The API returns { recording: {...}, sessionId: "..." }
+      return {
+        ...data,
+        // Ensure we have a consistent property name for the session ID
+        sessionId: data.sessionId
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to complete recording')
       toast.error(err instanceof Error ? err.message : 'Failed to complete recording')
@@ -731,6 +738,7 @@ export function RecordingModal({
   }
   
   const handleSaveSession = async () => {
+    try {
     setModalState("saving")
     
     // Stop the MediaRecorder and get final data
@@ -749,13 +757,33 @@ export function RecordingModal({
     // Complete the recording in the API
     const result = await completeRecording()
     
+    // Log the result to see what we're getting back
+    console.log('Recording complete result:', result)
+    
     if (result) {
       cleanupRecording()
       toast.success('Recording saved successfully')
-      onSave()
+      
+      // Pass the session ID to the onSave callback for navigation
+      if (result.sessionId) {
+        console.log('Found session ID in result:', result.sessionId)
+        await onSave(result.sessionId)
+      } else if (result.session_id) {
+        // Try snake_case version as well
+        console.log('Found session_id in result:', result.session_id)
+        await onSave(result.session_id)
+      } else {
+        console.log('No session ID found in result:', result)
+        await onSave()
+      }
     } else {
       setModalState("paused")
       toast.error('Failed to save recording. Please try again.')
+    }
+    } catch (error) {
+      console.error('Error in handleSaveSession:', error)
+      setModalState("paused")
+      toast.error('An error occurred while saving the recording.')
     }
   }
   
