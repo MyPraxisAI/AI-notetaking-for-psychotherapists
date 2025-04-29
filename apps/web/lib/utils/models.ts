@@ -6,8 +6,19 @@
 
 import { aiService } from './ai-service';
 
+// Default timeout for model requests in milliseconds (2 minutes)
+const DEFAULT_MODEL_TIMEOUT_MS = 120000;
+
 // Define the supported model providers
 export type ModelProvider = 'openai' | 'anthropic' | 'google';
+
+// Map ModelProvider to AIClientOptions provider type
+function mapProviderType(provider: ModelProvider): 'openai' | 'google' | undefined {
+  if (provider === 'openai' || provider === 'google') {
+    return provider;
+  }
+  return undefined;
+}
 
 /**
  * Options for text generation
@@ -63,8 +74,7 @@ export async function generateLLMResponse(
         // For future implementation
         throw new Error('Anthropic provider not yet implemented');
       case 'google':
-        // For future implementation
-        throw new Error('Google provider not yet implemented');
+        return await generateWithGoogle(prompt, options, startTime, promptTokens);
       default:
         throw new Error(`Unsupported model provider: ${options.provider}`);
     }
@@ -72,6 +82,83 @@ export async function generateLLMResponse(
     console.error(`Error generating text with ${options.provider}:`, error);
     throw new Error(`Failed to generate text: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
+}
+
+/**
+ * Generate text using Google Gemini models
+ * @param prompt The rendered prompt
+ * @param options Generation options
+ * @param startTime Start time for duration calculation
+ * @param promptTokens Number of tokens in the prompt
+ * @returns Generated text and metadata
+ */
+async function generateWithGoogle(
+  prompt: string,
+  options: GenerationOptions,
+  startTime: number,
+  promptTokens: number
+): Promise<GenerationResult> {
+  // Initialize Google client with options
+  const client = aiService.getGoogleGenAIClient({
+    temperature: options.temperature,
+    maxTokens: options.maxTokens,
+    model: options.model,
+    provider: mapProviderType(options.provider) // Ensure proper type mapping
+  });
+  
+  // Call the model with improved error handling
+  console.log(`Starting Google request with model: ${options.model}`);
+  // Type assertion for the client
+  const typedClient = client as { invoke: (prompt: string) => Promise<{ content: string }> };
+  
+  let response;
+  try {
+    // Set up a timeout promise to compete with the Google call
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(
+        () => reject(new Error(`Google request timed out after ${DEFAULT_MODEL_TIMEOUT_MS / 60000} minutes`)), 
+        DEFAULT_MODEL_TIMEOUT_MS
+      );
+    });
+    
+    // Race the Google call against the timeout
+    response = await Promise.race([
+      typedClient.invoke(prompt),
+      timeoutPromise
+    ]) as { content: string };
+    
+    console.log(`Google request completed successfully for model: ${options.model}`);
+  } catch (error) {
+    console.error(`Google request failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    console.error('Error details:', error);
+    throw error;
+  }
+  
+  // Calculate duration
+  const duration = Date.now() - startTime;
+  
+  // Get the response text
+  const content = response.content.toString();
+  
+  // Estimate completion token count
+  const completionTokens = aiService.estimateTokenCount(content);
+  
+  // Log success
+  console.log(`Successfully generated text with ${options.provider}`, { 
+    duration: `${duration}ms`,
+    promptTokens,
+    completionTokens,
+    totalTokens: promptTokens + completionTokens
+  });
+  
+  // Return the result
+  return {
+    content,
+    promptTokens,
+    completionTokens,
+    totalTokens: promptTokens + completionTokens,
+    duration
+  };
 }
 
 /**
@@ -92,14 +179,37 @@ async function generateWithOpenAI(
   const client = aiService.getOpenAIClient({
     temperature: options.temperature,
     maxTokens: options.maxTokens,
-    ...options
+    model: options.model,
+    provider: mapProviderType(options.provider) // Ensure proper type mapping
   });
   
-  // Call the model
+  // Call the model with improved error handling
   console.log(`Starting OpenAI request with model: ${options.model}`);
   // Type assertion for the client
   const typedClient = client as { invoke: (prompt: string) => Promise<{ content: string }> };
-  const response = await typedClient.invoke(prompt);
+  
+  let response;
+  try {
+    // Set up a timeout promise to compete with the OpenAI call
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(
+        () => reject(new Error(`OpenAI request timed out after ${DEFAULT_MODEL_TIMEOUT_MS / 60000} minutes`)), 
+        DEFAULT_MODEL_TIMEOUT_MS
+      );
+    });
+    
+    // Race the OpenAI call against the timeout
+    response = await Promise.race([
+      typedClient.invoke(prompt),
+      timeoutPromise
+    ]) as { content: string };
+    
+    console.log(`OpenAI request completed successfully for model: ${options.model}`);
+  } catch (error) {
+    console.error(`OpenAI request failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    console.error('Error details:', error);
+    throw error;
+  }
   
   // Calculate duration
   const duration = Date.now() - startTime;

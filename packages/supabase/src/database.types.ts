@@ -867,6 +867,7 @@ export type Database = {
           client_id: string
           created_at: string
           id: string
+          metadata: Json | null
           note: string | null
           title: string | null
           transcript: string | null
@@ -877,6 +878,7 @@ export type Database = {
           client_id: string
           created_at?: string
           id?: string
+          metadata?: Json | null
           note?: string | null
           title?: string | null
           transcript?: string | null
@@ -887,6 +889,7 @@ export type Database = {
           client_id?: string
           created_at?: string
           id?: string
+          metadata?: Json | null
           note?: string | null
           title?: string | null
           transcript?: string | null
@@ -1255,7 +1258,7 @@ export type Database = {
           {
             foreignKeyName: "transcripts_session_id_fkey"
             columns: ["session_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "sessions"
             referencedColumns: ["id"]
           },
@@ -1571,6 +1574,13 @@ export type Database = {
         Args: {
           target_account_id: string
           new_owner_id: string
+        }
+        Returns: undefined
+      }
+      update_session_metadata: {
+        Args: {
+          p_session_id: string
+          p_metadata: Json
         }
         Returns: undefined
       }

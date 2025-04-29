@@ -7,6 +7,11 @@ import { generateLLMResponse } from './models';
 import { createPromptApi } from '../../app/home/(user)/mypraxis/_lib/api/prompt-api';
 import { createTherapistApi } from '../../app/home/(user)/mypraxis/_lib/api/therapist-api';
 
+// Define the prompt source type
+export type PromptSourceType = 
+  | { type: 'artifact_type'; value: ArtifactType }
+  | { type: 'name'; value: string };
+
 // Define the artifact types
 export type ArtifactType = 
   | 'session_therapist_summary' 
@@ -19,13 +24,13 @@ export type ArtifactType =
 export type LanguageType = 'en' | 'ru';
 
 /**
- * Generate an artifact using OpenAI
- * @param type Artifact type
+ * Generate content using a prompt template
+ * @param promptSource Source of the prompt (artifact_type or name)
  * @param variables Template variables
- * @returns Generated artifact content
+ * @returns Generated content
  */
-export async function generateArtifact(
-  type: ArtifactType,
+export async function generateContent(
+  promptSource: PromptSourceType,
   variables: Record<string, string>
 ): Promise<string> {
   // Get the user's preferred language
@@ -34,21 +39,33 @@ export async function generateArtifact(
   // Create a logger instance
   const _logger = getLogger();
   const _ctx = {
-    name: 'generate-artifact',
-    type,
+    name: 'generate-content',
+    promptSource,
     language,
-    artifactGeneration: true
+    contentGeneration: true
   };
   
+  const sourceType = promptSource.type;
+  const sourceValue = promptSource.value;
+  const logPrefix = `[${sourceType}:${sourceValue}]`;
+  
   try {
-    console.log(`Starting generation of ${type} artifact`);
+    console.log(`${logPrefix} Starting generation process`);
     
     // Get the Supabase client
     const client = getSupabaseServerClient();
+    console.log(`${logPrefix} Supabase client initialized`);
     
-    // Get the template for the artifact type from the database
+    // Get the template for the prompt from the database
     const promptApi = createPromptApi(client);
-    const promptData = await promptApi.getPromptByArtifactType(type);
+    let promptData;
+    
+    if (sourceType === 'artifact_type') {
+      promptData = await promptApi.getPromptByArtifactType(sourceValue as ArtifactType);
+    } else {
+      promptData = await promptApi.getPromptByName(sourceValue);
+    }
+    
     const templateString = promptData.template;
     
     // Get model parameters from the database
@@ -62,8 +79,9 @@ export async function generateArtifact(
     };
     
     // Log the prompt data
-    console.log('Using prompt from database', { 
-      type, 
+    console.log(`${logPrefix} Using prompt from database`, { 
+      sourceType,
+      sourceValue, 
       model: promptData.model, 
       provider: promptData.provider 
     });
@@ -85,26 +103,37 @@ export async function generateArtifact(
       primary_therapeutic_approach: primaryApproach
     });
     
-    // If mock services are enabled, inject the artifact type as a marker
+    // If mock services are enabled, inject the source identifier as a marker
     // This helps the mock implementation identify which response to return
     if (process.env.MOCK_EXTERNAL_SERVICES === 'true') {
-      console.log(`Injecting artifact type marker '${type}' for mock detection`);
-      prompt = `${type}\n${prompt}`;
+      console.log(`${logPrefix} Using mock services, injecting source marker`);
+      prompt = `${sourceType}:${sourceValue}\n${prompt}`;
     }
     
     // Log the prompt variables
-    console.log('Prompt template variables', { type, primaryApproach });
+    console.log(`${logPrefix} Prompt template variables`, { sourceType, sourceValue, primaryApproach });
     
     // In development, log the full prompt
     if (process.env.NODE_ENV === 'development') {
-      console.log('Rendered Prompt:', prompt);
+      console.log(`${logPrefix} Rendered Prompt:`, prompt);
     }
     
-    // Generate the artifact content using the model layer
-    const result = await generateLLMResponse(prompt, generationOptions);
+    console.log(`${logPrefix} Starting LLM request with model: ${promptData.model}`);
+    
+    // Generate the content using the model layer with timeout handling
+    let result;
+    try {
+      const startTime = Date.now();
+      result = await generateLLMResponse(prompt, generationOptions);
+      const duration = Date.now() - startTime;
+      console.log(`${logPrefix} LLM request completed in ${duration}ms`);
+    } catch (error) {
+      console.error(`${logPrefix} LLM request failed:`, error);
+      throw error;
+    }
     
     // Log generation results
-    console.log(`Successfully generated ${type} artifact`, { 
+    console.log(`${logPrefix} Successfully generated content`, { 
       duration: `${result.duration}ms`,
       promptTokens: result.promptTokens,
       completionTokens: result.completionTokens,
@@ -113,9 +142,23 @@ export async function generateArtifact(
     
     return result.content;
   } catch (error) {
-    console.error(`Error generating ${type} artifact:`, error);
-    throw new Error(`Failed to generate ${type} artifact`);
+    console.error(`Error generating content for ${sourceType}:${sourceValue}:`, error);
+    throw new Error(`Failed to generate content for ${sourceType}:${sourceValue}`);
   }
+}
+
+/**
+ * Generate an artifact using OpenAI
+ * @param type Artifact type
+ * @param variables Template variables
+ * @returns Generated artifact content
+ */
+export async function generateArtifact(
+  type: ArtifactType,
+  variables: Record<string, string>
+): Promise<string> {
+  // Use the core generation function with artifact_type as the source
+  return generateContent({ type: 'artifact_type', value: type }, variables);
 }
 
 /**

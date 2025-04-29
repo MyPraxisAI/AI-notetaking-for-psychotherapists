@@ -1,15 +1,27 @@
 import { z } from 'zod';
 
+// Session metadata schema
+export const SessionMetadataSchema = z.object({
+  title_initialized: z.boolean().optional()
+}).passthrough(); // Allow additional properties
+
 // Session schema for validation
 export const SessionSchema = z.object({
   title: z.string().min(1, 'Title is required').max(255, 'Title must be less than 255 characters'),
   // Transcript is now stored in a separate table
   transcript: z.string().optional(), // Keep for backward compatibility with UI
-  note: z.string().optional()
+  note: z.string().optional(),
+  metadata: SessionMetadataSchema.optional()
 });
 
 // Type for session data from UI
 export type SessionData = z.infer<typeof SessionSchema>;
+
+// Session metadata type
+export interface SessionMetadata {
+  title_initialized?: boolean;
+  [key: string]: unknown; // Allow additional properties
+}
 
 // Database record type (snake_case)
 export interface SessionRecord {
@@ -21,6 +33,7 @@ export interface SessionRecord {
   // transcript field is now in the transcripts table
   note: string | null;
   title: string | null;
+  metadata: SessionMetadata | null;
 }
 
 // Session with ID for frontend use
@@ -28,4 +41,5 @@ export interface SessionWithId extends SessionData {
   id: string;
   clientId: string;
   createdAt: string;
+  metadata?: SessionMetadata;
 }

@@ -1,14 +1,17 @@
 import { ChatOpenAI } from '@langchain/openai';
+import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
 import { encodingForModel } from 'js-tiktoken';
 
-// Import the mock implementation
+// Import the mock implementations
 import * as mockOpenAIClient from './__mocks__/openai-client';
+import * as mockGoogleGenAIClient from './__mocks__/google-genai-client';
 
 // Define client options type
-export interface OpenAIClientOptions {
+export interface AIClientOptions {
   model?: string;
   temperature?: number;
   maxTokens?: number;
+  provider?: 'openai' | 'google';
   [key: string]: string | number | boolean | undefined;
 }
 
@@ -21,6 +24,12 @@ class AIService {
   private static instance: AIService;
   private readonly useMocks: boolean;
   private cachedClients: Map<string, unknown> = new Map();
+
+  // Default models for each provider
+  private readonly defaultModels = {
+    openai: 'gpt-4o-mini',
+    google: 'gemini-2.0-flash'
+  };
 
   private constructor() {
     // Check environment once during initialization
@@ -38,10 +47,12 @@ class AIService {
   }
   
   /**
-   * Get an OpenAI client instance
+   * Get an AI client instance based on the specified provider
    * Will return either a real or mock client based on environment configuration
    */
-  public getOpenAIClient(options: OpenAIClientOptions = {}): unknown {
+  public getAIClient(options: AIClientOptions = {}): unknown {
+    // Determine provider (default to OpenAI)
+    const provider = options.provider || 'openai';
     const cacheKey = this.getCacheKey(options);
     
     // Return cached client if available
@@ -52,29 +63,66 @@ class AIService {
     let client;
     
     if (this.useMocks) {
-      // Use mock implementation
-      console.log('Using mock OpenAI client');
-      client = mockOpenAIClient.getOpenAIClient(options);
-    } else {
-      // Use real implementation
-      console.log('Using real OpenAI client');
-      
-      const apiKey = process.env.OPENAI_API_KEY;
-      if (!apiKey) {
-        throw new Error('OPENAI_API_KEY environment variable is not set');
+      // Use mock implementation based on provider
+      if (provider === 'google') {
+        console.log('Using mock Google Gemini client');
+        client = mockGoogleGenAIClient.getGoogleGenAIClient(options);
+      } else {
+        console.log('Using mock OpenAI client');
+        client = mockOpenAIClient.getOpenAIClient(options);
       }
-      
-      client = new ChatOpenAI({
-        modelName: options.model || 'gpt-4o-mini',
-        temperature: options.temperature || 0.7,
-        maxTokens: options.maxTokens,
-        openAIApiKey: apiKey,
-      });
+    } else {
+      // Use real implementation based on provider
+      if (provider === 'google') {
+        console.log('Using real Google Gemini client');
+        
+        const apiKey = process.env.GOOGLE_API_KEY;
+        if (!apiKey) {
+          throw new Error('GOOGLE_API_KEY environment variable is not set');
+        }
+        
+        client = new ChatGoogleGenerativeAI({
+          apiKey,
+          model: options.model || this.defaultModels.google,
+          temperature: options.temperature || 0.7,
+          maxOutputTokens: options.maxTokens
+          // Note: Google Generative AI client doesn't support timeout and maxRetries directly
+        });
+      } else {
+        console.log('Using real OpenAI client');
+        
+        const apiKey = process.env.OPENAI_API_KEY;
+        if (!apiKey) {
+          throw new Error('OPENAI_API_KEY environment variable is not set');
+        }
+        
+        client = new ChatOpenAI({
+          modelName: options.model || this.defaultModels.openai,
+          temperature: options.temperature || 0.7,
+          maxTokens: options.maxTokens,
+          openAIApiKey: apiKey,
+          maxRetries: 3,  // Retry 3 times on failure
+        });
+      }
     }
     
     // Cache the client
     this.cachedClients.set(cacheKey, client);
     return client;
+  }
+  
+  /**
+   * Get an OpenAI client instance (for backward compatibility)
+   */
+  public getOpenAIClient(options: AIClientOptions = {}): unknown {
+    return this.getAIClient({ ...options, provider: 'openai' });
+  }
+  
+  /**
+   * Get a Google Gemini client instance
+   */
+  public getGoogleGenAIClient(options: AIClientOptions = {}): unknown {
+    return this.getAIClient({ ...options, provider: 'google' });
   }
   
   /**
@@ -99,9 +147,13 @@ class AIService {
   /**
    * Create a cache key for client options
    */
-  private getCacheKey(options: OpenAIClientOptions): string {
+  private getCacheKey(options: AIClientOptions): string {
+    const provider = options.provider || 'openai';
+    const defaultModel = provider === 'google' ? this.defaultModels.google : this.defaultModels.openai;
+    
     return JSON.stringify({
-      model: options.model || 'gpt-4o-mini',
+      provider,
+      model: options.model || defaultModel,
       temperature: options.temperature || 0.7,
       maxTokens: options.maxTokens
     });
