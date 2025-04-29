@@ -52,7 +52,6 @@ import { queueAudioTranscribe } from 'lib/aws/sqs';
 await queueAudioTranscribe({
   recordingId: 'recording-id',
   accountId: 'account-id',
-  standaloneChunks: true,
 });
 ```
 

@@ -25,7 +25,6 @@ async function sendTestMessage(): Promise<void> {
       operation: 'audio:transcribe',
       accountId: `acc_${Math.floor(Math.random() * 1000)}`,
       recordingId: `rec_${Math.floor(Math.random() * 10000)}`,
-      standaloneChunks: true,
       timestamp: new Date().toISOString()
     };
     

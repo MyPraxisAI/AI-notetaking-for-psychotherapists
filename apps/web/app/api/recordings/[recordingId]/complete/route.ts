@@ -135,7 +135,6 @@ export const POST = enhanceRouteHandler(
           await queueAudioTranscribe({
             recordingId,
             accountId,
-            standaloneChunks: recording.standalone_chunks ?? false,
           });
           
           logger.info({ 

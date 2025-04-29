@@ -1,6 +1,11 @@
 import { SupabaseClient } from '@supabase/supabase-js';
 import { AudioProcessingTaskData, TranscriptionChunk } from '../../types';
 import { setSupabaseUser } from '../supabase';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as os from 'os';
+import { promisify } from 'util';
+import { exec } from 'child_process';
 
 /**
  * Result of audio transcription processing
@@ -18,6 +23,7 @@ export interface TranscriptionResult {
  * Handles processing of audio transcription tasks
  */
 export class AudioTranscriptionProcessor {
+  private supabase!: SupabaseClient; // Using definite assignment assertion
   /**
    * Process an audio transcription task
    * @param supabase - Supabase client
@@ -29,11 +35,12 @@ export class AudioTranscriptionProcessor {
     task: AudioProcessingTaskData,
     messageId: string
   ): Promise<void> {
+    // Store the Supabase client for use in other methods
+    this.supabase = supabase;
     try {
-      const { accountId, recordingId, standaloneChunks = false } = task;
+      const { accountId, recordingId } = task;
       
       console.log(`Processing audio recording: accountId=${accountId}, recordingId=${recordingId}`);
-      console.log(`Standalone chunks: ${standaloneChunks ? 'Yes' : 'No'}`);
       
       // Set the Supabase user session to the accountId for this specific task
       // accountId is guaranteed to exist as it's required in AudioProcessingTaskData
@@ -62,25 +69,256 @@ export class AudioTranscriptionProcessor {
    * @returns The transcription result
    */
   private async performTranscription(task: AudioProcessingTaskData): Promise<TranscriptionResult> {
-    const { standaloneChunks = false } = task;
+    const { accountId, recordingId } = task;
+    const execPromise = promisify(exec);
+    let tempDir: string | null = null;
     
-    // TODO: Implement actual audio transcription
-    // 1. Retrieve the audio recording using accountId and recordingId
-    // 2. Use ffmpeg to convert/prepare if needed
-    // 3. Process in chunks if standaloneChunks is true
-    // 4. Send to transcription service or process locally
+    // We'll determine if chunks are standalone from the database
+    let standaloneChunks = false; // Default to false for safety
     
-    // For now, we'll simulate a transcription result
-    return {
-      text: "This is a simulated transcription of the audio recording.",
-      confidence: 0.95,
-      processingTime: 2.5,
-      timestamp: new Date().toISOString(),
-      chunks: standaloneChunks ? [
-        { start: 0, end: 30, text: "First chunk of transcription." },
-        { start: 30, end: 60, text: "Second chunk of transcription." }
-      ] : undefined
-    };
+    try {
+      console.log(`Starting audio transcription process for recording ${recordingId}`);
+      
+      // Create a temporary directory for processing files
+      tempDir = await this.createTempDirectory();
+      console.log(`Created temporary directory: ${tempDir}`);
+      
+      // 1. Get recording info to determine if chunks are standalone
+      const recordingInfo = await this.getRecordingInfo(accountId, recordingId);
+      standaloneChunks = recordingInfo.standalone_chunks || false;
+      console.log(`Recording ${recordingId} has standalone chunks: ${standaloneChunks}`);
+      
+      // 2. Retrieve the audio chunks from the database
+      const chunks = await this.getRecordingChunks(accountId, recordingId);
+      console.log(`Found ${chunks.length} audio chunks for recording ${recordingId}`);
+      
+      if (chunks.length === 0) {
+        throw new Error(`No audio chunks found for recording ${recordingId}`);
+      }
+      
+      // 3. Download each chunk from storage
+      const chunkFiles = await this.downloadChunks(chunks, tempDir);
+      console.log(`Downloaded ${chunkFiles.length} audio chunks to ${tempDir}`);
+      
+      // 4. Create a file list for FFmpeg
+      const fileListPath = path.join(tempDir, 'filelist.txt');
+      await this.createFileList(chunkFiles, fileListPath);
+      
+      // 5. Combine the chunks using FFmpeg
+      const outputFilePath = path.join(tempDir, `${recordingId}.webm`);
+      await this.combineAudioChunks(fileListPath, outputFilePath, standaloneChunks);
+      console.log(`Combined audio chunks into ${outputFilePath}`);
+      
+      // TODO: Send to transcription service
+      // For now, we'll simulate a transcription result
+      const result = {
+        text: "This is a simulated transcription of the audio recording.",
+        confidence: 0.95,
+        processingTime: 2.5,
+        timestamp: new Date().toISOString(),
+        chunks: standaloneChunks ? [
+          { start: 0, end: 30, text: "First chunk of transcription." },
+          { start: 30, end: 60, text: "Second chunk of transcription." }
+        ] : undefined
+      };
+      
+      return result;
+    } catch (error) {
+      console.error(`Error in performTranscription:`, error);
+      throw error;
+    } finally {
+      // Clean up temporary files regardless of success or failure
+      if (tempDir) {
+        try {
+          await this.cleanupTempFiles(tempDir);
+          console.log(`Cleaned up temporary directory: ${tempDir}`);
+        } catch (cleanupError) {
+          console.warn(`Warning: Failed to clean up temporary directory ${tempDir}:`, cleanupError);
+        }
+      }
+    }
+  }
+  
+  /**
+   * Create a temporary directory for processing files
+   * @returns Path to the temporary directory
+   */
+  private async createTempDirectory(): Promise<string> {
+    const tempDir = path.join(os.tmpdir(), `audio-processing-${Date.now()}`);
+    await fs.promises.mkdir(tempDir, { recursive: true });
+    return tempDir;
+  }
+  
+  /**
+   * Get recording information from the database
+   * @param accountId - The account ID
+   * @param recordingId - The recording ID
+   * @returns Recording information
+   */
+  private async getRecordingInfo(accountId: string, recordingId: string): Promise<any> {
+    const { data, error } = await this.supabase
+      .from('recordings')
+      .select('*')
+      .eq('account_id', accountId)
+      .eq('id', recordingId)
+      .single();
+      
+    if (error) {
+      console.error('Error retrieving recording info:', error);
+      throw new Error(`Failed to retrieve recording info: ${error.message}`);
+    }
+    
+    if (!data) {
+      throw new Error(`Recording ${recordingId} not found`);
+    }
+    
+    return data;
+  }
+  
+  /**
+   * Get recording chunks from the database
+   * @param accountId - The account ID
+   * @param recordingId - The recording ID
+   * @returns Array of recording chunks
+   */
+  private async getRecordingChunks(accountId: string, recordingId: string): Promise<any[]> {
+    const { data, error } = await this.supabase
+      .from('recordings_chunks')
+      .select('*')
+      .eq('account_id', accountId)
+      .eq('recording_id', recordingId)
+      .order('chunk_number', { ascending: true });
+      
+    if (error) {
+      console.error('Error retrieving recording chunks:', error);
+      throw new Error(`Failed to retrieve recording chunks: ${error.message}`);
+    }
+    
+    return data || [];
+  }
+  
+  /**
+   * Download audio chunks from storage
+   * @param chunks - Array of recording chunks
+   * @param tempDir - Temporary directory to store the chunks
+   * @returns Array of paths to the downloaded chunk files
+   */
+  private async downloadChunks(chunks: any[], tempDir: string): Promise<string[]> {
+    const chunkFiles: string[] = [];
+    
+    for (const chunk of chunks) {
+      const { storage_bucket, storage_path, chunk_number } = chunk;
+      const outputPath = path.join(tempDir, `chunk_${chunk_number.toString().padStart(5, '0')}.webm`);
+      
+      try {
+        // Download the chunk from storage
+        const { data, error } = await this.supabase
+          .storage
+          .from(storage_bucket)
+          .download(storage_path);
+          
+        if (error) {
+          throw new Error(`Failed to download chunk ${chunk_number}: ${error.message}`);
+        }
+        
+        if (!data) {
+          throw new Error(`No data received for chunk ${chunk_number}`);
+        }
+        
+        // Convert Blob to Buffer and write to file
+        const buffer = await data.arrayBuffer().then(arrayBuffer => Buffer.from(arrayBuffer));
+        await fs.promises.writeFile(outputPath, buffer);
+        
+        chunkFiles.push(outputPath);
+        console.log(`Downloaded chunk ${chunk_number} to ${outputPath}`);
+      } catch (error) {
+        console.error(`Error downloading chunk ${chunk_number}:`, error);
+        throw error;
+      }
+    }
+    
+    return chunkFiles;
+  }
+  
+  /**
+   * Create a file list for FFmpeg
+   * @param chunkFiles - Array of paths to the chunk files
+   * @param fileListPath - Path to write the file list
+   */
+  private async createFileList(chunkFiles: string[], fileListPath: string): Promise<void> {
+    // Create a file with the list of input files for FFmpeg
+    const fileListContent = chunkFiles.map(file => `file '${file}'`).join('\n');
+    await fs.promises.writeFile(fileListPath, fileListContent);
+  }
+  
+  /**
+   * Combine audio chunks using FFmpeg
+   * @param fileListPath - Path to the file list
+   * @param outputFilePath - Path to write the combined audio file
+   * @param standaloneChunks - Whether the chunks are standalone (complete WebM files) or not
+   */
+  private async combineAudioChunks(fileListPath: string, outputFilePath: string, standaloneChunks: boolean): Promise<void> {
+    const execPromise = promisify(exec);
+    
+    try {
+      let command: string;
+      
+      if (standaloneChunks) {
+        // For standalone chunks, use the concat demuxer which works with complete files
+        // -f concat: Use the concat demuxer
+        // -safe 0: Don't require safe filenames
+        // -i: Input file list
+        // -c copy: Copy the audio streams without re-encoding
+        command = `ffmpeg -f concat -safe 0 -i "${fileListPath}" -c copy "${outputFilePath}"`;
+      } else {
+        // For non-standalone chunks, use the concat filter which works at the stream level
+        // This approach decodes and re-encodes the audio, which is necessary for incomplete chunks
+        // Generate a complex filter for concatenation
+        const inputFiles = fs.readFileSync(fileListPath, 'utf8')
+          .split('\n')
+          .filter(line => line.trim().length > 0)
+          .map(line => line.replace(/^file '(.+)'$/, '$1'));
+        
+        // Create input arguments for each file
+        const inputArgs = inputFiles.map(file => `-i "${file}"`).join(' ');
+        
+        // Create the filter complex argument
+        const filterComplex = `"concat=n=${inputFiles.length}:v=0:a=1[outa]"`;
+        
+        // Final command with filter complex
+        command = `ffmpeg ${inputArgs} -filter_complex ${filterComplex} -map "[outa]" "${outputFilePath}"`;
+      }
+      
+      console.log(`Executing FFmpeg command: ${command}`);
+      
+      const { stdout, stderr } = await execPromise(command);
+      
+      if (stderr) {
+        console.log('FFmpeg stderr:', stderr);
+      }
+      
+      if (!fs.existsSync(outputFilePath)) {
+        throw new Error('FFmpeg did not create the output file');
+      }
+      
+      return;
+    } catch (error) {
+      console.error('Error combining audio chunks with FFmpeg:', error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Clean up temporary files
+   * @param tempDir - Path to the temporary directory
+   */
+  private async cleanupTempFiles(tempDir: string): Promise<void> {
+    try {
+      await fs.promises.rm(tempDir, { recursive: true, force: true });
+    } catch (error) {
+      console.warn(`Warning: Failed to clean up temporary directory ${tempDir}:`, error);
+      // Don't throw error for cleanup failures
+    }
   }
   
   /**

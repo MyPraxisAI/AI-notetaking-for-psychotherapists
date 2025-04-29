@@ -1,5 +1,5 @@
 {
-  "name": "bg-workers",
+  "name": "bg",
   "version": "1.0.0",
   "description": "MyPraxis Background Worker",
   "main": "dist/index.js",
@@ -7,6 +7,7 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "dev": "ts-node src/index.ts",
+    "dev:docker": "docker-compose up dev",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {

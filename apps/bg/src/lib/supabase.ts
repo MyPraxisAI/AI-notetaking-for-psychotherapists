@@ -51,7 +51,6 @@ export async function setSupabaseUser(client: SupabaseClient, userId: string): P
       access_token: userId,
       refresh_token: '',
     });
-    console.log(`Set Supabase user session to user ID: ${userId}`);
   } catch (error) {
     console.error('Error setting Supabase user session:', error);
     throw error; // Re-throw the error to be handled by the caller

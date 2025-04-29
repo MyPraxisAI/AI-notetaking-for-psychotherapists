@@ -35,7 +35,9 @@ services:
 
   # Your application
   app:
-    build: .
+    build:
+      context: .
+      target: prod
     networks:
       - localstack-net
     depends_on:
@@ -71,7 +73,7 @@ services:
   dev:
     build:
       context: .
-      target: build
+      target: dev
     networks:
       - localstack-net
     depends_on:

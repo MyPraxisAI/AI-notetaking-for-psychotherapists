@@ -10,7 +10,6 @@ export interface AudioProcessingTaskData extends BaseBackgroundTask {
   operation: 'audio:transcribe';
   accountId: string;
   recordingId: string;
-  standaloneChunks?: boolean;
 }
 
 // Database interfaces

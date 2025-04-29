@@ -1,10 +1,12 @@
-FROM ubuntu:22.04 as build
+################ Base Stage ################
+FROM ubuntu:22.04 as base
 
 # Avoid prompts from apt
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Update and install dependencies
+# Update and install common dependencies
 RUN apt-get update && apt-get install -y \
+    ffmpeg \
     curl \
     gnupg \
     && apt-get clean \
@@ -15,6 +17,12 @@ RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
     && apt-get install -y nodejs \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /app
+
+################ Build Stage ################
+FROM node:18 as build
 
 # Set working directory
 WORKDIR /app
@@ -35,25 +43,16 @@ COPY src ./src
 # Build TypeScript code
 RUN npm run build
 
-# Production stage
-FROM ubuntu:22.04
+################ Development Stage ################
+FROM base as dev
 
-# Avoid prompts from apt
-ENV DEBIAN_FRONTEND=noninteractive
+# Install ts-node globally for running TypeScript directly
+RUN npm install -g ts-node typescript
 
-# Update and install dependencies
-RUN apt-get update && apt-get install -y \
-    ffmpeg \
-    curl \
-    gnupg \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+# We'll mount the source code as a volume in docker-compose
 
-# Install Node.js
-RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
-    && apt-get install -y nodejs \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+################ Production Stage ################
+FROM base as prod
 
 # Set working directory
 WORKDIR /app

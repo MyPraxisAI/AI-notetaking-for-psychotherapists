@@ -104,7 +104,6 @@ export interface AudioProcessingTaskData extends BaseBackgroundTaskData {
   operation: 'audio:transcribe';
   accountId: string;
   recordingId: string;
-  standaloneChunks?: boolean;
 }
 
 
@@ -183,17 +182,14 @@ export async function queueBackgroundTask(taskData: BackgroundTaskData): Promise
 export async function queueAudioTranscribe({
   recordingId,
   accountId,
-  standaloneChunks = false,
 }: {
   recordingId: string;
   accountId: string;
-  standaloneChunks?: boolean;
 }): Promise<string | undefined> {
   return queueBackgroundTask({
     operation: 'audio:transcribe',
     accountId,
     recordingId,
-    standaloneChunks,
     priority: 'normal',
     idempotencyKey: `transcribe-${recordingId}`,
   });
