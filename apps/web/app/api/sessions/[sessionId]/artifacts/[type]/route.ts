@@ -51,11 +51,20 @@ export const GET = enhanceRouteHandler(
         // Get the session data needed for generation
         const { data: session } = await client
           .from('sessions')
-          .select('transcript, note')
+          .select('id, note')
           .eq('id', sessionId)
           .single();
         
-        if (!session || (!session.transcript && !session.note)) {
+        // Fetch transcript data from the transcripts table
+        const { data: transcriptData } = await client
+          .from('transcripts')
+          .select('content')
+          .eq('session_id', sessionId)
+          .single();
+          
+        const transcriptContent = transcriptData?.content || null;
+        
+        if (!session || (!transcriptContent && !session.note)) {
           // If there's no session or neither transcript nor note, we can't generate an artifact
           return NextResponse.json({
             content: `This ${artifactType.replace('session_', '').replace('_', ' ')} cannot be generated without either a transcript or session notes.`,
@@ -69,7 +78,7 @@ export const GET = enhanceRouteHandler(
         const generatedContent = await generateArtifact(
           artifactType,
           {
-            session_transcript: session.transcript || '',
+            session_transcript: transcriptContent || '',
             session_note: session.note || ''
           }
         );

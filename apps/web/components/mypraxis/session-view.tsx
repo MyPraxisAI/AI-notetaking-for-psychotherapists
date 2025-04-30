@@ -16,9 +16,164 @@ import { DeleteSessionModal } from "../mypraxis/delete-session-modal"
 import type { Session } from "../../types/session"
 import { useSession, useDeleteSession } from "../../app/home/(user)/mypraxis/_lib/hooks/use-sessions"
 import { useSessionArtifact } from "../../app/home/(user)/mypraxis/_lib/hooks/use-session-artifacts"
-import { updateSessionAction } from "../../app/home/(user)/mypraxis/_lib/server/server-actions"
+import { useRecordingStatus } from "../../app/home/(user)/mypraxis/_lib/hooks/use-recording-status"
+import { updateSessionAction, generateSessionTitleAction } from "../../app/home/(user)/mypraxis/_lib/server/server-actions"
 import { toast } from "sonner"
 import ReactMarkdown from "react-markdown"
+
+interface TranscriptContentProps {
+  clientId: string
+  sessionId: string
+  session: Session | null
+  onEditTranscript: (content: string) => void
+  handleSessionUpdate: (result: { 
+    success: boolean, 
+    session?: { 
+      id: string; 
+      title: string | null; 
+      transcript: string | null; 
+      note: string | null; 
+      metadata: unknown;
+    } 
+  }, currentSession: Session) => void
+}
+
+/**
+ * Component to handle all transcript states:
+ * 1. Transcript exists - show the transcript with edit button
+ * 2. Recording is processing - show "Transcription in progress..."
+ * 3. No transcript or recording - show "Add transcript" button
+ */
+function TranscriptContent({ clientId, sessionId, session, onEditTranscript, handleSessionUpdate }: TranscriptContentProps) {
+  console.log(`[TranscriptContent] Rendering for sessionId: ${sessionId}, has transcript: ${!!session?.transcript}`);
+  
+  // Disable polling if we already have a transcript
+  const { data: recordingStatus, isLoading: isLoadingRecording } = useRecordingStatus(sessionId, {
+    disablePolling: !!session?.transcript
+  })
+  console.log(`[TranscriptContent] Recording status:`, recordingStatus);
+  
+  // Add useTransition hook for async operations
+  const [_isPending, startTransition] = useTransition()
+  
+  const queryClient = useQueryClient()
+  
+  // This ref is no longer used since we're using React Query's built-in polling
+  const _recordingStatusIntervalIdRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Handle transcript title generation when recording is complete
+  useEffect(() => {
+    console.log(`[TranscriptContent] useEffect running, recordingStatus:`, recordingStatus);
+    
+    // If recording status is defined and not processing
+    if (recordingStatus !== undefined && !recordingStatus.isProcessing) {
+      // Invalidate session data to ensure we have the latest transcript
+      console.log(`[TranscriptContent] Recording completed, invalidating session data for sessionId: ${sessionId}`);
+      queryClient.invalidateQueries({ queryKey: ['session', sessionId] });
+      
+      
+      // Check if we have a transcript
+      if (session?.transcript) {
+        console.log(`[TranscriptContent] Transcript available, generating title for sessionId: ${sessionId}`);
+        
+        // Generate a title for the session now that the transcript is available
+        startTransition(async () => {
+          try {
+            const result = await generateSessionTitleAction({
+              id: sessionId,
+              clientId: clientId
+            });
+          
+            if (result.success && result.session) {
+              console.log(`[TranscriptContent] Title generation successful: ${result.session.title}`);
+            
+              // Update the parent session component
+              if (session) {
+              // This will update the parent SessionView component
+                handleSessionUpdate(result, session);
+              }
+            
+              // The parent component will be updated via handleSessionUpdate
+              // No need to maintain local state as it will be passed down as props
+            }
+          } catch (error) {
+            console.error("[TranscriptContent] Error generating title:", error);
+          }
+        });
+      }
+    }
+
+    // No cleanup needed as we're using React Query's built-in refetchInterval
+    return () => {};
+  }, [recordingStatus, sessionId, queryClient, session, clientId, handleSessionUpdate]);
+  
+  // If we have a transcript, show it
+  if (session?.transcript) {
+    return (
+      <div className="relative group">
+        <div 
+          className="rounded-lg bg-[#FFF9E8] px-6 pb-6 pt-7 text-[14px] leading-[1.6] whitespace-pre-wrap cursor-pointer" 
+          onClick={() => onEditTranscript(session.transcript?.content || "")}
+          data-test="session-transcript-value"
+        >
+          {session.transcript.content}
+        </div>
+        <div className="absolute right-2 top-[7px] flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6 hover:bg-transparent"
+            onClick={() => onEditTranscript(session.transcript?.content || "")}
+          >
+            <Edit2 className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+    )
+  }
+  
+
+  
+  // Show loading state while we check for recording status
+  if (isLoadingRecording) {    
+    return (
+      <div className="w-full h-[100px] flex items-center justify-center">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    )
+  }
+  
+  // If a recording is being processed, show the "Transcription in progress..." UI
+  if (recordingStatus?.isProcessing) {    
+    return (
+      <div className="w-full h-[150px] border border-dashed border-input bg-muted/20 rounded-md flex flex-col items-center justify-center p-6 space-y-2">
+        <div className="flex items-center justify-center space-x-2">
+          <Loader2 className="h-5 w-5 animate-spin text-primary" />
+          <h3 className="text-lg font-medium">Transcription in progress...</h3>
+        </div>
+        <p className="text-sm text-muted-foreground text-center max-w-md">
+          We&apos;re processing your recording. This may take a few minutes depending on the length of the session.
+          The transcript will appear here automatically when it&apos;s ready.
+        </p>
+      </div>
+    )
+  }
+  
+  // Otherwise, show the "Add transcript" button
+  return (
+    <Button
+      variant="ghost"
+      className="w-full h-[100px] border border-dashed border-input hover:border-input hover:bg-accent"
+      onClick={() => onEditTranscript("")}
+      data-test="session-add-transcript-button"
+    >
+      <span className="flex items-center gap-2">
+        <Plus className="h-4 w-4" />
+        Click to add a transcript
+      </span>
+    </Button>
+  )
+}
 
 interface SessionViewProps {
   clientId: string
@@ -42,6 +197,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [isEditingTranscript, setIsEditingTranscript] = useState(false)
   const [editedTranscript, setEditedTranscript] = useState<string>("")
+  const [activeTab, setActiveTab] = useState<"summary" | "transcript">("summary") // Added state for active tab
   const _saveTimeout = useRef<NodeJS.Timeout | undefined>(undefined)
   const copyTimeout = useRef<NodeJS.Timeout | undefined>(undefined)
   const clientCopyTimeout = useRef<NodeJS.Timeout | undefined>(undefined)
@@ -92,6 +248,36 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
       setUserNote(sessionData.note || "")
     }
   }, [sessionData])
+  
+  // Listen for custom tab change events
+  useEffect(() => {
+    // Handler for the custom event
+    const handleTabChange = (event: CustomEvent<{ tab: 'transcript' | 'notes', sessionId: string }>) => {
+      const { tab, sessionId: targetSessionId } = event.detail;
+      
+      
+      // Only handle events for this session
+      if (targetSessionId === sessionId) {
+        
+        // Set the active tab directly using state
+        if (tab === 'transcript') {
+          console.log(`Setting active tab to transcript`);
+          setActiveTab('transcript');
+        } else if (tab === 'notes' || tab === 'summary') {
+          console.log(`Setting active tab to summary (notes)`);
+          setActiveTab('summary');
+        }
+      }
+    };
+    
+    // Add event listener
+    window.addEventListener('sessionTabChange', handleTabChange as EventListener);
+    
+    // Clean up
+    return () => {
+      window.removeEventListener('sessionTabChange', handleTabChange as EventListener);
+    };
+  }, [sessionId])
   
   // Update local summary state when query data changes
   useEffect(() => {
@@ -147,10 +333,71 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
   }
 
   // Use React's useTransition for pending state
-  const [_isPending, startTransition] = useTransition()
+  const [isPending, startTransition] = useTransition()
   
   // Get the query client for invalidating queries
   const queryClient = useQueryClient()
+  
+  /**
+   * Helper method to update the session with data from a server action response
+   * @param result The result from a server action
+   * @param currentSession The current session state
+   */
+  const handleSessionUpdate = (result: { 
+    success: boolean, 
+    session?: { 
+      id: string; 
+      title: string | null; 
+      transcript: string | null; 
+      note: string | null; 
+      metadata: unknown;
+    } 
+  }, currentSession: Session) => {
+    if (result.success && result.session) {
+      // Update the session with the returned data including the potentially auto-generated title
+      // Convert the database record to a Session object
+      const updatedSession = {
+        ...currentSession,
+        id: result.session.id,
+        title: result.session.title || '',
+        transcript: result.session.transcript ? { content: result.session.transcript } : undefined,
+        notes: result.session.note ? { userNote: result.session.note } : undefined,
+        metadata: result.session.metadata as SessionMetadata | undefined
+      }
+      
+      // Update the session state
+      setSession(updatedSession)
+      
+      // Update localStorage and dispatch event for column-4 list if title changed
+      if (currentSession.title !== result.session.title) {
+        const sessionsData = localStorage.getItem("sessions")
+        if (sessionsData) {
+          const sessions = JSON.parse(sessionsData)
+          if (!sessions[clientId]) {
+            sessions[clientId] = {}
+          }
+          sessions[clientId][sessionId] = result.session
+          localStorage.setItem("sessions", JSON.stringify(sessions))
+        }
+
+        // Force parent update with the new title
+        window.dispatchEvent(
+          new CustomEvent("sessionTitleChanged", {
+            detail: { 
+              clientId, 
+              sessionId, 
+              title: result.session.title || '', 
+              session: result.session 
+            },
+          }),
+        )
+      }
+      
+      return updatedSession
+    }
+    
+    return currentSession
+  }
   
 
   
@@ -175,15 +422,8 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
             note: session.notes?.userNote || ''
           });
           
-          // If we got updated session data back, update our local state
-          if (result.success && result.session) {
-            // Update the session with the returned data
-            setSession({
-              ...session,
-              title: result.session.title || '',
-              // Add any other fields that might have been updated
-            });
-          }
+          // Update the session with the returned data
+          handleSessionUpdate(result, session)
           
           // Hide the title editing UI
           setIsEditingTitle(false);
@@ -228,44 +468,8 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
             note: note
           });
           
-          // If we got updated session data back, update our local state
-          if (result.success && result.session) {
-            // Update the session with the returned data including the potentially auto-generated title
-            // Convert the database record to a Session object
-            setSession({
-              ...session,
-              id: result.session.id,
-              title: result.session.title || '',
-              transcript: result.session.transcript ? { content: result.session.transcript } : undefined,
-              notes: result.session.note ? { userNote: result.session.note } : undefined,
-              metadata: result.session.metadata as SessionMetadata | undefined
-            });
-            
-            // Update localStorage and dispatch event for column-4 list if title changed
-            if (session.title !== result.session.title) {
-              const sessionsData = localStorage.getItem("sessions")
-              if (sessionsData) {
-                const sessions = JSON.parse(sessionsData)
-                if (!sessions[clientId]) {
-                  sessions[clientId] = {}
-                }
-                sessions[clientId][sessionId] = result.session
-                localStorage.setItem("sessions", JSON.stringify(sessions))
-              }
-
-              // Force parent update with the cleaned title
-              window.dispatchEvent(
-                new CustomEvent("sessionTitleChanged", {
-                  detail: { 
-                    clientId, 
-                    sessionId, 
-                    title: result.session.title || '', 
-                    session: result.session 
-                  },
-                }),
-              )
-            }
-          }
+          // Update the session with the returned data
+          handleSessionUpdate(result, session);
           
           // Success handling
           toast.success("Note saved");
@@ -298,7 +502,13 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
   }
 
   const handleSaveTranscript = () => {
-    if (session && editedTranscript !== undefined) {
+    if (!session) return;
+    
+    // Get the current transcript content (if any)
+    const currentContent = session.transcript?.content || "";
+    
+    // Only proceed with saving if the content has actually changed
+    if (editedTranscript !== currentContent) {
       // Optimistically update the UI
       const previousSession = { ...session };
       
@@ -323,44 +533,8 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
             note: session.notes?.userNote || ''
           });
           
-          // If we got updated session data back, update our local state
-          if (result.success && result.session) {
-            // Update the session with the returned data including the potentially auto-generated title
-            // Convert the database record to a Session object
-            setSession({
-              ...session,
-              id: result.session.id,
-              title: result.session.title || '',
-              transcript: result.session.transcript ? { content: result.session.transcript } : undefined,
-              notes: result.session.note ? { userNote: result.session.note } : undefined,
-              metadata: result.session.metadata as SessionMetadata | undefined
-            });
-            
-            // Update localStorage and dispatch event for column-4 list if title changed
-            if (session.title !== result.session.title) {
-              const sessionsData = localStorage.getItem("sessions")
-              if (sessionsData) {
-                const sessions = JSON.parse(sessionsData)
-                if (!sessions[clientId]) {
-                  sessions[clientId] = {}
-                }
-                sessions[clientId][sessionId] = result.session
-                localStorage.setItem("sessions", JSON.stringify(sessions))
-              }
-
-              // Force parent update with the cleaned title
-              window.dispatchEvent(
-                new CustomEvent("sessionTitleChanged", {
-                  detail: { 
-                    clientId, 
-                    sessionId, 
-                    title: result.session.title || '', 
-                    session: result.session 
-                  },
-                }),
-              )
-            }
-          }
+          // Update the session with the returned data
+          handleSessionUpdate(result, session);
           
           // Reset summaries first to show loading state
           resetAndRefetchSummaries()
@@ -537,19 +711,26 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
         </span>
       </div>
 
-      <Tabs defaultValue="summary" className="w-full">
+      <Tabs 
+        value={activeTab} 
+        onValueChange={(value) => setActiveTab(value as "summary" | "transcript")} 
+        className="w-full" 
+        data-session-id={sessionId}
+      >
         <TabsList className="w-full justify-start border-b rounded-none h-auto p-0 bg-transparent">
           <TabsTrigger
             value="summary"
             className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#111827] data-[state=active]:bg-transparent px-4 py-2 font-medium text-[14px] text-[#6B7280] data-[state=active]:text-[#111827] data-[state=active]:shadow-none"
-            data-test="session-tab-summary"
+            data-tab="notes"
+            data-test="notes-tab"
           >
-            Summary & Notes
+            Notes
           </TabsTrigger>
           <TabsTrigger
             value="transcript"
             className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#111827] data-[state=active]:bg-transparent px-4 py-2 font-medium text-[14px] text-[#6B7280] data-[state=active]:text-[#111827] data-[state=active]:shadow-none"
-            data-test="session-tab-transcript"
+            data-tab="transcript"
+            data-test="transcript-tab"
           >
             Transcript
           </TabsTrigger>
@@ -740,62 +921,41 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
           </div>
         </TabsContent>
 
-        <TabsContent value="transcript" className="mt-5">
+        <TabsContent value="transcript" className="relative" data-tab="transcript">
           {isEditingTranscript ? (
             <div className="relative">
               <Textarea
-                value={editedTranscript || session?.transcript?.content || ""}
+                value={editedTranscript}
                 onChange={(e) => setEditedTranscript(e.target.value)}
-                onBlur={() => handleSaveTranscript()}
-                className="min-h-[300px] resize-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)]"
-                placeholder="Paste or type transcript here..."
+                onBlur={() => {
+                  // Always exit edit mode
+                  setIsEditingTranscript(false)
+                  // Only try to save if there are changes
+                  handleSaveTranscript()
+                }}
+                className="min-h-[300px] resize-vertical focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)] [&::-webkit-resizer]:appearance-none after:content-[''] after:absolute after:bottom-1 after:right-1 after:w-3 after:h-3 after:border-b-2 after:border-r-2 after:border-[#6B7280] after:cursor-se-resize relative font-mono text-sm"
+                placeholder="Enter transcript..."
                 autoFocus
-                data-test="session-transcript-input"
+                data-test="session-transcript-editor"
               />
-              <div className="flex justify-end">
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => handleSaveTranscript()}
-                >
-                  Save
-                </Button>
-              </div>
-            </div>
-          ) : session?.transcript ? (
-            <div className="relative group">
-              <div className="rounded-lg bg-[#FFF9E8] px-6 pb-6 pt-7 text-[14px] leading-[1.6] whitespace-pre-wrap" data-test="session-transcript-value">
-                {session.transcript?.content}
-              </div>
-              <div className="absolute right-2 top-[7px] flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-6 w-6 hover:bg-transparent"
-                  onClick={() => {
-                    setIsEditingTranscript(true)
-                    setEditedTranscript(session.transcript?.content || "")
-                  }}
-                >
-                  <Edit2 className="h-4 w-4" />
-                </Button>
-              </div>
+              {isPending && (
+                <div className="absolute right-3 bottom-3 flex items-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Saving...
+                </div>
+              )}
             </div>
           ) : (
-            <Button
-              variant="ghost"
-              className="w-full h-[100px] border border-dashed border-input hover:border-input hover:bg-accent"
-              onClick={() => {
+            <TranscriptContent
+              clientId={clientId}
+              sessionId={sessionId}
+              session={session}
+              handleSessionUpdate={handleSessionUpdate}
+              onEditTranscript={(content) => {
                 setIsEditingTranscript(true)
-                setEditedTranscript("")
+                setEditedTranscript(content)
               }}
-              data-test="session-add-transcript-button"
-            >
-              <span className="flex items-center gap-2">
-                <Plus className="h-4 w-4" />
-                Click to add a transcript
-              </span>
-            </Button>
+            />
           )}
         </TabsContent>
       </Tabs>

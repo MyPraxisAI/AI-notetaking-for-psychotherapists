@@ -8,7 +8,8 @@ export const SessionMetadataSchema = z.object({
 // Session schema for validation
 export const SessionSchema = z.object({
   title: z.string().min(1, 'Title is required').max(255, 'Title must be less than 255 characters'),
-  transcript: z.string().optional(),
+  // Transcript is now stored in a separate table
+  transcript: z.string().optional(), // Keep for backward compatibility with UI
   note: z.string().optional(),
   metadata: SessionMetadataSchema.optional()
 });
@@ -29,7 +30,7 @@ export interface SessionRecord {
   updated_at: string;
   account_id: string;
   client_id: string;
-  transcript: string | null;
+  // transcript field is now in the transcripts table
   note: string | null;
   title: string | null;
   metadata: SessionMetadata | null;

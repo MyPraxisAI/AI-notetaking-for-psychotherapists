@@ -17,6 +17,14 @@ const UpdateSessionSchema = SessionSchema.extend({
 
 type UpdateSessionData = z.infer<typeof UpdateSessionSchema>;
 
+// Schema for generating a session title
+const GenerateTitleSchema = z.object({
+  id: z.string(),
+  clientId: z.string()
+});
+
+type GenerateTitleData = z.infer<typeof GenerateTitleSchema>;
+
 /**
  * Generate a title for a session if it hasn't been initialized yet
  * @param client Supabase client
@@ -101,12 +109,90 @@ async function generateSessionTitle(
 }
 
 /**
+ * Server action to generate a title for a session
+ */
+export const generateSessionTitleAction = enhanceAction(
+  async function (data: GenerateTitleData, user: User) {
+    const client = getSupabaseServerClient();
+    const logger = await getLogger();
+    const ctx = { name: 'generateSessionTitleAction', sessionId: data.id, userId: user.id };
+    
+    try {
+      logger.info(ctx, 'Generating session title');
+      
+      // 1. Get the current session data
+      const { data: currentSession, error: fetchError } = await client
+        .from('sessions')
+        .select('note, title, metadata')
+        .eq('id', data.id)
+        .single();
+      
+      if (fetchError) {
+        logger.error({ ...ctx, error: fetchError }, 'Failed to fetch session data');
+        throw new Error('Failed to fetch session data');
+      }
+      
+      // 1b. Get the transcript from the transcripts table
+      let transcriptContent = null;
+      const { data: transcriptData, error: transcriptError } = await client
+        .from('transcripts')
+        .select('content')
+        .eq('session_id', data.id)
+        .maybeSingle();
+      
+      if (transcriptError) {
+        logger.warn({ ...ctx, error: transcriptError }, 'Failed to fetch transcript data');
+        // Don't throw here, we'll just proceed with a null transcript
+      } else if (transcriptData) {
+        transcriptContent = transcriptData.content;
+      }
+      
+      // 2. Call the helper function to generate the title
+      const success = await generateSessionTitle(
+        client,
+        data.id,
+        transcriptContent,
+        currentSession.note
+      );
+      
+      // 3. If successful, fetch the updated session to return
+      if (success) {
+        const { data: updatedSession, error: fetchUpdatedError } = await client
+          .from('sessions')
+          .select('id, title, transcript, note, metadata')
+          .eq('id', data.id)
+          .single();
+        
+        if (fetchUpdatedError) {
+          logger.error({ ...ctx, error: fetchUpdatedError }, 'Failed to fetch updated session');
+          return { success: true };
+        }
+        
+        return { 
+          success: true,
+          session: updatedSession
+        };
+      }
+      
+      return { success };
+    } catch (error) {
+      logger.error({ ...ctx, error }, 'Error generating session title');
+      throw error;
+    }
+  },
+  {
+    auth: true,
+    schema: GenerateTitleSchema,
+  }
+);
+
+/**
  * Server action to update a session and delete related artifacts if content changed
  */
 export const updateSessionAction = enhanceAction(
   async function updateSessionAction(data: UpdateSessionData, user: User) {
     const client = getSupabaseServerClient();
-    const _logger = getLogger();
+    const _logger = await getLogger();
     const _ctx = {
       name: 'update-session',
       sessionId: data.id,
@@ -117,29 +203,52 @@ export const updateSessionAction = enhanceAction(
       // 1. Get the current session data to compare
       const { data: currentSession, error: fetchError } = await client
         .from('sessions')
-        .select('transcript, note, title, metadata')
+        .select('note, account_id, title, metadata')
         .eq('id', data.id)
         .single();
         
       if (fetchError) {
-        console.error('Failed to fetch current session data', fetchError);
+        _logger.error({ ..._ctx, error: fetchError }, 'Failed to fetch current session data');
         throw new Error('Failed to fetch current session data');
+      }
+      
+      // Get the current transcript data from the transcripts table
+      const { data: currentTranscript, error: fetchTranscriptError } = await client
+        .from('transcripts')
+        .select('id, content')
+        .eq('session_id', data.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+        
+      if (fetchTranscriptError && fetchTranscriptError.code !== 'PGRST116') { // PGRST116 is 'no rows returned' which is fine
+        console.error('Failed to fetch transcript data', fetchTranscriptError);
+        // Don't throw here, as there might not be a transcript yet
       }
 
 
 
       // 2. Check if content has actually changed
-      const transcriptChanged = data.transcript !== currentSession.transcript;
+      // Normalize transcript content for comparison (trim and handle empty strings)
+      const normalizeContent = (content: string | null | undefined): string | null => {
+        if (content === null || content === undefined) return null;
+        const trimmed = content.trim();
+        return trimmed === '' ? null : trimmed;
+      };
+      
+      const currentTranscriptContent = normalizeContent(currentTranscript?.content);
+      const newTranscriptContent = normalizeContent(data.transcript);
+      const transcriptChanged = currentTranscriptContent !== newTranscriptContent;
+      
       const noteChanged = data.note !== currentSession.note;
       const titleChanged = data.title !== currentSession.title;
       const contentChanged = transcriptChanged || noteChanged;
 
-      // 3. Update the session data
+      // 3. Update the session data (without transcript)
       const { error: updateError } = await client
         .from('sessions')
         .update({
           title: data.title,
-          transcript: data.transcript,
           note: data.note
         })
         .eq('id', data.id);
@@ -170,19 +279,53 @@ export const updateSessionAction = enhanceAction(
         console.error('Failed to update session', updateError);
         throw new Error('Failed to update session');
       }
+      
+      // 4. Update or insert transcript if it has changed
+      if (transcriptChanged && newTranscriptContent) {
+        // Check if a transcript already exists
+        if (currentTranscript) {
+          // Update existing transcript
+          const { error: updateTranscriptError } = await client
+            .from('transcripts')
+            .update({
+              content: newTranscriptContent
+            })
+            .eq('id', currentTranscript.id);
+            
+          if (updateTranscriptError) {
+            _logger.error({ ..._ctx, error: updateTranscriptError }, 'Failed to update transcript');
+            throw new Error('Failed to update transcript');
+          }
+        } else {
+          // Insert new transcript
+          const { error: insertTranscriptError } = await client
+            .from('transcripts')
+            .insert({
+              session_id: data.id,
+              account_id: currentSession.account_id,
+              transcription_model: 'manual',
+              content: newTranscriptContent
+            });
+            
+          if (insertTranscriptError) {
+            _logger.error({ ..._ctx, error: insertTranscriptError }, 'Failed to insert transcript');
+            throw new Error('Failed to insert transcript');
+          }
+        }
+      }
 
-      // 4. If content changed, handle artifacts and potentially generate title
+      // 5. If content changed, handle artifacts and potentially generate title
       if (contentChanged) {
         console.log('Content changed, deleting artifacts', {
           transcriptChanged,
           noteChanged
         });
 
-        // 4a. Try to generate a title if needed
+        // 5a. Try to generate a title if needed
         await generateSessionTitle(client, data.id, data.transcript || null, data.note || null);
         // Note: We don't need to handle errors here as the function handles them internally
 
-        // 4b. Delete session artifacts
+        // 5b. Delete session artifacts
         const { error: deleteSessionArtifactsError } = await client
           .from('artifacts')
           .delete()

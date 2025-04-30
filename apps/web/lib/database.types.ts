@@ -677,6 +677,149 @@ export type Database = {
         }
         Relationships: []
       }
+      recordings: {
+        Row: {
+          account_id: string
+          client_id: string
+          created_at: string
+          id: string
+          last_heartbeat_at: string
+          session_id: string | null
+          standalone_chunks: boolean
+          status: Database["public"]["Enums"]["recording_status"]
+          updated_at: string
+        }
+        Insert: {
+          account_id: string
+          client_id: string
+          created_at?: string
+          id?: string
+          last_heartbeat_at?: string
+          session_id?: string | null
+          standalone_chunks?: boolean
+          status?: Database["public"]["Enums"]["recording_status"]
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string
+          client_id?: string
+          created_at?: string
+          id?: string
+          last_heartbeat_at?: string
+          session_id?: string | null
+          standalone_chunks?: boolean
+          status?: Database["public"]["Enums"]["recording_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recordings_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recordings_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "user_account_workspace"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recordings_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "user_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recordings_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recordings_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      recordings_chunks: {
+        Row: {
+          account_id: string
+          chunk_number: number
+          created_at: string
+          end_time: number
+          id: string
+          recording_id: string
+          start_time: number
+          storage_bucket: string
+          storage_path: string
+          transcript: string | null
+          updated_at: string
+        }
+        Insert: {
+          account_id: string
+          chunk_number: number
+          created_at?: string
+          end_time: number
+          id?: string
+          recording_id: string
+          start_time: number
+          storage_bucket: string
+          storage_path: string
+          transcript?: string | null
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string
+          chunk_number?: number
+          created_at?: string
+          end_time?: number
+          id?: string
+          recording_id?: string
+          start_time?: number
+          storage_bucket?: string
+          storage_path?: string
+          transcript?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recordings_chunks_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recordings_chunks_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "user_account_workspace"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recordings_chunks_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "user_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recordings_chunks_recording_id_fkey"
+            columns: ["recording_id"]
+            isOneToOne: false
+            referencedRelation: "recordings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       role_permissions: {
         Row: {
           id: number
@@ -1062,6 +1205,65 @@ export type Database = {
           },
         ]
       }
+      transcripts: {
+        Row: {
+          account_id: string
+          content: string | null
+          created_at: string
+          id: string
+          session_id: string
+          transcription_model: string | null
+          updated_at: string
+        }
+        Insert: {
+          account_id: string
+          content?: string | null
+          created_at?: string
+          id?: string
+          session_id: string
+          transcription_model?: string | null
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string
+          content?: string | null
+          created_at?: string
+          id?: string
+          session_id?: string
+          transcription_model?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transcripts_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transcripts_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "user_account_workspace"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transcripts_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "user_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transcripts_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: true
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_preferences: {
         Row: {
           account_id: string
@@ -1254,6 +1456,12 @@ export type Database = {
       get_config: {
         Args: Record<PropertyKey, never>
         Returns: Json
+      }
+      get_first_path_component_as_uuid: {
+        Args: {
+          path: string
+        }
+        Returns: string
       }
       get_nonce_status: {
         Args: {
@@ -1464,6 +1672,12 @@ export type Database = {
       notification_channel: "in_app" | "email"
       notification_type: "info" | "warning" | "error"
       payment_status: "pending" | "succeeded" | "failed"
+      recording_status:
+        | "recording"
+        | "paused"
+        | "processing"
+        | "completed"
+        | "failed"
       subscription_item_type: "flat" | "per_seat" | "metered"
       subscription_status:
         | "active"

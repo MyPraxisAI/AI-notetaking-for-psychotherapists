@@ -16,9 +16,10 @@ interface ProfileFormProps {
   clientId: string
   onNameChange?: (name: string) => void
   onClientDeleted: (clientId: string) => void
+  onNewSession?: () => void
 }
 
-export function ProfileForm({ clientId, onNameChange, onClientDeleted }: ProfileFormProps) {
+export function ProfileForm({ clientId, onNameChange, onClientDeleted, onNewSession }: ProfileFormProps) {
   const { data: client, isLoading } = useClient(clientId)
   const updateClient = useUpdateClient()
   
@@ -175,6 +176,12 @@ export function ProfileForm({ clientId, onNameChange, onClientDeleted }: Profile
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
+            <DropdownMenuItem
+              onClick={() => onNewSession && onNewSession()}
+              data-test="new-session-button"
+            >
+              New session
+            </DropdownMenuItem>
             <DropdownMenuItem
               className="text-destructive focus:text-destructive"
               onClick={() => setIsDeleteModalOpen(true)}
