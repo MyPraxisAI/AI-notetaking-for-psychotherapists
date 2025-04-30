@@ -685,13 +685,18 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
               />
             ) : (
               <>
-                <h2
-                  className="text-[24px] font-semibold text-[#111827] tracking-[-0.011em] truncate cursor-pointer hover:text-[#374151] transition-colors"
-                  onClick={() => setIsEditingTitle(true)}
-                  data-test="session-title"
-                >
-                  {session?.title || "New Session"}
-                </h2>
+                <div className="relative group">
+                  <div className="absolute -left-7 opacity-0 group-hover:opacity-100 transition-opacity flex items-center h-full">
+                    <Edit2 className="h-4 w-4 text-gray-500" />
+                  </div>
+                  <h2
+                    className="text-[24px] font-semibold text-[#111827] tracking-[-0.011em] truncate cursor-pointer hover:text-[#374151] transition-colors"
+                    onClick={() => setIsEditingTitle(true)}
+                    data-test="session-title"
+                  >
+                    {session?.title || "New Session"}
+                  </h2>
+                </div>
                 <div className="w-5 h-5 ml-2">
                   <Check 
                     className={`h-5 w-5 transition-opacity ${
@@ -702,15 +707,6 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                     data-test="session-title-saved-check"
                   />
                 </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7 opacity-0 group-hover/title:opacity-100 transition-opacity"
-                  onClick={() => setIsEditingTitle(true)}
-                  data-test="edit-session-title-button"
-                >
-                  <Edit2 className="h-4 w-4" />
-                </Button>
               </>
             )}
           </div>
