@@ -34,6 +34,7 @@ import { ClientBio as _ClientBio } from "../../../../components/mypraxis/client-
 import { ProfileForm } from "../../../../components/mypraxis/profile-form"
 import { SettingsForm } from "../../../../components/mypraxis/settings-form"
 import { SessionView } from "../../../../components/mypraxis/session-view"
+import { RecordingModal } from "../../../../components/mypraxis/recording-modal"
 import dynamic from "next/dynamic"
 import { useClients, useCreateClient, useDeleteClient } from "./_lib/hooks/use-clients"
 
@@ -105,7 +106,7 @@ export default function Page() {
   }, [avatarUrl])
   
   // Fetch sessions for the selected client from Supabase
-  const { data: sessionsData, isLoading: _isLoadingSessions } = useSessions(selectedClient)
+  const { data: sessionsData, isLoading: _isLoadingSessions, refetch: refetchSessions } = useSessions(selectedClient)
   
   // Update sessions state when Supabase data changes
   useEffect(() => {
@@ -173,8 +174,28 @@ export default function Page() {
       }
     }
     
-    // Sessions are now loaded via the useSessions hook
-  }, [clients]) // Changed dependency to clients to ensure this runs when client list changes
+    // Load selected session from localStorage
+    const savedSession = localStorage.getItem("selectedSession")
+    if (savedSession) {
+      try {
+        const parsedSession = JSON.parse(savedSession)
+        if (parsedSession && parsedSession.clientId && parsedSession.sessionId) {
+          // Check if the client exists in our list
+          const clientExists = clients.some(client => client.id === parsedSession.clientId)
+          if (clientExists) {
+            // Navigate to the session (this will also handle setting the detail item)
+            navigateToSession(parsedSession.sessionId)
+            console.log(`Restored session from localStorage: ${parsedSession.sessionId}`)
+          }
+        }
+      } catch (error) {
+        console.error("Error parsing saved session:", error)
+        localStorage.removeItem("selectedSession") // Clear invalid data
+      }
+    }
+  }, [clients]) // eslint-disable-line react-hooks/exhaustive-deps
+  // We're intentionally omitting navigateToSession and isDetailItem from the deps array
+  // because they're defined later in the file and would cause circular dependencies
 
   useEffect(() => {
     const handleSessionTitleChange = (event: CustomEvent) => {
@@ -289,6 +310,53 @@ export default function Page() {
 
   const createSession = useCreateSession()
 
+  const [isRecordingModalOpen, setIsRecordingModalOpen] = useState(false)
+  const [_newSessionId, _setNewSessionId] = useState<string | null>(null)
+
+  /**
+   * Navigate to a specific session and optionally open a specific tab
+   */
+  const navigateToSession = async (sessionId: string, openTab?: 'transcript' | 'notes') => {
+    console.log(`Navigating to session ${sessionId}${openTab ? ` (${openTab} tab)` : ''}`)
+    
+    // First, ensure we have the session in our sessions list
+    const sessionExists = sessions.some(s => s.id === sessionId);
+    if (!sessionExists) {
+      console.log('Session not found in sessions list, fetching it');
+      // Trigger a refetch of sessions to ensure the new session is loaded
+      await refetchSessions();
+      
+      // Wait a moment for the refetch to complete before continuing
+      await new Promise(resolve => setTimeout(resolve, 300));
+    }
+    
+    // Update selected session state - this is what triggers the view change
+    setSelectedSessionState(sessionId);
+    setSelectedDetailItem(sessionId);
+    localStorage.setItem("selectedDetailItem", sessionId);
+
+    // Save selected session to localStorage for UI state
+    const sessionData = {
+      clientId: selectedClient,
+      sessionId: sessionId
+    };
+    localStorage.setItem("selectedSession", JSON.stringify(sessionData));
+    
+    // If a specific tab was requested, dispatch a custom event
+    if (openTab) {
+      // Create a custom event to signal which tab should be active
+      // This is a more appropriate way to handle internal app navigation
+      // than using data-test attributes which are meant for testing
+      setTimeout(() => {
+        const tabChangeEvent = new CustomEvent('sessionTabChange', {
+          detail: { tab: openTab, sessionId }
+        });
+        window.dispatchEvent(tabChangeEvent);
+      }, 500);
+    }
+  }
+  
+  // Core function to create a new session without opening the recording modal
   const handleNewSession = () => {
     if (!selectedClient) return
 
@@ -299,22 +367,37 @@ export default function Page() {
       note: ""
     }, {
       onSuccess: (newSession: SessionWithId) => {
-        // Update selected session
-        setSelectedSessionState(newSession.id)
-        setSelectedDetailItem(newSession.id)
-        localStorage.setItem("selectedDetailItem", newSession.id)
-
-        // Save selected session to localStorage for UI state
-        const sessionData = {
-          clientId: selectedClient,
-          sessionId: newSession.id
-        }
-        localStorage.setItem("selectedSession", JSON.stringify(sessionData))
+        // Navigate to the new session
+        navigateToSession(newSession.id);
       }
     })
   }
+  
+  // Temporary function for the recording workflow - will be refactored in future
+  const handleRecordingSession = () => {
+    if (!selectedClient) return
+    setIsRecordingModalOpen(true)
+  }
+  
+  // Handle recording modal close
+  const handleRecordingModalClose = () => {
+    setIsRecordingModalOpen(false)
+  }
+  
+  // Handle recording save
+  const handleRecordingSave = async (sessionId?: string) => {
+    setIsRecordingModalOpen(false)
+    
+    // There should always be a session ID
+    if (!sessionId) {
+      console.warn('No sessionId provided, this should not happen');
+      return;
+    }
+    
+    // Navigate to the session and open the transcript tab
+    await navigateToSession(sessionId, 'transcript');
+  }
 
-  // Name changes are handled directly in the ProfileForm component via the useUpdateClient hook
   const handleNameChange = (_name: string) => {
     // This function is now just a placeholder for any UI updates needed when a name changes
     // The actual data update is handled by the useUpdateClient hook in ProfileForm
@@ -464,7 +547,12 @@ export default function Page() {
     // Profile tab
     if (selectedDetailItem === "profile") {
       return (
-        <ProfileForm clientId={selectedClient} onNameChange={handleNameChange} onClientDeleted={handleClientDeleted} />
+        <ProfileForm 
+          clientId={selectedClient} 
+          onNameChange={handleNameChange} 
+          onClientDeleted={handleClientDeleted} 
+          onNewSession={handleNewSession}
+        />
       )
     }
 
@@ -771,8 +859,6 @@ export default function Page() {
           {isSmallScreen && (
             <Button
               variant="ghost"
-              size="icon"
-              data-test="nav-menu-button"
               className="h-8 w-8 flex-shrink-0"
               onClick={() => setIsNavVisible(!isNavVisible)}
             >
@@ -924,7 +1010,7 @@ export default function Page() {
               className={`w-full bg-[#22C55E] hover:bg-[#22C55E]/90 text-white text-[14px] font-medium h-auto py-2.5 transition-colors duration-150 border border-[#E5E7EB] ${
                 clients.length === 0 ? "opacity-50 cursor-not-allowed" : ""
               } ${isMobileView ? "mobile-disabled-button" : ""}`}
-              onClick={handleNewSession}
+              onClick={handleRecordingSession}
               disabled={clients.length === 0 || isMobileView}
               data-test="start-recording-button"
             >
@@ -991,6 +1077,15 @@ export default function Page() {
           </div>
         </div>
       </div>
+
+      {/* Recording Modal */}
+      <RecordingModal
+        isOpen={isRecordingModalOpen}
+        onClose={handleRecordingModalClose}
+        onSave={handleRecordingSave}
+        clientId={selectedClient}
+        clientName={clients.find(c => c.id === selectedClient)?.fullName || ""}
+      />
     </div>
   )
 }

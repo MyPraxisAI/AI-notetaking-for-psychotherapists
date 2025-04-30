@@ -81,6 +81,7 @@ export function useSession(sessionId: string | null) {
       if (!accountId || !sessionId) return null;
 
       try {
+        // Fetch session data
         const { data: sessionData, error: sessionError } = await client
           .from('sessions')
           .select('*')
@@ -95,6 +96,21 @@ export function useSession(sessionId: string | null) {
         if (!sessionData) {
           return null;
         }
+        
+        // Fetch transcript data from the transcripts table
+        const { data: transcriptData, error: transcriptError } = await client
+          .from('transcripts')
+          .select('id, content')
+          .eq('session_id', sessionId)
+          .order('created_at', { ascending: false })
+          .limit(1);
+          
+        if (transcriptError) {
+          console.error('Error fetching transcript:', transcriptError);
+          // Don't throw here, as we can still return the session without transcript
+        }
+        
+        const transcript = transcriptData && transcriptData.length > 0 && transcriptData[0]?.content ? transcriptData[0]?.content : null;
 
         // Transform the data using the same interface we defined earlier
         const record = sessionData as SessionDatabaseRecord;
@@ -102,7 +118,7 @@ export function useSession(sessionId: string | null) {
           id: record.id,
           clientId: record.client_id,
           title: record.title ?? record.note ?? 'Untitled Session',
-          transcript: record.transcript || '',
+          transcript: transcript || '',
           note: record.note || '',
           createdAt: record.created_at
         };
