@@ -47,8 +47,6 @@ interface RecordingModalProps {
   onSave: (sessionId?: string) => Promise<void>
   clientId: string
   clientName: string
-  _clients: { id: string; fullName: string }[]
-  _createSession?: (clientId: string) => void
 }
 
 export function RecordingModal({
@@ -56,9 +54,7 @@ export function RecordingModal({
   onClose,
   onSave,
   clientId,
-  clientName,
-  _clients,
-  _createSession
+  clientName
 }: RecordingModalProps) {
   const [modalState, setModalState] = useState<
     "initial" | "soundCheck" | "recording" | "paused" | "saving"

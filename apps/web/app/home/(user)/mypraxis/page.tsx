@@ -1085,8 +1085,6 @@ export default function Page() {
         onSave={handleRecordingSave}
         clientId={selectedClient}
         clientName={clients.find(c => c.id === selectedClient)?.fullName || ""}
-        clients={clients}
-        createSession={handleNewSession}
       />
     </div>
   )
