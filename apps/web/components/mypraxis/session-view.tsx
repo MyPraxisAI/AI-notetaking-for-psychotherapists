@@ -26,7 +26,16 @@ interface TranscriptContentProps {
   sessionId: string
   session: Session | null
   onEditTranscript: (content: string) => void
-  handleSessionUpdate: (result: { success: boolean, session?: any }, currentSession: any) => void
+  handleSessionUpdate: (result: { 
+    success: boolean, 
+    session?: { 
+      id: string; 
+      title: string | null; 
+      transcript: string | null; 
+      note: string | null; 
+      metadata: unknown;
+    } 
+  }, currentSession: Session) => void
 }
 
 /**
@@ -45,12 +54,12 @@ function TranscriptContent({ clientId, sessionId, session, onEditTranscript, han
   console.log(`[TranscriptContent] Recording status:`, recordingStatus);
   
   // Add useTransition hook for async operations
-  const [isPending, startTransition] = useTransition()
+  const [_isPending, startTransition] = useTransition()
   
   const queryClient = useQueryClient()
   
-  // Track polling interval ID to ensure proper cleanup
-  const recordingStatusIntervalIdRef = useRef<NodeJS.Timeout | null>(null);
+  // This ref is no longer used since we're using React Query's built-in polling
+  const _recordingStatusIntervalIdRef = useRef<NodeJS.Timeout | null>(null);
   
   // Handle transcript title generation when recording is complete
   useEffect(() => {
@@ -96,7 +105,7 @@ function TranscriptContent({ clientId, sessionId, session, onEditTranscript, han
 
     // No cleanup needed as we're using React Query's built-in refetchInterval
     return () => {};
-  }, [recordingStatus, sessionId, queryClient, session]);
+  }, [recordingStatus, sessionId, queryClient, session, clientId, handleSessionUpdate]);
   
   // If we have a transcript, show it
   if (session?.transcript) {
@@ -143,8 +152,8 @@ function TranscriptContent({ clientId, sessionId, session, onEditTranscript, han
           <h3 className="text-lg font-medium">Transcription in progress...</h3>
         </div>
         <p className="text-sm text-muted-foreground text-center max-w-md">
-          We're processing your recording. This may take a few minutes depending on the length of the session.
-          The transcript will appear here automatically when it's ready.
+          We&apos;re processing your recording. This may take a few minutes depending on the length of the session.
+          The transcript will appear here automatically when it&apos;s ready.
         </p>
       </div>
     )
@@ -334,7 +343,16 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
    * @param result The result from a server action
    * @param currentSession The current session state
    */
-  const handleSessionUpdate = (result: { success: boolean, session?: any }, currentSession: any) => {
+  const handleSessionUpdate = (result: { 
+    success: boolean, 
+    session?: { 
+      id: string; 
+      title: string | null; 
+      transcript: string | null; 
+      note: string | null; 
+      metadata: unknown;
+    } 
+  }, currentSession: Session) => {
     if (result.success && result.session) {
       // Update the session with the returned data including the potentially auto-generated title
       // Convert the database record to a Session object

@@ -36,7 +36,7 @@ export async function sendSQSMessage({
   messageDeduplicationId,
 }: {
   queueUrl: string;
-  messageBody: Record<string, any>;
+  messageBody: Record<string, unknown>;
   delaySeconds?: number;
   messageGroupId?: string;
   messageDeduplicationId?: string;
@@ -48,7 +48,13 @@ export async function sendSQSMessage({
 
   try {
     // Create the message parameters
-    const params: any = {
+    const params: {
+      QueueUrl: string;
+      MessageBody: string;
+      DelaySeconds: number;
+      MessageGroupId?: string;
+      MessageDeduplicationId?: string;
+    } = {
       QueueUrl: queueUrl,
       MessageBody: JSON.stringify(messageBody),
       DelaySeconds: delaySeconds,
@@ -139,7 +145,7 @@ export async function queueBackgroundTask(taskData: BackgroundTaskData): Promise
     // Prepare message parameters
     const messageParams: {
       queueUrl: string;
-      messageBody: Record<string, any>;
+      messageBody: Record<string, unknown>;
       messageGroupId?: string;
       messageDeduplicationId?: string;
       delaySeconds?: number;

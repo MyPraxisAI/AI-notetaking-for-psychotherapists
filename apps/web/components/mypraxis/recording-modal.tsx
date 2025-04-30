@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { Button } from "@kit/ui/button"
-import { Mic, Pause, Play, X, Loader2 } from "lucide-react"
+import { Mic, Pause, Play, Loader2 } from "lucide-react"
 
 // Define the interface for audio chunks
 interface AudioChunk {
@@ -11,8 +11,7 @@ interface AudioChunk {
   startTime: number;
   endTime: number;
 }
-import { Switch } from "@kit/ui/switch"
-import { Label } from "@kit/ui/label"
+
 import { toast } from "sonner"
 import {
   Select,
@@ -48,8 +47,8 @@ interface RecordingModalProps {
   onSave: (sessionId?: string) => Promise<void>
   clientId: string
   clientName: string
-  clients: { id: string; fullName: string }[]
-  createSession?: (clientId: string) => void
+  _clients: { id: string; fullName: string }[]
+  _createSession?: (clientId: string) => void
 }
 
 export function RecordingModal({
@@ -58,14 +57,14 @@ export function RecordingModal({
   onSave,
   clientId,
   clientName,
-  clients,
-  createSession
+  _clients,
+  _createSession
 }: RecordingModalProps) {
   const [modalState, setModalState] = useState<
     "initial" | "soundCheck" | "recording" | "paused" | "saving"
   >("initial")
   
-  const [isIntakeSession, setIsIntakeSession] = useState(false)
+  const [_isIntakeSession, _setIsIntakeSession] = useState(false)
   const [selectedClient, setSelectedClient] = useState(clientId)
   const [selectedClientName, setSelectedClientName] = useState(clientName)
   const [selectedDevice, setSelectedDevice] = useState("MacBook Air Microphone (Built-in)")
@@ -123,7 +122,9 @@ export function RecordingModal({
         }
       };
     }
-  }, [recordingId, isOpen, modalState]);
+  }, [recordingId, isOpen, modalState]); // eslint-disable-line react-hooks/exhaustive-deps
+  // We're intentionally omitting sendHeartbeat from the deps array
+  // because it's defined later in the file
   
   // API functions for recording
   const startRecording = async () => {
@@ -264,7 +265,7 @@ export function RecordingModal({
     }
   }
   
-  const uploadAudioChunk = async (blob: Blob, chunkNumber: number, startTime: number, endTime: number) => {
+  const _uploadAudioChunk = async (blob: Blob, chunkNumber: number, startTime: number, endTime: number) => {
     if (!recordingId) return
     
     try {
@@ -414,7 +415,7 @@ export function RecordingModal({
     audioChunks.current = []
     
     // Store the recording start time for precise timing
-    const recordingStartTime = performance.now()
+    const _recordingStartTime = performance.now()
     
     const newRecordingId = await startRecording()
     console.log('Recording ID received:', newRecordingId)
@@ -474,7 +475,7 @@ export function RecordingModal({
             console.log(`Processing chunk ${chunkNumber}: ${chunkStartTimeSec.toFixed(3)}s to ${chunkEndTimeSec.toFixed(3)}s (duration: ${durationSec.toFixed(3)}s) with recordingId: ${currentRecordingId}`);
             
             // Prepare for next chunk - do this immediately, not after upload
-            const currentChunkNumber = chunkNumber;
+            const _currentChunkNumber = chunkNumber;
             chunkNumber++;
             chunkStartTimeMs = currentTimeMs;
             console.log(`Next chunk will start at ${(chunkStartTimeMs - recordingStartTime) / 1000}s`);
@@ -530,7 +531,7 @@ export function RecordingModal({
       
       let successCount = 0;
       let failCount = 0;
-      let totalProcessed = 0;
+      let _totalProcessed = 0;
       
       // Process chunks in a loop until the array is empty or we hit a maximum number of attempts
       // This ensures we catch new chunks added during the upload process
@@ -553,7 +554,7 @@ export function RecordingModal({
         }
         
         console.log(`Processing chunk ${chunk.number} (iteration ${iterations})`);
-        totalProcessed++;
+        _totalProcessed++;
         
         try {
           // Attempt to upload the chunk

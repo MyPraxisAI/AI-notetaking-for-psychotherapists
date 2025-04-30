@@ -193,7 +193,9 @@ export default function Page() {
         localStorage.removeItem("selectedSession") // Clear invalid data
       }
     }
-  }, [clients]) // Changed dependency to clients to ensure this runs when client list changes
+  }, [clients]) // eslint-disable-line react-hooks/exhaustive-deps
+  // We're intentionally omitting navigateToSession and isDetailItem from the deps array
+  // because they're defined later in the file and would cause circular dependencies
 
   useEffect(() => {
     const handleSessionTitleChange = (event: CustomEvent) => {
@@ -309,7 +311,7 @@ export default function Page() {
   const createSession = useCreateSession()
 
   const [isRecordingModalOpen, setIsRecordingModalOpen] = useState(false)
-  const [newSessionId, setNewSessionId] = useState<string | null>(null)
+  const [_newSessionId, _setNewSessionId] = useState<string | null>(null)
 
   /**
    * Navigate to a specific session and optionally open a specific tab

@@ -11,7 +11,11 @@ interface RecordingStatus {
 /**
  * Hook to check if a recording exists for a session and if it's being processed
  */
-export function useRecordingStatus(sessionId: string | null, options?: { disablePolling?: boolean }) {
+interface RecordingStatusOptions {
+  disablePolling?: boolean;
+}
+
+export function useRecordingStatus(sessionId: string | null, options?: RecordingStatusOptions) {
   const { workspace } = useUserWorkspace();
   const accountId = workspace?.id;
   const client = useSupabase();

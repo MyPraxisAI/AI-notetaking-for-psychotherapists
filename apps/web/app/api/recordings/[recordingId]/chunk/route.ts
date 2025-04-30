@@ -82,7 +82,7 @@ export const POST = enhanceRouteHandler(
       }, 'Processing chunk upload');
       
       // 2. Upload the audio file to Supabase Storage
-      const { data: uploadData, error: uploadError } = await client.storage
+      const { data: _uploadData, error: uploadError } = await client.storage
         .from(storageBucket)
         .upload(storagePath, audioFile, {
           contentType: mimeType || 'audio/webm',

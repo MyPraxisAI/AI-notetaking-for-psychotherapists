@@ -114,8 +114,8 @@ async function generateSessionTitle(
 export const generateSessionTitleAction = enhanceAction(
   async function (data: GenerateTitleData, user: User) {
     const client = getSupabaseServerClient();
-    const logger = await getLogger('generateSessionTitleAction');
-    const ctx = { sessionId: data.id, userId: user.id };
+    const logger = await getLogger();
+    const ctx = { name: 'generateSessionTitleAction', sessionId: data.id, userId: user.id };
     
     try {
       logger.info(ctx, 'Generating session title');

@@ -110,7 +110,7 @@ export function useSession(sessionId: string | null) {
           // Don't throw here, as we can still return the session without transcript
         }
         
-        const transcript = transcriptData && transcriptData.length > 0 && transcriptData[0].content ? transcriptData[0].content : null;
+        const transcript = transcriptData && transcriptData.length > 0 && transcriptData[0]?.content ? transcriptData[0]?.content : null;
 
         // Transform the data using the same interface we defined earlier
         const record = sessionData as SessionDatabaseRecord;

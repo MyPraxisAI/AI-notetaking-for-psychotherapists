@@ -48,7 +48,7 @@ export const POST = enhanceRouteHandler(
         if (!result.success) {
           logger.warn({ ...ctx, errors: result.error.format() }, 'Invalid request body for complete recording');
         }
-      } catch (e) {
+      } catch {
         // If no body is provided, that's fine
         logger.debug(ctx, 'No request body provided');
       }
