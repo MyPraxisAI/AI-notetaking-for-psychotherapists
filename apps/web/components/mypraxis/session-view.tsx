@@ -198,9 +198,11 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
   const [isEditingTranscript, setIsEditingTranscript] = useState(false)
   const [editedTranscript, setEditedTranscript] = useState<string>("")
   const [activeTab, setActiveTab] = useState<"summary" | "transcript">("summary") // Added state for active tab
+  const [isTitleSaved, setIsTitleSaved] = useState(false) // Added state for title save indicator
   const _saveTimeout = useRef<NodeJS.Timeout | undefined>(undefined)
   const copyTimeout = useRef<NodeJS.Timeout | undefined>(undefined)
   const clientCopyTimeout = useRef<NodeJS.Timeout | undefined>(undefined)
+  const titleSaveTimeout = useRef<NodeJS.Timeout | undefined>(undefined) // Added timeout ref for title save indicator
 
   // Use the session hook from Supabase to load session data
   const { data: sessionData, isLoading: _isLoadingSession } = useSession(sessionId)
@@ -427,6 +429,19 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
           
           // Hide the title editing UI
           setIsEditingTitle(false);
+          
+          // Show the checkmark
+          setIsTitleSaved(true);
+          
+          // Clear any existing timeout
+          if (titleSaveTimeout.current) {
+            clearTimeout(titleSaveTimeout.current);
+          }
+          
+          // Set timeout to hide the checkmark after 1 second
+          titleSaveTimeout.current = setTimeout(() => {
+            setIsTitleSaved(false);
+          }, 1000);
           
           // Show success toast
           toast.success("Title saved");
@@ -677,6 +692,16 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                 >
                   {session?.title || "New Session"}
                 </h2>
+                <div className="w-5 h-5 ml-2">
+                  <Check 
+                    className={`h-5 w-5 transition-opacity ${
+                      isTitleSaved 
+                        ? "opacity-100" 
+                        : "opacity-0"
+                    } text-green-500`}
+                    data-test="session-title-saved-check"
+                  />
+                </div>
                 <Button
                   variant="ghost"
                   size="icon"
