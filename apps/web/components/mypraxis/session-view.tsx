@@ -502,7 +502,13 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
   }
 
   const handleSaveTranscript = () => {
-    if (session && editedTranscript !== undefined) {
+    if (!session) return;
+    
+    // Get the current transcript content (if any)
+    const currentContent = session.transcript?.content || "";
+    
+    // Only proceed with saving if the content has actually changed
+    if (editedTranscript !== currentContent) {
       // Optimistically update the UI
       const previousSession = { ...session };
       
@@ -922,7 +928,9 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                 value={editedTranscript}
                 onChange={(e) => setEditedTranscript(e.target.value)}
                 onBlur={() => {
+                  // Always exit edit mode
                   setIsEditingTranscript(false)
+                  // Only try to save if there are changes
                   handleSaveTranscript()
                 }}
                 className="min-h-[300px] resize-vertical focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)] [&::-webkit-resizer]:appearance-none after:content-[''] after:absolute after:bottom-1 after:right-1 after:w-3 after:h-3 after:border-b-2 after:border-r-2 after:border-[#6B7280] after:cursor-se-resize relative font-mono text-sm"
