@@ -28,7 +28,7 @@ fi
 
 # Set AWS profile for production environment
 if [ "$ENV" == "production" ]; then
-  export AWS_PROFILE=mypraxis-prod
+  export AWS_PROFILE=mypraxis-terraform
   echo "🔑 Using AWS profile: $AWS_PROFILE"
 fi
 

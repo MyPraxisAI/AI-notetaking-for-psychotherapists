@@ -53,6 +53,17 @@ variable "execution_role_arn" {
   type        = string
 }
 
+variable "aws_account_id" {
+  description = "AWS account ID"
+  type        = string
+}
+
+variable "min_capacity" {
+  description = "Minimum number of tasks to run"
+  type        = number
+  default     = 1
+}
+
 resource "aws_cloudwatch_log_group" "bg_worker" {
   name              = "/ecs/${var.environment}-${var.app_name}"
   retention_in_days = 30
@@ -105,6 +116,31 @@ resource "aws_ecs_task_definition" "bg_worker" {
       { name = "SQS_QUEUE_NAME", value = var.sqs_queue_name },
       { name = "AWS_REGION", value = var.aws_region }
       # Add other environment variables as needed
+    ],
+    
+    # Use Parameter Store for secrets
+    secrets = [
+      { 
+        name = "OPENAI_API_KEY", 
+        valueFrom = "arn:aws:ssm:${var.aws_region}:${var.aws_account_id}:parameter/${var.environment}/${var.app_name}/OPENAI_API_KEY" 
+      },
+      { 
+        name = "GOOGLE_API_KEY", 
+        valueFrom = "arn:aws:ssm:${var.aws_region}:${var.aws_account_id}:parameter/${var.environment}/${var.app_name}/GOOGLE_API_KEY" 
+      },
+      {
+        name = "SUPABASE_URL",
+        valueFrom = "arn:aws:ssm:${var.aws_region}:${var.aws_account_id}:parameter/${var.environment}/${var.app_name}/SUPABASE_URL"
+      },
+      {
+        name = "SUPABASE_KEY",
+        valueFrom = "arn:aws:ssm:${var.aws_region}:${var.aws_account_id}:parameter/${var.environment}/${var.app_name}/SUPABASE_KEY"
+      },
+      {
+        name = "SUPABASE_SERVICE_ROLE_KEY",
+        valueFrom = "arn:aws:ssm:${var.aws_region}:${var.aws_account_id}:parameter/${var.environment}/${var.app_name}/SUPABASE_SERVICE_ROLE_KEY"
+      }
+      # Add other secrets as needed
     ]
   }])
   
@@ -118,7 +154,7 @@ resource "aws_ecs_service" "bg_worker" {
   name            = "${var.environment}-${var.app_name}"
   cluster         = aws_ecs_cluster.bg_worker.id
   task_definition = aws_ecs_task_definition.bg_worker.arn
-  desired_count   = 0  # Start with zero tasks, autoscaling will handle it
+  desired_count   = var.min_capacity  # Initial value only, will be ignored on updates
   launch_type     = "FARGATE"
   
   # Service-linked role is created manually
@@ -131,6 +167,12 @@ resource "aws_ecs_service" "bg_worker" {
   
   deployment_minimum_healthy_percent = 0  # Allow scaling to zero
   deployment_maximum_percent         = 200
+  
+  # Prevent Terraform from trying to manage the desired_count after creation
+  # This allows autoscaling to control the count without Terraform interference
+  lifecycle {
+    ignore_changes = [desired_count]
+  }
   
   tags = {
     Name        = "${var.environment}-${var.app_name}-service"
@@ -149,7 +191,7 @@ data "aws_iam_role" "ecs_autoscaling_service_role" {
 
 resource "aws_appautoscaling_target" "ecs_target" {
   max_capacity       = 10
-  min_capacity       = 0
+  min_capacity       = var.min_capacity
   resource_id        = "service/${aws_ecs_cluster.bg_worker.name}/${aws_ecs_service.bg_worker.name}"
   scalable_dimension = "ecs:service:DesiredCount"
   service_namespace  = "ecs"
@@ -166,7 +208,7 @@ resource "aws_appautoscaling_policy" "sqs_policy" {
   service_namespace  = aws_appautoscaling_target.ecs_target.service_namespace
 
   target_tracking_scaling_policy_configuration {
-    target_value       = 2.0  # Aim for ~2 messages per task
+    target_value       = 1.95  # Only scale up when there are ~2+ messages per task
     scale_in_cooldown  = 300  # 5 minutes
     scale_out_cooldown = 60   # 1 minute
 

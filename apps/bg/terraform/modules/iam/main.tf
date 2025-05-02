@@ -13,6 +13,11 @@ variable "sqs_queue_arn" {
   type        = string
 }
 
+variable "aws_region" {
+  description = "AWS region"
+  type        = string
+}
+
 resource "aws_iam_role" "ecs_execution_role" {
   name = "${var.environment}-${var.app_name}-execution-role"
   
@@ -36,6 +41,12 @@ resource "aws_iam_role" "ecs_execution_role" {
 resource "aws_iam_role_policy_attachment" "ecs_execution_role_policy" {
   role       = aws_iam_role.ecs_execution_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+}
+
+# Add Parameter Store access to execution role for secrets
+resource "aws_iam_role_policy_attachment" "execution_ssm_access" {
+  role       = aws_iam_role.ecs_execution_role.name
+  policy_arn = aws_iam_policy.ssm_access.arn
 }
 
 resource "aws_iam_role" "ecs_task_role" {
@@ -109,6 +120,30 @@ resource "aws_iam_policy" "s3_access" {
 resource "aws_iam_role_policy_attachment" "task_s3_access" {
   role       = aws_iam_role.ecs_task_role.name
   policy_arn = aws_iam_policy.s3_access.arn
+}
+
+# Add Parameter Store access for secrets
+resource "aws_iam_policy" "ssm_access" {
+  name        = "${var.environment}-${var.app_name}-ssm-access"
+  description = "Allow access to Parameter Store for secrets"
+  
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Action = [
+        "ssm:GetParameter",
+        "ssm:GetParameters",
+        "ssm:GetParametersByPath"
+      ]
+      Effect   = "Allow"
+      Resource = "arn:aws:ssm:*:*:parameter/${var.environment}/${var.app_name}/*"
+    }]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "task_ssm_access" {
+  role       = aws_iam_role.ecs_task_role.name
+  policy_arn = aws_iam_policy.ssm_access.arn
 }
 
 output "execution_role_arn" {

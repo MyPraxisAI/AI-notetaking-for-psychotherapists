@@ -27,3 +27,8 @@ variable "container_memory" {
   description = "Memory for the container in MiB"
   default     = 1024
 }
+
+variable "min_capacity" {
+  description = "Minimum number of tasks to run"
+  default     = 1
+}
