@@ -11,5 +11,5 @@
     }
   },
   "ignoreCommand": "node -e \"process.exit(process.platform === 'darwin' ? 0 : 1)\"",
-  "installCommand": "pnpm install --no-frozen-lockfile"
+  "installCommand": "pnpm install --filter=web --ignore-workspace --no-frozen-lockfile"
 }
