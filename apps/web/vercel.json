@@ -10,5 +10,6 @@
       "maxDuration": 300
     }
   },
-  "ignoreCommand": "node -e \"process.exit(process.platform === 'darwin' ? 0 : 1)\""
+  "ignoreCommand": "node -e \"process.exit(process.platform === 'darwin' ? 0 : 1)\"",
+  "installCommand": "pnpm install --no-frozen-lockfile"
 }
