@@ -33,10 +33,11 @@ services:
       retries: 3
       start_period: 10s
 
-  # Your application
-  app:
+  # Production test application
+  prod-test:
     build:
       context: .
+      dockerfile: Dockerfile
       target: prod
     networks:
       - localstack-net
@@ -45,12 +46,11 @@ services:
         condition: service_healthy
     env_file:
       - env.development
-    volumes:
-      - ./:/app
-      - /app/node_modules
-    command: npm start
+      - env.local
     ports:
       - "8080:8080"
+    # This ensures we're using the same Docker build process as production
+    # No volumes mounted to ensure we're testing the actual production image
       
   # Service for sending test messages
   test-message:
@@ -71,7 +71,7 @@ services:
       - /app/node_modules
       
   # Development service with TypeScript support (better debugging)
-  dev:
+  dev-ts:
     build:
       context: .
       target: dev

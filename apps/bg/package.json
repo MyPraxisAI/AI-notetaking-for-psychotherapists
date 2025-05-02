@@ -7,20 +7,24 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "dev": "ts-node src/index.ts",
-    "dev:docker:up": "docker-compose up dev",
-    "dev:docker:build": "docker-compose build dev",
-    "dev:docker:down": "docker-compose down dev",
+    "dev:docker:up": "docker-compose up dev-ts",
+    "dev:docker:build": "docker-compose build dev-ts",
+    "dev:docker:down": "docker-compose down dev-ts",
+    "prod:docker:test": "docker-compose up --build prod-test",
+    "docker:build": "docker build --target prod -t mypraxis/bg-worker:latest .",
+    "docker:push:production": "pnpm run docker:build && AWS_PROFILE=mypraxis-prod scripts/push-to-ecr.sh production",
+    "deploy:production": "pnpm run docker:push:production && cd terraform && ./deploy.sh production apply",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
     "@langchain/openai": "^0.5.5",
+    "@supabase/supabase-js": "2.49.1",
     "aws-sdk": "^2.1354.0",
     "dotenv": "^16.0.3",
     "langchain": "^0.3.22",
     "openai": "^4.96.0"
   },
   "devDependencies": {
-    "@supabase/supabase-js": "2.49.1",
     "@types/aws-sdk": "^2.7.0",
     "@types/dotenv": "^8.2.0",
     "@types/node": "^22.13.4",
