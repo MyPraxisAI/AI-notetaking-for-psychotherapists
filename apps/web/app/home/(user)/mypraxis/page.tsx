@@ -469,7 +469,7 @@ export default function Page() {
 
   const getSessionButtonClass = (date: DetailItem) => {
     const baseClass =
-      "w-full flex items-center gap-3 px-4 py-2 h-auto text-[14px] justify-start rounded hover:bg-[#F3F4F6]"
+      "w-full flex px-4 py-2 h-auto text-[14px] justify-start rounded hover:bg-[#F3F4F6] text-left"
     const selectedClass = "font-semibold text-[#111827] bg-[#F3F4F6]"
     const unselectedClass = "font-medium text-[#374151]"
 
@@ -1030,22 +1030,25 @@ export default function Page() {
                 {/* Sessions */}
                 <div className="mt-4 space-y-0.5">
                   {sessions.map((session) => (
-                    <Button
+                    <div
                       key={session.id}
-                      variant="ghost"
-                      className={getSessionButtonClass(session.id)}
+                      className={`w-full px-4 py-2 rounded cursor-pointer transition-colors ${
+                        selectedDetailItem === session.id
+                          ? "bg-[#F3F4F6] font-semibold text-[#111827]"
+                          : "font-medium text-[#374151] hover:bg-[#F3F4F6]"
+                      }`}
                       onClick={() => handleDetailItemClick(session.id)}
                       data-test="session-item"
                     >
                       <div className="flex flex-col items-start w-full">
-                        <span className="text-[14px] font-medium text-[#111827]" data-test="sessions-list-title">
+                        <div className="text-[14px] font-medium text-[#111827] w-full break-words" data-test="sessions-list-title">
                           {session.title}
-                        </span>
-                        <span className="text-[12px] text-[#6B7280]" data-test="sessions-list-date">
+                        </div>
+                        <div className="text-[12px] text-[#6B7280]" data-test="sessions-list-date">
                           {session.date}
-                        </span>
+                        </div>
                       </div>
-                    </Button>
+                    </div>
                   ))}
                 </div>
 
@@ -1053,22 +1056,25 @@ export default function Page() {
                 {isDemoClient(selectedClient) && selectedClient === "mike" && (
                   <div className="mt-4 space-y-0.5">
                     {Object.entries(sessionTranscripts.mike).map(([date, { title }]) => (
-                      <Button
+                      <div
                         key={date}
-                        variant="ghost"
-                        className={getSessionButtonClass(date)}
+                        className={`w-full px-4 py-2 rounded cursor-pointer transition-colors ${
+                          selectedDetailItem === date
+                            ? "bg-[#F3F4F6] font-semibold text-[#111827]"
+                            : "font-medium text-[#374151] hover:bg-[#F3F4F6]"
+                        }`}
                         onClick={() => handleDetailItemClick(date)}
                         data-test="session-item"
                       >
                         <div className="flex flex-col items-start w-full">
-                          <span className="text-[14px] font-medium text-[#111827]" data-test="session-list-title">
+                          <div className="text-[14px] font-medium text-[#111827] w-full break-words" data-test="session-list-title">
                             {title}
-                          </span>
-                          <span className="text-[12px] text-[#6B7280]">
+                          </div>
+                          <div className="text-[12px] text-[#6B7280]" data-test="sessions-list-date">
                             {formatDisplayDate(date)}
-                          </span>
+                          </div>
                         </div>
-                      </Button>
+                      </div>
                     ))}
                   </div>
                 )}
