@@ -366,8 +366,12 @@ INSERT INTO "public"."clients" ("id", "therapist_id", "full_name", "email", "pho
 VALUES ('e4b930c9-0a76-412e-a836-4bc4849a3271', 'e1b930c9-0a76-412e-a836-4bc4849a3271', 'John Smith', 'john.smith@example.com', '+972541234567', '2025-03-27 17:55:11.181332+00', '2025-03-27 17:55:11.181332+00');
 
 -- Add a therapy session for the client
-INSERT INTO "public"."sessions" ("id", "client_id", "title", "transcript", "note", "created_at", "updated_at")
-VALUES ('f5b930c9-0a76-412e-a836-4bc4849a3271', 'e4b930c9-0a76-412e-a836-4bc4849a3271', 'Breathing Exercises', 'Therapist: How have you been feeling since our last session, John?
+INSERT INTO "public"."sessions" ("id", "client_id", "title", "note", "created_at", "updated_at")
+VALUES ('f5b930c9-0a76-412e-a836-4bc4849a3271', 'e4b930c9-0a76-412e-a836-4bc4849a3271', 'Breathing Exercises', 'Client showing improvement with stress management techniques. Mindfulness exercises are helping, and client is gaining insight through thought journaling. Continue working on cognitive restructuring for work-related anxiety.', '2025-03-27 17:55:11.181332+00', '2025-03-27 17:55:11.181332+00');
+
+-- Add transcript for the session in the transcripts table
+INSERT INTO "public"."transcripts" ("id", "session_id", "account_id", "transcription_model", "content", "created_at", "updated_at")
+VALUES ('f6b930c9-0a76-412e-a836-4bc4849a3271', 'f5b930c9-0a76-412e-a836-4bc4849a3271', 'e5b930c9-0a76-412e-a836-4bc4849a3271', 'whisper-1', 'Therapist: How have you been feeling since our last session, John?
 
 Client: It''s been a mixed week. The project deadline at work is getting closer, and I can feel my anxiety creeping back up. I''ve been having trouble sleeping again.
 
@@ -379,7 +383,7 @@ Therapist: That''s excellent progress. How about the thought journaling?
 
 Client: I''ve done it a couple of times. It''s interesting to see my thoughts written down - some of the catastrophic thinking becomes more obvious when I see it on paper.
 
-Therapist: That''s exactly what we''re looking for. Let''s build on that awareness today and discuss some additional cognitive techniques you might find helpful for managing those work stressors.', 'Client showing improvement with stress management techniques. Mindfulness exercises are helping, and client is gaining insight through thought journaling. Continue working on cognitive restructuring for work-related anxiety.', '2025-03-27 17:55:11.181332+00', '2025-03-27 17:55:11.181332+00');
+Therapist: That''s exactly what we''re looking for. Let''s build on that awareness today and discuss some additional cognitive techniques you might find helpful for managing those work stressors.', '2025-03-27 17:55:11.181332+00', '2025-03-27 17:55:11.181332+00');
 
 -- Add artifacts for the client and session
 INSERT INTO "public"."artifacts" ("id", "reference_type", "reference_id", "type", "content", "created_at", "updated_at", "language")
