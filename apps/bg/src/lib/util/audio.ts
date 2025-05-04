@@ -39,7 +39,7 @@ export async function combineAudioChunks(
       const inputArgs = createInputArgs(chunkFiles);
       const filterComplex = `"concat=n=${chunkFiles.length}:v=0:a=1[outa]"`;
       
-      command = `ffmpeg -hide_banner ${inputArgs} -filter_complex ${filterComplex} -map "[outa]" "${outputFilePath}"`;
+      command = `ffmpeg -nostdin -hide_banner ${inputArgs} -filter_complex ${filterComplex} -map "[outa]" "${outputFilePath}"`;
     } else {
       // For non-standalone chunks, try direct binary concatenation
       // First, create a temporary file to hold the concatenated data
@@ -53,7 +53,7 @@ export async function combineAudioChunks(
       await fs.promises.writeFile(tempOutputPath, concatenated);
       
       // Use FFmpeg to validate and possibly fix the concatenated file
-      command = `ffmpeg -hide_banner -i "${tempOutputPath}" -c copy "${outputFilePath}"`;
+      command = `ffmpeg -nostdin -hide_banner -i "${tempOutputPath}" -c copy "${outputFilePath}"`;
     }
     
     console.log(`Executing FFmpeg command: ${command}`);
