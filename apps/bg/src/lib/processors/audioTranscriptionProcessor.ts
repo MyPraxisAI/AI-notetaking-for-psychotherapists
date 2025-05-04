@@ -42,7 +42,6 @@ export class AudioTranscriptionProcessor {
       
       // Perform the transcription
       const transcriptionResult = await this.performTranscription(task);
-      console.log('Transcription completed:', transcriptionResult);
       
       // Store the result in Supabase
       await this.storeTranscriptionResult(supabase, task, transcriptionResult);
