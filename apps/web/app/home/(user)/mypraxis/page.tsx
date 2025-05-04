@@ -241,9 +241,6 @@ export default function Page() {
       return;
     }
     
-    setSelectedItem(item);
-    localStorage.setItem("selectedMenuItem", item);
-    
     // Handle special menu items
     if (item === "help") {
       window.location.href = "mailto:hello@mypraxis.ai";
@@ -252,9 +249,14 @@ export default function Page() {
 
     // Handle logout
     if (item === "logout") {
+      setSelectedItem(item);
+      localStorage.setItem("selectedMenuItem", item);
       void signOut.mutateAsync(); // Correctly call mutateAsync
       return;
     }
+    
+    setSelectedItem(item);
+    localStorage.setItem("selectedMenuItem", item);
     
     // Only hide client list on small screens when switching to a different item
     if (window.innerWidth <= 1430) {
