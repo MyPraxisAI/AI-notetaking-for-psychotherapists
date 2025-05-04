@@ -39,7 +39,7 @@ export function ClientBio({ clientId, clientName }: ClientBioProps) {
   };
 
   return (
-    <div className="w-full px-6 pt-6 border-r border-[#E5E7EB] bg-white">
+    <div className="w-full px-6 pt-6 bg-white">
       <h2 className="text-[24px] font-semibold text-[#111827] tracking-[-0.011em] truncate">
         Client Bio - {clientName}
       </h2>
