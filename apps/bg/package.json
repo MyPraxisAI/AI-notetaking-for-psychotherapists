@@ -17,18 +17,18 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@langchain/openai": "0.5.5",
+    "@langchain/openai": "^0.5.5",
     "@supabase/supabase-js": "2.49.1",
     "aws-sdk": "2.1692.0",
     "dotenv": "16.4.7",
-    "langchain": "0.3.22",
+    "langchain": "^0.3.22",
     "openai": "4.96.0"
   },
   "devDependencies": {
-    "@types/aws-sdk": "^2.7.0",
-    "@types/dotenv": "^8.2.0",
+    "@types/aws-sdk": "2.7.0",
+    "@types/dotenv": "8.2.0",
     "@types/node": "^22.13.4",
-    "ts-node": "^10.9.1",
+    "ts-node": "10.9.1",
     "typescript": "^5.8.2"
   },
   "engines": {
