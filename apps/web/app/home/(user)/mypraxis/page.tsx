@@ -85,6 +85,7 @@ export default function Page() {
   const [selectedDetailItem, setSelectedDetailItem] = useState<DetailItem>("prep-note")
   const { data: clients = [], isLoading: _isLoadingClients } = useClients()
   const [sessions, setSessions] = useState<Session[]>([])
+  const [localClientNames, setLocalClientNames] = useState<Record<string, string>>({})
   
   // Get user data from Supabase with improved loading state handling
   const { user, refreshUserData: _refreshUserData, isDataReady } = useUserData()
@@ -398,9 +399,8 @@ export default function Page() {
     await navigateToSession(sessionId, 'transcript');
   }
 
-  const handleNameChange = (_name: string) => {
-    // This function is now just a placeholder for any UI updates needed when a name changes
-    // The actual data update is handled by the useUpdateClient hook in ProfileForm
+  const handleNameChange = (name: string) => {
+    setLocalClientNames((prev) => ({ ...prev, [selectedClient]: name }));
   }
 
   const deleteClient = useDeleteClient()
@@ -606,7 +606,7 @@ export default function Page() {
         )
         return <ClientBio 
           clientId={selectedClient}
-          clientName={clients.find((c) => c.id === selectedClient)?.fullName || ""} 
+          clientName={localClientNames[selectedClient] || clients.find(c => c.id === selectedClient)?.fullName || ""} 
         />
       }
       
@@ -886,7 +886,7 @@ export default function Page() {
                 onClick={() => handleClientClick(client.id)}
                 data-test={`client-row-${client.id}`}
               >
-                <span data-test="client-name-cell">{client.fullName}</span>
+                <span data-test="client-name-cell">{localClientNames[client.id] || client.fullName}</span>
                 {client.id === "mike" && (
                   <Badge
                     variant="secondary"
@@ -1090,7 +1090,7 @@ export default function Page() {
         onClose={handleRecordingModalClose}
         onSave={handleRecordingSave}
         clientId={selectedClient}
-        clientName={clients.find(c => c.id === selectedClient)?.fullName || ""}
+        clientName={localClientNames[selectedClient] || clients.find(c => c.id === selectedClient)?.fullName || ""}
       />
     </div>
   )
