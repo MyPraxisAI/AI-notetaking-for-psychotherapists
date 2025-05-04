@@ -45,8 +45,8 @@ services:
       localstack:
         condition: service_healthy
     env_file:
-      - env.development
-      - env.local
+      - .env.development
+      - .env.local
     ports:
       - "8080:8080"
     # This ensures we're using the same Docker build process as production
