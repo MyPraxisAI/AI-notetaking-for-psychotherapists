@@ -7,13 +7,13 @@ import { useUserWorkspace } from '@kit/accounts/hooks/use-user-workspace';
 import { SessionData, SessionWithId } from '../schemas/session';
 
 // Define the database record structure
-interface SessionDatabaseRecord {
+// This interface is kept for reference but no longer directly used after transcript column removal
+interface _SessionDatabaseRecord {
   id: string;
   account_id: string;
   client_id: string;
   title?: string | null;
   note: string | null;
-  transcript: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -45,14 +45,13 @@ export function useSessions(clientId: string | null) {
           throw sessionsError;
         }
 
-        
         // Transform the data from database format to our schema format
-        return (sessionsData || []).map((record: SessionDatabaseRecord) => ({
+        return (sessionsData || []).map((record) => ({
           id: record.id,
           clientId: record.client_id,
-          title: record.title ?? record.note ?? 'Untitled Session',
-          transcript: record.transcript || '',
-          note: record.note || '',
+          title: record.title || '',
+          note: record.note || undefined,
+          transcript: undefined, // Keep for backward compatibility with UI
           createdAt: record.created_at
         }));
       } catch (error) {
@@ -113,14 +112,13 @@ export function useSession(sessionId: string | null) {
         const transcript = transcriptData && transcriptData.length > 0 && transcriptData[0]?.content ? transcriptData[0]?.content : null;
 
         // Transform the data using the same interface we defined earlier
-        const record = sessionData as SessionDatabaseRecord;
         return {
-          id: record.id,
-          clientId: record.client_id,
-          title: record.title ?? record.note ?? 'Untitled Session',
-          transcript: transcript || '',
-          note: record.note || '',
-          createdAt: record.created_at
+          id: sessionData.id,
+          clientId: sessionData.client_id,
+          title: sessionData.title || '',
+          note: sessionData.note || undefined,
+          transcript: transcript || undefined, // Use transcript from the transcripts table
+          createdAt: sessionData.created_at
         };
       } catch (error) {
         console.error('Error fetching session:', error);
@@ -154,7 +152,6 @@ export function useCreateSession() {
           .insert({
             account_id: accountId,
             client_id: clientId,
-            transcript: data.transcript || null,
             note: data.note || null,
             title: data.title || null
           })
@@ -166,14 +163,13 @@ export function useCreateSession() {
         }
 
         // Transform to our session model using the defined interface
-        const record = newSession as SessionDatabaseRecord;
         return {
-          id: record.id,
-          clientId: record.client_id,
-          title: record.title ?? record.note ?? 'Untitled Session',
-          transcript: record.transcript || '',
-          note: record.note || '',
-          createdAt: record.created_at
+          id: newSession.id,
+          clientId: newSession.client_id,
+          title: newSession.title || '',
+          note: newSession.note || undefined,
+          transcript: undefined, // Keep for backward compatibility with UI
+          createdAt: newSession.created_at
         };
       } catch (error) {
         console.error('Error creating session:', error);
@@ -216,7 +212,6 @@ export function useUpdateSession() {
         const { data: updatedSession, error: updateError } = await client
           .from('sessions')
           .update({
-            transcript: data.transcript || null,
             note: data.note || null,
             title: data.title || null
           })
@@ -230,14 +225,13 @@ export function useUpdateSession() {
         }
 
         // Transform to our session model using the defined interface
-        const record = updatedSession as SessionDatabaseRecord;
         return {
-          id: record.id,
-          clientId: record.client_id,
-          title: record.title ?? record.note ?? 'Untitled Session',
-          transcript: record.transcript || '',
-          note: record.note || '',
-          createdAt: record.created_at
+          id: updatedSession.id,
+          clientId: updatedSession.client_id,
+          title: updatedSession.title || '',
+          note: updatedSession.note || undefined,
+          transcript: undefined, // Keep for backward compatibility with UI
+          createdAt: updatedSession.created_at
         };
       } catch (error) {
         console.error('Error updating session:', error);
