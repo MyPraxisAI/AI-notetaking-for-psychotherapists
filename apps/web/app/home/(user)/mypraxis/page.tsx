@@ -447,7 +447,7 @@ export default function Page() {
       "w-full justify-start gap-3 py-2 px-3 h-auto text-[14px] tracking-[-0.011em] leading-[1.5] rounded-md"
     const selectedClass = "bg-[#1F2937] text-[#D1D5DB] font-semibold"
     const unselectedClass = "text-[#D1D5DB] font-medium"
-    const hoverClass = "hover:bg-[#1F2937] hover:text-white"
+    const hoverClass = item === "billing" || item === "gift" ? "" : "hover:bg-[#1F2937] hover:text-white"
 
     return `${baseClass} ${selectedItem === item ? selectedClass : unselectedClass} ${hoverClass}`
   }
@@ -782,13 +782,23 @@ export default function Page() {
           <div className="mt-auto space-y-[1px] pb-4">
             {/* Inactive Menu Items */}
             <div className="px-2">
-              <Button variant="ghost" className={`${getButtonClass("billing")} menu-item-inactive`} onClick={() => {}}>
+              <Button 
+                variant="ghost" 
+                className={`${getButtonClass("billing")} opacity-50 cursor-default`} 
+                onClick={() => {}}
+                disabled={true}
+              >
                 <Wallet className="h-[18px] w-[18px]" />
                 Billing
               </Button>
             </div>
             <div className="px-2">
-              <Button variant="ghost" className={`${getButtonClass("gift")} menu-item-inactive`} onClick={() => {}}>
+              <Button 
+                variant="ghost" 
+                className={`${getButtonClass("gift")} opacity-50 cursor-default`} 
+                onClick={() => {}}
+                disabled={true}
+              >
                 <Gift className="h-[18px] w-[18px]" />
                 Gift Praxis
               </Button>
