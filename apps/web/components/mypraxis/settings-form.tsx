@@ -772,7 +772,7 @@ export function SettingsForm({ setIsNavVisible, isSmallScreen }: SettingsFormPro
   };
 
   return (
-    <div className="w-full px-6 pt-6 border-r border-[#E5E7EB] bg-white">
+    <div className="w-full px-6 pt-6 bg-white">
       {/* Burger menu icon above header */}
       {isSmallScreen && (
         <div className="mb-4">
@@ -892,6 +892,7 @@ export function SettingsForm({ setIsNavVisible, isSmallScreen }: SettingsFormPro
                 onBlur={handleEmailBlur}
                 onKeyDown={(e) => handleKeyDown(e, "email")}
                 placeholder="Enter your email address"
+                autoComplete="new-password"
                 className={`focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)] w-full max-w-md ${!validation.email ? "border-red-500" : ""}`}
               />
               {!validation.email && (

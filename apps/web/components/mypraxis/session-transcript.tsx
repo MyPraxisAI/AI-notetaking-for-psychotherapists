@@ -9,7 +9,7 @@ export function SessionTranscript({ clientId, date }: SessionTranscriptProps) {
   // For now, we only have Mike's transcripts
   if (clientId !== "mike" || !sessionTranscripts.mike[date as keyof typeof sessionTranscripts.mike]) {
     return (
-      <div className="w-[45%] px-6 pt-6 border-r border-[#E5E7EB] bg-white">
+      <div className="w-[45%] px-6 pt-6 bg-white">
         <h2 className="text-[24px] font-semibold text-[#111827] tracking-[-0.011em] truncate">
           Session Transcript Not Available
         </h2>
@@ -24,7 +24,7 @@ export function SessionTranscript({ clientId, date }: SessionTranscriptProps) {
   const transcript = sessionTranscripts.mike[date as keyof typeof sessionTranscripts.mike]
 
   return (
-    <div className="w-[45%] px-6 pt-6 border-r border-[#E5E7EB] bg-white">
+    <div className="w-[45%] px-6 pt-6 bg-white">
       <div className="space-y-1">
         <h2 className="text-[24px] font-semibold text-[#111827] tracking-[-0.011em] truncate">{transcript.title}</h2>
         <p className="text-[14px] text-[#6B7280]">
@@ -45,4 +45,3 @@ export function SessionTranscript({ clientId, date }: SessionTranscriptProps) {
     </div>
   )
 }
-

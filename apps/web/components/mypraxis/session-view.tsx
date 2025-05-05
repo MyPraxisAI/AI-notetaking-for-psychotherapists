@@ -534,7 +534,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
           });
           
           // Update the session with the returned data
-          handleSessionUpdate(result, session);
+          handleSessionUpdate(result, session)
           
           // Reset summaries first to show loading state
           resetAndRefetchSummaries()
@@ -618,7 +618,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
   }
 
   return (
-    <div className="w-full px-6 pt-6 border-r border-[#E5E7EB] bg-white" data-test="session-view">
+    <div className="w-full px-6 pt-6 bg-white" data-test="session-view">
       <div className="space-y-1 mb-5">
         <div className="flex items-center justify-between group/title">
           <div className="flex items-center gap-2">
