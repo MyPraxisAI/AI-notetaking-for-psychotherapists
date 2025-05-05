@@ -1,0 +1,171 @@
+/**
+ * OpenAI transcription provider implementation
+ */
+
+// Import OpenAI SDK using CommonJS require to avoid TypeScript type declaration issues
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const OpenAI = require('openai');
+import * as fs from 'fs';
+import { BaseTranscriptionProvider, TranscriptionResult } from '../transcription';
+
+/**
+ * Options for Whisper-1 model transcription
+ */
+export interface WhisperTranscriptionOptions {
+  model: 'whisper-1';
+  language?: string; // Optional language code (e.g., 'en', 'fr')
+  prompt?: string;   // Optional prompt to guide the transcription
+  temperature?: number; // Controls randomness in the output (0.0 to 1.0)
+  response_format?: 'json' | 'text' | 'srt' | 'verbose_json' | 'vtt';
+  timestamp_granularities?: Array<'word' | 'segment'>; // Controls the level of timestamp detail
+}
+
+/**
+ * Options for GPT-4o transcription models
+ */
+export interface GPT4oAudioTranscriptionOptions {
+  model: 'gpt-4o-transcribe' | 'gpt-4o-mini-transcribe';
+  temperature?: number; // Controls randomness in the output (0.0 to 1.0)
+  prompt?: string;      // Optional prompt to guide the transcription
+  language?: string;    // Optional language code
+  response_format?: 'json'; // Only json is supported for GPT-4o models
+  include?: Array<'logprobs'>; // Additional information to include in the response
+}
+
+/**
+ * Union type for all supported OpenAI transcription options
+ */
+export type OpenAITranscriptionOptions = WhisperTranscriptionOptions | GPT4oAudioTranscriptionOptions;
+
+/**
+ * OpenAI transcription provider
+ */
+export class OpenAITranscriptionProvider extends BaseTranscriptionProvider {
+  private openai: any;
+
+  constructor() {
+    super();
+    
+    // Check if OPENAI_API_KEY is set
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error('OPENAI_API_KEY environment variable is not set');
+    }
+    
+    // Initialize OpenAI client for audio transcription
+    this.openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+  }
+
+  /**
+   * Transcribe an audio file using OpenAI's API
+   * 
+   * @param audioFilePath - Path to the audio file to transcribe
+   * @param options - Model-specific options for transcription
+   * @returns Transcription result
+   */
+  async transcribeAudio(
+    audioFilePath: string,
+    options?: OpenAITranscriptionOptions
+  ): Promise<TranscriptionResult> {
+    // Default to whisper-1 if no options provided
+    const defaultOptions: WhisperTranscriptionOptions = {
+      model: 'whisper-1'
+    };
+    
+    const transcriptionOptions = options || defaultOptions;
+    const model = transcriptionOptions.model;
+    
+    console.log(`Transcribing audio file: ${audioFilePath} using OpenAI model: ${model}`);
+    const startTime = Date.now();
+    
+    try {
+      // Create a temporary file from the audio buffer
+      const tempFilePath = await this.createTempFile(audioFilePath);
+      
+      let transcriptionResponse;
+      
+      // Type checking to ensure correct options are used for each model
+      if (model === 'whisper-1') {
+        if (!this.isWhisperOptions(transcriptionOptions)) {
+          throw new Error('Invalid options provided for whisper-1 model');
+        }
+        
+        // Use the OpenAI SDK to transcribe the audio file with Whisper model
+        transcriptionResponse = await this.openai.audio.transcriptions.create({
+          file: fs.createReadStream(tempFilePath),
+          model: transcriptionOptions.model,
+          language: transcriptionOptions.language,
+          prompt: transcriptionOptions.prompt,
+          temperature: transcriptionOptions.temperature,
+          response_format: transcriptionOptions.response_format,
+          timestamp_granularities: transcriptionOptions.timestamp_granularities
+        });
+      } else if (model === 'gpt-4o-transcribe' || model === 'gpt-4o-mini-transcribe') {
+        if (!this.isGPT4oAudioOptions(transcriptionOptions)) {
+          throw new Error(`Invalid options provided for ${model} model`);
+        }
+        
+        // Use the OpenAI SDK to transcribe the audio file with GPT-4o model
+        transcriptionResponse = await this.openai.audio.transcriptions.create({
+          file: fs.createReadStream(tempFilePath),
+          model: transcriptionOptions.model,
+          temperature: transcriptionOptions.temperature,
+          prompt: transcriptionOptions.prompt,
+          response_format: transcriptionOptions.response_format,
+          include: transcriptionOptions.include
+        });
+      } else {
+        throw new Error(`Unsupported model: ${model}`);
+      }
+      
+      // Clean up the temporary file
+      await this.cleanupTempFile(tempFilePath);
+      
+      // Calculate processing time
+      const processingTime = (Date.now() - startTime) / 1000;
+      
+      // Create the result object
+      const result: TranscriptionResult = {
+        text: transcriptionResponse.text,
+        confidence: 0.9, // OpenAI doesn't provide confidence scores, using a default
+        processingTime,
+        timestamp: new Date().toISOString(),
+        model: `openai/${model}`, // Include the provider/model format
+        rawResponse: transcriptionResponse // Store the full response
+      };
+
+      console.log('Raw transcription response:', transcriptionResponse);
+      
+      // If the response is from GPT-4o and contains speaker information, extract the structured data
+      if ((model === 'gpt-4o-transcribe' || model === 'gpt-4o-mini-transcribe') && 
+          transcriptionResponse.speakers) {
+        result.speakers = transcriptionResponse.speakers;
+        result.segments = transcriptionResponse.segments;
+        console.log(`Transcription identified ${result.speakers?.length || 0} speakers`);
+        console.log(`Transcription segments: ${result.segments?.length || 0}`);
+      }
+      
+      console.log(`Transcription completed in ${processingTime.toFixed(2)} seconds`);
+      
+      return result;
+    } catch (error) {
+      console.error('Error during OpenAI transcription:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Type guard to check if options are valid for Whisper model
+   */
+  private isWhisperOptions(options: OpenAITranscriptionOptions): options is WhisperTranscriptionOptions {
+    return options.model === 'whisper-1';
+  }
+
+  /**
+   * Type guard to check if options are valid for GPT-4o Audio model
+   */
+  private isGPT4oAudioOptions(options: OpenAITranscriptionOptions): options is GPT4oAudioTranscriptionOptions {
+    return options.model === 'gpt-4o-transcribe' || options.model === 'gpt-4o-mini-transcribe';
+  }
+}

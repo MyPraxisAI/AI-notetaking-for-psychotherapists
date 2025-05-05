@@ -100,11 +100,14 @@ export class AudioTranscriptionProcessor {
       // Send to OpenAI for transcription using the utility function
       console.log('Sending audio to OpenAI for transcription...');
       
-      const result = await transcribeAudio(outputFilePath, {
-        model: 'whisper-1', // Using Whisper for basic transcription
-        // Use gpt-4o-audio-preview for more advanced audio understanding if needed
-        // model: 'gpt-4o-audio-preview'
-      });
+      const result = await transcribeAudio(
+        outputFilePath, 
+        {
+          model: 'gpt-4o-transcribe', // Using GPT-4o for advanced audio understanding
+          response_format: 'json', // Only json is supported for GPT-4o models
+          prompt: "The following is a psychotherapy session between a therapist and a client." // Provide context to improve transcription accuracy
+        }
+      );
       
       return result;
     } catch (error) {
