@@ -541,7 +541,7 @@ export default function Page() {
 
     // If settings is selected, show settings form
     if (selectedItem === "settings") {
-      return <SettingsForm setIsNavVisible={setIsNavVisible} />
+      return <SettingsForm setIsNavVisible={setIsNavVisible} isSmallScreen={isSmallScreen} />
     }
 
     // Profile tab
