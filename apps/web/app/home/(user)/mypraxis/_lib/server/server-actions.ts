@@ -159,7 +159,7 @@ export const generateSessionTitleAction = enhanceAction(
       if (success) {
         const { data: updatedSession, error: fetchUpdatedError } = await client
           .from('sessions')
-          .select('id, title, transcript, note, metadata')
+          .select('id, title, note, metadata')
           .eq('id', data.id)
           .single();
         
@@ -168,9 +168,13 @@ export const generateSessionTitleAction = enhanceAction(
           return { success: true };
         }
         
+        // Return the session with transcript data if available
         return { 
           success: true,
-          session: updatedSession
+          session: {
+            ...updatedSession,
+            transcript: transcriptContent
+          }
         };
       }
       
@@ -369,20 +373,43 @@ export const updateSessionAction = enhanceAction(
       }
 
       // Fetch the latest session data to return to the client
+      // Fetch the latest session data
       const { data: updatedSession, error: fetchUpdatedError } = await client
         .from('sessions')
-        .select('id, title, transcript, note, metadata')
+        .select('id, title, note, metadata')
         .eq('id', data.id)
         .single();
+        
+      // Also fetch the latest transcript data if needed
+      let transcriptContent = null;
+      if (!fetchUpdatedError) {
+        const { data: transcriptData, error: transcriptError } = await client
+          .from('transcripts')
+          .select('content')
+          .eq('session_id', data.id)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+          
+        if (transcriptError && transcriptError.code !== 'PGRST116') {
+          console.error('Failed to fetch transcript data', transcriptError);
+        } else if (transcriptData) {
+          transcriptContent = transcriptData.content;
+        }
+      }
 
       if (fetchUpdatedError) {
         console.error('Failed to fetch updated session data', fetchUpdatedError);
         return { success: true };
       }
 
+      // Return the session with transcript data if available
       return { 
         success: true,
-        session: updatedSession
+        session: {
+          ...updatedSession,
+          transcript: transcriptContent
+        }
       };
     } catch (error) {
       console.error('Error in updateSessionAction', error);

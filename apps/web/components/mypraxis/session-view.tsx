@@ -31,7 +31,6 @@ interface TranscriptContentProps {
     session?: { 
       id: string; 
       title: string | null; 
-      transcript: string | null; 
       note: string | null; 
       metadata: unknown;
     } 
@@ -348,7 +347,6 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
     session?: { 
       id: string; 
       title: string | null; 
-      transcript: string | null; 
       note: string | null; 
       metadata: unknown;
     } 
@@ -360,7 +358,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
         ...currentSession,
         id: result.session.id,
         title: result.session.title || '',
-        transcript: result.session.transcript ? { content: result.session.transcript } : undefined,
+        // Keep the existing transcript data as it's now stored in a separate table
         notes: result.session.note ? { userNote: result.session.note } : undefined,
         metadata: result.session.metadata as SessionMetadata | undefined
       }
