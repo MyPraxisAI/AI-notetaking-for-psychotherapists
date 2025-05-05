@@ -15,7 +15,7 @@ export function PrepNote({ clientId }: PrepNoteProps) {
 
   if (!note) {
     return (
-      <div className="w-full px-6 pt-6 border-r border-[#E5E7EB] bg-white">
+      <div className="w-full px-6 pt-6 bg-white">
         <h2 className="text-[24px] font-semibold text-[#111827] tracking-[-0.011em]">Prep Note</h2>
         <div className="mt-5 rounded-lg bg-[#FFF9E8] p-6">
           <p className="text-[#374151] text-[14px] leading-[1.6]">
@@ -27,7 +27,7 @@ export function PrepNote({ clientId }: PrepNoteProps) {
   }
 
   return (
-    <div className="w-full px-6 pt-6 border-r border-[#E5E7EB] bg-white">
+    <div className="w-full px-6 pt-6 bg-white">
       <h2 className="text-[24px] font-semibold text-[#111827] tracking-[-0.011em] truncate">{note.title}</h2>
 
       <div className="mt-5 rounded-lg bg-[#FFF9E8] p-6">
