@@ -249,8 +249,6 @@ export default function Page() {
 
     // Handle logout
     if (item === "logout") {
-      setSelectedItem(item);
-      localStorage.setItem("selectedMenuItem", item);
       void signOut.mutateAsync(); // Correctly call mutateAsync
       return;
     }
