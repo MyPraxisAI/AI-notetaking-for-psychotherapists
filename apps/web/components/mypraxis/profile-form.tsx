@@ -11,17 +11,43 @@ import type React from "react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@kit/ui/dropdown-menu"
 import { useClient, useUpdateClient } from "../../app/home/(user)/mypraxis/_lib/hooks/use-clients"
 import { ClientWithId } from "../../app/home/(user)/mypraxis/_lib/schemas/client"
+import { useSessions } from "../../app/home/(user)/mypraxis/_lib/hooks/use-sessions"
+import { ClientGuidanceBanner } from "./client-guidance-banner"
 
 interface ProfileFormProps {
   clientId: string
   onNameChange?: (name: string) => void
   onClientDeleted: (clientId: string) => void
   onNewSession?: () => void
+  onRecordingStart?: () => void
 }
 
-export function ProfileForm({ clientId, onNameChange, onClientDeleted, onNewSession }: ProfileFormProps) {
+export function ProfileForm({ clientId, onNameChange, onClientDeleted, onNewSession, onRecordingStart }: ProfileFormProps) {
   const { data: client, isLoading } = useClient(clientId)
   const updateClient = useUpdateClient()
+  
+  // Get sessions data to check if client has any sessions
+  const { data: sessions = [] } = useSessions(clientId)
+  const hasNoSessions = sessions.length === 0
+  
+  // Check if we're on mobile view where recording is disabled
+  const [isMobileView, setIsMobileView] = useState(false)
+  
+  // Check for mobile view on mount and window resize
+  useEffect(() => {
+    const checkMobileView = () => {
+      setIsMobileView(window.innerWidth <= 768)
+    }
+    
+    // Initial check
+    checkMobileView()
+    
+    // Add resize listener
+    window.addEventListener('resize', checkMobileView)
+    
+    // Cleanup
+    return () => window.removeEventListener('resize', checkMobileView)
+  }, [])
   
   const [formData, setFormData] = useState<Partial<ClientWithId>>({})
   const [savedFields, setSavedFields] = useState<Set<string>>(new Set())
@@ -167,6 +193,14 @@ export function ProfileForm({ clientId, onNameChange, onClientDeleted, onNewSess
 
   return (
     <div className="w-full px-6 pt-6 border-r border-[#E5E7EB] bg-white">
+      {/* Client Guidance Banner */}
+      <ClientGuidanceBanner 
+        clientId={clientId}
+        onRecordingStart={onRecordingStart || (() => {})}
+        isMobileView={isMobileView}
+        hasNoSessions={hasNoSessions}
+      />
+      
       <div className="flex items-center justify-between mb-5">
         <h2 className="text-[24px] font-semibold text-[#111827] tracking-[-0.011em]">Client Profile</h2>
         <DropdownMenu>
