@@ -37,7 +37,7 @@ import { SessionView } from "../../../../components/mypraxis/session-view"
 import { RecordingModal } from "../../../../components/mypraxis/recording-modal"
 import dynamic from "next/dynamic"
 import { useClients, useCreateClient, useDeleteClient } from "./_lib/hooks/use-clients"
-
+import { TherapeuticApproachOnboardingModal } from "../../../../components/mypraxis/therapeutic-approach-onboarding-modal"
 
 // Menu item type
 
@@ -685,6 +685,19 @@ export default function Page() {
     return () => window.removeEventListener("resize", handleResize)
   }, [])
 
+  // State for therapeutic approach onboarding modal
+  const [isOnboardingModalOpen, setIsOnboardingModalOpen] = useState(false)
+
+  // Handler for opening the therapeutic approach onboarding modal
+  const handleOpenOnboardingModal = () => {
+    setIsOnboardingModalOpen(true)
+  }
+
+  // Handler for closing the therapeutic approach onboarding modal
+  const handleCloseOnboardingModal = () => {
+    setIsOnboardingModalOpen(false)
+  }
+
   return (
     <div className="flex h-screen w-full relative">
       {/* Navigation Overlay */}
@@ -844,7 +857,15 @@ export default function Page() {
 
         {/* Logo at the bottom */}
         <div className="px-2 mt-auto">
-          <div className="w-full flex justify-center py-4 relative">
+          {/* TEMPORARY: Logo made clickable to trigger onboarding modal for testing purposes.
+              This should be removed once the onboarding flow is integrated with sign-up. */}
+          <div 
+            className="w-full flex justify-center py-4 relative cursor-pointer"
+            onClick={handleOpenOnboardingModal}
+            role="button"
+            aria-label="Open therapeutic approach onboarding"
+            data-test="logo-trigger-onboarding"
+          >
             <img
               src="/logo.svg"
               alt="My Praxis Logo"
@@ -1101,6 +1122,12 @@ export default function Page() {
         onSave={handleRecordingSave}
         clientId={selectedClient}
         clientName={localClientNames[selectedClient] || clients.find(c => c.id === selectedClient)?.fullName || ""}
+      />
+
+      {/* Therapeutic Approach Onboarding Modal - TEMPORARY for testing */}
+      <TherapeuticApproachOnboardingModal
+        isOpen={isOnboardingModalOpen}
+        onClose={handleCloseOnboardingModal}
       />
     </div>
   )
