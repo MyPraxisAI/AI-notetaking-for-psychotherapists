@@ -6,7 +6,15 @@ import * as path from 'path';
 import * as os from 'os';
 import { promisify } from 'util';
 import { exec } from 'child_process';
-import { transcribeAudio, TranscriptionResult } from '../util/transcription';
+import { 
+  transcribeAudio, 
+  TranscriptionResult, 
+  TranscriptionProvider, 
+  OpenAITranscriptionOptions,
+  YandexTranscriptionOptions,
+  defaultYandexTranscriptionOptions,
+  defaultOpenAITranscriptionOptions 
+} from '../util/transcription';
 import { combineAudioChunks } from '../util/audio';
 
 // TranscriptionResult interface is now imported from '../util/transcription'
@@ -100,14 +108,25 @@ export class AudioTranscriptionProcessor {
       // Send to OpenAI for transcription using the utility function
       console.log('Sending audio to OpenAI for transcription...');
       
-      const result = await transcribeAudio(
-        outputFilePath, 
-        {
-          model: 'gpt-4o-transcribe', // Using GPT-4o for advanced audio understanding
-          response_format: 'json', // Only json is supported for GPT-4o models
-          prompt: "The following is a psychotherapy session between a therapist and a client." // Provide context to improve transcription accuracy
-        }
-      );
+      // Define transcription provider - can be configured via environment variable
+      const provider: TranscriptionProvider = process.env.TRANSCRIPTION_PROVIDER as TranscriptionProvider || 'yandex'; /* 'openai'; */
+      
+      let result: TranscriptionResult;
+      
+      if (provider === 'yandex') {
+        // Use Yandex SpeechKit with default options for therapy sessions
+        console.log('Using Yandex SpeechKit for transcription');
+        result = await transcribeAudio(outputFilePath, defaultYandexTranscriptionOptions, 'yandex');
+      } else {
+        // Default to OpenAI
+        console.log('Using OpenAI for transcription');
+        result = await transcribeAudio(outputFilePath, defaultOpenAITranscriptionOptions, 'openai');
+      }
+      
+      console.log(`Transcription completed using ${provider} provider`);
+      console.log(`Transcription result length: ${result.text.length} characters`);
+      
+      // Return the transcription result
       
       return result;
     } catch (error) {

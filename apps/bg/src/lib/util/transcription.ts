@@ -2,8 +2,9 @@
  * Base transcription provider implementation
  */
 
-import * as fs from 'fs';
-import * as path from 'path';
+// Import Node.js modules with proper type declarations
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 
 /**
  * Speaker information for diarized transcription
@@ -128,14 +129,26 @@ export function getTranscriptionProvider(provider: TranscriptionProvider): BaseT
   // This avoids circular dependencies
   switch (provider) {
     case 'openai':
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const { OpenAITranscriptionProvider } = require('./transcription/openai');
-      providerInstance = new OpenAITranscriptionProvider();
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const { OpenAITranscriptionProvider } = require('./transcription/openai');
+        // Use type assertion to ensure TypeScript recognizes this as a proper subclass
+        providerInstance = new OpenAITranscriptionProvider() as BaseTranscriptionProvider;
+      } catch (error: any) {
+        console.error('Error loading OpenAI transcription provider:', error);
+        throw new Error(`Failed to load OpenAI transcription provider: ${error?.message || 'Unknown error'}`);
+      }
       break;
     case 'yandex':
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const { YandexTranscriptionProvider } = require('./transcription/yandex');
-      providerInstance = new YandexTranscriptionProvider();
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const { YandexTranscriptionProvider } = require('./transcription/yandex');
+        // Use type assertion to ensure TypeScript recognizes this as a proper subclass
+        providerInstance = new YandexTranscriptionProvider() as BaseTranscriptionProvider;
+      } catch (error: any) {
+        console.error('Error loading Yandex transcription provider:', error);
+        throw new Error(`Failed to load Yandex transcription provider: ${error?.message || 'Unknown error'}`);
+      }
       break;
     default:
       throw new Error(`Unsupported transcription provider: ${provider}`);
@@ -154,18 +167,24 @@ export function getTranscriptionProvider(provider: TranscriptionProvider): BaseT
 import { 
   WhisperTranscriptionOptions, 
   GPT4oAudioTranscriptionOptions,
-  OpenAITranscriptionOptions 
+  OpenAITranscriptionOptions,
+  defaultOpenAITranscriptionOptions 
 } from './transcription/openai';
 
-// Import Yandex option types
-import { YandexTranscriptionOptions } from './transcription/yandex';
+// Import Yandex option types and defaults
+import { 
+  YandexTranscriptionOptions,
+  defaultYandexTranscriptionOptions 
+} from './transcription/yandex';
 
-// Re-export all option types for consumers of this module
+// Re-export all option types and defaults for consumers of this module
 export { 
   WhisperTranscriptionOptions, 
   GPT4oAudioTranscriptionOptions,
   OpenAITranscriptionOptions,
-  YandexTranscriptionOptions 
+  YandexTranscriptionOptions,
+  defaultYandexTranscriptionOptions,
+  defaultOpenAITranscriptionOptions
 };
 
 /**

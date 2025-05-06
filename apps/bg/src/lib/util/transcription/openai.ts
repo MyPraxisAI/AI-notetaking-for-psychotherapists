@@ -38,6 +38,15 @@ export interface GPT4oAudioTranscriptionOptions {
 export type OpenAITranscriptionOptions = WhisperTranscriptionOptions | GPT4oAudioTranscriptionOptions;
 
 /**
+ * Default transcription options for therapy sessions using OpenAI Whisper
+ */
+export const defaultOpenAITranscriptionOptions: WhisperTranscriptionOptions = {
+  model: 'whisper-1',
+  response_format: 'json',
+  prompt: "The following is a psychotherapy session between a therapist and a client." // Provide context to improve transcription accuracy
+};
+
+/**
  * OpenAI transcription provider
  */
 export class OpenAITranscriptionProvider extends BaseTranscriptionProvider {
