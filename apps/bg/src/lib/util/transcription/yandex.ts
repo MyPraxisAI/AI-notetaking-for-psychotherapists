@@ -237,6 +237,9 @@ export class YandexTranscriptionProvider extends BaseTranscriptionProvider {
     const https = require('https');
     const url = require('url');
     
+    // Get the content type for the audio file
+    const contentType = this.getContentType(audioFilePath);
+  
     // Build the query parameters
     const queryParams = new URLSearchParams({
       folderId: this.folderId,
@@ -507,10 +510,7 @@ export class YandexTranscriptionProvider extends BaseTranscriptionProvider {
       req.write(requestBody);
       req.end();
     });
-    
-    // Log the full response for debugging
-    console.log('Long audio operation creation full response:', JSON.stringify(response, null, 2));
-    
+        
     // Check if the response contains an error
     if (response.error) {
       throw new Error(`Yandex SpeechKit API error: ${response.error.code} - ${response.error.message}`);

@@ -43,18 +43,6 @@ COPY src ./src
 # Build TypeScript code
 RUN npm run build
 
-################ Development Stage ################
-FROM base as dev
-
-# Install ts-node globally for running TypeScript directly
-RUN npm install -g ts-node typescript
-
-# Copy package files for dependency installation
-COPY package*.json ./
-
-# Install all dependencies from package.json
-RUN npm install
-
 ################ Production Stage ################
 FROM base as prod
 
