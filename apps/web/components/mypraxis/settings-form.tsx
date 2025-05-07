@@ -52,11 +52,12 @@ interface TherapistSettings {
 // Define the component props
 interface SettingsFormProps {
   setIsNavVisible?: (isVisible: boolean) => void;
+  isSmallScreen?: boolean;
 }
 
 
 
-export function SettingsForm({ setIsNavVisible }: SettingsFormProps) {
+export function SettingsForm({ setIsNavVisible, isSmallScreen }: SettingsFormProps) {
   const { t } = useTranslation();
   
   // Get user data from the Makerkit useUserWorkspace hook
@@ -771,14 +772,16 @@ export function SettingsForm({ setIsNavVisible }: SettingsFormProps) {
   };
 
   return (
-    <div className="w-full px-6 pt-6 border-r border-[#E5E7EB] bg-white">
+    <div className="w-full px-6 pt-6 bg-white">
       {/* Burger menu icon above header */}
-      <div className="mb-4">
-        <Menu 
-          className="h-5 w-5 text-gray-500 cursor-pointer hover:text-gray-700 transition-colors" 
-          onClick={() => setIsNavVisible && setIsNavVisible(true)}
-        />
-      </div>
+      {isSmallScreen && (
+        <div className="mb-4">
+          <Menu 
+            className="h-5 w-5 text-gray-500 cursor-pointer hover:text-gray-700 transition-colors" 
+            onClick={() => setIsNavVisible && setIsNavVisible(true)}
+          />
+        </div>
+      )}
       
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-3">
@@ -889,6 +892,7 @@ export function SettingsForm({ setIsNavVisible }: SettingsFormProps) {
                 onBlur={handleEmailBlur}
                 onKeyDown={(e) => handleKeyDown(e, "email")}
                 placeholder="Enter your email address"
+                autoComplete="new-password"
                 className={`focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)] w-full max-w-md ${!validation.email ? "border-red-500" : ""}`}
               />
               {!validation.email && (

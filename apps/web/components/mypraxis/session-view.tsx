@@ -31,7 +31,6 @@ interface TranscriptContentProps {
     session?: { 
       id: string; 
       title: string | null; 
-      transcript: string | null; 
       note: string | null; 
       metadata: unknown;
     } 
@@ -198,9 +197,11 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
   const [isEditingTranscript, setIsEditingTranscript] = useState(false)
   const [editedTranscript, setEditedTranscript] = useState<string>("")
   const [activeTab, setActiveTab] = useState<"summary" | "transcript">("summary") // Added state for active tab
+  const [isTitleSaved, setIsTitleSaved] = useState(false) // Added state for title save indicator
   const _saveTimeout = useRef<NodeJS.Timeout | undefined>(undefined)
   const copyTimeout = useRef<NodeJS.Timeout | undefined>(undefined)
   const clientCopyTimeout = useRef<NodeJS.Timeout | undefined>(undefined)
+  const titleSaveTimeout = useRef<NodeJS.Timeout | undefined>(undefined) // Added timeout ref for title save indicator
 
   // Use the session hook from Supabase to load session data
   const { data: sessionData, isLoading: _isLoadingSession } = useSession(sessionId)
@@ -348,7 +349,6 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
     session?: { 
       id: string; 
       title: string | null; 
-      transcript: string | null; 
       note: string | null; 
       metadata: unknown;
     } 
@@ -360,7 +360,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
         ...currentSession,
         id: result.session.id,
         title: result.session.title || '',
-        transcript: result.session.transcript ? { content: result.session.transcript } : undefined,
+        // Keep the existing transcript data as it's now stored in a separate table
         notes: result.session.note ? { userNote: result.session.note } : undefined,
         metadata: result.session.metadata as SessionMetadata | undefined
       }
@@ -427,6 +427,19 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
           
           // Hide the title editing UI
           setIsEditingTitle(false);
+          
+          // Show the checkmark
+          setIsTitleSaved(true);
+          
+          // Clear any existing timeout
+          if (titleSaveTimeout.current) {
+            clearTimeout(titleSaveTimeout.current);
+          }
+          
+          // Set timeout to hide the checkmark after 1 second
+          titleSaveTimeout.current = setTimeout(() => {
+            setIsTitleSaved(false);
+          }, 1000);
           
           // Show success toast
           toast.success("Title saved");
@@ -534,7 +547,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
           });
           
           // Update the session with the returned data
-          handleSessionUpdate(result, session);
+          handleSessionUpdate(result, session)
           
           // Reset summaries first to show loading state
           resetAndRefetchSummaries()
@@ -618,7 +631,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
   }
 
   return (
-    <div className="w-full px-6 pt-6 border-r border-[#E5E7EB] bg-white" data-test="session-view">
+    <div className="w-full px-6 pt-6 bg-white" data-test="session-view">
       <div className="space-y-1 mb-5">
         <div className="flex items-center justify-between group/title">
           <div className="flex items-center gap-2">
@@ -670,22 +683,28 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
               />
             ) : (
               <>
-                <h2
-                  className="text-[24px] font-semibold text-[#111827] tracking-[-0.011em] truncate cursor-pointer hover:text-[#374151] transition-colors"
-                  onClick={() => setIsEditingTitle(true)}
-                  data-test="session-title"
-                >
-                  {session?.title || "New Session"}
-                </h2>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7 opacity-0 group-hover/title:opacity-100 transition-opacity"
-                  onClick={() => setIsEditingTitle(true)}
-                  data-test="edit-session-title-button"
-                >
-                  <Edit2 className="h-4 w-4" />
-                </Button>
+                <div className="relative group">
+                  <div className="absolute -left-7 opacity-0 group-hover:opacity-100 transition-opacity flex items-center h-full">
+                    <Edit2 className="h-4 w-4 text-gray-500" />
+                  </div>
+                  <h2
+                    className="text-[24px] font-semibold text-[#111827] tracking-[-0.011em] truncate cursor-pointer hover:text-[#374151] transition-colors"
+                    onClick={() => setIsEditingTitle(true)}
+                    data-test="session-title"
+                  >
+                    {session?.title || "New Session"}
+                  </h2>
+                </div>
+                <div className="w-5 h-5 ml-2">
+                  <Check 
+                    className={`h-5 w-5 transition-opacity ${
+                      isTitleSaved 
+                        ? "opacity-100" 
+                        : "opacity-0"
+                    } text-green-500`}
+                    data-test="session-title-saved-check"
+                  />
+                </div>
               </>
             )}
           </div>

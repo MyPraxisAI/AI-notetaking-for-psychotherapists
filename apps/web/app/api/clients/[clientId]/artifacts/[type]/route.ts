@@ -112,21 +112,45 @@ async function generateFullSessionContents(client: SupabaseClient, clientId: str
   console.log(`Fetching sessions for client ${clientId}`);
   const { data: sessions, error } = await client
     .from('sessions')
-    .select('id, title, note, transcript, created_at, updated_at')
+    .select('id, title, note, created_at, updated_at')
     .eq('client_id', clientId)
     .order('created_at', { ascending: false });
   
   if (error) {
     console.error('Error fetching sessions:', error);
+    return 'Error fetching session data.';
+  }
+
+  // Create a map to store transcripts by session ID
+  const transcriptsMap: Record<string, string> = {};
+  
+  // If we have sessions, fetch all related transcripts
+  if (sessions && sessions.length > 0) {
+    const sessionIds = sessions.map(session => session.id);
+    const { data: transcripts, error: transcriptsError } = await client
+      .from('transcripts')
+      .select('session_id, content')
+      .in('session_id', sessionIds);
+    
+    if (transcriptsError) {
+      console.error('Error fetching transcripts:', transcriptsError);
+    } else if (transcripts) {
+      // Create a map of session_id to transcript content
+      transcripts.forEach(transcript => {
+        transcriptsMap[transcript.session_id] = transcript.content;
+      });
+    }
   }
 
   // Format the session data for the prompt
-  return sessions && sessions.length > 0 ? sessions.map((session: { id: string; title?: string; transcript?: string; note?: string; created_at: string }) => {
+  return sessions && sessions.length > 0 ? sessions.map((session: { id: string; title?: string; note?: string; created_at: string }) => {
     const date = new Date(session.created_at).toLocaleDateString();
     let content = `## Session on ${date} - ${session.title || 'Untitled'}\n\n`;
     
-    if (session.transcript) {
-      content += `### Transcript:\n${session.transcript}\n\n`;
+    // Check if we have a transcript for this session
+    const transcriptContent = transcriptsMap[session.id];
+    if (transcriptContent) {
+      content += `### Transcript:\n${transcriptContent}\n\n`;
     }
     
     if (session.note) {

@@ -86,6 +86,7 @@ export default function Page() {
   const [selectedDetailItem, setSelectedDetailItem] = useState<DetailItem>("prep-note")
   const { data: clients = [], isLoading: _isLoadingClients } = useClients()
   const [sessions, setSessions] = useState<Session[]>([])
+  const [localClientNames, setLocalClientNames] = useState<Record<string, string>>({})
   
   // Get user data from Supabase with improved loading state handling
   const { user, refreshUserData: _refreshUserData, isDataReady } = useUserData()
@@ -242,9 +243,6 @@ export default function Page() {
       return;
     }
     
-    setSelectedItem(item);
-    localStorage.setItem("selectedMenuItem", item);
-    
     // Handle special menu items
     if (item === "help") {
       window.location.href = "mailto:hello@mypraxis.ai";
@@ -256,6 +254,9 @@ export default function Page() {
       void signOut.mutateAsync(); // Correctly call mutateAsync
       return;
     }
+    
+    setSelectedItem(item);
+    localStorage.setItem("selectedMenuItem", item);
     
     // Only hide client list on small screens when switching to a different item
     if (window.innerWidth <= 1430) {
@@ -408,9 +409,8 @@ export default function Page() {
     await navigateToSession(sessionId, 'transcript');
   }
 
-  const handleNameChange = (_name: string) => {
-    // This function is now just a placeholder for any UI updates needed when a name changes
-    // The actual data update is handled by the useUpdateClient hook in ProfileForm
+  const handleNameChange = (name: string) => {
+    setLocalClientNames((prev) => ({ ...prev, [selectedClient]: name }));
   }
 
   const deleteClient = useDeleteClient()
@@ -457,7 +457,7 @@ export default function Page() {
       "w-full justify-start gap-3 py-2 px-3 h-auto text-[14px] tracking-[-0.011em] leading-[1.5] rounded-md"
     const selectedClass = "bg-[#1F2937] text-[#D1D5DB] font-semibold"
     const unselectedClass = "text-[#D1D5DB] font-medium"
-    const hoverClass = "hover:bg-[#1F2937] hover:text-white"
+    const hoverClass = item === "billing" || item === "gift" ? "" : "hover:bg-[#1F2937] hover:text-white"
 
     return `${baseClass} ${selectedItem === item ? selectedClass : unselectedClass} ${hoverClass}`
   }
@@ -479,7 +479,7 @@ export default function Page() {
 
   const getSessionButtonClass = (date: DetailItem) => {
     const baseClass =
-      "w-full flex items-center gap-3 px-4 py-2 h-auto text-[14px] justify-start rounded hover:bg-[#F3F4F6]"
+      "w-full flex px-4 py-2 h-auto text-[14px] justify-start rounded hover:bg-[#F3F4F6] text-left"
     const selectedClass = "font-semibold text-[#111827] bg-[#F3F4F6]"
     const unselectedClass = "font-medium text-[#374151]"
 
@@ -551,7 +551,7 @@ export default function Page() {
 
     // If settings is selected, show settings form
     if (selectedItem === "settings") {
-      return <SettingsForm setIsNavVisible={setIsNavVisible} />
+      return <SettingsForm setIsNavVisible={setIsNavVisible} isSmallScreen={isSmallScreen} />
     }
 
     // Profile tab
@@ -617,7 +617,7 @@ export default function Page() {
         )
         return <ClientBio 
           clientId={selectedClient}
-          clientName={clients.find((c) => c.id === selectedClient)?.fullName || ""} 
+          clientName={localClientNames[selectedClient] || clients.find(c => c.id === selectedClient)?.fullName || ""} 
         />
       }
       
@@ -715,7 +715,13 @@ export default function Page() {
         isNavVisible ? 'visible' : ''
       } h-screen overflow-hidden`}>
         {/* Avatar Section */}
-        <div className="flex items-center gap-3 p-4 mb-4">
+        <div 
+          className="flex items-center gap-3 p-4 mb-4 cursor-pointer hover:brightness-110 transition-all"
+          onClick={() => handleMenuClick("settings")}
+          role="button"
+          aria-label="Go to settings"
+          data-test="profile-settings-link"
+        >
           {/* Show loading skeleton until data is ready and avatar is loaded (if applicable) */}
           {!isDataReady || (avatarUrl && !isAvatarLoaded) ? (
             <div className="flex items-center gap-3 h-[32px] animate-pulse">
@@ -793,13 +799,23 @@ export default function Page() {
           <div className="mt-auto space-y-[1px] pb-4">
             {/* Inactive Menu Items */}
             <div className="px-2">
-              <Button variant="ghost" className={`${getButtonClass("billing")} menu-item-inactive`} onClick={() => {}}>
+              <Button 
+                variant="ghost" 
+                className={`${getButtonClass("billing")} opacity-50 cursor-default`} 
+                onClick={() => {}}
+                disabled={true}
+              >
                 <Wallet className="h-[18px] w-[18px]" />
                 Billing
               </Button>
             </div>
             <div className="px-2">
-              <Button variant="ghost" className={`${getButtonClass("gift")} menu-item-inactive`} onClick={() => {}}>
+              <Button 
+                variant="ghost" 
+                className={`${getButtonClass("gift")} opacity-50 cursor-default`} 
+                onClick={() => {}}
+                disabled={true}
+              >
                 <Gift className="h-[18px] w-[18px]" />
                 Gift Praxis
               </Button>
@@ -897,7 +913,7 @@ export default function Page() {
                 onClick={() => handleClientClick(client.id)}
                 data-test={`client-row-${client.id}`}
               >
-                <span data-test="client-name-cell">{client.fullName}</span>
+                <span data-test="client-name-cell">{localClientNames[client.id] || client.fullName}</span>
                 {client.id === "mike" && (
                   <Badge
                     variant="secondary"
@@ -1041,22 +1057,25 @@ export default function Page() {
                 {/* Sessions */}
                 <div className="mt-4 space-y-0.5">
                   {sessions.map((session) => (
-                    <Button
+                    <div
                       key={session.id}
-                      variant="ghost"
-                      className={getSessionButtonClass(session.id)}
+                      className={`w-full px-4 py-2 rounded cursor-pointer transition-colors ${
+                        selectedDetailItem === session.id
+                          ? "bg-[#F3F4F6] font-semibold text-[#111827]"
+                          : "font-medium text-[#374151] hover:bg-[#F3F4F6]"
+                      }`}
                       onClick={() => handleDetailItemClick(session.id)}
                       data-test="session-item"
                     >
                       <div className="flex flex-col items-start w-full">
-                        <span className="text-[14px] font-medium text-[#111827]" data-test="sessions-list-title">
+                        <div className="text-[14px] font-medium text-[#111827] w-full break-words" data-test="sessions-list-title">
                           {session.title}
-                        </span>
-                        <span className="text-[12px] text-[#6B7280]" data-test="sessions-list-date">
+                        </div>
+                        <div className="text-[12px] text-[#6B7280]" data-test="sessions-list-date">
                           {session.date}
-                        </span>
+                        </div>
                       </div>
-                    </Button>
+                    </div>
                   ))}
                 </div>
 
@@ -1064,22 +1083,25 @@ export default function Page() {
                 {isDemoClient(selectedClient) && selectedClient === "mike" && (
                   <div className="mt-4 space-y-0.5">
                     {Object.entries(sessionTranscripts.mike).map(([date, { title }]) => (
-                      <Button
+                      <div
                         key={date}
-                        variant="ghost"
-                        className={getSessionButtonClass(date)}
+                        className={`w-full px-4 py-2 rounded cursor-pointer transition-colors ${
+                          selectedDetailItem === date
+                            ? "bg-[#F3F4F6] font-semibold text-[#111827]"
+                            : "font-medium text-[#374151] hover:bg-[#F3F4F6]"
+                        }`}
                         onClick={() => handleDetailItemClick(date)}
                         data-test="session-item"
                       >
                         <div className="flex flex-col items-start w-full">
-                          <span className="text-[14px] font-medium text-[#111827]" data-test="session-list-title">
+                          <div className="text-[14px] font-medium text-[#111827] w-full break-words" data-test="session-list-title">
                             {title}
-                          </span>
-                          <span className="text-[12px] text-[#6B7280]">
+                          </div>
+                          <div className="text-[12px] text-[#6B7280]" data-test="sessions-list-date">
                             {formatDisplayDate(date)}
-                          </span>
+                          </div>
                         </div>
-                      </Button>
+                      </div>
                     ))}
                   </div>
                 )}
@@ -1095,7 +1117,7 @@ export default function Page() {
         onClose={handleRecordingModalClose}
         onSave={handleRecordingSave}
         clientId={selectedClient}
-        clientName={clients.find(c => c.id === selectedClient)?.fullName || ""}
+        clientName={localClientNames[selectedClient] || clients.find(c => c.id === selectedClient)?.fullName || ""}
       />
       {/* Client Creation Modal */}
       <ClientCreationModal

@@ -188,8 +188,8 @@ export function ProfileForm({ clientId, onNameChange, onClientDeleted, onNewSess
     }
   }
 
-  if (isLoading) return <div className="w-full px-6 pt-6 border-r border-[#E5E7EB] bg-white">Loading...</div>
-  if (!client) return <div className="w-full px-6 pt-6 border-r border-[#E5E7EB] bg-white">Client not found</div>
+  if (isLoading) return <div className="w-full px-6 pt-6 bg-white">Loading...</div>
+  if (!client) return <div className="w-full px-6 pt-6 bg-white">Client not found</div>
 
   return (
     <div className="w-full px-6 pt-6 border-r border-[#E5E7EB] bg-white">
@@ -200,7 +200,6 @@ export function ProfileForm({ clientId, onNameChange, onClientDeleted, onNewSess
         isMobileView={isMobileView}
         hasNoSessions={hasNoSessions}
       />
-      
       <div className="flex items-center justify-between mb-5">
         <h2 className="text-[24px] font-semibold text-[#111827] tracking-[-0.011em]">Client Profile</h2>
         <DropdownMenu>

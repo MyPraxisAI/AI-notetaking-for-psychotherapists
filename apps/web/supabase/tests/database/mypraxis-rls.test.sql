@@ -212,8 +212,8 @@ select makerkit.authenticate_as('account_owner');
 
 -- Insert a session record
 select lives_ok(
-  $$ INSERT INTO public.sessions (id, client_id, transcript, note)
-     VALUES ('55555555-5555-5555-5555-555555555555', 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee', 'Test transcript', 'Test note') $$,
+  $$ INSERT INTO public.sessions (id, client_id, note)
+     VALUES ('55555555-5555-5555-5555-555555555555', 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee', 'Test note') $$,
   'Account owner should be able to insert session for their client'
 );
 
@@ -221,6 +221,23 @@ select lives_ok(
 select isnt_empty(
   $$ SELECT * FROM public.sessions WHERE id = '55555555-5555-5555-5555-555555555555' AND account_id = (SELECT id FROM public.accounts WHERE primary_owner_user_id = tests.get_supabase_uid('account_owner')) $$,
   'Session account_id should be set automatically by trigger'
+);
+
+-- Test transcripts table
+select lives_ok(
+  $$ INSERT INTO public.transcripts (id, session_id, account_id, transcription_model, content)
+     VALUES ('44444444-4444-4444-4444-444444444444', 
+             '55555555-5555-5555-5555-555555555555', 
+             (SELECT id FROM public.accounts WHERE primary_owner_user_id = tests.get_supabase_uid('account_owner')),
+             'whisper-1',
+             'Test transcript content') $$,
+  'Account owner should be able to insert transcript for their session'
+);
+
+-- Verify the transcript was inserted correctly
+select isnt_empty(
+  $$ SELECT * FROM public.transcripts WHERE id = '44444444-4444-4444-4444-444444444444' $$,
+  'Transcript should be inserted correctly'
 );
 
 -- Test artifacts table
@@ -290,6 +307,11 @@ SELECT is_empty(
 SELECT is_empty(
   $$ SELECT * FROM public.artifacts WHERE reference_id = 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee' $$,
   'Other owner should not see account_owner artifacts'
+);
+
+SELECT is_empty(
+  $$ SELECT * FROM public.transcripts WHERE session_id = '55555555-5555-5555-5555-555555555555' $$,
+  'Other owner should not see account_owner transcripts'
 );
 
 SELECT is_empty(
