@@ -37,6 +37,7 @@ import { SessionView } from "../../../../components/mypraxis/session-view"
 import { RecordingModal } from "../../../../components/mypraxis/recording-modal"
 import dynamic from "next/dynamic"
 import { useClients, useCreateClient, useDeleteClient } from "./_lib/hooks/use-clients"
+import { ClientCreationModal } from "../../../../components/mypraxis/client-creation-modal"
 
 
 // Menu item type
@@ -286,8 +287,14 @@ export default function Page() {
   const createClient = useCreateClient()
 
   const handleNewClient = () => {
+    // Open the client creation modal instead of immediately creating a client
+    setIsClientCreationModalOpen(true);
+  }
+  
+  // Handle client creation from modal
+  const handleCreateClient = (clientName: string) => {
     createClient.mutate({
-      fullName: "New Client",
+      fullName: clientName,
       email: "",
       phone: ""
     }, {
@@ -313,6 +320,9 @@ export default function Page() {
 
   const [isRecordingModalOpen, setIsRecordingModalOpen] = useState(false)
   const [_newSessionId, _setNewSessionId] = useState<string | null>(null)
+  
+  // Client creation modal state
+  const [isClientCreationModalOpen, setIsClientCreationModalOpen] = useState(false)
 
   /**
    * Navigate to a specific session and optionally open a specific tab
@@ -552,6 +562,7 @@ export default function Page() {
           onNameChange={handleNameChange} 
           onClientDeleted={handleClientDeleted} 
           onNewSession={handleNewSession}
+          onRecordingStart={handleRecordingSession}
         />
       )
     }
@@ -1107,6 +1118,12 @@ export default function Page() {
         onSave={handleRecordingSave}
         clientId={selectedClient}
         clientName={localClientNames[selectedClient] || clients.find(c => c.id === selectedClient)?.fullName || ""}
+      />
+      {/* Client Creation Modal */}
+      <ClientCreationModal
+        isOpen={isClientCreationModalOpen}
+        onClose={() => setIsClientCreationModalOpen(false)}
+        onSave={handleCreateClient}
       />
     </div>
   )
