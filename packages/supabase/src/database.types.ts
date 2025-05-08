@@ -687,6 +687,7 @@ export type Database = {
           session_id: string | null
           standalone_chunks: boolean
           status: Database["public"]["Enums"]["recording_status"]
+          transcription_engine: string | null
           updated_at: string
         }
         Insert: {
@@ -698,6 +699,7 @@ export type Database = {
           session_id?: string | null
           standalone_chunks?: boolean
           status?: Database["public"]["Enums"]["recording_status"]
+          transcription_engine?: string | null
           updated_at?: string
         }
         Update: {
@@ -709,6 +711,7 @@ export type Database = {
           session_id?: string | null
           standalone_chunks?: boolean
           status?: Database["public"]["Enums"]["recording_status"]
+          transcription_engine?: string | null
           updated_at?: string
         }
         Relationships: [
