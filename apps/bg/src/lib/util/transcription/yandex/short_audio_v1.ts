@@ -37,12 +37,14 @@ export class YandexShortAudioV1Provider extends YandexBaseProvider {
     const contentType = getContentType(audioFilePath);
 
     // Build the query parameters
-    const queryParams = new URLSearchParams({
-      folderId: this.folderId,
-      lang: transcriptionOptions.language || 'auto',
-      topic: transcriptionOptions.model,
-      format: 'oggopus'
-    }).toString();
+    const params = new URLSearchParams();
+    params.append('folderId', this.folderId);
+    params.append('lang', transcriptionOptions.language || 'auto');
+    if (transcriptionOptions.model) {
+      params.append('topic', transcriptionOptions.model);
+    }
+    params.append('format', 'oggopus');
+    const queryParams = params.toString();
     
     // Build the request URL
     const apiUrl = `https://${this.apiEndpoint}/speech/v1/stt:recognize?${queryParams}`;

@@ -62,14 +62,14 @@ export async function convertToSupportedFormat(inputFilePath: string): Promise<s
   // Generate output file path
   const outputFilePath = `${inputFilePath}.mp3`;
   
-  // Convert to MP3 format
-  const ffmpegCommand = `-i "${inputFilePath}" -vn -ar 44100 -ac 2 -b:a 128k "${outputFilePath}"`;
+  // Convert to MP3 format with mono output (ac=1)
+  const ffmpegCommand = `-i "${inputFilePath}" -vn -ar 44100 -ac 1 -b:a 128k "${outputFilePath}"`;
   
   // Execute ffmpeg command with proper options object
   await executeFFmpegSync({
     input: inputFilePath,
     output: outputFilePath,
-    args: ['-vn', '-ar', '44100', '-ac', '2', '-b:a', '128k']
+    args: ['-vn', '-ar', '44100', '-ac', '1', '-b:a', '128k']
   });
   console.log(`Converted file to: ${outputFilePath}`);
   return outputFilePath;

@@ -9,12 +9,13 @@ import { exec } from 'child_process';
 import { 
   transcribeAudio, 
   TranscriptionResult, 
-  TranscriptionProvider, 
+  TranscriptionProvider,
   OpenAITranscriptionOptions,
   YandexTranscriptionOptions,
   defaultYandexTranscriptionOptions,
   defaultOpenAITranscriptionOptions 
 } from '../util/transcription';
+import { defaultYandexV3TranscriptionOptions } from '../util/transcription/yandex/long_audio_v3';
 import { combineAudioChunks } from '../util/audio';
 
 // TranscriptionResult interface is now imported from '../util/transcription'
@@ -116,7 +117,7 @@ export class AudioTranscriptionProcessor {
       if (provider === 'yandex') {
         // Use Yandex SpeechKit with default options for therapy sessions
         console.log('Using Yandex SpeechKit for transcription');
-        result = await transcribeAudio(outputFilePath, defaultYandexTranscriptionOptions, 'yandex');
+        result = await transcribeAudio(outputFilePath, defaultYandexV3TranscriptionOptions, 'yandex');
       } else {
         // Default to OpenAI
         console.log('Using OpenAI for transcription');
