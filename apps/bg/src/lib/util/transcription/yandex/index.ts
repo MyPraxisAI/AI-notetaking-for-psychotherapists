@@ -7,15 +7,14 @@ import { BaseTranscriptionProvider, TranscriptionResult } from '../../transcript
 import { YandexTranscriptionOptions, defaultYandexTranscriptionOptions } from './common';
 import { YandexShortAudioV1Provider } from './short_audio_v1';
 import { YandexLongAudioV2Provider } from './long_audio_v2';
-import { YandexLongAudioV3Provider, YandexV3TranscriptionOptions, defaultYandexV3TranscriptionOptions } from './long_audio_v3';
+import { YandexLongAudioV3Provider, YandexV3TranscriptionOptions } from './long_audio_v3';
 import { convertToSupportedFormat } from './utils';
 
 // Re-export types and defaults for consumers
 export { 
   YandexTranscriptionOptions, 
   defaultYandexTranscriptionOptions,
-  YandexV3TranscriptionOptions,
-  defaultYandexV3TranscriptionOptions
+  YandexV3TranscriptionOptions
 };
 
 /**
@@ -94,27 +93,5 @@ export class YandexTranscriptionProvider extends BaseTranscriptionProvider {
         console.log('Using long audio API (v2) for transcription');
         return this.longAudioV2Provider.transcribeLongAudio(convertedFilePath, transcriptionOptions);
     }
-  }
-  
-  /**
-   * Transcribe an audio file with speaker identification using Yandex SpeechKit v3 API
-   * 
-   * @param audioFilePath - Path to the audio file to transcribe
-   * @param options - Options for transcription with speaker identification
-   * @returns Transcription result with speaker information
-   */
-  async transcribeAudioWithSpeakerIdentification(
-    audioFilePath: string,
-    options?: Partial<YandexV3TranscriptionOptions>
-  ): Promise<TranscriptionResult> {
-    // Use default v3 options if none provided
-    const transcriptionOptions: YandexV3TranscriptionOptions = {
-      ...defaultYandexV3TranscriptionOptions,
-      ...options,
-      version: 'v3' as const, // Ensure v3 API is used with correct type
-      enableSpeakerIdentification: true // Ensure speaker identification is enabled
-    };
-    
-    return this.transcribeAudio(audioFilePath, transcriptionOptions);
   }
 }

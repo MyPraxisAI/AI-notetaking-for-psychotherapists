@@ -43,6 +43,14 @@ export interface TranscriptionResult {
   speakers?: Speaker[]; // Speaker information if diarization is enabled
   segments?: TranscriptionSegment[]; // Segment information if available
   rawResponse?: any; // The raw response from the API
+  content_json?: {
+    segments: Array<{
+      start_ms: number;
+      end_ms: number;
+      speaker: 'therapist' | 'client';
+      content: string;
+    }>;
+  }; // Structured content for database storage
 }
 
 /**

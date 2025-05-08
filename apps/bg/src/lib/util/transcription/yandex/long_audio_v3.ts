@@ -261,13 +261,9 @@ export class YandexLongAudioV3Provider extends YandexBaseProvider {
     const startTime = Date.now();
     let elapsedTime = 0;
     
-    // Calculate estimated transcription time based on audio duration
-    // Yandex docs suggest ~10 minutes for 1 hour of audio
-    // Use a ratio of 1:6 (10 min for 60 min = 1/6) for processing time 
-    // Add a small buffer to account for API overhead
     const estimatedTranscriptionTimeSeconds = Math.max(
       1, // Minimum 1 second initial wait
-      Math.floor(estimatedDurationSeconds / 15)
+      Math.floor(estimatedDurationSeconds / 20)
     );
     
     console.log(`Estimated transcription time: ${estimatedTranscriptionTimeSeconds} seconds (${Math.floor(estimatedTranscriptionTimeSeconds / 60)} minutes ${estimatedTranscriptionTimeSeconds % 60} seconds)`);
@@ -701,6 +697,19 @@ export class YandexLongAudioV3Provider extends YandexBaseProvider {
         return `[${startTimeFormatted}-${endTimeFormatted}] ${segment.speaker}: ${segment.text}`;
       })
       .join('\n');
+      
+    // Generate content_json field - source of truth for the response
+    const contentJson = {
+      segments: segments
+        .filter(segment => segment.text.trim().length > 0) // Filter out empty segments
+        .map(segment => ({
+          start_ms: Math.round(segment.start * 1000),
+          end_ms: Math.round(segment.end * 1000),
+          // Map Yandex speaker names to our required format
+          speaker: segment.speaker?.toLowerCase().includes('speaker_1') ? 'therapist' as const : 'client' as const,
+          content: segment.text
+        }))
+    };
     
     return {
       text: combinedText,
@@ -710,6 +719,7 @@ export class YandexLongAudioV3Provider extends YandexBaseProvider {
       model: `yandex-v3/${options.model}`,
       speakers,
       segments,
+      content_json: contentJson,
       rawResponse: result
     };
   }

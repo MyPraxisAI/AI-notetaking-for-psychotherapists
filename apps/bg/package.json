@@ -12,6 +12,7 @@
     "docker:build": "docker build --target prod -t mypraxis/bg-worker:latest .",
     "docker:push:production": "AWS_PROFILE=mypraxis-terraform scripts/push-to-ecr.sh production",
     "deploy:production": "pnpm run docker:push:production && cd terraform && ./deploy.sh production apply",
+    "clear-queue": "node scripts/clear-sqs-queue.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
