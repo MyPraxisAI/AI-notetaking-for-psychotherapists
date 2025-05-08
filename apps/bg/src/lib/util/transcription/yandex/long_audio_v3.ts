@@ -29,9 +29,9 @@ export interface YandexV3TranscriptionOptions extends YandexTranscriptionOptions
 }
 
 /**
- * Default options for Yandex SpeechKit v3 transcription
+ * Options for Yandex SpeechKit v3 Russian transcription
  */
-export const defaultYandexV3TranscriptionOptions: YandexV3TranscriptionOptions = {
+export const YandexV3RuOptions: YandexV3TranscriptionOptions = {
   version: 'v3',
   model: 'general',
   language: 'ru-RU',

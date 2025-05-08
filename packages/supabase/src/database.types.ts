@@ -1209,6 +1209,7 @@ export type Database = {
         Row: {
           account_id: string
           content: string | null
+          content_json: Json | null
           created_at: string
           id: string
           session_id: string
@@ -1218,6 +1219,7 @@ export type Database = {
         Insert: {
           account_id: string
           content?: string | null
+          content_json?: Json | null
           created_at?: string
           id?: string
           session_id: string
@@ -1227,6 +1229,7 @@ export type Database = {
         Update: {
           account_id?: string
           content?: string | null
+          content_json?: Json | null
           created_at?: string
           id?: string
           session_id?: string
@@ -1639,6 +1642,12 @@ export type Database = {
           trial_starts_at: string | null
           updated_at: string
         }
+      }
+      validate_transcript_content_json_schema: {
+        Args: {
+          data: Json
+        }
+        Returns: boolean
       }
       verify_nonce: {
         Args: {

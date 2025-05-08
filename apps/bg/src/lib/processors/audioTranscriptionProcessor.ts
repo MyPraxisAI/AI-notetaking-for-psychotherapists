@@ -8,14 +8,9 @@ import { promisify } from 'util';
 import { exec } from 'child_process';
 import { 
   transcribeAudio, 
-  TranscriptionResult, 
-  TranscriptionProvider,
-  OpenAITranscriptionOptions,
-  YandexTranscriptionOptions,
-  defaultYandexTranscriptionOptions,
-  defaultOpenAITranscriptionOptions 
+  TranscriptionResult
 } from '../util/transcription';
-import { defaultYandexV3TranscriptionOptions } from '../util/transcription/yandex/long_audio_v3';
+import { YandexV3RuOptions } from '../util/transcription/yandex/long_audio_v3';
 import { combineAudioChunks } from '../util/audio';
 
 // TranscriptionResult interface is now imported from '../util/transcription'
@@ -105,26 +100,25 @@ export class AudioTranscriptionProcessor {
       const outputFilePath = path.join(tempDir, `${recordingId}.webm`);
       await combineAudioChunks(chunkFiles, outputFilePath, standaloneChunks);
       console.log(`Combined audio chunks into ${outputFilePath}`);
-      
-      // Send to OpenAI for transcription using the utility function
-      console.log('Sending audio to OpenAI for transcription...');
-      
-      // Define transcription provider - can be configured via environment variable
-      const provider: TranscriptionProvider = process.env.TRANSCRIPTION_PROVIDER as TranscriptionProvider || 'yandex'; /* 'openai'; */
+            
+      // Get the transcription engine from the recording info
+      const transcriptionEngine = recordingInfo.transcription_engine || 'yandex-v3-ru';
+      console.log(`Using transcription engine: ${transcriptionEngine}`);
       
       let result: TranscriptionResult;
       
-      if (provider === 'yandex') {
-        // Use Yandex SpeechKit with default options for therapy sessions
-        console.log('Using Yandex SpeechKit for transcription');
-        result = await transcribeAudio(outputFilePath, defaultYandexV3TranscriptionOptions, 'yandex');
+      // Currently only yandex-v3-ru is supported
+      if (transcriptionEngine === 'yandex-v3-ru') {
+        // Use Yandex SpeechKit V3 with default options for Russian language
+        console.log('Using Yandex SpeechKit V3 (Russian) for transcription');
+        result = await transcribeAudio(outputFilePath, YandexV3RuOptions, 'yandex');
       } else {
-        // Default to OpenAI
-        console.log('Using OpenAI for transcription');
-        result = await transcribeAudio(outputFilePath, defaultOpenAITranscriptionOptions, 'openai');
+        // Fallback to Yandex V3 if an unsupported engine is specified
+        console.log(`Unsupported transcription engine: ${transcriptionEngine}, falling back to yandex-v3-ru`);
+        result = await transcribeAudio(outputFilePath, YandexV3RuOptions, 'yandex');
       }
       
-      console.log(`Transcription completed using ${provider} provider`);
+      console.log(`Transcription completed using ${transcriptionEngine} engine`);
       console.log(`Transcription result length: ${result.text.length} characters`);
       
       // Return the transcription result
