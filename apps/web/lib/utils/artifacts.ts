@@ -24,6 +24,32 @@ export type ArtifactType =
 export type LanguageType = 'en' | 'ru';
 
 /**
+ * Cleans up markdown code block markers from LLM responses
+ * @param content The content to clean up
+ * @returns The cleaned content without markdown code block markers
+ */
+function cleanupMarkdownCodeBlocks(content: string): string {
+  const trimmedContent = content.trim();
+  
+  // Check if content starts with ```markdown (or other language specifier) and ends with ```
+  if (trimmedContent.startsWith('```') && trimmedContent.endsWith('```')) {
+    // Find the first newline to skip the opening marker line
+    const firstNewline = trimmedContent.indexOf('\n');
+    if (firstNewline !== -1) {
+      // Find the last ``` marker
+      const lastMarkerPos = trimmedContent.lastIndexOf('```');
+      
+      // Extract the content between the markers
+      const innerContent = trimmedContent.substring(firstNewline + 1, lastMarkerPos).trim();
+      return innerContent;
+    }
+  }
+  
+  // If not wrapped in code blocks or format doesn't match, return original
+  return content;
+}
+
+/**
  * Generate content using a prompt template
  * @param promptSource Source of the prompt (artifact_type or name)
  * @param variables Template variables
@@ -140,7 +166,10 @@ export async function generateContent(
       totalTokens: result.totalTokens
     });
     
-    return result.content;
+    // Clean up the content by removing markdown code block markers if they exist
+    const cleanedContent = cleanupMarkdownCodeBlocks(result.content);
+    
+    return cleanedContent;
   } catch (error) {
     console.error(`Error generating content for ${sourceType}:${sourceValue}:`, error);
     throw new Error(`Failed to generate content for ${sourceType}:${sourceValue}`);
