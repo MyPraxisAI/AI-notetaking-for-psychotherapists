@@ -1,8 +1,48 @@
 /**
  * Common type definitions for MyPraxis web and bg applications
+ * These types are safe to use in any environment (browser, server, etc.)
  */
 
-// Types will be added as needed when we migrate components
+/**
+ * Artifact type definitions
+ */
+export type ArtifactType = 
+  | 'session_therapist_summary' 
+  | 'session_client_summary' 
+  | 'client_prep_note' 
+  | 'client_conceptualization' 
+  | 'client_bio';
 
-// Export a version constant to make this a valid module
-export const TYPES_VERSION = '0.1.0';
+/**
+ * Prompt source type
+ */
+export type PromptSourceType = 
+  | { type: 'artifact_type'; value: ArtifactType }
+  | { type: 'name'; value: string };
+
+/**
+ * Language type
+ */
+export type LanguageType = 'en' | 'ru';
+
+/**
+ * Prompt data interface
+ */
+export interface PromptData {
+  id: string;
+  artifact_type: ArtifactType | null;
+  name: string | null;
+  template: string;
+  provider: string;
+  model: string;
+  parameters: Record<string, string | number | boolean | null>;
+}
+
+/**
+ * Prompt API interface
+ */
+export interface PromptApi {
+  getPromptByArtifactType(artifactType: ArtifactType): Promise<PromptData>;
+  getPromptByName(name: string): Promise<PromptData>;
+  getAllActivePrompts(): Promise<PromptData[]>;
+}

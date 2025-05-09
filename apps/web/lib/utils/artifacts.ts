@@ -4,33 +4,11 @@ import { getSupabaseServerClient } from '@kit/supabase/server-client';
 import { getUserLanguage, getFullLanguageName } from './language';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { generateLLMResponse } from './models';
-import { createPromptApi } from '../../app/home/(user)/mypraxis/_lib/api/prompt-api';
-import { createTherapistApi } from '../../app/home/(user)/mypraxis/_lib/api/therapist-api';
-import { dummyArtifactFunction } from '@kit/artifacts';
+import { createPromptApi } from '@kit/web-bg-common';
+import { createTherapistApi } from './db/therapist-api';
 
-// Define the prompt source type
-export type PromptSourceType = 
-  | { type: 'artifact_type'; value: ArtifactType }
-  | { type: 'name'; value: string };
-
-// Define the artifact types
-export type ArtifactType = 
-  | 'session_therapist_summary' 
-  | 'session_client_summary' 
-  | 'client_prep_note' 
-  | 'client_conceptualization' 
-  | 'client_bio';
-
-// Define the language types
-export type LanguageType = 'en' | 'ru';
-
-/**
- * Test function to demonstrate that the artifacts package is working
- * @returns A message from the artifacts package
- */
-export function testArtifactsPackage(): string {
-  return `Web app successfully imported artifacts package: ${dummyArtifactFunction()}`;
-}
+// Import types from web-bg-common/types
+import type { ArtifactType, PromptSourceType, LanguageType } from '@kit/web-bg-common/types';
 
 /**
  * Generate content using a prompt template

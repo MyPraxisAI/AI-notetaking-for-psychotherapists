@@ -3,7 +3,6 @@ import * as http from 'http';
 import { SQSQueueManager } from './lib/sqs';
 import { MessageProcessor } from './lib/messageProcessor';
 import { SQSMessage } from './types';
-import { dummyArtifactFunction, ArtifactType } from '@kit/artifacts';
 
 // Load environment variables
 dotenv.config();
@@ -59,12 +58,7 @@ class Application {
       
       // Log startup information
       console.log(`Starting SQS poller for queue: ${this.sqsManager.queueName}`);
-      
-      // Test the artifacts package integration
-      console.log(dummyArtifactFunction());
-      const artifactType: ArtifactType = 'client_bio';
-      console.log(`Using artifact type: ${artifactType}`);
-      
+            
       // Start polling for messages
       this.startPolling();
       

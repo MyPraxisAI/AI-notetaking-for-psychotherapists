@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.803.0",
-    "@kit/artifacts": "workspace:*",
+    "@kit/web-bg-common": "workspace:*",
     "@langchain/openai": "^0.5.5",
     "@supabase/supabase-js": "2.49.1",
     "aws-sdk": "2.1692.0",

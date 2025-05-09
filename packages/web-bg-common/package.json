@@ -4,13 +4,30 @@
   "description": "Shared utilities for MyPraxis web and bg applications",
   "main": "index.js",
   "types": "dist/index.d.ts",
+  "sideEffects": true,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "node": "./index.js",
+      "import": "./index.js",
+      "require": "./index.js",
+      "browser": null
+    },
+    "./types": {
+      "types": "./dist/types.d.ts",
+      "default": "./dist/types.js"
+    },
+    "./db": {
+      "types": "./dist/db/index.d.ts",
+      "default": "./dist/db/index.js"
+    }
+  },
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@kit/shared": "workspace:*",
     "nunjucks": "^3.2.4"
   },
   "peerDependencies": {
@@ -22,7 +39,6 @@
   "devDependencies": {
     "@langchain/openai": "^0.5.5",
     "@supabase/supabase-js": "2.49.1",
-    "@types/nunjucks": "^3.2.6",
     "langchain": "^0.3.22",
     "openai": "4.96.0",
     "typescript": "^5.8.2"

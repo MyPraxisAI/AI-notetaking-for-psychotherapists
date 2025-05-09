@@ -2,9 +2,9 @@ import { NextResponse } from 'next/server';
 import { enhanceRouteHandler } from '@kit/next/routes';
 import { getSupabaseServerClient } from '@kit/supabase/server-client';
 import { getUserLanguage } from '../../../../../../lib/utils/language';
-import type { ArtifactType, LanguageType } from '../../../../../../lib/utils/artifacts';
+import type { ArtifactType, LanguageType } from '@kit/web-bg-common/types';
 import { generateArtifact, saveArtifact } from '../../../../../../lib/utils/artifacts';
-import { createPromptApi } from '../../../../../../app/home/(user)/mypraxis/_lib/api/prompt-api';
+import { createPromptApi } from '@kit/web-bg-common';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 /**
@@ -172,7 +172,7 @@ async function generateLastSessionContent(client: SupabaseClient, clientId: stri
   console.log(`Fetching most recent session for client ${clientId}`);
   const { data: lastSession, error } = await client
     .from('sessions')
-    .select('id, title, note, transcript, created_at, updated_at')
+    .select('id, title, note, created_at, updated_at')
     .eq('client_id', clientId)
     .order('created_at', { ascending: false })
     .limit(1)
@@ -192,11 +192,27 @@ async function generateLastSessionContent(client: SupabaseClient, clientId: stri
     return 'No previous session data available.';
   }
   
+  // Fetch transcript from the transcripts table
+  let transcriptContent = null;
+  if (lastSession.id) {
+    const { data: transcriptData, error: transcriptError } = await client
+      .from('transcripts')
+      .select('content')
+      .eq('session_id', lastSession.id)
+      .maybeSingle();
+      
+    if (transcriptError) {
+      console.error('Error fetching transcript:', transcriptError);
+    } else if (transcriptData) {
+      transcriptContent = transcriptData.content;
+    }
+  }
+  
   const date = new Date(lastSession.created_at).toLocaleDateString();
   let content = `## Session on ${date} - ${lastSession.title || 'Untitled'}\n\n`;
   
-  if (lastSession.transcript) {
-    content += `### Transcript:\n${lastSession.transcript}\n\n`;
+  if (transcriptContent) {
+    content += `### Transcript:\n${transcriptContent}\n\n`;
   }
   
   if (lastSession.note) {

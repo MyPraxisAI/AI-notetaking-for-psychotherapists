@@ -31,15 +31,15 @@ WORKDIR /app
 RUN npm install -g pnpm
 
 # Create monorepo directory structure
-RUN mkdir -p /app/packages/artifacts
+RUN mkdir -p /app/packages/web-bg-common
 RUN mkdir -p /app/apps/bg
 
 # Copy package files first for better caching
-COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json tsconfig.base.json ./
 
-# Copy the artifacts package
-COPY packages/artifacts/package.json packages/artifacts/tsconfig.json packages/artifacts/index.js /app/packages/artifacts/
-COPY packages/artifacts/src /app/packages/artifacts/src/
+# Copy the web-bg-common package
+COPY packages/web-bg-common/package.json packages/web-bg-common/tsconfig.json packages/web-bg-common/index.js /app/packages/web-bg-common/
+COPY packages/web-bg-common/src /app/packages/web-bg-common/src/
 
 # Copy the bg app source
 COPY apps/bg/src /app/apps/bg/src/
@@ -48,8 +48,8 @@ COPY apps/bg/package.json apps/bg/tsconfig.json /app/apps/bg/
 # Install dependencies using pnpm (skip postinstall scripts)
 RUN pnpm install --frozen-lockfile --ignore-scripts
 
-# Build the artifacts package first
-RUN pnpm --filter @kit/artifacts build
+# Build the web-bg-common package
+RUN pnpm --filter @kit/web-bg-common build
 
 # Build the bg app
 RUN pnpm --filter bg build
@@ -64,13 +64,13 @@ WORKDIR /app
 RUN npm install -g pnpm
 
 # Copy package.json files for production
-COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json tsconfig.base.json ./
 COPY apps/bg/package.json ./package.json
-COPY packages/artifacts/package.json /app/packages/artifacts/
+COPY packages/web-bg-common/package.json /app/packages/web-bg-common/
 
-# Copy the built artifacts package with its index.js
-COPY --from=build /app/packages/artifacts/dist /app/packages/artifacts/dist
-COPY --from=build /app/packages/artifacts/index.js /app/packages/artifacts/index.js
+# Copy the built web-bg-common package with its index.js
+COPY --from=build /app/packages/web-bg-common/dist /app/packages/web-bg-common/dist
+COPY --from=build /app/packages/web-bg-common/index.js /app/packages/web-bg-common/index.js
 
 # Copy the built application
 COPY --from=build /app/apps/bg/dist ./dist
