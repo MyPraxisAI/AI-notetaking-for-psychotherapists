@@ -22,26 +22,37 @@ RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
 WORKDIR /app
 
 ################ Build Stage ################
-FROM node:18 as build
+FROM base as build
 
 # Set working directory
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
-COPY tsconfig.json ./
+# Install pnpm
+RUN npm install -g pnpm
 
-# Install all dependencies including devDependencies for build
-RUN npm install
+# Create monorepo directory structure
+RUN mkdir -p /app/packages/artifacts
+RUN mkdir -p /app/apps/bg
 
-# Install ts-node globally for running TypeScript directly
-RUN npm install -g ts-node typescript
+# Copy package files first for better caching
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
 
-# Copy source code
-COPY src ./src
+# Copy the artifacts package
+COPY packages/artifacts/package.json packages/artifacts/tsconfig.json packages/artifacts/index.js /app/packages/artifacts/
+COPY packages/artifacts/src /app/packages/artifacts/src/
 
-# Build TypeScript code
-RUN npm run build
+# Copy the bg app source
+COPY apps/bg/src /app/apps/bg/src/
+COPY apps/bg/package.json apps/bg/tsconfig.json /app/apps/bg/
+
+# Install dependencies using pnpm (skip postinstall scripts)
+RUN pnpm install --frozen-lockfile --ignore-scripts
+
+# Build the artifacts package first
+RUN pnpm --filter @kit/artifacts build
+
+# Build the bg app
+RUN pnpm --filter bg build
 
 ################ Production Stage ################
 FROM base as prod
@@ -49,22 +60,41 @@ FROM base as prod
 # Set working directory
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
+# Install pnpm
+RUN npm install -g pnpm
 
-# Install production dependencies only
-RUN npm install --production
+# Copy package.json files for production
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
+COPY apps/bg/package.json ./package.json
+COPY packages/artifacts/package.json /app/packages/artifacts/
 
-# Copy built application from build stage
-COPY --from=build /app/dist ./dist
+# Copy the built artifacts package with its index.js
+COPY --from=build /app/packages/artifacts/dist /app/packages/artifacts/dist
+COPY --from=build /app/packages/artifacts/index.js /app/packages/artifacts/index.js
+
+# Copy the built application
+COPY --from=build /app/apps/bg/dist ./dist
+
+# Install production dependencies
+# Use --ignore-scripts to skip postinstall scripts that require manypkg
+# Use --no-frozen-lockfile, otherwise problems with "overrides" configuration
+RUN pnpm install --prod --no-frozen-lockfile --ignore-scripts
+
+# Set up pnpm cache directory with proper permissions
+RUN mkdir -p /home/node/.pnpm-store && \
+    mkdir -p /home/node/.local/share/pnpm
 
 # Set non-root user for security
 RUN groupadd -r appuser && useradd -r -g appuser appuser
-RUN chown -R appuser:appuser /app
+RUN chown -R appuser:appuser /app /home/node
 USER appuser
+
+# Configure pnpm to use a directory with proper permissions
+ENV PNPM_HOME=/home/node/.local/share/pnpm
+ENV PATH=$PNPM_HOME:$PATH
 
 # Expose health check port if needed
 EXPOSE 8080
 
-# Default command
-CMD ["node", "dist/index.js"]
+# Use pnpm start for proper module resolution
+CMD ["pnpm", "start"]

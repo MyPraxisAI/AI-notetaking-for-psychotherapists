@@ -1,0 +1,30 @@
+{
+  "name": "@kit/web-bg-common",
+  "version": "0.1.0",
+  "description": "Shared utilities for MyPraxis web and bg applications",
+  "main": "index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@kit/shared": "workspace:*",
+    "nunjucks": "^3.2.4"
+  },
+  "peerDependencies": {
+    "@langchain/openai": ">=0.5.0",
+    "@supabase/supabase-js": ">=2.0.0",
+    "langchain": ">=0.3.0",
+    "openai": ">=4.0.0"
+  },
+  "devDependencies": {
+    "@langchain/openai": "^0.5.5",
+    "@supabase/supabase-js": "2.49.1",
+    "@types/nunjucks": "^3.2.6",
+    "langchain": "^0.3.22",
+    "openai": "4.96.0",
+    "typescript": "^5.8.2"
+  }
+}

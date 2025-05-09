@@ -36,8 +36,8 @@ services:
   # Production test application
   prod-test:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ../../
+      dockerfile: apps/bg/Dockerfile
       target: prod
     networks:
       - localstack-net
@@ -55,7 +55,8 @@ services:
   # Service for sending test messages
   test-message:
     build:
-      context: .
+      context: ../../
+      dockerfile: apps/bg/Dockerfile
       target: build
     networks:
       - localstack-net
@@ -67,7 +68,7 @@ services:
       - .env.development
       - .env.local
     volumes:
-      - ./:/app
+      - ../../:/app
       - /app/node_modules
       
 
