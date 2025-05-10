@@ -2,7 +2,7 @@ import * as nunjucks from 'nunjucks';
 import { getLogger } from '@kit/shared/logger';
 import { getSupabaseServerClient } from '@kit/supabase/server-client';
 import { SupabaseClient } from '@supabase/supabase-js';
-import { generateLLMResponse } from './models';
+import { generateLLMResponse } from '@kit/web-bg-common/ai';
 import { createPromptApi, createTherapistApi, getUserLanguage, getFullLanguageName } from '@kit/web-bg-common';
 
 // Import types from web-bg-common/types

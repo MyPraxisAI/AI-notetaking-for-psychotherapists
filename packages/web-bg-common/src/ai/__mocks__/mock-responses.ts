@@ -85,10 +85,7 @@ Remember that experiencing anxiety is common, and there are effective strategies
 Client presents with work-related anxiety that manifests primarily in meeting and presentation contexts. Physical symptoms include racing heart, sweating, and breathing difficulties. These symptoms have intensified following the arrival of a new manager approximately three months ago. Client reports using avoidance as a primary coping strategy while recognizing its limitations as a long-term solution.
 
 ## Relevant History
-No significant history of anxiety disorders prior to current work situation. Client reports having previously enjoyed collaborative environments but feels threatened by perceived high expectations from new management. No current medication for anxiety. No reported substance use concerns.
-
-## Conceptualization through Gestalt Lens
-From a Gestalt perspective, the client appears to be experiencing disruption in their contact cycle, particularly at the awareness and mobilization phases. There's a heightened awareness of physical sensations and environmental "threats" but difficulty mobilizing effective responses beyond avoidance. The client's field has been significantly altered by the introduction of a new authority figure, creating unresolved figure/ground dynamics where work performance concerns dominate the perceptual field.
+Client reports no previous formal mental health diagnosis but describes being "high-strung" throughout academic and professional career. Achieved significant academic and career success through perfectionism and extensive preparation, which has become more difficult to maintain under new management style. Family history includes a father described as having "high standards" and a mother who was "supportive but anxious."
 
 The anxiety appears to represent unfinished business related to authority figures and performance expectations, possibly connected to earlier life experiences that haven't been fully integrated. The physical symptoms represent the embodiment of this unfinished business, manifesting as disruptions in the client's ability to be fully present in professional situations.
 

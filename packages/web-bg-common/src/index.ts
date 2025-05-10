@@ -16,5 +16,9 @@ export * from './db';
 // Re-export language utilities
 export * from './language';
 
+// Re-export AI utilities
+export * from './ai/ai-service';
+export * from './ai/models';
+
 // Re-export types for convenience in server contexts
 export * from './types';

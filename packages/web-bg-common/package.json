@@ -20,6 +20,10 @@
     "./db": {
       "types": "./dist/db/index.d.ts",
       "default": "./dist/db/index.js"
+    },
+    "./ai": {
+      "types": "./dist/ai/index.d.ts",
+      "default": "./dist/ai/index.js"
     }
   },
   "scripts": {
@@ -28,15 +32,18 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
+    "js-tiktoken": "^1.0.19",
     "nunjucks": "^3.2.4"
   },
   "peerDependencies": {
+    "@langchain/google-genai": ">=0.1.0",
     "@langchain/openai": ">=0.5.0",
     "@supabase/supabase-js": ">=2.0.0",
     "langchain": ">=0.3.0",
     "openai": ">=4.0.0"
   },
   "devDependencies": {
+    "@langchain/google-genai": "^0.2.4",
     "@langchain/openai": "^0.5.5",
     "@supabase/supabase-js": "2.49.1",
     "langchain": "^0.3.22",
