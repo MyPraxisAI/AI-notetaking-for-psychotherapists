@@ -1,13 +1,8 @@
 import { NextResponse } from 'next/server';
 import { enhanceRouteHandler } from '@kit/next/routes';
 import { getSupabaseServerClient } from '@kit/supabase/server-client';
-import { getUserLanguage } from '@kit/web-bg-common';
-import { 
-  generateArtifact, 
-  saveArtifact, 
-  ArtifactType, 
-  LanguageType 
-} from '../../../../../../lib/utils/artifacts';
+import { getUserLanguage, generateArtifact, saveArtifact } from '@kit/web-bg-common';
+import type { ArtifactType, LanguageType } from '@kit/web-bg-common/types';
 
 // This route handler returns artifacts for a session
 // It will be enhanced with authentication and error handling
@@ -76,6 +71,7 @@ export const GET = enhanceRouteHandler(
         
         // Generate the artifact content using OpenAI
         const generatedContent = await generateArtifact(
+          client,
           artifactType,
           {
             session_transcript: transcriptContent || '',

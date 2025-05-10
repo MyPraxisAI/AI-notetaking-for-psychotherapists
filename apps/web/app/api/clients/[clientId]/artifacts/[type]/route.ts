@@ -1,10 +1,8 @@
 import { NextResponse } from 'next/server';
 import { enhanceRouteHandler } from '@kit/next/routes';
 import { getSupabaseServerClient } from '@kit/supabase/server-client';
-import { getUserLanguage } from '@kit/web-bg-common';
+import { getUserLanguage, generateArtifact, saveArtifact, createPromptApi } from '@kit/web-bg-common';
 import type { ArtifactType, LanguageType } from '@kit/web-bg-common/types';
-import { generateArtifact, saveArtifact } from '../../../../../../lib/utils/artifacts';
-import { createPromptApi } from '@kit/web-bg-common';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 /**
@@ -292,7 +290,7 @@ async function getOrCreateArtifact(
     const startTime = Date.now();
     let content;
     try {
-      content = await generateArtifact(artifactType, variableData);
+      content = await generateArtifact(client, artifactType, variableData);
       const duration = Date.now() - startTime;
       console.log(`[Artifact:${artifactType}] Generation completed successfully in ${duration}ms`);
     } catch (genError) {

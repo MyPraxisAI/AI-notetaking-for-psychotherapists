@@ -20,5 +20,11 @@ export * from './language';
 export * from './ai/ai-service';
 export * from './ai/models';
 
+// Re-export logger utilities
+export * from './logger';
+
+// Re-export artifact utilities
+export * from './artifacts';
+
 // Re-export types for convenience in server contexts
 export * from './types';

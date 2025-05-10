@@ -24,6 +24,14 @@
     "./ai": {
       "types": "./dist/ai/index.d.ts",
       "default": "./dist/ai/index.js"
+    },
+    "./logger": {
+      "types": "./dist/logger/index.d.ts",
+      "default": "./dist/logger/index.js"
+    },
+    "./artifacts": {
+      "types": "./dist/artifacts.d.ts",
+      "default": "./dist/artifacts.js"
     }
   },
   "scripts": {
@@ -33,7 +41,8 @@
   },
   "dependencies": {
     "js-tiktoken": "^1.0.19",
-    "nunjucks": "^3.2.4"
+    "nunjucks": "^3.2.4",
+    "pino": "^9.6.0"
   },
   "peerDependencies": {
     "@langchain/google-genai": ">=0.1.0",

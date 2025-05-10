@@ -1,32 +1,30 @@
 import * as nunjucks from 'nunjucks';
-import { getLogger } from '@kit/shared/logger';
-import { getSupabaseServerClient } from '@kit/supabase/server-client';
 import { SupabaseClient } from '@supabase/supabase-js';
-import { generateLLMResponse } from '@kit/web-bg-common/ai';
-import { createPromptApi, createTherapistApi, getUserLanguage, getFullLanguageName } from '@kit/web-bg-common';
+import { generateLLMResponse } from './ai/models';
+import { createPromptApi, createTherapistApi, getUserLanguage, getFullLanguageName } from '.';
+import { getLogger } from './logger';
 
-// Import types from web-bg-common/types
-import type { ArtifactType, PromptSourceType, LanguageType } from '@kit/web-bg-common/types';
+// Import types
+import type { ArtifactType, PromptSourceType, LanguageType } from './types';
 
 /**
  * Generate content using a prompt template
+ * @param client Supabase client
  * @param promptSource Source of the prompt (artifact_type or name)
  * @param variables Template variables
  * @returns Generated content
  */
 export async function generateContent(
+  client: SupabaseClient,
   promptSource: PromptSourceType,
   variables: Record<string, string>
 ): Promise<string> {
-  // Get the Supabase client
-  const client = getSupabaseServerClient();
-  
   // Get the user's preferred language
   const language = await getUserLanguage(client) as LanguageType;
   
   // Create a logger instance
-  const _logger = getLogger();
-  const _ctx = {
+  const logger = await getLogger();
+  const ctx = {
     name: 'generate-content',
     promptSource,
     language,
@@ -38,8 +36,8 @@ export async function generateContent(
   const logPrefix = `[${sourceType}:${sourceValue}]`;
   
   try {
-    console.log(`${logPrefix} Starting generation process`);
-    console.log(`${logPrefix} Supabase client initialized`);
+    logger.info(ctx, `${logPrefix} Starting generation process`);
+    logger.info(ctx, `${logPrefix} Supabase client initialized`);
     
     // Get the template for the prompt from the database
     const promptApi = createPromptApi(client);
@@ -64,7 +62,7 @@ export async function generateContent(
     };
     
     // Log the prompt data
-    console.log(`${logPrefix} Using prompt from database`, { 
+    logger.info(ctx, `${logPrefix} Using prompt from database`, { 
       sourceType,
       sourceValue, 
       model: promptData.model, 
@@ -91,19 +89,19 @@ export async function generateContent(
     // If mock services are enabled, inject the source identifier as a marker
     // This helps the mock implementation identify which response to return
     if (process.env.MOCK_EXTERNAL_SERVICES === 'true') {
-      console.log(`${logPrefix} Using mock services, injecting source marker`);
+      logger.info(ctx, `${logPrefix} Using mock services, injecting source marker`);
       prompt = `${sourceType}:${sourceValue}\n${prompt}`;
     }
     
     // Log the prompt variables
-    console.log(`${logPrefix} Prompt template variables`, { sourceType, sourceValue, primaryApproach });
+    logger.info(ctx, `${logPrefix} Prompt template variables`, { sourceType, sourceValue, primaryApproach });
     
     // In development, log the full prompt
     if (process.env.NODE_ENV === 'development') {
-      console.log(`${logPrefix} Rendered Prompt:`, prompt);
+      logger.debug(ctx, `${logPrefix} Rendered Prompt:`, prompt);
     }
     
-    console.log(`${logPrefix} Starting LLM request with model: ${promptData.model}`);
+    logger.info(ctx, `${logPrefix} Starting LLM request with model: ${promptData.model}`);
     
     // Generate the content using the model layer with timeout handling
     let result;
@@ -111,14 +109,14 @@ export async function generateContent(
       const startTime = Date.now();
       result = await generateLLMResponse(prompt, generationOptions);
       const duration = Date.now() - startTime;
-      console.log(`${logPrefix} LLM request completed in ${duration}ms`);
+      logger.info(ctx, `${logPrefix} LLM request completed in ${duration}ms`);
     } catch (error) {
-      console.error(`${logPrefix} LLM request failed:`, error);
+      logger.error(ctx, `${logPrefix} LLM request failed:`, error);
       throw error;
     }
     
     // Log generation results
-    console.log(`${logPrefix} Successfully generated content`, { 
+    logger.info(ctx, `${logPrefix} Successfully generated content`, { 
       duration: `${result.duration}ms`,
       promptTokens: result.promptTokens,
       completionTokens: result.completionTokens,
@@ -127,23 +125,25 @@ export async function generateContent(
     
     return result.content;
   } catch (error) {
-    console.error(`Error generating content for ${sourceType}:${sourceValue}:`, error);
+    logger.error(ctx, `Error generating content for ${sourceType}:${sourceValue}:`, error);
     throw new Error(`Failed to generate content for ${sourceType}:${sourceValue}`);
   }
 }
 
 /**
  * Generate an artifact using OpenAI
+ * @param client Supabase client
  * @param type Artifact type
  * @param variables Template variables
  * @returns Generated artifact content
  */
 export async function generateArtifact(
+  client: SupabaseClient,
   type: ArtifactType,
   variables: Record<string, string>
 ): Promise<string> {
   // Use the core generation function with artifact_type as the source
-  return generateContent({ type: 'artifact_type', value: type }, variables);
+  return generateContent(client, { type: 'artifact_type', value: type }, variables);
 }
 
 /**
@@ -164,8 +164,17 @@ export async function saveArtifact(
   content: string,
   language: LanguageType
 ): Promise<boolean> {
+  const logger = await getLogger();
+  const ctx = {
+    name: 'save-artifact',
+    referenceId,
+    referenceType,
+    type,
+    language
+  };
+  
   try {
-    console.log(`Saving ${type} artifact to database`);
+    logger.info(ctx, `Saving ${type} artifact to database`);
     
     // Check if the artifact already exists
     const { data: existingArtifact } = await client
@@ -179,7 +188,7 @@ export async function saveArtifact(
     
     if (existingArtifact) {
       // Update existing artifact
-      console.log(`Updating existing ${type} artifact`);
+      logger.info(ctx, `Updating existing ${type} artifact`);
       const { error } = await client
         .from('artifacts')
         .update({ content })
@@ -188,7 +197,7 @@ export async function saveArtifact(
       if (error) throw error;
     } else {
       // Create new artifact
-      console.log(`Creating new ${type} artifact`);
+      logger.info(ctx, `Creating new ${type} artifact`);
       const { error } = await client
         .from('artifacts')
         .insert({
@@ -202,10 +211,10 @@ export async function saveArtifact(
       if (error) throw error;
     }
     
-    console.log(`Successfully saved ${type} artifact`);
+    logger.info(ctx, `Successfully saved ${type} artifact`);
     return true;
   } catch (error) {
-    console.error(`Error saving ${type} artifact:`, error);
+    logger.error(ctx, `Error saving ${type} artifact:`, error);
     return false;
   }
 }
