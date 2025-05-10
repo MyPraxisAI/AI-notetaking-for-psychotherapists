@@ -1,10 +1,9 @@
 import * as nunjucks from 'nunjucks';
 import { getLogger } from '@kit/shared/logger';
 import { getSupabaseServerClient } from '@kit/supabase/server-client';
-import { getUserLanguage, getFullLanguageName } from './language';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { generateLLMResponse } from './models';
-import { createPromptApi, createTherapistApi } from '@kit/web-bg-common';
+import { createPromptApi, createTherapistApi, getUserLanguage, getFullLanguageName } from '@kit/web-bg-common';
 
 // Import types from web-bg-common/types
 import type { ArtifactType, PromptSourceType, LanguageType } from '@kit/web-bg-common/types';
@@ -19,8 +18,11 @@ export async function generateContent(
   promptSource: PromptSourceType,
   variables: Record<string, string>
 ): Promise<string> {
+  // Get the Supabase client
+  const client = getSupabaseServerClient();
+  
   // Get the user's preferred language
-  const language = await getUserLanguage() as LanguageType;
+  const language = await getUserLanguage(client) as LanguageType;
   
   // Create a logger instance
   const _logger = getLogger();
@@ -37,9 +39,6 @@ export async function generateContent(
   
   try {
     console.log(`${logPrefix} Starting generation process`);
-    
-    // Get the Supabase client
-    const client = getSupabaseServerClient();
     console.log(`${logPrefix} Supabase client initialized`);
     
     // Get the template for the prompt from the database

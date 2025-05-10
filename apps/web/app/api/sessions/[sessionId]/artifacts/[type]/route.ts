@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { enhanceRouteHandler } from '@kit/next/routes';
 import { getSupabaseServerClient } from '@kit/supabase/server-client';
-import { getUserLanguage } from '../../../../../../lib/utils/language';
+import { getUserLanguage } from '@kit/web-bg-common';
 import { 
   generateArtifact, 
   saveArtifact, 
@@ -33,7 +33,7 @@ export const GET = enhanceRouteHandler(
     const client = getSupabaseServerClient();
     
     // Get the user's preferred language
-    const userLanguage = await getUserLanguage() as LanguageType;
+    const userLanguage = await getUserLanguage(client) as LanguageType;
     
     // Fetch the artifact from the database
     const { data: artifact, error } = await client

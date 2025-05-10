@@ -1,5 +1,6 @@
-import { getSupabaseServerClient } from '@kit/supabase/server-client';
-import { createAccountsApi } from '@kit/accounts/api';
+import { SupabaseClient } from '@supabase/supabase-js';
+import { createAccountsApi } from './db/accounts-api';
+import { LanguageType } from './types';
 
 /**
  * Map of language codes to full language names
@@ -10,14 +11,13 @@ const LANGUAGE_NAMES: Record<string, string> = {
   // Add more languages as needed
 };
 
-
 /**
  * Get the user's preferred language from their preferences
  * Falls back to 'en' if no preference is found
+ * @param client Supabase client
  */
-export async function getUserLanguage(): Promise<string> {
+export async function getUserLanguage(client: SupabaseClient): Promise<string> {
   try {
-    const client = getSupabaseServerClient();
     const api = createAccountsApi(client);
     
     // Get the user's workspace using the accounts API

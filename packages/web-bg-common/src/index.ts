@@ -13,5 +13,8 @@
 // Re-export database utilities
 export * from './db';
 
+// Re-export language utilities
+export * from './language';
+
 // Re-export types for convenience in server contexts
 export * from './types';

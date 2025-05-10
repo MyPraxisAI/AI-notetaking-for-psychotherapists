@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { enhanceRouteHandler } from '@kit/next/routes';
 import { getSupabaseServerClient } from '@kit/supabase/server-client';
-import { getUserLanguage } from '../../../../../../lib/utils/language';
+import { getUserLanguage } from '@kit/web-bg-common';
 import type { ArtifactType, LanguageType } from '@kit/web-bg-common/types';
 import { generateArtifact, saveArtifact } from '../../../../../../lib/utils/artifacts';
 import { createPromptApi } from '@kit/web-bg-common';
@@ -337,7 +337,7 @@ async function getOrCreateArtifact(
  */
 async function generateClientConceptualization(client: SupabaseClient, clientId: string): Promise<string> {
   // Get the user's preferred language
-  const userLanguage = await getUserLanguage() as LanguageType;
+  const userLanguage = await getUserLanguage(client) as LanguageType;
   
   // Get or create the conceptualization
   const { content } = await getOrCreateArtifact(
@@ -358,7 +358,7 @@ async function generateClientConceptualization(client: SupabaseClient, clientId:
  */
 async function generateClientBio(client: SupabaseClient, clientId: string): Promise<string> {
   // Get the user's preferred language
-  const userLanguage = await getUserLanguage() as LanguageType;
+  const userLanguage = await getUserLanguage(client) as LanguageType;
   
   // Get or create the bio
   const { content } = await getOrCreateArtifact(
@@ -391,7 +391,7 @@ export const GET = enhanceRouteHandler(
     const client = getSupabaseServerClient();
     
     // Get the user's preferred language
-    const userLanguage = await getUserLanguage() as LanguageType;
+    const userLanguage = await getUserLanguage(client) as LanguageType;
     
     try {
       // Get or create the artifact
