@@ -4,8 +4,7 @@ import { getSupabaseServerClient } from '@kit/supabase/server-client';
 import { getUserLanguage, getFullLanguageName } from './language';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { generateLLMResponse } from './models';
-import { createPromptApi } from '@kit/web-bg-common';
-import { createTherapistApi } from './db/therapist-api';
+import { createPromptApi, createTherapistApi } from '@kit/web-bg-common';
 
 // Import types from web-bg-common/types
 import type { ArtifactType, PromptSourceType, LanguageType } from '@kit/web-bg-common/types';

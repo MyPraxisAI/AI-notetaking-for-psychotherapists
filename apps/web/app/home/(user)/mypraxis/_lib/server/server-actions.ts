@@ -6,7 +6,7 @@ import { getSupabaseServerClient } from '@kit/supabase/server-client';
 import { SessionSchema, SessionMetadata } from '../schemas/session';
 import { getLogger } from '@kit/shared/logger';
 import { generateContent } from '@/lib/utils/artifacts';
-import { createSessionApi } from '../api/session-api';
+import { createSessionApi } from '@kit/web-bg-common';
 import type { User, SupabaseClient } from '@supabase/supabase-js';
 
 // Schema for updating a session

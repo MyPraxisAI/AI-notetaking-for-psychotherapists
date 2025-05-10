@@ -3,3 +3,6 @@
  */
 
 export * from './prompt-api';
+export * from './session-api';
+export * from './therapist-api';
+export * from './accounts-api';
