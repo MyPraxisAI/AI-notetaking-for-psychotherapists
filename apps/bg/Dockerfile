@@ -32,10 +32,15 @@ RUN npm install -g pnpm
 
 # Create monorepo directory structure
 RUN mkdir -p /app/packages/web-bg-common
+RUN mkdir -p /app/packages/shared-common
 RUN mkdir -p /app/apps/bg
 
 # Copy package files first for better caching
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json tsconfig.base.json ./
+
+# Copy the shared-common package
+COPY packages/shared-common/package.json packages/shared-common/tsconfig.json packages/shared-common/index.js /app/packages/shared-common/
+COPY packages/shared-common/src /app/packages/shared-common/src/
 
 # Copy the web-bg-common package
 COPY packages/web-bg-common/package.json packages/web-bg-common/tsconfig.json packages/web-bg-common/index.js /app/packages/web-bg-common/
@@ -47,6 +52,9 @@ COPY apps/bg/package.json apps/bg/tsconfig.json /app/apps/bg/
 
 # Install dependencies using pnpm (skip postinstall scripts)
 RUN pnpm install --frozen-lockfile --ignore-scripts
+
+# Build the shared-common package first
+RUN pnpm --filter @kit/shared-common build
 
 # Build the web-bg-common package
 RUN pnpm --filter @kit/web-bg-common build
@@ -65,8 +73,13 @@ RUN npm install -g pnpm
 
 # Copy package.json files for production
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json tsconfig.base.json ./
-COPY apps/bg/package.json ./package.json
+COPY packages/shared-common/package.json /app/packages/shared-common/
 COPY packages/web-bg-common/package.json /app/packages/web-bg-common/
+COPY apps/bg/package.json ./package.json
+
+# Copy the built shared-common package with its index.js
+COPY --from=build /app/packages/shared-common/dist /app/packages/shared-common/dist
+COPY --from=build /app/packages/shared-common/index.js /app/packages/shared-common/index.js
 
 # Copy the built web-bg-common package with its index.js
 COPY --from=build /app/packages/web-bg-common/dist /app/packages/web-bg-common/dist

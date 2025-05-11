@@ -4,32 +4,26 @@
  */
 
 import { BaseTranscriptionProvider, TranscriptionResult } from '../../transcription';
-import { YandexTranscriptionOptions, defaultYandexTranscriptionOptions } from './common';
-import { YandexShortAudioV1Provider } from './short_audio_v1';
-import { YandexLongAudioV2Provider } from './long_audio_v2';
+import { YandexTranscriptionOptions } from './common';
+// Short audio v1 provider has been removed
+// Long audio v2 provider has been removed
 import { YandexLongAudioV3Provider, YandexV3TranscriptionOptions } from './long_audio_v3';
+import { SupabaseClient } from '@supabase/supabase-js';
 import { convertToSupportedFormat } from './utils';
-
-// Re-export types and defaults for consumers
-export { 
-  YandexTranscriptionOptions, 
-  defaultYandexTranscriptionOptions,
-  YandexV3TranscriptionOptions
-};
 
 /**
  * Yandex transcription provider
  * This class delegates to the appropriate implementation based on the audio file size
  */
 export class YandexTranscriptionProvider extends BaseTranscriptionProvider {
-  private shortAudioProvider: YandexShortAudioV1Provider;
-  private longAudioV2Provider: YandexLongAudioV2Provider;
+  // Short audio provider has been removed
+  // Long audio v2 provider has been removed
   private longAudioV3Provider: YandexLongAudioV3Provider;
 
   constructor() {
     super();
-    this.shortAudioProvider = new YandexShortAudioV1Provider();
-    this.longAudioV2Provider = new YandexLongAudioV2Provider();
+    // Short audio provider initialization removed
+    // Long audio v2 provider initialization removed
     this.longAudioV3Provider = new YandexLongAudioV3Provider();
   }
 
@@ -40,19 +34,13 @@ export class YandexTranscriptionProvider extends BaseTranscriptionProvider {
    * @param options - Options for transcription
    * @returns Transcription result
    */
-  /**
-   * Transcribe an audio file using Yandex SpeechKit API
-   * 
-   * @param audioFilePath - Path to the audio file to transcribe
-   * @param options - Options for transcription
-   * @returns Transcription result
-   */
-  async transcribeAudio(
+  public async transcribeAudio(
+    client: SupabaseClient,
     audioFilePath: string,
-    options?: YandexTranscriptionOptions | YandexV3TranscriptionOptions
+    transcriptionOptions: YandexV3TranscriptionOptions
   ): Promise<TranscriptionResult> {
     // Use default options if none provided
-    const transcriptionOptions = options || defaultYandexTranscriptionOptions;
+    const options = transcriptionOptions;
     
     // Check file size to determine which API to use
     const fs = require('fs');
@@ -67,31 +55,18 @@ export class YandexTranscriptionProvider extends BaseTranscriptionProvider {
     const convertedFilePath = await convertToSupportedFormat(audioFilePath);
     
     // Determine which API version to use
-    const apiVersion = transcriptionOptions.version || 'v2';
-    
+    const apiVersion = transcriptionOptions.version;
+    let provider;
     switch (apiVersion) {
       case 'v3':
         console.log('Using long audio API (v3) with speaker identification');
         return this.longAudioV3Provider.transcribeLongAudio(
-          convertedFilePath, 
+          client,
+          convertedFilePath,
           transcriptionOptions as YandexV3TranscriptionOptions
         );
-        
-      case 'v1':
-        // Short audio API has issues with MP3 format
-        // Only use for very small files if explicitly requested
-        // TODO: convert to ogg instead of mp3 first (v1 only supports ogg)
-        // if (fileSizeInMB < 1) {
-        //   console.log('Using short audio API (v1) for transcription');
-        //   return this.shortAudioProvider.transcribeShortAudio(convertedFilePath, transcriptionOptions);
-        // }
-        // Fall through to v2 for larger files
-        console.log('File too large for v1 API, using v2 instead');
-        
-      case 'v2':
       default:
-        console.log('Using long audio API (v2) for transcription');
-        return this.longAudioV2Provider.transcribeLongAudio(convertedFilePath, transcriptionOptions);
+        throw new Error(`Unsupported API version: ${apiVersion}`);
     }
   }
 }

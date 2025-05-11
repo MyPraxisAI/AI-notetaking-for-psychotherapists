@@ -40,8 +40,6 @@ export type YandexLanguageCode =
 export type YandexModelType = 
   | 'general'            // The main version of the model
   | 'general:rc'         // Release candidate version for testing
-  | 'general:deprecated' // Previous version (supported for ~2 weeks after update)
-  | 'deferred-general';  // For asynchronous recognition with API v2
 
 /**
  * Options for Yandex SpeechKit transcription
@@ -49,12 +47,10 @@ export type YandexModelType =
 export interface YandexTranscriptionOptions {
   /**
    * API version to use for transcription
-   * - 'v1': Short audio API (synchronous)
-   * - 'v2': Long audio API (asynchronous)
    * - 'v3': Long audio API with speaker identification (asynchronous)
-   * Default: 'v2'
+   * Default: 'v3'
    */
-  version?: 'v1' | 'v2' | 'v3';
+  version?: 'v3';
   
   /**
    * Model to use for transcription
@@ -92,18 +88,6 @@ export interface YandexTranscriptionOptions {
    */
   partialResults?: boolean;
 }
-
-/**
- * Default transcription options for therapy sessions using Yandex SpeechKit
- */
-export const defaultYandexTranscriptionOptions: YandexTranscriptionOptions = {
-  version: 'v2',
-  model: 'general',            // Use the main version of the model (0.16x realtime - 10 mins / hour)
-  language: 'auto',            // Automatic language detection
-  topic: 'psychology',         // Psychology domain for better recognition of therapy terminology
-  literatureText: true,        // Enable better punctuation and formatting
-  profanityFilter: false       // Don't filter profanity as it might be relevant in therapy context
-};
 
 /**
  * Base class for Yandex SpeechKit transcription providers

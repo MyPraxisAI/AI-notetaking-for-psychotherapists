@@ -1209,7 +1209,7 @@ export type Database = {
         Row: {
           account_id: string
           content: string | null
-          content_json: Json | null
+          contentjson: Json | null
           created_at: string
           id: string
           session_id: string
@@ -1219,7 +1219,7 @@ export type Database = {
         Insert: {
           account_id: string
           content?: string | null
-          content_json?: Json | null
+          contentjson?: Json | null
           created_at?: string
           id?: string
           session_id: string
@@ -1229,7 +1229,7 @@ export type Database = {
         Update: {
           account_id?: string
           content?: string | null
-          content_json?: Json | null
+          contentjson?: Json | null
           created_at?: string
           id?: string
           session_id?: string
@@ -1643,7 +1643,7 @@ export type Database = {
           updated_at: string
         }
       }
-      validate_transcript_content_json_schema: {
+      validate_transcript_segments: {
         Args: {
           data: Json
         }
@@ -1676,6 +1676,7 @@ export type Database = {
         | "client_prep_note"
         | "client_conceptualization"
         | "client_bio"
+        | "session_speaker_roles_classification"
       billing_provider: "stripe" | "lemon-squeezy" | "paddle"
       language: "en" | "ru"
       notification_channel: "in_app" | "email"

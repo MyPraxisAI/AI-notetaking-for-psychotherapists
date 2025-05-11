@@ -7,9 +7,12 @@
 
 import { TranscriptionResult, Speaker, TranscriptionSegment } from '../../transcription';
 import { YandexBaseProvider, YandexTranscriptionOptions } from './common';
+import { SupabaseClient } from '@supabase/supabase-js';
+import { classifySpeakerRoles } from '../role_classification';
 import * as https from 'node:https';
 import * as url from 'node:url';
 import * as fs from 'node:fs';
+import * as path from 'node:path';
 
 /**
  * Extended options for Yandex SpeechKit v3 transcription
@@ -50,11 +53,13 @@ export class YandexLongAudioV3Provider extends YandexBaseProvider {
   /**
    * Transcribe a long audio file using Yandex SpeechKit asynchronous API v3 with speaker identification
    * 
+   * @param client - Supabase client
    * @param audioFilePath - Path to the audio file to transcribe
    * @param transcriptionOptions - Options for transcription
    * @returns Transcription result
    */
   public async transcribeLongAudio(
+    client: SupabaseClient,
     audioFilePath: string,
     transcriptionOptions: YandexV3TranscriptionOptions
   ): Promise<TranscriptionResult> {
@@ -99,7 +104,7 @@ export class YandexLongAudioV3Provider extends YandexBaseProvider {
       console.log(`Long audio transcription with v3 API completed in ${processingTime.toFixed(2)} seconds`);
       
       // Process the result to extract text, speakers, and segments
-      return this.processTranscriptionResult(result, processingTime, transcriptionOptions);
+      return this.processTranscriptionResult(result, processingTime, client, transcriptionOptions);
     } catch (error) {
       console.error('Error during v3 transcription:', error);
       throw error;
@@ -444,14 +449,15 @@ export class YandexLongAudioV3Provider extends YandexBaseProvider {
    * 
    * @param result - Raw API result
    * @param processingTime - Processing time in seconds
-   * @param options - Transcription options
+   * @param client - Supabase client
    * @returns Formatted transcription result
    */
-  private processTranscriptionResult(
-    result: any, 
+  private async processTranscriptionResult(
+    result: any,
     processingTime: number,
+    client: SupabaseClient,
     options: YandexV3TranscriptionOptions
-  ): TranscriptionResult {
+  ): Promise<TranscriptionResult> {
     // console.log(`Processing v3 transcription result: ${JSON.stringify(result)}`);
     
     // Check if we have any data to process
@@ -624,7 +630,7 @@ export class YandexLongAudioV3Provider extends YandexBaseProvider {
         
         // Only add if not already in the map
         if (!speakerMap.has(channelTag)) {
-          let speakerName = `Speaker ${speakerMap.size + 1}`;
+          let speakerName = `speaker_${parseInt(channelTag) + 1}`;
           
           // Add gender information if available
           if (analysis.gender) {
@@ -635,7 +641,7 @@ export class YandexLongAudioV3Provider extends YandexBaseProvider {
           
           speakers.push({
             id: channelTag,
-            text: speakerName
+            name: speakerName
           });
         }
       }
@@ -644,12 +650,12 @@ export class YandexLongAudioV3Provider extends YandexBaseProvider {
     // If no speaker analysis was found, create basic speaker entries
     if (speakers.length === 0) {
       Object.keys(utterancesByChannel).forEach((channelTag, index) => {
-        const speakerName = `Speaker ${index + 1}`;
+        const speakerName = `speaker_${index + 1}`;
         speakerMap.set(channelTag, speakerName);
         
         speakers.push({
           id: channelTag,
-          text: speakerName
+          name: speakerName
         });
       });
     }
@@ -660,7 +666,7 @@ export class YandexLongAudioV3Provider extends YandexBaseProvider {
     
     // Process utterances for each speaker
     Object.entries(utterancesByChannel).forEach(([channelTag, utterancesMap]) => {
-      const speakerName = speakerMap.get(channelTag) || `Speaker ${channelTag}`;
+      const speakerName = speakerMap.get(channelTag) || `speaker_${parseInt(channelTag) + 1}`;
       
       // Convert the Map to an array of utterances sorted by time
       const sortedUtterances = Array.from(utterancesMap.entries())
@@ -687,41 +693,48 @@ export class YandexLongAudioV3Provider extends YandexBaseProvider {
     
     // Sort all segments by start time
     segments.sort((a, b) => a.start - b.start);
-    
-    // Format the combined text with timestamps
-    const combinedText = segments
-      .filter(segment => segment.text.trim().length > 0) // Filter out empty segments
-      .map(segment => {
-        const startTimeFormatted = this.formatTimestamp(segment.start);
-        const endTimeFormatted = this.formatTimestamp(segment.end);
-        return `[${startTimeFormatted}-${endTimeFormatted}] ${segment.speaker}: ${segment.text}`;
-      })
-      .join('\n');
-      
-    // Generate content_json field - source of truth for the response
-    const contentJson = {
-      segments: segments
-        .filter(segment => segment.text.trim().length > 0) // Filter out empty segments
-        .map(segment => ({
-          start_ms: Math.round(segment.start * 1000),
-          end_ms: Math.round(segment.end * 1000),
-          // Map Yandex speaker names to our required format
-          speaker: segment.speaker?.toLowerCase().includes('speaker_1') ? 'therapist' as const : 'client' as const,
-          content: segment.text
-        }))
-    };
-    
-    return {
-      text: combinedText,
-      confidence: 1.0,
+
+
+    // Create the initial transcription result
+    const transcriptionResult: TranscriptionResult = {
       processingTime,
       timestamp: new Date().toISOString(),
       model: `yandex-v3/${options.model}`,
-      speakers,
-      segments,
-      content_json: contentJson,
+      contentJson: {
+        segments: segments
+          .filter(segment => segment.text.trim().length > 0) // Filter out empty segments
+          .map(segment => ({
+            start_ms: Math.round(segment.start * 1000),
+            end_ms: Math.round(segment.end * 1000),
+            speaker: segment.speaker || 'speaker', // Will be updated by classification
+            content: segment.text
+          })),
+        classified: false // Initially not classified
+      },
       rawResponse: result
     };
+    
+    // Classify speaker roles and update the transcription
+    try {
+      await classifySpeakerRoles(client, transcriptionResult);
+    } catch (error) {
+      console.error('Error during speaker role classification:', error);
+      // Continue with unclassified roles if there's an error
+    }
+    // TODO: Do not store text in db, it should be generated from contentJson
+    // Format the combined text with timestamps
+    const combinedText = segments
+    .filter(segment => segment.text.trim().length > 0) // Filter out empty segments
+    .map(segment => {
+      const startTimeFormatted = this.formatTimestamp(segment.start);
+      const endTimeFormatted = this.formatTimestamp(segment.end);
+      return `[${startTimeFormatted}-${endTimeFormatted}] ${segment.speaker}: ${segment.text}`;
+    })
+    .join('\n');
+
+    transcriptionResult.text = combinedText;
+
+    return transcriptionResult;
   }
   
   /**

@@ -11,7 +11,8 @@ export type ArtifactType =
   | 'session_client_summary' 
   | 'client_prep_note' 
   | 'client_conceptualization' 
-  | 'client_bio';
+  | 'client_bio'
+  | 'session_speaker_roles_classification';
 
 /**
  * Prompt source type

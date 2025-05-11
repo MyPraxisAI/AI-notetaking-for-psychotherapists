@@ -11,7 +11,7 @@ import * as path from 'node:path';
  */
 export interface Speaker {
   id: string;
-  text: string;
+  name: string;
 }
 
 /**
@@ -36,20 +36,19 @@ export interface TranscriptionSegment {
  */
 export interface TranscriptionResult {
   text: string;
-  confidence?: number;
   processingTime?: number;
   timestamp: string;
   model?: string; // The model used for transcription
-  speakers?: Speaker[]; // Speaker information if diarization is enabled
   segments?: TranscriptionSegment[]; // Segment information if available
   rawResponse?: any; // The raw response from the API
-  content_json?: {
+  contentJson?: {
     segments: Array<{
       start_ms: number;
       end_ms: number;
-      speaker: 'therapist' | 'client';
+      speaker: string; // Can be 'speaker_1', 'speaker_2', 'therapist', 'client', etc.
       content: string;
     }>;
+    classified?: boolean; // Indicates whether speaker roles have been classified
   }; // Structured content for database storage
 }
 
@@ -75,8 +74,9 @@ export abstract class BaseTranscriptionProvider {
    * @returns Transcription result
    */
   abstract transcribeAudio(
+    client: SupabaseClient,
     audioFilePath: string,
-    options?: any
+    options?: TranscriptionOptions
   ): Promise<TranscriptionResult>;
 
   /**
@@ -171,47 +171,29 @@ export function getTranscriptionProvider(provider: TranscriptionProvider): BaseT
 // Import provider-specific option types directly to avoid circular dependencies
 // We need these types to be available for proper type checking
 
-// Import OpenAI option types
-import { 
-  WhisperTranscriptionOptions, 
-  GPT4oAudioTranscriptionOptions,
-  OpenAITranscriptionOptions,
-  defaultOpenAITranscriptionOptions 
-} from './transcription/openai';
-
-// Import Yandex option types and defaults
-import { 
-  YandexTranscriptionOptions,
-  defaultYandexTranscriptionOptions 
-} from './transcription/yandex';
-
-// Re-export all option types and defaults for consumers of this module
-export { 
-  WhisperTranscriptionOptions, 
-  GPT4oAudioTranscriptionOptions,
-  OpenAITranscriptionOptions,
-  YandexTranscriptionOptions,
-  defaultYandexTranscriptionOptions,
-  defaultOpenAITranscriptionOptions
-};
+import { YandexTranscriptionOptions } from './transcription/yandex/common';
+import { OpenAITranscriptionOptions } from './transcription/openai';
+import { SupabaseClient } from '@supabase/supabase-js';
 
 /**
  * Union type for all supported transcription options
  */
-export type TranscriptionOptions = OpenAITranscriptionOptions | YandexTranscriptionOptions;
+export type TranscriptionOptions = YandexTranscriptionOptions | OpenAITranscriptionOptions;
 
 /**
  * Transcribe an audio file using the specified provider
  * 
+ * @param client - Supabase client for API access
  * @param audioFilePath - Path to the audio file to transcribe
  * @param options - Provider-specific options for transcription
- * @param provider - Provider name (defaults to 'openai')
+ * @param provider - Provider name (defaults to 'yandex')
  * @returns Transcription result
  */
 export async function transcribeAudio(
+  client: SupabaseClient,
   audioFilePath: string,
   options?: TranscriptionOptions,
-  provider: TranscriptionProvider = 'openai'
+  provider: TranscriptionProvider = 'yandex'
 ): Promise<TranscriptionResult> {
   const transcriptionProvider = getTranscriptionProvider(provider);
   
@@ -219,12 +201,11 @@ export async function transcribeAudio(
   switch (provider) {
     case 'openai':
       // For OpenAI, ensure options match OpenAI-specific options
-      return transcriptionProvider.transcribeAudio(audioFilePath, options as OpenAITranscriptionOptions);
+      return transcriptionProvider.transcribeAudio(client, audioFilePath, options as OpenAITranscriptionOptions);
     case 'yandex':
       // For Yandex, ensure options match Yandex-specific options
-      return transcriptionProvider.transcribeAudio(audioFilePath, options as YandexTranscriptionOptions);
+      return transcriptionProvider.transcribeAudio(client, audioFilePath, options as YandexTranscriptionOptions);
     default:
-      // This should never happen with proper provider type
-      return transcriptionProvider.transcribeAudio(audioFilePath, options);
+      throw new Error(`Unsupported transcription provider: ${provider}`);
   }
 }

@@ -2,16 +2,16 @@
 
 /*
  * -------------------------------------------------------
- * Section: Add content_json column to transcripts table
+ * Section: Add contentJson column to transcripts table
  * -------------------------------------------------------
  */
 
--- Add content_json column to transcripts table
+-- Add contentJson column to transcripts table
 ALTER TABLE public.transcripts 
-ADD COLUMN content_json JSONB;
+ADD COLUMN contentJson JSONB;
 
 -- Add comment explaining the expected structure
-COMMENT ON COLUMN public.transcripts.content_json IS 'Structured transcript content with segments array. Each segment should have start_ms, end_ms, speaker ("therapist" or "client"), and content fields.';
+COMMENT ON COLUMN public.transcripts.contentJson IS 'Structured transcript content with segments array. Each segment should have start_ms, end_ms, speaker ("therapist" or "client"), and content fields.';
 
 -- Create a function to validate the transcript segments structure
 CREATE OR REPLACE FUNCTION validate_transcript_segments(data jsonb)
@@ -64,7 +64,8 @@ BEGIN
     END IF;
     
     -- Check speaker is either 'therapist' or 'client'
-    IF (segment->>'speaker') != 'therapist' AND (segment->>'speaker') != 'client' THEN
+    IF (segment->>'speaker') != 'therapist' AND 
+       (segment->>'speaker') != 'client' THEN
       RETURN FALSE;
     END IF;
   END LOOP;
@@ -73,11 +74,11 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql IMMUTABLE;
 
--- Add constraint to validate the content_json structure
+-- Add constraint to validate the contentJson structure
 ALTER TABLE public.transcripts
-ADD CONSTRAINT validate_content_json_structure
+ADD CONSTRAINT validate_contentJson_structure
 CHECK (
-  content_json IS NULL OR validate_transcript_segments(content_json)
+  contentJson IS NULL OR validate_transcript_segments(contentJson)
 );
 
 
