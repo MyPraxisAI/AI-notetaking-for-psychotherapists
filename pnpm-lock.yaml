@@ -1384,9 +1384,9 @@ importers:
 
   packages/shared:
     dependencies:
-      pino:
-        specifier: ^9.6.0
-        version: 9.6.0
+      '@kit/shared-common':
+        specifier: workspace:*
+        version: link:../shared-common
     devDependencies:
       '@kit/eslint-config':
         specifier: workspace:*
@@ -1400,6 +1400,28 @@ importers:
       '@types/react':
         specifier: 19.0.10
         version: 19.0.10
+
+  packages/shared-common:
+    dependencies:
+      pino:
+        specifier: ^9.6.0
+        version: 9.6.0
+    devDependencies:
+      '@kit/eslint-config':
+        specifier: workspace:*
+        version: link:../../tooling/eslint
+      '@kit/prettier-config':
+        specifier: workspace:*
+        version: link:../../tooling/prettier
+      '@kit/tsconfig':
+        specifier: workspace:*
+        version: link:../../tooling/typescript
+      '@types/node':
+        specifier: ^22.13.4
+        version: 22.13.9
+      typescript:
+        specifier: ^5.8.2
+        version: 5.8.2
 
   packages/supabase:
     devDependencies:
@@ -1593,6 +1615,9 @@ importers:
 
   packages/web-bg-common:
     dependencies:
+      '@kit/shared-common':
+        specifier: workspace:*
+        version: link:../shared-common
       js-tiktoken:
         specifier: ^1.0.19
         version: 1.0.19

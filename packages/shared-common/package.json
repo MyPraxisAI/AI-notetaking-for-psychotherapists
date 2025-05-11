@@ -1,29 +1,30 @@
 {
-  "name": "@kit/shared",
+  "name": "@kit/shared-common",
   "private": true,
   "version": "0.1.0",
   "scripts": {
     "clean": "git clean -xdf .turbo node_modules",
+    "build": "tsc",
+    "dev": "tsc --watch",
     "format": "prettier --check \"**/*.{ts,tsx}\"",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit"
   },
   "prettier": "@kit/prettier-config",
   "exports": {
+    ".": "./src/index.ts",
     "./logger": "./src/logger/index.ts",
-    "./utils": "./src/utils.ts",
-    "./hooks": "./src/hooks/index.ts",
-    "./events": "./src/events/index.tsx",
     "./registry": "./src/registry/index.ts"
+  },
+  "dependencies": {
+    "pino": "^9.6.0"
   },
   "devDependencies": {
     "@kit/eslint-config": "workspace:*",
     "@kit/prettier-config": "workspace:*",
     "@kit/tsconfig": "workspace:*",
-    "@types/react": "19.0.10"
-  },
-  "dependencies": {
-    "@kit/shared-common": "workspace:*"
+    "@types/node": "^22.13.4",
+    "typescript": "^5.8.2"
   },
   "typesVersions": {
     "*": {

@@ -1,25 +1,12 @@
-import { createRegistry } from '../registry';
-import { Logger as LoggerInstance } from './logger';
-
-// Define the type for the logger provider.  Currently supporting 'pino'.
-type LoggerProvider = 'pino';
-
-const LOGGER = (process.env.LOGGER ?? 'pino') as LoggerProvider;
-
-// Create a registry for logger implementations
-const loggerRegistry = createRegistry<LoggerInstance, LoggerProvider>();
-
-// Register the 'pino' logger implementation
-loggerRegistry.register('pino', async () => {
-  const { Logger: PinoLogger } = await import('./impl/pino');
-
-  return PinoLogger;
-});
+// Import from the shared-common package
+import { getLogger as getCommonLogger, type Logger } from '@kit/shared-common';
 
 /**
  * @name getLogger
- * @description Retrieves the logger implementation based on the LOGGER environment variable using the registry API.
+ * @description Retrieves the logger implementation from shared-common
  */
-export async function getLogger() {
-  return loggerRegistry.get(LOGGER);
+export async function getLogger(): Promise<Logger> {
+  return getCommonLogger();
 }
+
+export type { Logger } from '@kit/shared-common';
