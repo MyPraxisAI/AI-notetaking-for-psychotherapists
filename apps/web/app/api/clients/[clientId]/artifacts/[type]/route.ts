@@ -8,8 +8,7 @@ import {
   createPromptApi,
   getOrCreateArtifact,
   extractTemplateVariables,
-  validateTemplateVariables,
-  generateVariableData
+  validateTemplateVariables
 } from '@kit/web-bg-common';
 import type { ArtifactType, LanguageType } from '@kit/web-bg-common/types';
 import type { SupabaseClient } from '@supabase/supabase-js';
@@ -37,14 +36,6 @@ export const GET = enhanceRouteHandler(
     const userLanguage = await getUserLanguage(client) as LanguageType;
     
     try {
-      // Generate variable data for the artifact
-      const templateVariables = [
-        'full_session_contents',
-        'last_session_content',
-        'client_conceptualization',
-        'client_bio'
-      ];
-      const variableData = await generateVariableData(client, clientId, artifactType, templateVariables);
       
       // Get or create the artifact
       const { content, language, isNew } = await getOrCreateArtifact(
@@ -52,8 +43,7 @@ export const GET = enhanceRouteHandler(
         clientId, 
         'client', 
         artifactType, 
-        userLanguage,
-        variableData
+        userLanguage
       );
       
       // Return the artifact

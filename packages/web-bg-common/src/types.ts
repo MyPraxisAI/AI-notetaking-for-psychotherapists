@@ -27,6 +27,16 @@ export type PromptSourceType =
 export type LanguageType = 'en' | 'ru';
 
 /**
+ * Context for variable generation
+ */
+export interface VariableContext {
+  /** Type of context ('session' or 'client') */
+  contextType?: 'session' | 'client';
+  /** ID of the context (session or client) */
+  contextId?: string;
+}
+
+/**
  * Prompt data interface
  */
 export interface PromptData {

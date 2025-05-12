@@ -3,21 +3,24 @@ import { SupabaseClient } from '@supabase/supabase-js';
 import { generateLLMResponse } from './ai/models';
 import { createPromptApi, createTherapistApi, getUserLanguage, getFullLanguageName } from '.';
 import { getLogger } from './logger';
+import { generateVariableData } from './ai/artifact-vars';
 
 // Import types
-import type { ArtifactType, PromptSourceType, LanguageType } from './types';
+import type { ArtifactType, PromptSourceType, LanguageType, VariableContext } from './types';
 
 /**
  * Generate content using a prompt template
  * @param client Supabase client
  * @param promptSource Source of the prompt (artifact_type or name)
  * @param variables Template variables
+ * @param variableContext Optional context for variable generation
  * @returns Generated content
  */
 export async function generateContent(
   client: SupabaseClient,
   promptSource: PromptSourceType,
-  variables: Record<string, string>
+  variables: Record<string, string>,
+  variableContext?: VariableContext
 ): Promise<string> {
   // Get the user's preferred language
   const language = await getUserLanguage(client) as LanguageType;
@@ -57,8 +60,16 @@ export async function generateContent(
     // Validate that all variables have corresponding generators
     validateTemplateVariables(templateVariables);
 
-    // TODO: generate missing template variables not present in variables
-
+    // Filter out variables that are already provided in the incoming variables
+    const missingVariables = templateVariables.filter(variable => !(variable in variables));
+    
+    // Only generate data for variables that aren't already provided
+    const generatedVariableData = missingVariables.length > 0 && variableContext ? 
+      await generateVariableData(client, variableContext, sourceValue as ArtifactType, missingVariables) : {};
+      
+    // Combine provided variables with generated ones
+    const variableData = { ...generatedVariableData, ...variables };
+    
     // Get model parameters from the database
     const modelParameters = promptData.parameters || { temperature: 0.7 };
     
@@ -143,15 +154,17 @@ export async function generateContent(
  * @param client Supabase client
  * @param type Artifact type
  * @param variables Template variables
+ * @param variableContext Optional context for variable generation
  * @returns Generated artifact content
  */
 export async function generateArtifact(
   client: SupabaseClient,
   type: ArtifactType,
-  variables: Record<string, string>
+  variables: Record<string, string>,
+  variableContext?: VariableContext
 ): Promise<string> {
   // Use the core generation function with artifact_type as the source
-  return generateContent(client, { type: 'artifact_type', value: type }, variables);
+  return generateContent(client, { type: 'artifact_type', value: type }, variables, variableContext);
 }
 
 /**
@@ -327,7 +340,12 @@ export async function getOrCreateArtifact(
     const startTime = Date.now();
     let content;
     try {
-      content = await generateArtifact(client, artifactType, variables);
+      // Create a variable context for the artifact generation
+      const variableContext: VariableContext = {
+        contextType: referenceType as 'client' | 'session',
+        contextId: referenceId
+      };
+      content = await generateArtifact(client, artifactType, variables, variableContext);
       const duration = Date.now() - startTime;
       logger.info(ctx, `Generation completed successfully in ${duration}ms`);
     } catch (genError) {
