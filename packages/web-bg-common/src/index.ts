@@ -30,7 +30,7 @@ export {
   generateClientConceptualization,
   generateClientBio,
   extractTemplateVariables,
-  validateTemplateVariables
+  canGenerateVariable
 } from './ai/artifact-vars';
 
 // Re-export logger utilities

@@ -723,7 +723,7 @@ export class YandexLongAudioV3Provider extends YandexBaseProvider {
       timestamp: new Date().toISOString(),
       model: `yandex-v3/${options.model}`,
       text: '',
-      contentJson: {
+      content_json: {
         segments: segments
           .filter(segment => segment.text.trim().length > 0) // Filter out empty segments
           .map(segment => ({

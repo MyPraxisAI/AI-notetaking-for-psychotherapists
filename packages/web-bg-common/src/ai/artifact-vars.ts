@@ -86,19 +86,12 @@ const variableGenerators: Record<string, (client: SupabaseClient, context: Varia
 };
 
 /**
- * Validate that all template variables have corresponding generators
- * @param variables Array of variable names to validate
- * @throws Error if any variable doesn't have a generator
+ * Check if a variable can be generated
+ * @param variable The variable name to check
+ * @returns True if the variable can be generated, false otherwise
  */
-export function validateTemplateVariables(variables: string[]): void {
-  // Get the supported variables directly from the variableGenerators object
-  const supportedVariables = Object.keys(variableGenerators);
-  
-  for (const variable of variables) {
-    if (!supportedVariables.includes(variable)) {
-      throw new Error(`Unsupported template variable: ${variable}`);
-    }
-  }
+export function canGenerateVariable(variable: string): boolean {
+  return Object.keys(variableGenerators).includes(variable);
 }
 
 /**

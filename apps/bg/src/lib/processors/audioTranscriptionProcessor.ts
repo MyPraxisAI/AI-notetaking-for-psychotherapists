@@ -298,7 +298,7 @@ export class AudioTranscriptionProcessor {
           account_id: accountId,
           transcription_model: result.model || 'openai/whisper-1',
           content: result.text,
-          contentJson: result.contentJson
+          content_json: result.content_json
         });
         
       if (error) {

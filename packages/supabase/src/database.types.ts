@@ -1209,7 +1209,7 @@ export type Database = {
         Row: {
           account_id: string
           content: string | null
-          contentjson: Json | null
+          content_json: Json | null
           created_at: string
           id: string
           session_id: string
@@ -1219,7 +1219,7 @@ export type Database = {
         Insert: {
           account_id: string
           content?: string | null
-          contentjson?: Json | null
+          content_json?: Json | null
           created_at?: string
           id?: string
           session_id: string
@@ -1229,7 +1229,7 @@ export type Database = {
         Update: {
           account_id?: string
           content?: string | null
-          contentjson?: Json | null
+          content_json?: Json | null
           created_at?: string
           id?: string
           session_id?: string

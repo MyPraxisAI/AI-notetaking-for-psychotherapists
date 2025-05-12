@@ -41,7 +41,7 @@ export interface TranscriptionResult {
   model?: string; // The model used for transcription
   segments?: TranscriptionSegment[]; // Segment information if available
   rawResponse?: any; // The raw response from the API
-  contentJson?: {
+  content_json?: {
     segments: Array<{
       start_ms: number;
       end_ms: number;
@@ -213,10 +213,10 @@ export async function transcribeAudio(
   }
   
   // Format the combined text with timestamps if segments are available
-  if (transcriptionResult.contentJson?.segments && transcriptionResult.contentJson.segments.length > 0) {
-    // TODO: Do not store text in db, it should be generated from contentJson
+  if (transcriptionResult.content_json?.segments && transcriptionResult.content_json.segments.length > 0) {
+    // TODO: Do not store text in db, it should be generated from content_json
     // Format the combined text with timestamps
-    const combinedText = transcriptionResult.contentJson.segments
+    const combinedText = transcriptionResult.content_json.segments
       .filter(segment => segment.content.trim().length > 0) // Filter out empty segments
       .map(segment => {
         const startTimeFormatted = formatTimestamp(segment.start_ms / 1000);

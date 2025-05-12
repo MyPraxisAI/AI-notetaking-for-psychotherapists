@@ -3,7 +3,7 @@ import { SupabaseClient } from '@supabase/supabase-js';
 import { generateLLMResponse } from './models';
 import { createPromptApi, createTherapistApi, getUserLanguage, getFullLanguageName } from '..';
 import { getLogger } from '../logger';
-import { generateVariableData, extractTemplateVariables, validateTemplateVariables } from './artifact-vars';
+import { generateVariableData, extractTemplateVariables, canGenerateVariable } from './artifact-vars';
 
 // Import types
 import type { ArtifactType, PromptSourceType, LanguageType, VariableContext } from '../types';
@@ -57,11 +57,15 @@ export async function generateContent(
     // Extract variables from the template
     const templateVariables = extractTemplateVariables(templateString);
     
-    // Validate that all variables have corresponding generators
-    validateTemplateVariables(templateVariables);
-
     // Filter out variables that are already provided in the incoming variables
     const missingVariables = templateVariables.filter(variable => !(variable in variables));
+    
+    // Check if all missing variables can be generated
+    for (const variable of missingVariables) {
+      if (!canGenerateVariable(variable)) {
+        throw new Error(`Cannot generate content: variable '${variable}' is not provided and cannot be generated`);
+      }
+    }
     
     // Only generate data for variables that aren't already provided
     const generatedVariableData = missingVariables.length > 0 && variableContext ? 
