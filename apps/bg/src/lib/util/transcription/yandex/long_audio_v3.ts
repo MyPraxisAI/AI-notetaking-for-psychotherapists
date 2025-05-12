@@ -268,7 +268,7 @@ export class YandexLongAudioV3Provider extends YandexBaseProvider {
     
     const estimatedTranscriptionTimeSeconds = Math.max(
       1, // Minimum 1 second initial wait
-      Math.floor(estimatedDurationSeconds / 20)
+      Math.floor(estimatedDurationSeconds / 15)
     );
     
     console.log(`Estimated transcription time: ${estimatedTranscriptionTimeSeconds} seconds (${Math.floor(estimatedTranscriptionTimeSeconds / 60)} minutes ${estimatedTranscriptionTimeSeconds % 60} seconds)`);
@@ -318,6 +318,24 @@ export class YandexLongAudioV3Provider extends YandexBaseProvider {
         const req = https.request(options, (res: any) => {
           console.log(`V3 operation status response code: ${res.statusCode}`);
           
+          // If status code is not 200, continue polling
+          if (res.statusCode !== 200) {
+            console.warn(`Non-200 status code: ${res.statusCode}, continuing to poll`);
+            
+            // For 404, it just means the operation isn't ready yet, so continue polling immediately
+            // For other errors, we might want to add a delay in the future if needed
+            resolve({
+              done: false,
+              status: 'POLLING',
+              statusCode: res.statusCode,
+              error: {
+                code: 'HTTP_ERROR',
+                message: `Received HTTP ${res.statusCode} from API`
+              }
+            });
+            return;
+          }
+          
           let data = '';
           
           res.on('data', (chunk: any) => {
@@ -353,7 +371,12 @@ export class YandexLongAudioV3Provider extends YandexBaseProvider {
         req.end();
       });
       
-      // Check if the operation has completed
+      // Log polling status for debugging
+      if (response.status === 'POLLING' && response.error) {
+        console.log(`Polling continues after HTTP error: ${response.error.message}`);
+      }
+      
+      // Check if the operation has completed or is still in progress
       if (response.done || response.status === 'DONE') {
         // Check if the operation was successful
         if (response.response || response.result) {
