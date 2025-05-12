@@ -36,46 +36,13 @@ export const GET = enhanceRouteHandler(
     const userLanguage = await getUserLanguage(client) as LanguageType;
     
     try {
-      // Get the session data needed for generation
-      const { data: session } = await client
-        .from('sessions')
-        .select('id, note')
-        .eq('id', sessionId)
-        .single();
-      
-      // Fetch transcript data from the transcripts table
-      const { data: transcriptData } = await client
-        .from('transcripts')
-        .select('content')
-        .eq('session_id', sessionId)
-        .single();
-        
-      const transcriptContent = transcriptData?.content || null;
-      
-      if (!session || (!transcriptContent && !session.note)) {
-        // If there's no session or neither transcript nor note, we can't generate an artifact
-        return NextResponse.json({
-          content: `This ${artifactType.replace('session_', '').replace('_', ' ')} cannot be generated without either a transcript or session notes.`,
-          language: userLanguage,
-          generated: false,
-          dataTest: `session-artifact-${artifactType}-missing-data`
-        });
-      }
-      
-      // Prepare variable data for the artifact
-      const variableData = {
-        session_transcript: transcriptContent || '',
-        session_note: session.note || ''
-      };
-      
-      // Get or create the artifact
+      // Get or create the artifact - variable data will be generated automatically
       const { content, language, isNew } = await getOrCreateArtifact(
         client,
         sessionId,
         'session',
         artifactType,
-        userLanguage,
-        variableData
+        userLanguage
       );
       
       // Return the artifact

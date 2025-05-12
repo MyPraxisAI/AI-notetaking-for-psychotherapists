@@ -58,11 +58,13 @@ async function generateVariableValue(
   logger.info(ctx, `Generating value for variable: ${variable}`);
   
   const variableGenerators: Record<string, (client: SupabaseClient, context: VariableContext) => Promise<string>> = {
-    full_session_contents: generateFullSessionContents,
-    last_session_content: generateLastSessionContent,
-    session_summaries: generateSessionSummaries,
-    client_conceptualization: generateClientConceptualization,
-    client_bio: generateClientBio
+    full_session_contents: generateFullSessionContents, // client
+    last_session_content: generateLastSessionContent, // client
+    session_summaries: generateSessionSummaries, // client
+    client_conceptualization: generateClientConceptualization, // client 
+    client_bio: generateClientBio, // client 
+    session_transcript: generateSessionTranscript, // session
+    session_notes: generateSessionNotes // session
   };
   
   // Check if we have a generator for this variable
@@ -241,6 +243,94 @@ export async function generateSessionSummaries(client: SupabaseClient, variableC
   const clientId = variableContext.contextId;
   // Not implemented yet, YSTM-578
   return '';
+}
+
+/**
+ * Generate session notes content
+ * @param client Supabase client
+ * @param variableContext Context for variable generation
+ * @returns Session notes content
+ */
+export async function generateSessionNotes(client: SupabaseClient, variableContext: VariableContext): Promise<string> {
+  const logger = await getLogger();
+  const ctx = {
+    name: 'generate-session-notes',
+    contextType: variableContext.contextType,
+    contextId: variableContext.contextId
+  };
+  
+  // Validate that we have a session context type
+  if (!variableContext.contextType || variableContext.contextType !== 'session' || !variableContext.contextId) {
+    logger.error(ctx, 'Invalid variable context for generating session notes');
+    throw new Error('Session notes generation requires a session context');
+  }
+  
+  const sessionId = variableContext.contextId;
+  
+  // Fetch session data from the sessions table
+  logger.info(ctx, `Fetching session data for session ${sessionId}`);
+  const { data: sessionData, error: sessionError } = await client
+    .from('sessions')
+    .select('note')
+    .eq('id', sessionId)
+    .single();
+    
+  if (sessionError) {
+    logger.error(ctx, 'Error fetching session data:', sessionError);
+    return 'Error fetching session notes.';
+  }
+  
+  if (!sessionData || !sessionData.note) {
+    logger.warn(ctx, `No notes found for session ${sessionId}`);
+    return 'No notes available for this session.';
+  }
+  
+  logger.info(ctx, `Successfully retrieved notes for session ${sessionId}`);
+  return sessionData.note;
+}
+
+/**
+ * Generate session transcript content
+ * @param client Supabase client
+ * @param variableContext Context for variable generation
+ * @returns Session transcript content
+ */
+export async function generateSessionTranscript(client: SupabaseClient, variableContext: VariableContext): Promise<string> {
+  const logger = await getLogger();
+  const ctx = {
+    name: 'generate-session-transcript',
+    contextType: variableContext.contextType,
+    contextId: variableContext.contextId
+  };
+  
+  // Validate that we have a session context type
+  if (!variableContext.contextType || variableContext.contextType !== 'session' || !variableContext.contextId) {
+    logger.error(ctx, 'Invalid variable context for generating session transcript');
+    throw new Error('Session transcript generation requires a session context');
+  }
+  
+  const sessionId = variableContext.contextId;
+  
+  // Fetch transcript from the transcripts table
+  logger.info(ctx, `Fetching transcript for session ${sessionId}`);
+  const { data: transcriptData, error: transcriptError } = await client
+    .from('transcripts')
+    .select('content')
+    .eq('session_id', sessionId)
+    .maybeSingle();
+    
+  if (transcriptError) {
+    logger.error(ctx, 'Error fetching transcript:', transcriptError);
+    return 'Error fetching transcript data.';
+  }
+  
+  if (!transcriptData || !transcriptData.content) {
+    logger.warn(ctx, `No transcript found for session ${sessionId}`);
+    return 'No transcript available for this session.';
+  }
+  
+  logger.info(ctx, `Successfully retrieved transcript for session ${sessionId}`);
+  return transcriptData.content;
 }
 
 /**
