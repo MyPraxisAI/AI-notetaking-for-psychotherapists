@@ -468,7 +468,6 @@ export class YandexLongAudioV3Provider extends YandexBaseProvider {
       console.warn('No usable data found in the response');
       return {
         text: '',
-        confidence: 0,
         processingTime,
         timestamp: new Date().toISOString(),
         model: `yandex-v3/${options.model}`,
@@ -700,6 +699,7 @@ export class YandexLongAudioV3Provider extends YandexBaseProvider {
       processingTime,
       timestamp: new Date().toISOString(),
       model: `yandex-v3/${options.model}`,
+      text: '',
       contentJson: {
         segments: segments
           .filter(segment => segment.text.trim().length > 0) // Filter out empty segments
@@ -721,18 +721,7 @@ export class YandexLongAudioV3Provider extends YandexBaseProvider {
       console.error('Error during speaker role classification:', error);
       // Continue with unclassified roles if there's an error
     }
-    // TODO: Do not store text in db, it should be generated from contentJson
-    // Format the combined text with timestamps
-    const combinedText = segments
-    .filter(segment => segment.text.trim().length > 0) // Filter out empty segments
-    .map(segment => {
-      const startTimeFormatted = this.formatTimestamp(segment.start);
-      const endTimeFormatted = this.formatTimestamp(segment.end);
-      return `[${startTimeFormatted}-${endTimeFormatted}] ${segment.speaker}: ${segment.text}`;
-    })
-    .join('\n');
-
-    transcriptionResult.text = combinedText;
+    // Text formatting is now handled in the transcribeAudio function
 
     return transcriptionResult;
   }
@@ -853,17 +842,5 @@ export class YandexLongAudioV3Provider extends YandexBaseProvider {
     }
     
     return combinedResult;
-  }
-  
-  /**
-   * Format a timestamp in seconds to a human-readable format (MM:SS)
-   * 
-   * @param seconds - Time in seconds
-   * @returns Formatted timestamp
-   */
-  private formatTimestamp(seconds: number): string {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = Math.floor(seconds % 60);
-    return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
   }
 }

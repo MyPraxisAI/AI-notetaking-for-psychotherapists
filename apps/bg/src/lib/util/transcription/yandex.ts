@@ -3,9 +3,12 @@
  * This file is a re-export from the modular structure
  */
 
-// Re-export everything from the modular implementation
+// Import from the appropriate modules
+import { YandexTranscriptionOptions } from './yandex/common';
+import { YandexTranscriptionProvider } from './yandex/index';
+
+// Re-export everything
 export { 
   YandexTranscriptionOptions,
-  defaultYandexTranscriptionOptions,
   YandexTranscriptionProvider
-} from './yandex/index';
+};

@@ -111,11 +111,11 @@ export class AudioTranscriptionProcessor {
       if (transcriptionEngine === 'yandex-v3-ru') {
         // Use Yandex SpeechKit V3 with default options for Russian language
         console.log('Using Yandex SpeechKit V3 (Russian) for transcription');
-        result = await transcribeAudio(outputFilePath, YandexV3RuOptions, 'yandex');
+        result = await transcribeAudio(this.supabase, outputFilePath, YandexV3RuOptions, 'yandex');
       } else {
         // Fallback to Yandex V3 if an unsupported engine is specified
         console.log(`Unsupported transcription engine: ${transcriptionEngine}, falling back to yandex-v3-ru`);
-        result = await transcribeAudio(outputFilePath, YandexV3RuOptions, 'yandex');
+        result = await transcribeAudio(this.supabase, outputFilePath, YandexV3RuOptions, 'yandex');
       }
       
       console.log(`Transcription completed using ${transcriptionEngine} engine`);

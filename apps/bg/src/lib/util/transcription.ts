@@ -198,14 +198,47 @@ export async function transcribeAudio(
   const transcriptionProvider = getTranscriptionProvider(provider);
   
   // Type narrowing based on the provider to ensure type safety
+  let transcriptionResult: TranscriptionResult;
   switch (provider) {
     case 'openai':
       // For OpenAI, ensure options match OpenAI-specific options
-      return transcriptionProvider.transcribeAudio(client, audioFilePath, options as OpenAITranscriptionOptions);
+      transcriptionResult = await transcriptionProvider.transcribeAudio(client, audioFilePath, options as OpenAITranscriptionOptions);
+      break;
     case 'yandex':
       // For Yandex, ensure options match Yandex-specific options
-      return transcriptionProvider.transcribeAudio(client, audioFilePath, options as YandexTranscriptionOptions);
+      transcriptionResult = await transcriptionProvider.transcribeAudio(client, audioFilePath, options as YandexTranscriptionOptions);
+      break;
     default:
       throw new Error(`Unsupported transcription provider: ${provider}`);
   }
+  
+  // Format the combined text with timestamps if segments are available
+  if (transcriptionResult.contentJson?.segments && transcriptionResult.contentJson.segments.length > 0) {
+    // TODO: Do not store text in db, it should be generated from contentJson
+    // Format the combined text with timestamps
+    const combinedText = transcriptionResult.contentJson.segments
+      .filter(segment => segment.content.trim().length > 0) // Filter out empty segments
+      .map(segment => {
+        const startTimeFormatted = formatTimestamp(segment.start_ms / 1000);
+        const endTimeFormatted = formatTimestamp(segment.end_ms / 1000);
+        return `[${startTimeFormatted}-${endTimeFormatted}] ${segment.speaker || 'Unknown'}: ${segment.content}`;
+      })
+      .join('\n');
+
+    transcriptionResult.text = combinedText;
+  }
+  
+  return transcriptionResult;
+}
+
+/**
+ * Format a timestamp in seconds to a human-readable format (MM:SS)
+ * 
+ * @param seconds - Time in seconds
+ * @returns Formatted timestamp
+ */
+function formatTimestamp(seconds: number): string {
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = Math.floor(seconds % 60);
+  return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
 }

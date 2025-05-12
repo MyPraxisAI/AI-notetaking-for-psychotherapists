@@ -11,7 +11,7 @@ const loggerRegistry = createRegistry<Logger, LoggerProvider>();
 
 // Register the 'pino' logger implementation
 loggerRegistry.register('pino', async () => {
-  const { PinoLogger } = await import('./impl/pino');
+  const { PinoLogger } = await import('./impl/pino.js');
   return PinoLogger;
 });
 

@@ -77,13 +77,15 @@ COPY packages/shared-common/package.json /app/packages/shared-common/
 COPY packages/web-bg-common/package.json /app/packages/web-bg-common/
 COPY apps/bg/package.json ./package.json
 
-# Copy the built shared-common package with its index.js
+# Copy the built shared-common package with its index.js and src directory
 COPY --from=build /app/packages/shared-common/dist /app/packages/shared-common/dist
 COPY --from=build /app/packages/shared-common/index.js /app/packages/shared-common/index.js
+COPY --from=build /app/packages/shared-common/src /app/packages/shared-common/src
 
-# Copy the built web-bg-common package with its index.js
+# Copy the built web-bg-common package with its index.js and src directory
 COPY --from=build /app/packages/web-bg-common/dist /app/packages/web-bg-common/dist
 COPY --from=build /app/packages/web-bg-common/index.js /app/packages/web-bg-common/index.js
+COPY --from=build /app/packages/web-bg-common/src /app/packages/web-bg-common/src
 
 # Copy the built application
 COPY --from=build /app/apps/bg/dist ./dist

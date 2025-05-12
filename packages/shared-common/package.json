@@ -10,19 +10,28 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit"
   },
-  "prettier": "@kit/prettier-config",
+  "prettier": {},
   "exports": {
-    ".": "./src/index.ts",
-    "./logger": "./src/logger/index.ts",
-    "./registry": "./src/registry/index.ts"
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./logger": {
+      "import": "./dist/logger/index.js",
+      "require": "./dist/logger/index.js",
+      "types": "./dist/logger/index.d.ts"
+    },
+    "./registry": {
+      "import": "./dist/registry/index.js",
+      "require": "./dist/registry/index.js",
+      "types": "./dist/registry/index.d.ts"
+    }
   },
   "dependencies": {
     "pino": "^9.6.0"
   },
   "devDependencies": {
-    "@kit/eslint-config": "workspace:*",
-    "@kit/prettier-config": "workspace:*",
-    "@kit/tsconfig": "workspace:*",
     "@types/node": "^22.13.4",
     "typescript": "^5.8.2"
   },
