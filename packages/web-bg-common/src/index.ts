@@ -19,7 +19,19 @@ export * from './language';
 // Re-export AI utilities
 export * from './ai/ai-service';
 export * from './ai/models';
-export * from './ai/artifact-vars';
+// Export specific functions from artifact-vars to avoid conflicts
+export { 
+  generateVariableData,
+  generateFullSessionContents,
+  generateLastSessionContent,
+  generateSessionSummaries,
+  generateSessionTranscript,
+  generateSessionNote,
+  generateClientConceptualization,
+  generateClientBio,
+  extractTemplateVariables,
+  validateTemplateVariables
+} from './ai/artifact-vars';
 
 // Re-export logger utilities
 export * from './logger';

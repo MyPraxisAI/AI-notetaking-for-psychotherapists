@@ -36,7 +36,6 @@ export const GET = enhanceRouteHandler(
     const userLanguage = await getUserLanguage(client) as LanguageType;
     
     try {
-      // Get or create the artifact - variable data will be generated automatically
       const { content, language, isNew } = await getOrCreateArtifact(
         client,
         sessionId,

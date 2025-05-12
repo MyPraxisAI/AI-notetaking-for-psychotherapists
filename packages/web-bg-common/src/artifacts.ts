@@ -3,7 +3,7 @@ import { SupabaseClient } from '@supabase/supabase-js';
 import { generateLLMResponse } from './ai/models';
 import { createPromptApi, createTherapistApi, getUserLanguage, getFullLanguageName } from '.';
 import { getLogger } from './logger';
-import { generateVariableData } from './ai/artifact-vars';
+import { generateVariableData, extractTemplateVariables, validateTemplateVariables } from './ai/artifact-vars';
 
 // Import types
 import type { ArtifactType, PromptSourceType, LanguageType, VariableContext } from './types';
@@ -92,18 +92,9 @@ export async function generateContent(
     const env = new nunjucks.Environment(null, {
       autoescape: false  // Don't escape HTML since we're using this for plain text
     });
-    
-    // Get the primary therapeutic approach using the Therapist API
-    const therapistApi = createTherapistApi(client);
-    const therapeuticApproach = await therapistApi.getPrimaryTherapeuticApproach();
-    const primaryApproach = therapeuticApproach.title;
         
     // Render the prompt template with variables
-    let prompt = env.renderString(templateString, {
-      ...variables,
-      language: getFullLanguageName(language), // Convert language code to full name
-      primary_therapeutic_approach: primaryApproach
-    });
+    let prompt = env.renderString(templateString, variableData);
     
     // If mock services are enabled, inject the source identifier as a marker
     // This helps the mock implementation identify which response to return
@@ -113,7 +104,7 @@ export async function generateContent(
     }
     
     // Log the prompt variables
-    logger.info(ctx, `${logPrefix} Prompt template variables`, { sourceType, sourceValue, primaryApproach });
+    logger.info(ctx, `${logPrefix} Prompt template variables`, { sourceType, sourceValue });
     
     // In development, log the full prompt
     if (process.env.NODE_ENV === 'development') {
@@ -239,49 +230,7 @@ export async function saveArtifact(
   }
 }
 
-/**
- * Extract variables from a template string
- * @param templateString The template string to extract variables from
- * @returns Array of variable names
- */
-export function extractTemplateVariables(templateString: string): string[] {
-  const variableRegex = /\{\{\s*([a-z_]+)\s*\}\}/g;
-  const variables = new Set<string>();
-  let match: RegExpExecArray | null;
-  
-  while ((match = variableRegex.exec(templateString)) !== null) {
-    const variableName = match[1];
-    // Skip global variables that are handled at a lower level
-    if (variableName && variableName !== 'language' && variableName !== 'primary_therapeutic_approach') {
-      variables.add(variableName);
-    }
-  }
-  
-  return Array.from(variables);
-}
-
-/**
- * Validate that all template variables have corresponding generators
- * @param variables Array of variable names to validate
- * @throws Error if any variable doesn't have a generator
- */
-export function validateTemplateVariables(variables: string[]): void {
-  const supportedVariables = [
-    'full_session_contents',
-    'last_session_content',
-    'session_summaries',
-    'client_conceptualization',
-    'client_bio',
-    'session_transcript',
-    'session_note'
-  ];
-  
-  for (const variable of variables) {
-    if (!supportedVariables.includes(variable)) {
-      throw new Error(`Unsupported template variable: ${variable}`);
-    }
-  }
-}
+// Template variable functions moved to artifact-vars.ts
 
 /**
  * Get an existing artifact or create a new one if it doesn't exist

@@ -1,7 +1,105 @@
 import { SupabaseClient } from '@supabase/supabase-js';
-import { getUserLanguage, getOrCreateArtifact } from '..';
+import { getUserLanguage, getOrCreateArtifact, getFullLanguageName, createTherapistApi } from '..';
 import type { ArtifactType, LanguageType, VariableContext } from '../types';
 import { getLogger } from '../logger';
+
+/**
+ * Generate the full language name based on user preferences
+ * @param client Supabase client
+ * @param variableContext Context for variable generation
+ * @returns Full language name (e.g., 'English' for 'en')
+ */
+export async function generateLanguage(client: SupabaseClient, variableContext: VariableContext): Promise<string> {
+  const logger = await getLogger();
+  const ctx = {
+    name: 'generate-language',
+    contextType: variableContext.contextType,
+    contextId: variableContext.contextId
+  };
+  
+  logger.info(ctx, 'Getting user language preference');
+  
+  // Get the user's preferred language
+  const language = await getUserLanguage(client) as LanguageType;
+  
+  // Convert language code to full name
+  const fullLanguageName = getFullLanguageName(language);
+  
+  logger.info(ctx, `User language: ${language}, Full name: ${fullLanguageName}`);
+  return fullLanguageName;
+}
+
+/**
+ * Generate the primary therapeutic approach for the therapist
+ * @param client Supabase client
+ * @param variableContext Context for variable generation
+ * @returns Primary therapeutic approach title
+ */
+export async function generatePrimaryTherapeuticApproach(client: SupabaseClient, variableContext: VariableContext): Promise<string> {
+  const logger = await getLogger();
+  const ctx = {
+    name: 'generate-primary-therapeutic-approach',
+    contextType: variableContext.contextType,
+    contextId: variableContext.contextId
+  };
+  
+  logger.info(ctx, 'Getting primary therapeutic approach');
+  
+  // Get the primary therapeutic approach using the Therapist API
+  const therapistApi = createTherapistApi(client);
+  const therapeuticApproach = await therapistApi.getPrimaryTherapeuticApproach();
+  const primaryApproach = therapeuticApproach.title;
+  
+  logger.info(ctx, `Primary therapeutic approach: ${primaryApproach}`);
+  return primaryApproach;
+}
+
+/**
+ * Extract variables from a template string
+ * @param templateString The template string to extract variables from
+ * @returns Array of variable names
+ */
+export function extractTemplateVariables(templateString: string): string[] {
+  const variableRegex = /\{\{\s*([a-z_]+)\s*\}\}/g;
+  const variables = new Set<string>();
+  let match: RegExpExecArray | null;
+  
+  while ((match = variableRegex.exec(templateString)) !== null) {
+    const variableName = match[1];
+    variables.add(variableName);
+  }
+  
+  return Array.from(variables);
+}
+
+// Define the variable generators at the module level so they can be referenced by validateTemplateVariables
+const variableGenerators: Record<string, (client: SupabaseClient, context: VariableContext) => Promise<string>> = {
+  full_session_contents: generateFullSessionContents, // client
+  last_session_content: generateLastSessionContent, // client
+  session_summaries: generateSessionSummaries, // client
+  session_transcript: generateSessionTranscript, // session
+  session_note: generateSessionNote, // session
+  client_conceptualization: generateClientConceptualization, // client
+  client_bio: generateClientBio, // client
+  language: generateLanguage, // global
+  primary_therapeutic_approach: generatePrimaryTherapeuticApproach // global
+};
+
+/**
+ * Validate that all template variables have corresponding generators
+ * @param variables Array of variable names to validate
+ * @throws Error if any variable doesn't have a generator
+ */
+export function validateTemplateVariables(variables: string[]): void {
+  // Get the supported variables directly from the variableGenerators object
+  const supportedVariables = Object.keys(variableGenerators);
+  
+  for (const variable of variables) {
+    if (!supportedVariables.includes(variable)) {
+      throw new Error(`Unsupported template variable: ${variable}`);
+    }
+  }
+}
 
 /**
  * Generate data for template variables
@@ -56,16 +154,6 @@ async function generateVariableValue(
   };
 
   logger.info(ctx, `Generating value for variable: ${variable}`);
-  
-  const variableGenerators: Record<string, (client: SupabaseClient, context: VariableContext) => Promise<string>> = {
-    full_session_contents: generateFullSessionContents, // client
-    last_session_content: generateLastSessionContent, // client
-    session_summaries: generateSessionSummaries, // client
-    client_conceptualization: generateClientConceptualization, // client 
-    client_bio: generateClientBio, // client 
-    session_transcript: generateSessionTranscript, // session
-    session_notes: generateSessionNotes // session
-  };
   
   // Check if we have a generator for this variable
   if (!(variable in variableGenerators)) {
@@ -246,15 +334,15 @@ export async function generateSessionSummaries(client: SupabaseClient, variableC
 }
 
 /**
- * Generate session notes content
+ * Generate session note content
  * @param client Supabase client
  * @param variableContext Context for variable generation
- * @returns Session notes content
+ * @returns Session note content
  */
-export async function generateSessionNotes(client: SupabaseClient, variableContext: VariableContext): Promise<string> {
+export async function generateSessionNote(client: SupabaseClient, variableContext: VariableContext): Promise<string> {
   const logger = await getLogger();
   const ctx = {
-    name: 'generate-session-notes',
+    name: 'generate-session-note',
     contextType: variableContext.contextType,
     contextId: variableContext.contextId
   };
