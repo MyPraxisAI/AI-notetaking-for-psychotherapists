@@ -1,7 +1,12 @@
 import { NextResponse } from 'next/server';
 import { enhanceRouteHandler } from '@kit/next/routes';
 import { getSupabaseServerClient } from '@kit/supabase/server-client';
-import { getUserLanguage, generateArtifact, saveArtifact, getOrCreateArtifact } from '@kit/web-bg-common';
+import { 
+  getUserLanguage, 
+  generateArtifact, 
+  saveArtifact, 
+  getOrCreateArtifact
+} from '@kit/web-bg-common';
 import type { ArtifactType, LanguageType } from '@kit/web-bg-common/types';
 
 // This route handler returns artifacts for a session
