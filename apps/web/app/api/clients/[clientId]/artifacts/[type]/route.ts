@@ -1,51 +1,19 @@
 import { NextResponse } from 'next/server';
 import { enhanceRouteHandler } from '@kit/next/routes';
 import { getSupabaseServerClient } from '@kit/supabase/server-client';
-import { getUserLanguage, generateArtifact, saveArtifact, createPromptApi } from '@kit/web-bg-common';
+import { 
+  getUserLanguage, 
+  generateArtifact, 
+  saveArtifact, 
+  createPromptApi,
+  getOrCreateArtifact,
+  extractTemplateVariables,
+  validateTemplateVariables
+} from '@kit/web-bg-common';
 import type { ArtifactType, LanguageType } from '@kit/web-bg-common/types';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
-/**
- * Extract variables from a template string
- * @param templateString The template string to extract variables from
- * @returns Array of variable names
- */
-function extractTemplateVariables(templateString: string): string[] {
-  const variableRegex = /\{\{\s*([a-z_]+)\s*\}\}/g;
-  const variables = new Set<string>();
-  let match: RegExpExecArray | null;
-  
-  while ((match = variableRegex.exec(templateString)) !== null) {
-    const variableName = match[1];
-    // Skip global variables that are handled at a lower level
-    if (variableName && variableName !== 'language' && variableName !== 'primary_therapeutic_approach') {
-      variables.add(variableName);
-    }
-  }
-  
-  return Array.from(variables);
-}
-
-/**
- * Validate that all template variables have corresponding generators
- * @param variables Array of variable names to validate
- * @throws Error if any variable doesn't have a generator
- */
-function validateTemplateVariables(variables: string[]): void {
-  const supportedVariables = [
-    'full_session_contents',
-    'last_session_content',
-    'session_summaries',
-    'client_conceptualization',
-    'client_bio'
-  ];
-  
-  for (const variable of variables) {
-    if (!supportedVariables.includes(variable)) {
-      throw new Error(`Unsupported template variable: ${variable}`);
-    }
-  }
-}
+// These functions have been moved to @kit/web-bg-common/artifacts.ts
 
 /**
  * Generate data for template variables
@@ -232,102 +200,6 @@ async function generateSessionSummaries(_client: SupabaseClient, _clientId: stri
 }
 
 /**
- * Get an existing artifact or create a new one if it doesn't exist
- * @param client Supabase client
- * @param clientId Client ID
- * @param artifactType Type of artifact to get or create
- * @param userLanguage User's preferred language
- * @returns Artifact content and metadata
- */
-async function getOrCreateArtifact(
-  client: SupabaseClient,
-  clientId: string,
-  artifactType: ArtifactType,
-  userLanguage: LanguageType
-): Promise<{ content: string; language: string; isNew: boolean }> {
-  try {
-    console.log(`[Artifact:${artifactType}] Checking if artifact exists for client ${clientId}`);
-    // Check if the artifact already exists in the database
-    const { data: existingArtifact } = await client
-      .from('artifacts')
-      .select('content, language')
-      .eq('reference_type', 'client')
-      .eq('reference_id', clientId)
-      .eq('type', artifactType)
-      .maybeSingle();
-    
-    // If the artifact exists, return it
-    if (existingArtifact) {
-      console.log(`[Artifact:${artifactType}] Found existing artifact for client ${clientId}`);
-      return {
-        content: existingArtifact.content,
-        language: existingArtifact.language,
-        isNew: false
-      };
-    }
-    
-    // If the artifact doesn't exist, generate it
-    console.log(`[Artifact:${artifactType}] Not found for client ${clientId}, generating new artifact...`);
-    
-    // Get the prompt template to extract variables
-    console.log(`[Artifact:${artifactType}] Fetching prompt template`);
-    const promptApi = createPromptApi(client);
-    const promptData = await promptApi.getPromptByArtifactType(artifactType);
-    const templateString = promptData.template;
-    console.log(`[Artifact:${artifactType}] Using model: ${promptData.model}`);
-    
-    // Extract variables from the template
-    const variables = extractTemplateVariables(templateString);
-    
-    // Validate that we can generate all required variables
-    validateTemplateVariables(variables);
-    
-    // Generate data for all variables
-    const variableData = await generateVariableData(client, clientId, artifactType, variables);
-    
-    // Generate the artifact using the variable data
-    console.log(`[Artifact:${artifactType}] Starting artifact generation with OpenAI`);
-    const startTime = Date.now();
-    let content;
-    try {
-      content = await generateArtifact(client, artifactType, variableData);
-      const duration = Date.now() - startTime;
-      console.log(`[Artifact:${artifactType}] Generation completed successfully in ${duration}ms`);
-    } catch (genError) {
-      const duration = Date.now() - startTime;
-      console.error(`[Artifact:${artifactType}] Generation failed after ${duration}ms:`, genError);
-      throw genError;
-    }
-    
-    // Save the generated artifact to the database
-    await saveArtifact(client, clientId, 'client', artifactType, content, userLanguage);
-    
-    return {
-      content,
-      language: userLanguage,
-      isNew: true
-    };
-  } catch (error) {
-    console.error(`[Artifact:${artifactType}] Error getting or creating artifact for client ${clientId}:`, error);
-    
-    // Check for timeout errors specifically
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    const isTimeout = errorMessage.includes('timeout') || errorMessage.includes('timed out');
-    
-    if (isTimeout) {
-      console.error(`[Artifact:${artifactType}] Request timed out. This could be due to high server load or an issue with the OpenAI API.`);
-      return {
-        content: `We're sorry, but we couldn't generate this content at the moment due to high demand. Please try again later.`,
-        language: userLanguage,
-        isNew: true
-      };
-    }
-    
-    throw new Error(`Failed to get or create ${artifactType}: ${errorMessage}`);
-  }
-}
-
-/**
  * Generate or fetch client conceptualization
  * @param client Supabase client
  * @param clientId Client ID
@@ -337,12 +209,17 @@ async function generateClientConceptualization(client: SupabaseClient, clientId:
   // Get the user's preferred language
   const userLanguage = await getUserLanguage(client) as LanguageType;
   
+  // Generate variable data for the client
+  const variableData = await generateVariableData(client, clientId, 'client_conceptualization', ['full_session_contents']);
+  
   // Get or create the conceptualization
   const { content } = await getOrCreateArtifact(
     client,
     clientId,
+    'client',
     'client_conceptualization',
-    userLanguage
+    userLanguage,
+    variableData
   );
   
   return content;
@@ -358,12 +235,17 @@ async function generateClientBio(client: SupabaseClient, clientId: string): Prom
   // Get the user's preferred language
   const userLanguage = await getUserLanguage(client) as LanguageType;
   
+  // Generate variable data for the client
+  const variableData = await generateVariableData(client, clientId, 'client_bio', ['full_session_contents']);
+  
   // Get or create the bio
   const { content } = await getOrCreateArtifact(
     client,
     clientId,
+    'client',
     'client_bio',
-    userLanguage
+    userLanguage,
+    variableData
   );
   
   return content;
@@ -392,8 +274,24 @@ export const GET = enhanceRouteHandler(
     const userLanguage = await getUserLanguage(client) as LanguageType;
     
     try {
+      // Generate variable data for the artifact
+      const templateVariables = [
+        'full_session_contents',
+        'last_session_content',
+        'client_conceptualization',
+        'client_bio'
+      ];
+      const variableData = await generateVariableData(client, clientId, artifactType, templateVariables);
+      
       // Get or create the artifact
-      const { content, language, isNew } = await getOrCreateArtifact(client, clientId, artifactType, userLanguage);
+      const { content, language, isNew } = await getOrCreateArtifact(
+        client, 
+        clientId, 
+        'client', 
+        artifactType, 
+        userLanguage,
+        variableData
+      );
       
       // Return the artifact
       return NextResponse.json({

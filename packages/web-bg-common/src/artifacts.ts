@@ -51,6 +51,14 @@ export async function generateContent(
     
     const templateString = promptData.template;
     
+    // Extract variables from the template
+    const templateVariables = extractTemplateVariables(templateString);
+    
+    // Validate that all variables have corresponding generators
+    validateTemplateVariables(templateVariables);
+
+    // TODO: generate missing template variables not present in variables
+
     // Get model parameters from the database
     const modelParameters = promptData.parameters || { temperature: 0.7 };
     
@@ -211,10 +219,149 @@ export async function saveArtifact(
       if (error) throw error;
     }
     
-    logger.info(ctx, `Successfully saved ${type} artifact`);
     return true;
   } catch (error) {
     logger.error(ctx, `Error saving ${type} artifact:`, error);
-    return false;
+    throw error;
   }
 }
+
+/**
+ * Extract variables from a template string
+ * @param templateString The template string to extract variables from
+ * @returns Array of variable names
+ */
+export function extractTemplateVariables(templateString: string): string[] {
+  const variableRegex = /\{\{\s*([a-z_]+)\s*\}\}/g;
+  const variables = new Set<string>();
+  let match: RegExpExecArray | null;
+  
+  while ((match = variableRegex.exec(templateString)) !== null) {
+    const variableName = match[1];
+    // Skip global variables that are handled at a lower level
+    if (variableName && variableName !== 'language' && variableName !== 'primary_therapeutic_approach') {
+      variables.add(variableName);
+    }
+  }
+  
+  return Array.from(variables);
+}
+
+/**
+ * Validate that all template variables have corresponding generators
+ * @param variables Array of variable names to validate
+ * @throws Error if any variable doesn't have a generator
+ */
+export function validateTemplateVariables(variables: string[]): void {
+  const supportedVariables = [
+    'full_session_contents',
+    'last_session_content',
+    'session_summaries',
+    'client_conceptualization',
+    'client_bio',
+    'session_transcript',
+    'session_note'
+  ];
+  
+  for (const variable of variables) {
+    if (!supportedVariables.includes(variable)) {
+      throw new Error(`Unsupported template variable: ${variable}`);
+    }
+  }
+}
+
+/**
+ * Get an existing artifact or create a new one if it doesn't exist
+ * @param client Supabase client
+ * @param referenceId ID of the reference (session or client)
+ * @param referenceType Type of reference ('session' or 'client')
+ * @param artifactType Type of artifact to get or create
+ * @param userLanguage User's preferred language
+ * @param variableData Optional data for template variables
+ * @returns Artifact content and metadata
+ */
+export async function getOrCreateArtifact(
+  client: SupabaseClient,
+  referenceId: string,
+  referenceType: 'session' | 'client',
+  artifactType: ArtifactType,
+  userLanguage: LanguageType,
+  variableData?: Record<string, string>
+): Promise<{ content: string; language: string; isNew: boolean }> {
+  const logger = await getLogger();
+  const ctx = {
+    name: 'get-or-create-artifact',
+    referenceId,
+    referenceType,
+    artifactType,
+    userLanguage
+  };
+  
+  try {
+    logger.info(ctx, `Checking if artifact exists for ${referenceType} ${referenceId}`);
+    // Check if the artifact already exists in the database
+    const { data: existingArtifact } = await client
+      .from('artifacts')
+      .select('content, language')
+      .eq('reference_type', referenceType)
+      .eq('reference_id', referenceId)
+      .eq('type', artifactType)
+      .maybeSingle();
+    
+    // If the artifact exists, return it
+    if (existingArtifact) {
+      logger.info(ctx, `Found existing artifact for ${referenceType} ${referenceId}`);
+      return {
+        content: existingArtifact.content,
+        language: existingArtifact.language,
+        isNew: false
+      };
+    }
+    
+    logger.info(ctx, `No existing artifact found for ${referenceType} ${referenceId}, generating...`);
+        
+    // Use provided variable data or empty object
+    const variables = variableData || {};
+    
+    // Generate the artifact using OpenAI
+    const startTime = Date.now();
+    let content;
+    try {
+      content = await generateArtifact(client, artifactType, variables);
+      const duration = Date.now() - startTime;
+      logger.info(ctx, `Generation completed successfully in ${duration}ms`);
+    } catch (genError) {
+      const duration = Date.now() - startTime;
+      logger.error(ctx, `Generation failed after ${duration}ms:`, genError);
+      throw genError;
+    }
+    
+    // Save the generated artifact to the database
+    await saveArtifact(client, referenceId, referenceType, artifactType, content, userLanguage);
+    
+    return {
+      content,
+      language: userLanguage,
+      isNew: true
+    };
+  } catch (error) {
+    logger.error(ctx, `Error getting or creating artifact for ${referenceType} ${referenceId}:`, error);
+    
+    // Check for timeout errors specifically
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const isTimeout = errorMessage.includes('timeout') || errorMessage.includes('timed out');
+    
+    if (isTimeout) {
+      logger.error(ctx, `Request timed out. This could be due to high server load or an issue with the API.`);
+      return {
+        content: `We're sorry, but we couldn't generate this content at the moment due to high demand. Please try again later.`,
+        language: userLanguage,
+        isNew: true
+      };
+    }
+    
+    throw new Error(`Failed to get or create ${artifactType}: ${errorMessage}`);
+  }
+}
+
+

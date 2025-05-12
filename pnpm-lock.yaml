@@ -284,6 +284,9 @@ importers:
       next-themes:
         specifier: 0.4.4
         version: 0.4.4(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      nunjucks:
+        specifier: ^3.2.4
+        version: 3.2.4(chokidar@3.6.0)
       react:
         specifier: 19.0.0
         version: 19.0.0

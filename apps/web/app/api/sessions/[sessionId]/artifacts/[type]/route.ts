@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { enhanceRouteHandler } from '@kit/next/routes';
 import { getSupabaseServerClient } from '@kit/supabase/server-client';
-import { getUserLanguage, generateArtifact, saveArtifact } from '@kit/web-bg-common';
+import { getUserLanguage, generateArtifact, saveArtifact, getOrCreateArtifact } from '@kit/web-bg-common';
 import type { ArtifactType, LanguageType } from '@kit/web-bg-common/types';
 
 // This route handler returns artifacts for a session
@@ -30,94 +30,68 @@ export const GET = enhanceRouteHandler(
     // Get the user's preferred language
     const userLanguage = await getUserLanguage(client) as LanguageType;
     
-    // Fetch the artifact from the database
-    const { data: artifact, error } = await client
-      .from('artifacts')
-      .select('content, language')
-      .eq('reference_type', 'session')
-      .eq('reference_id', sessionId)
-      .eq('type', artifactType)
-      .eq('language', userLanguage)
-      .single();
-    
-    // If there's an error or no artifact found, generate it with OpenAI
-    if (error || !artifact) {
-      try {
-        // Get the session data needed for generation
-        const { data: session } = await client
-          .from('sessions')
-          .select('id, note')
-          .eq('id', sessionId)
-          .single();
+    try {
+      // Get the session data needed for generation
+      const { data: session } = await client
+        .from('sessions')
+        .select('id, note')
+        .eq('id', sessionId)
+        .single();
+      
+      // Fetch transcript data from the transcripts table
+      const { data: transcriptData } = await client
+        .from('transcripts')
+        .select('content')
+        .eq('session_id', sessionId)
+        .single();
         
-        // Fetch transcript data from the transcripts table
-        const { data: transcriptData } = await client
-          .from('transcripts')
-          .select('content')
-          .eq('session_id', sessionId)
-          .single();
-          
-        const transcriptContent = transcriptData?.content || null;
-        
-        if (!session || (!transcriptContent && !session.note)) {
-          // If there's no session or neither transcript nor note, we can't generate an artifact
-          return NextResponse.json({
-            content: `This ${artifactType.replace('session_', '').replace('_', ' ')} cannot be generated without either a transcript or session notes.`,
-            language: userLanguage,
-            generated: false,
-            dataTest: `session-artifact-${artifactType}-missing-data`
-          });
-        }
-        
-        // Generate the artifact content using OpenAI
-        const generatedContent = await generateArtifact(
-          client,
-          artifactType,
-          {
-            session_transcript: transcriptContent || '',
-            session_note: session.note || ''
-          }
-        );
-        
-        // Save the generated artifact to the database
-        await saveArtifact(
-          client,
-          sessionId,
-          'session',
-          artifactType,
-          generatedContent,
-          userLanguage as LanguageType
-        );
-        
-        // Return the generated content
+      const transcriptContent = transcriptData?.content || null;
+      
+      if (!session || (!transcriptContent && !session.note)) {
+        // If there's no session or neither transcript nor note, we can't generate an artifact
         return NextResponse.json({
-          content: generatedContent,
-          language: userLanguage,
-          generated: true,
-          dataTest: `session-artifact-${artifactType}-generated`
-        });
-      } catch (generationError) {
-        console.error('Error generating artifact:', generationError);
-        
-        // Return an error message if generation fails
-        return NextResponse.json({
-          content: `Unable to generate this ${artifactType.replace('session_', '').replace('_', ' ')}. Please try again later.`,
+          content: `This ${artifactType.replace('session_', '').replace('_', ' ')} cannot be generated without either a transcript or session notes.`,
           language: userLanguage,
           generated: false,
-          error: true,
-          dataTest: `session-artifact-${artifactType}-error`
-        }, { status: 500 });
+          dataTest: `session-artifact-${artifactType}-missing-data`
+        });
       }
+      
+      // Prepare variable data for the artifact
+      const variableData = {
+        session_transcript: transcriptContent || '',
+        session_note: session.note || ''
+      };
+      
+      // Get or create the artifact
+      const { content, language, isNew } = await getOrCreateArtifact(
+        client,
+        sessionId,
+        'session',
+        artifactType,
+        userLanguage,
+        variableData
+      );
+      
+      // Return the artifact
+      return NextResponse.json({
+        content,
+        language,
+        generated: isNew,
+        dataTest: isNew ? `session-artifact-${artifactType}-generated` : `session-artifact-${artifactType}`
+      });
+    } catch (error) {
+      console.error('Error getting or creating artifact:', error);
+      
+      // Return an error message if generation fails
+      return NextResponse.json({
+        content: `Unable to generate this ${artifactType.replace('session_', '').replace('_', ' ')}. Please try again later.`,
+        language: userLanguage,
+        generated: false,
+        error: true,
+        dataTest: `session-artifact-${artifactType}-error`
+      }, { status: 500 });
     }
-    
-    // Return the artifact content
-    return NextResponse.json({
-      content: artifact.content,
-      language: artifact.language,
-      generated: false,
-      // Add data-test attribute for E2E testing
-      dataTest: `session-artifact-${artifactType}`
-    });
   },
   {
     auth: true,
