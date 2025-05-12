@@ -1,12 +1,12 @@
 import * as nunjucks from 'nunjucks';
 import { SupabaseClient } from '@supabase/supabase-js';
-import { generateLLMResponse } from './ai/models';
-import { createPromptApi, createTherapistApi, getUserLanguage, getFullLanguageName } from '.';
-import { getLogger } from './logger';
-import { generateVariableData, extractTemplateVariables, validateTemplateVariables } from './ai/artifact-vars';
+import { generateLLMResponse } from './models';
+import { createPromptApi, createTherapistApi, getUserLanguage, getFullLanguageName } from '..';
+import { getLogger } from '../logger';
+import { generateVariableData, extractTemplateVariables, validateTemplateVariables } from './artifact-vars';
 
 // Import types
-import type { ArtifactType, PromptSourceType, LanguageType, VariableContext } from './types';
+import type { ArtifactType, PromptSourceType, LanguageType, VariableContext } from '../types';
 
 /**
  * Generate content using a prompt template

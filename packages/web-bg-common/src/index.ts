@@ -37,7 +37,7 @@ export {
 export * from './logger';
 
 // Re-export artifact utilities
-export * from './artifacts';
+export * from './ai/artifacts';
 
 // Re-export types for convenience in server contexts
 export * from './types';
