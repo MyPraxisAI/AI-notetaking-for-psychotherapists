@@ -32,6 +32,7 @@ export async function classifySpeakerRoles(
     .join('\n');
 
   // Generate the classification using the session_speaker_roles_classification artifact
+  // TODO: save the artifact to db too
   const classificationResultRaw = await generateArtifact(
     client,
     'session_speaker_roles_classification',
@@ -47,8 +48,6 @@ export async function classifySpeakerRoles(
     // TODO: retry, or use something similar to pyannotate
     throw new Error('Invalid classification result format');
   }
-
-  // TODO: Save artifact!
 
   // Update segments with classified roles
   const updatedSegments = transcription.content_json.segments.map(segment => {

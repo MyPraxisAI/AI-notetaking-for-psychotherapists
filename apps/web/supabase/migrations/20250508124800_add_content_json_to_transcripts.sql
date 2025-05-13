@@ -74,11 +74,17 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql IMMUTABLE;
 
+-- Set permissions for validate_transcript_segments function
+-- First revoke all permissions from PUBLIC
+REVOKE ALL ON FUNCTION public.validate_transcript_segments(jsonb) FROM PUBLIC;
+
+-- Then grant execute to authenticated and service_role
+GRANT EXECUTE ON FUNCTION public.validate_transcript_segments(jsonb) TO authenticated, service_role;
+
 -- Add constraint to validate the content_json structure
 ALTER TABLE public.transcripts
 ADD CONSTRAINT validate_content_json_structure
 CHECK (
   content_json IS NULL OR validate_transcript_segments(content_json)
 );
-
 
