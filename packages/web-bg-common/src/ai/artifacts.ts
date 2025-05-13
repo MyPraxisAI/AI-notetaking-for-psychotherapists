@@ -4,6 +4,7 @@ import { generateLLMResponse } from './models';
 import { createPromptApi, createTherapistApi, getUserLanguage, getFullLanguageName } from '..';
 import { getLogger } from '../logger';
 import { generateVariableData, extractTemplateVariables, canGenerateVariable } from './artifact-vars';
+import { cleanupMarkdownCodeBlocks } from './artifact-utils';
 
 // Import types
 import type { ArtifactType, PromptSourceType, LanguageType, VariableContext } from '../types';
@@ -136,8 +137,11 @@ export async function generateContent(
       completionTokens: result.completionTokens,
       totalTokens: result.totalTokens
     });
-    
-    return result.content;
+
+    // Clean up the content by removing markdown code block markers if they exist
+    const cleanedContent = cleanupMarkdownCodeBlocks(result.content);
+
+    return cleanedContent;
   } catch (error) {
     logger.error(ctx, `Error generating content for ${sourceType}:${sourceValue}:`, error);
     throw new Error(`Failed to generate content for ${sourceType}:${sourceValue}`);
