@@ -1,0 +1,4 @@
+# Exclude compilation artifacts from Windsurf search
+packages/web-bg-common/dist/
+**/dist/
+**/*.d.ts

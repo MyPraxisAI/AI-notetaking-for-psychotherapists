@@ -1,7 +1,8 @@
 import { SupabaseClient } from '@supabase/supabase-js';
-import { getSupabaseAccountClient } from './supabase';
+import { getSupabaseAdminClient } from './supabase';
 import { SQSQueueManager } from './sqs';
 import { AudioTranscriptionProcessor } from './processors';
+import { withCurrentAccountId } from '@kit/web-bg-common/db';
 import { 
   AudioProcessingTaskData, 
   BaseBackgroundTask, 
@@ -34,14 +35,11 @@ export class MessageProcessor {
    * @param sqsManager - The SQS queue manager for deleting messages
    */
   async processMessage(message: SQSMessage, sqsManager: SQSQueueManager): Promise<void> {
-    // Create a fresh client for this task
-    let supabase: SupabaseClient | null = null;
-    
     try {
       console.log(`Processing message: ${message.MessageId}`);
       console.log(`Message body: ${message.Body}`);
       
-      // Parse the message body first to determine if we need to impersonate a user
+      // Parse the message body first
       let body: any;
       try {
         body = JSON.parse(message.Body as string);
@@ -56,17 +54,19 @@ export class MessageProcessor {
         throw new Error('Message is missing required accountId field');
       }
       
-      // Create a fresh client for this task that impersonates the specified account
-      // A new client is created for each task to ensure proper isolation
-      supabase = await getSupabaseAccountClient(body.accountId);
+      // Use the admin client with service role privileges
+      const supabase = await getSupabaseAdminClient();
       
-      // Process the message based on its operation
-      if (body.operation) {
-        await this.processMessageByOperation(body, message.MessageId, supabase);
-      } else {
-        console.log('Message has no operation field, using default processing');
-        await this.defaultProcessing(body, message.MessageId, supabase);
-      }
+      // Process the message within the account context using AsyncLocalStorage
+      await withCurrentAccountId(body.accountId, async () => {
+        // Process the message based on its operation
+        if (body.operation) {
+          await this.processMessageByOperation(body, message.MessageId, supabase);
+        } else {
+          console.log('Message has no operation field, using default processing');
+          await this.defaultProcessing(body, message.MessageId, supabase);
+        }
+      });
       
       console.log('Message processed successfully');
       

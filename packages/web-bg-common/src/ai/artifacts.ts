@@ -56,7 +56,7 @@ export async function generateContent(
     
     // Extract variables from the template
     const templateVariables = extractTemplateVariables(templateString);
-    
+        
     // Filter out variables that are already provided in the incoming variables
     const missingVariables = templateVariables.filter(variable => !(variable in variables));
     
@@ -68,8 +68,8 @@ export async function generateContent(
     }
     
     // Only generate data for variables that aren't already provided
-    const generatedVariableData = missingVariables.length > 0 && variableContext ? 
-      await generateVariableData(client, variableContext, sourceValue as ArtifactType, missingVariables) : {};
+    const generatedVariableData = missingVariables.length > 0 ? 
+      await generateVariableData(client, sourceValue as ArtifactType, missingVariables, variableContext) : {};
       
     // Combine provided variables with generated ones
     const variableData = { ...generatedVariableData, ...variables };

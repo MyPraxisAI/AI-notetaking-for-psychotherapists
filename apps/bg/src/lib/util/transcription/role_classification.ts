@@ -35,7 +35,7 @@ export async function classifySpeakerRoles(
   const classificationResultRaw = await generateArtifact(
     client,
     'session_speaker_roles_classification',
-    { transcript }
+    { session_transcript: transcript }
   );
 
   // Parse the classification result

@@ -9,12 +9,12 @@ import { getLogger } from '../logger';
  * @param variableContext Context for variable generation
  * @returns Full language name (e.g., 'English' for 'en')
  */
-export async function generateLanguage(client: SupabaseClient, variableContext: VariableContext): Promise<string> {
+export async function generateLanguage(client: SupabaseClient, variableContext?: VariableContext): Promise<string> {
   const logger = await getLogger();
   const ctx = {
     name: 'generate-language',
-    contextType: variableContext.contextType,
-    contextId: variableContext.contextId
+    contextType: variableContext?.contextType || 'unknown',
+    contextId: variableContext?.contextId || 'unknown'
   };
   
   logger.info(ctx, 'Getting user language preference');
@@ -35,12 +35,12 @@ export async function generateLanguage(client: SupabaseClient, variableContext: 
  * @param variableContext Context for variable generation
  * @returns Primary therapeutic approach title
  */
-export async function generatePrimaryTherapeuticApproach(client: SupabaseClient, variableContext: VariableContext): Promise<string> {
+export async function generatePrimaryTherapeuticApproach(client: SupabaseClient, variableContext?: VariableContext): Promise<string> {
   const logger = await getLogger();
   const ctx = {
     name: 'generate-primary-therapeutic-approach',
-    contextType: variableContext.contextType,
-    contextId: variableContext.contextId
+    contextType: variableContext?.contextType || 'unknown',
+    contextId: variableContext?.contextId || 'unknown'
   };
   
   logger.info(ctx, 'Getting primary therapeutic approach');
@@ -73,7 +73,7 @@ export function extractTemplateVariables(templateString: string): string[] {
 }
 
 // Define the variable generators at the module level so they can be referenced by validateTemplateVariables
-const variableGenerators: Record<string, (client: SupabaseClient, context: VariableContext) => Promise<string>> = {
+const variableGenerators: Record<string, (client: SupabaseClient, context?: VariableContext) => Promise<string>> = {
   full_session_contents: generateFullSessionContents, // client
   last_session_content: generateLastSessionContent, // client
   session_summaries: generateSessionSummaries, // client
@@ -97,22 +97,22 @@ export function canGenerateVariable(variable: string): boolean {
 /**
  * Generate data for template variables
  * @param client Supabase client
- * @param variableContext Context for variable generation
+ * @param variableContext Optional context for variable generation
  * @param artifactType Artifact type
  * @param variables Array of variable names
  * @returns Object with variable data
  */
 export async function generateVariableData(
   client: SupabaseClient,
-  variableContext: VariableContext,
   artifactType: ArtifactType,
-  variables: string[]
+  variables: string[],
+  variableContext?: VariableContext
 ): Promise<Record<string, string>> {
   const logger = await getLogger();
   const ctx = {
     name: 'generate-variable-data',
-    contextType: variableContext.contextType,
-    contextId: variableContext.contextId
+    contextType: variableContext?.contextType || 'unknown',
+    contextId: variableContext?.contextId || 'unknown'
   };
 
   logger.info(ctx, `Generating variable data for ${artifactType}`);
@@ -120,7 +120,7 @@ export async function generateVariableData(
   const variableData: Record<string, string> = {};
 
   for (const variable of variables) {
-    variableData[variable] = await generateVariableValue(client, variableContext, variable);
+    variableData[variable] = await generateVariableValue(client, variable, variableContext);
   }
   
   return variableData;
@@ -129,20 +129,20 @@ export async function generateVariableData(
 /**
  * Generate a value for a specific template variable
  * @param client Supabase client
- * @param variableContext Context for variable generation
+ * @param variableContext Optional context for variable generation
  * @param variable Variable name
  * @returns Generated value
  */
 async function generateVariableValue(
   client: SupabaseClient,
-  variableContext: VariableContext,
-  variable: string
+  variable: string,
+  variableContext?: VariableContext
 ): Promise<string> {
   const logger = await getLogger();
   const ctx = {
     name: 'generate-variable-value',
-    contextType: variableContext.contextType,
-    contextId: variableContext.contextId,
+    contextType: variableContext?.contextType || 'unknown',
+    contextId: variableContext?.contextId || 'unknown',
     variable
   };
 
@@ -167,12 +167,12 @@ async function generateVariableValue(
 /**
  * Generate full session contents for a client
  * @param client Supabase client
- * @param variableContext Context for variable generation
+ * @param variableContext Optional context for variable generation
  * @returns Formatted session contents
  */
-export async function generateFullSessionContents(client: SupabaseClient, variableContext: VariableContext): Promise<string> {
+export async function generateFullSessionContents(client: SupabaseClient, variableContext?: VariableContext): Promise<string> {
   // Validate that we have a client context type
-  if (!variableContext.contextType || variableContext.contextType !== 'client' || !variableContext.contextId) {
+  if (!variableContext || !variableContext.contextType || variableContext.contextType !== 'client' || !variableContext.contextId) {
     throw new Error('Full session contents generation requires a client context');
   }
   
@@ -242,9 +242,9 @@ export async function generateFullSessionContents(client: SupabaseClient, variab
  * @param variableContext Context for variable generation
  * @returns Formatted last session content
  */
-export async function generateLastSessionContent(client: SupabaseClient, variableContext: VariableContext): Promise<string> {
+export async function generateLastSessionContent(client: SupabaseClient, variableContext?: VariableContext): Promise<string> {
   // Validate that we have a client context type
-  if (!variableContext.contextType || variableContext.contextType !== 'client' || !variableContext.contextId) {
+  if (!variableContext || !variableContext.contextType || variableContext.contextType !== 'client' || !variableContext.contextId) {
     throw new Error('Last session content generation requires a client context');
   }
   
@@ -312,16 +312,16 @@ export async function generateLastSessionContent(client: SupabaseClient, variabl
 /**
  * Generate session summaries for a client
  * @param client Supabase client
- * @param variableContext Context for variable generation
+ * @param variableContext Optional context for variable generation
  * @returns Formatted session summaries
  */
-export async function generateSessionSummaries(client: SupabaseClient, variableContext: VariableContext): Promise<string> {
+export async function generateSessionSummaries(client: SupabaseClient, variableContext?: VariableContext): Promise<string> {
   // Validate that we have a client context type
-  if (!variableContext.contextType || variableContext.contextType !== 'client' || !variableContext.contextId) {
+  if (variableContext && (!variableContext.contextType || variableContext.contextType !== 'client' || !variableContext.contextId)) {
     throw new Error('Session summaries generation requires a client context');
   }
   
-  const clientId = variableContext.contextId;
+  const clientId = variableContext?.contextId;
   // Not implemented yet, YSTM-578
   return '';
 }
@@ -332,16 +332,16 @@ export async function generateSessionSummaries(client: SupabaseClient, variableC
  * @param variableContext Context for variable generation
  * @returns Session note content
  */
-export async function generateSessionNote(client: SupabaseClient, variableContext: VariableContext): Promise<string> {
+export async function generateSessionNote(client: SupabaseClient, variableContext?: VariableContext): Promise<string> {
   const logger = await getLogger();
   const ctx = {
     name: 'generate-session-note',
-    contextType: variableContext.contextType,
-    contextId: variableContext.contextId
+    contextType: variableContext?.contextType || 'unknown',
+    contextId: variableContext?.contextId || 'unknown'
   };
   
   // Validate that we have a session context type
-  if (!variableContext.contextType || variableContext.contextType !== 'session' || !variableContext.contextId) {
+  if (!variableContext || !variableContext.contextType || variableContext.contextType !== 'session' || !variableContext.contextId) {
     logger.error(ctx, 'Invalid variable context for generating session notes');
     throw new Error('Session notes generation requires a session context');
   }
@@ -376,16 +376,16 @@ export async function generateSessionNote(client: SupabaseClient, variableContex
  * @param variableContext Context for variable generation
  * @returns Session transcript content
  */
-export async function generateSessionTranscript(client: SupabaseClient, variableContext: VariableContext): Promise<string> {
+export async function generateSessionTranscript(client: SupabaseClient, variableContext?: VariableContext): Promise<string> {
   const logger = await getLogger();
   const ctx = {
     name: 'generate-session-transcript',
-    contextType: variableContext.contextType,
-    contextId: variableContext.contextId
+    contextType: variableContext?.contextType || 'unknown',
+    contextId: variableContext?.contextId || 'unknown'
   };
   
   // Validate that we have a session context type
-  if (!variableContext.contextType || variableContext.contextType !== 'session' || !variableContext.contextId) {
+  if (!variableContext || !variableContext.contextType || variableContext.contextType !== 'session' || !variableContext.contextId) {
     logger.error(ctx, 'Invalid variable context for generating session transcript');
     throw new Error('Session transcript generation requires a session context');
   }
@@ -420,9 +420,9 @@ export async function generateSessionTranscript(client: SupabaseClient, variable
  * @param variableContext Context for variable generation
  * @returns Client conceptualization
  */
-export async function generateClientConceptualization(client: SupabaseClient, variableContext: VariableContext): Promise<string> {
+export async function generateClientConceptualization(client: SupabaseClient, variableContext?: VariableContext): Promise<string> {
   // Validate that we have a client context type
-  if (!variableContext.contextType || variableContext.contextType !== 'client' || !variableContext.contextId) {
+  if (!variableContext || !variableContext.contextType || variableContext.contextType !== 'client' || !variableContext.contextId) {
     throw new Error('Client conceptualization generation requires a client context');
   }
   
@@ -431,7 +431,7 @@ export async function generateClientConceptualization(client: SupabaseClient, va
   const userLanguage = await getUserLanguage(client) as LanguageType;
   
   // Generate variable data for the client
-  const variableData = await generateVariableData(client, variableContext, 'client_conceptualization', ['full_session_contents']);
+  const variableData = await generateVariableData(client, 'client_conceptualization', ['full_session_contents'], variableContext);
   
   // Get or create the conceptualization
   const { content } = await getOrCreateArtifact(
@@ -452,9 +452,9 @@ export async function generateClientConceptualization(client: SupabaseClient, va
  * @param variableContext Context for variable generation
  * @returns Client bio
  */
-export async function generateClientBio(client: SupabaseClient, variableContext: VariableContext): Promise<string> {
+export async function generateClientBio(client: SupabaseClient, variableContext?: VariableContext): Promise<string> {
   // Validate that we have a client context type
-  if (!variableContext.contextType || variableContext.contextType !== 'client' || !variableContext.contextId) {
+  if (!variableContext || !variableContext.contextType || variableContext.contextType !== 'client' || !variableContext.contextId) {
     throw new Error('Client bio generation requires a client context');
   }
   
@@ -463,7 +463,7 @@ export async function generateClientBio(client: SupabaseClient, variableContext:
   const userLanguage = await getUserLanguage(client) as LanguageType;
   
   // Generate variable data for the client
-  const variableData = await generateVariableData(client, variableContext, 'client_bio', ['full_session_contents']);
+  const variableData = await generateVariableData(client, 'client_bio', ['full_session_contents'], variableContext);
   
   // Get or create the bio
   const { content } = await getOrCreateArtifact(
