@@ -477,15 +477,6 @@ export default function Page() {
     return `${baseClass} ${selectedDetailItem === tab ? selectedClass : unselectedClass}`
   }
 
-  const getSessionButtonClass = (date: DetailItem) => {
-    const baseClass =
-      "w-full flex px-4 py-2 h-auto text-[14px] justify-start rounded hover:bg-[#F3F4F6] text-left"
-    const selectedClass = "font-semibold text-[#111827] bg-[#F3F4F6]"
-    const unselectedClass = "font-medium text-[#374151]"
-
-    return `${baseClass} ${selectedDetailItem === date ? selectedClass : unselectedClass}`
-  }
-
   const formatDisplayDate = (dateStr: string) => {
     const date = new Date(dateStr)
     return `${date.getDate().toString().padStart(2, "0")}/${(date.getMonth() + 1).toString().padStart(2, "0")}`
