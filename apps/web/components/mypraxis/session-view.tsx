@@ -109,29 +109,16 @@ function TranscriptContent({ clientId, sessionId, session, onEditTranscript, han
   // If we have a transcript, show it
   if (session?.transcript) {
     return (
-      <div className="relative group">
+      <div className="relative">
         <div 
-          className="rounded-lg bg-[#FFF9E8] px-6 pb-6 pt-7 text-[14px] leading-[1.6] whitespace-pre-wrap cursor-pointer" 
-          onClick={() => onEditTranscript(session.transcript?.content || "")}
+          className="rounded-lg bg-[#FFF9E8] px-6 pb-6 pt-7 text-[14px] leading-[1.6] whitespace-pre-wrap" 
           data-test="session-transcript-value"
         >
           {session.transcript.content}
         </div>
-        <div className="absolute right-2 top-[7px] flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-6 w-6 hover:bg-transparent"
-            onClick={() => onEditTranscript(session.transcript?.content || "")}
-          >
-            <Edit2 className="h-4 w-4" />
-          </Button>
-        </div>
       </div>
     )
   }
-  
-
   
   // Show loading state while we check for recording status
   if (isLoadingRecording) {    
