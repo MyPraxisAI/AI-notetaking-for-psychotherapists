@@ -13,19 +13,15 @@ export function createTherapistApi(client: SupabaseClient) {
    */
   async function getPrimaryTherapeuticApproach(): Promise<{ id: string; name: string; title: string }> {
     try {
-      // Get the account workspace using MakerKit's accounts API
+      // Get the account ID using MakerKit's accounts API
       const accountsApi = createAccountsApi(client);
-      const workspace = await accountsApi.getAccountWorkspace();
-      
-      if (!workspace?.id) {
-        throw new Error('Account workspace not found');
-      }
+      const accountId = await accountsApi.getCurrentAccountId();
       
       // Get the therapist for this account
       const { data: therapistData } = await client
         .from('therapists')
         .select('id')
-        .eq('account_id', workspace.id)
+        .eq('account_id', accountId)
         .single();
       
       if (!therapistData?.id) {
@@ -83,19 +79,15 @@ export function createTherapistApi(client: SupabaseClient) {
    */
   async function getTherapistProfile() {
     try {
-      // Get the account workspace
+      // Get the account ID
       const accountsApi = createAccountsApi(client);
-      const workspace = await accountsApi.getAccountWorkspace();
-      
-      if (!workspace?.id) {
-        throw new Error('Account workspace not found');
-      }
+      const accountId = await accountsApi.getCurrentAccountId();
       
       // Get the therapist profile
       const { data: therapistData, error } = await client
         .from('therapists')
         .select('*')
-        .eq('account_id', workspace.id)
+        .eq('account_id', accountId)
         .single();
       
       if (error) {

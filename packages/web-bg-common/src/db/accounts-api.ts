@@ -7,24 +7,24 @@ import { SupabaseClient } from '@supabase/supabase-js';
  */
 export function createAccountsApi(client: SupabaseClient) {
   /**
-   * Get the account workspace data
-   * @returns The account workspace data for the current user
+   * Get the current account ID
+   * @returns The ID of the current user's personal account
    */
-  async function getAccountWorkspace() {
+  async function getCurrentAccountId(): Promise<string> {
     const { data, error } = await client
       .from('user_account_workspace')
-      .select(`*`)
+      .select('id')
       .single();
 
     if (error) {
       throw error;
     }
 
-    return data;
+    return data.id;
   }
 
   // Return the API methods
   return {
-    getAccountWorkspace
+    getCurrentAccountId
   };
 }

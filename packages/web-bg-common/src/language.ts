@@ -20,18 +20,14 @@ export async function getUserLanguage(client: SupabaseClient): Promise<string> {
   try {
     const api = createAccountsApi(client);
     
-    // Get the user's workspace using the accounts API
-    const workspace = await api.getAccountWorkspace();
+    // Get the user's account ID using the accounts API
+    const accountId = await api.getCurrentAccountId();
     
-    if (!workspace) {
-      return 'en'; // Default to English if no workspace is found
-    }
-    
-    // Get the user's preferences using the workspace ID
+    // Get the user's preferences using the account ID
     const { data: preferences } = await client
       .from('user_preferences')
       .select('language')
-      .eq('account_id', workspace.id || '')
+      .eq('account_id', accountId)
       .single();
     
     // Check if we have preferences and a language value

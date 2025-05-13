@@ -11,73 +11,119 @@ if (!supabaseUrl || !supabaseKey) {
   throw new Error('Supabase URL or key not provided. These environment variables are required for the application to function.');
 }
 
-// Create a regular client with anon key (limited permissions)
-const supabase: SupabaseClient = createClient(supabaseUrl, supabaseKey);
-
-// Create an admin client with service role key (full access)
-let supabaseAdmin: SupabaseClient | null = null;
-if (supabaseServiceRoleKey) {
-  supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey);
-}
+// Admin client singleton that can be reused
+let adminClient: SupabaseClient | null = null;
 
 /**
- * Get the appropriate Supabase client
- * @param useAdmin - Whether to use the admin client with service role key
- * @returns Supabase client
- * @throws Error if admin client is requested but not available
+ * Get a Supabase admin client with service role privileges
+ * This client can be reused across multiple operations
+ * 
+ * @returns A Supabase client with admin privileges
+ * @throws Error if service role key is not available
  */
-export function getSupabaseClient(useAdmin = false): SupabaseClient {
-  if (useAdmin) {
-    if (!supabaseAdmin) {
-      throw new Error('Supabase admin client not available. SUPABASE_SERVICE_ROLE_KEY environment variable is required for admin operations.');
-    }
-    return supabaseAdmin;
+export async function getSupabaseAdminClient(): Promise<SupabaseClient> {
+  // Return the cached admin client if it exists
+  if (adminClient) {
+    return adminClient;
   }
   
-  return supabase;
-}
-
-/**
- * Set the user session for the Supabase client
- * @param client - The Supabase client
- * @param userId - The user ID to set as the session user
- * @returns Promise that resolves to void
- */
-export async function setSupabaseUser(client: SupabaseClient, userId: string): Promise<void> {
-  try {
-    // Use the auth.setSession method to set the user context
-    // This is using the service role to impersonate a user
-    await client.auth.setSession({
-      access_token: userId,
-      refresh_token: '',
-    });
-  } catch (error) {
-    console.error('Error setting Supabase user session:', error);
-    throw error; // Re-throw the error to be handled by the caller
+  // Verify we have the necessary environment variables
+  if (!supabaseServiceRoleKey) {
+    throw new Error('SUPABASE_SERVICE_ROLE_KEY environment variable is required for admin operations.');
   }
-}
-
-/**
- * Reset the Supabase user session to anonymous
- * @param client - The Supabase client
- * @returns Promise that resolves to void
- */
-export async function resetSupabaseUser(client: SupabaseClient): Promise<void> {
-  try {
-    // Sign out to reset the session
-    await client.auth.signOut();
-    console.log('Reset Supabase user session to anonymous');
-  } catch (error) {
-    console.error('Error resetting Supabase user session:', error);
-    // Don't throw here as this is a cleanup operation
+  
+  // Create the admin client
+  const client = createClient(supabaseUrl!, supabaseServiceRoleKey!, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  });
+  
+  // Test the client to ensure it's working correctly
+  // When using service role without user context, we should get 0 rows
+  const { data: testData, error: testError } = await client
+    .from('user_account_workspace')
+    .select('*');
+    
+  if (testError) {
+    console.error('Error testing admin client:', testError);
+    throw new Error(`Failed to test admin client: ${testError.message}`);
+  } else if (testData && testData.length > 0) {
+    console.error(`Unexpected rows returned for admin client: ${testData.length}, expected 0`);
+    throw new Error(`Failed to verify admin client: expected 0 rows, got ${testData.length}`);
   }
+  
+  console.log('Successfully created admin client');
+  
+  // Cache the admin client for future use
+  adminClient = client;
+  return client;
 }
 
 /**
- * Initialize Supabase with configuration
- * @param config - Supabase configuration
- * @returns Supabase client
+ * Get a fresh Supabase client for a specific account
+ * A new client is created for each call to ensure proper isolation
+ * This client uses service role permissions but stores the account ID
+ * for use with explicit filtering instead of relying on RLS policies
+ * 
+ * @param accountId - The account ID to associate with the client
+ * @returns A new Supabase client with the account ID attached
+ * @throws Error if service role key is not available or if the account doesn't exist
  */
-export function initializeSupabase(config: SupabaseConfig): SupabaseClient {
-  return createClient(config.url, config.key);
+export async function getSupabaseAccountClient(accountId: string): Promise<SupabaseClient> {
+  if (!accountId) {
+    throw new Error('accountId is required');
+  }
+
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !supabaseServiceRoleKey) {
+    throw new Error('SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required');
+  }
+
+  // Get the admin client to verify the account exists
+  const adminClient = await getSupabaseAdminClient();
+  
+  // Verify the account exists
+  const { data: userData, error: userError } = await adminClient.auth.admin.getUserById(accountId);
+  
+  if (userError || !userData?.user) {
+    console.error('Failed to get user data:', userError);
+    throw new Error(`Failed to verify account ${accountId}: ${userError?.message || 'Account not found'}`);
+  }
+  
+  // Verify the account exists in the accounts table
+  const { data: accountData, error: accountError } = await adminClient
+    .from('accounts')
+    .select('id, name')
+    .eq('id', accountId)
+    .eq('is_personal_account', true)
+    .single();
+  
+  if (accountError || !accountData) {
+    console.error('Failed to verify account in database:', accountError);
+    throw new Error(`Failed to verify account ${accountId} in database: ${accountError?.message || 'Account not found'}`);
+  }
+  
+  // Create a service role client
+  const client = createClient(supabaseUrl!, supabaseServiceRoleKey!, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  });
+  
+  // Store the account ID with the client for use in API methods
+  (client as any).accountId = accountId;
+  
+  // Add a helper method to get the current account ID
+  (client as any).getCurrentAccountId = () => accountId;
+  
+  console.log(`Successfully created client for account ${accountId}`);
+  
+  return client;
 }
+
+

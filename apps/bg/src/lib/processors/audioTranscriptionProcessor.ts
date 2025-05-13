@@ -1,6 +1,5 @@
-import { SupabaseClient, createClient } from '@supabase/supabase-js';
+import { SupabaseClient } from '@supabase/supabase-js';
 import { AudioProcessingTaskData, TranscriptionChunk } from '../../types';
-import { setSupabaseUser } from '../supabase';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
@@ -38,11 +37,6 @@ export class AudioTranscriptionProcessor {
       const { accountId, recordingId } = task;
       
       console.log(`Processing audio recording: accountId=${accountId}, recordingId=${recordingId}`);
-      
-      // Set the Supabase user session to the accountId for this specific task
-      // accountId is guaranteed to exist as it's required in AudioProcessingTaskData
-      await setSupabaseUser(supabase, accountId);
-      console.log(`Set Supabase user session to account ID: ${accountId}`);
       
       // Perform the transcription
       const transcriptionResult = await this.performTranscription(task);
