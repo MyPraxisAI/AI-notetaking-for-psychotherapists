@@ -39,6 +39,12 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-turbo-
 
+      - name: Build shared-common
+        run: pnpm --filter=@kit/shared-common build
+
+      - name: Build web-bg-common
+        run: pnpm --filter=@kit/web-bg-common build
+
       - name: Typecheck
         run: pnpm run typecheck
 

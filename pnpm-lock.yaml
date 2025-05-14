@@ -1132,6 +1132,9 @@ importers:
       '@types/node':
         specifier: ^22.13.4
         version: 22.13.5
+      typescript:
+        specifier: ^5.8.2
+        version: 5.8.2
       zod:
         specifier: ^3.24.2
         version: 3.24.2
