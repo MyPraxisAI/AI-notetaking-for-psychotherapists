@@ -21,8 +21,13 @@ DECLARE
   segment jsonb;
   segments jsonb;
 BEGIN
-  -- Check if data is NULL or doesn't have segments property
-  IF data IS NULL OR NOT (data ? 'segments') THEN
+  -- Allow NULL values for backward compatibility with existing data
+  IF data IS NULL THEN
+    RETURN TRUE;
+  END IF;
+  
+  -- Check if data doesn't have segments property
+  IF NOT (data ? 'segments') THEN
     RETURN FALSE;
   END IF;
   
