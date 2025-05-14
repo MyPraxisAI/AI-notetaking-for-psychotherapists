@@ -57,7 +57,12 @@
       "outputs": [
         ".next/**",
         "!.next/cache/**",
-        "next-env.d.ts"
+        "next-env.d.ts",
+        "dist/**",
+        "src/**/*.js",
+        "src/**/*.d.ts",
+        "src/**/*.js.map",
+        "src/**/*.d.ts.map"
       ]
     },
     "dev": {

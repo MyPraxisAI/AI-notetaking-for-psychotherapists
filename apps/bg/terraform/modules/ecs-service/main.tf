@@ -139,6 +139,26 @@ resource "aws_ecs_task_definition" "bg_worker" {
       {
         name = "SUPABASE_SERVICE_ROLE_KEY",
         valueFrom = "arn:aws:ssm:${var.aws_region}:${var.aws_account_id}:parameter/${var.environment}/${var.app_name}/SUPABASE_SERVICE_ROLE_KEY"
+      },
+      {
+        name = "YANDEX_FOLDER_ID",
+        valueFrom = "arn:aws:ssm:${var.aws_region}:${var.aws_account_id}:parameter/${var.environment}/${var.app_name}/YANDEX_FOLDER_ID"
+      },
+      {
+        name = "YANDEX_STORAGE_BUCKET",
+        valueFrom = "arn:aws:ssm:${var.aws_region}:${var.aws_account_id}:parameter/${var.environment}/${var.app_name}/YANDEX_STORAGE_BUCKET"
+      },
+      {
+        name = "YANDEX_API_KEY",
+        valueFrom = "arn:aws:ssm:${var.aws_region}:${var.aws_account_id}:parameter/${var.environment}/${var.app_name}/YANDEX_API_KEY"
+      },
+      {
+        name = "YANDEX_ACCESS_KEY_ID",
+        valueFrom = "arn:aws:ssm:${var.aws_region}:${var.aws_account_id}:parameter/${var.environment}/${var.app_name}/YANDEX_ACCESS_KEY_ID"
+      },
+      {
+        name = "YANDEX_SECRET_ACCESS_KEY",
+        valueFrom = "arn:aws:ssm:${var.aws_region}:${var.aws_account_id}:parameter/${var.environment}/${var.app_name}/YANDEX_SECRET_ACCESS_KEY"
       }
       # Add other secrets as needed
     ]
