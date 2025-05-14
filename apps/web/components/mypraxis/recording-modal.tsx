@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { Button } from "@kit/ui/button"
-import { Mic, Pause, Play, Loader2 } from "lucide-react"
+import { Mic, Pause, Play, Loader2, Upload } from "lucide-react"
 
 // Define the interface for audio chunks
 interface AudioChunk {
@@ -70,8 +70,10 @@ export function RecordingModal({
   const [recordingId, setRecordingId] = useState<string | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isImporting, setIsImporting] = useState(false)
   const timerInterval = useRef<NodeJS.Timeout | null>(null)
   const heartbeatInterval = useRef<NodeJS.Timeout | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   
   // Use a ref to track the current timer value for direct access
   const currentTimerRef = useRef<number>(0)
@@ -124,7 +126,7 @@ export function RecordingModal({
   // because it's defined later in the file
   
   // API functions for recording
-  const startRecording = async () => {
+  const startRecording = async (options: { standaloneChunks?: boolean } = {}) => {
     try {
       setIsProcessing(true)
       setError(null)
@@ -139,7 +141,8 @@ export function RecordingModal({
         },
         body: JSON.stringify({ 
           clientId: selectedClient,
-          transcription_engine: selectedTranscriptionEngine 
+          transcriptionEngine: selectedTranscriptionEngine,
+          standaloneChunks: options.standaloneChunks
         })
       })
       
@@ -738,6 +741,88 @@ export function RecordingModal({
     }
   }
   
+  // Handle import button click - trigger file input
+  const handleImportClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  // Handle file selection
+  const handleFileSelected = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    
+    try {
+      setIsImporting(true);
+      setError(null);
+      
+      // 1. Create a new recording with standaloneChunks set to true for imported files
+      const newRecordingId = await startRecording({ standaloneChunks: true });
+      if (!newRecordingId) {
+        throw new Error('Failed to create recording');
+      }
+      
+      // 2. Upload the file as a single chunk
+      const formData = new FormData();
+      formData.append('audio', file);
+      formData.append('chunkNumber', '1');
+      formData.append('startTime', '0');
+      
+      // Estimate duration based on file size (rough estimate)
+      // For MP3, ~1MB ≈ 1 minute of audio at 128kbps
+      const estimatedDuration = (file.size / (128 * 1024)) * 8;
+      formData.append('endTime', estimatedDuration.toString());
+      formData.append('mimeType', file.type);
+      
+      const response = await fetch(`/api/recordings/${newRecordingId}/chunk`, {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to upload audio file');
+      }
+      
+      // 3. Complete the recording
+      const result = await fetch(`/api/recordings/${newRecordingId}/complete`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ createSession: true })
+      });
+      
+      if (!result.ok) {
+        const errorData = await result.json();
+        throw new Error(errorData.error || 'Failed to complete recording');
+      }
+      
+      const data = await result.json();
+      
+      // 4. Navigate to the session
+      toast.success('Audio file imported successfully');
+      if (data.sessionId) {
+        await onSave(data.sessionId);
+      } else if (data.session_id) {
+        await onSave(data.session_id);
+      } else {
+        await onSave();
+      }
+      
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to import audio file');
+      toast.error(err instanceof Error ? err.message : 'Failed to import audio file');
+    } finally {
+      setIsImporting(false);
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
   const handleSaveSession = async () => {
     try {
     setModalState("saving")
@@ -954,23 +1039,59 @@ export function RecordingModal({
               )}
               
               {modalState === "initial" && (
-                <Button 
-                  className="w-full bg-green-500 hover:bg-green-600 text-white"
-                  onClick={handleMicrophoneAccess}
-                  disabled={isProcessing}
-                >
-                  {isProcessing ? (
-                    <>
-                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                      Checking Microphone...
-                    </>
-                  ) : (
-                    <>
-                      <Mic className="mr-2 h-5 w-5" />
-                      Allow Microphone Access
-                    </>
-                  )}
-                </Button>
+                <div className="space-y-4">
+                  <Button 
+                    className="w-full bg-green-500 hover:bg-green-600 text-white"
+                    onClick={handleMicrophoneAccess}
+                    disabled={isProcessing || isImporting}
+                  >
+                    {isProcessing ? (
+                      <>
+                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                        Checking Microphone...
+                      </>
+                    ) : (
+                      <>
+                        <Mic className="mr-2 h-5 w-5" />
+                        Allow Microphone Access
+                      </>
+                    )}
+                  </Button>
+                  
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-gray-300" />
+                    </div>
+                    <div className="relative flex justify-center text-sm">
+                      <span className="px-2 bg-white text-gray-500">or</span>
+                    </div>
+                  </div>
+                  
+                  <Button 
+                    className="w-full bg-blue-500 hover:bg-blue-600 text-white"
+                    onClick={handleImportClick}
+                    disabled={isProcessing || isImporting}
+                  >
+                    {isImporting ? (
+                      <>
+                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                        Importing Audio File...
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="mr-2 h-5 w-5" />
+                        Import Audio File
+                      </>
+                    )}
+                  </Button>
+                  <input 
+                    type="file" 
+                    ref={fileInputRef}
+                    className="hidden" 
+                    accept="audio/mp3,audio/mpeg"
+                    onChange={handleFileSelected}
+                  />
+                </div>
               )}
               
               {modalState === "soundCheck" && (

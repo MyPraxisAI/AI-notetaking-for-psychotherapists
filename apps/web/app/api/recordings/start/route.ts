@@ -18,8 +18,8 @@ type CustomClient = SupabaseClient & {
 // Schema for start recording request
 const StartRecordingSchema = z.object({
   clientId: z.string().uuid(),
-  standalone_chunks: z.boolean().optional().default(false),
-  transcription_engine: z.string().optional().default('yandex-v3-ru')
+  standaloneChunks: z.boolean().optional().default(false),
+  transcriptionEngine: z.string().optional().default('yandex-v3-ru')
 });
 
 // POST /api/recordings/start - Start a new recording
@@ -53,7 +53,7 @@ export const POST = enhanceRouteHandler(
         );
       }
       
-      const { clientId, standalone_chunks, transcription_engine } = result.data;
+      const { clientId, standaloneChunks, transcriptionEngine } = result.data;
       
       // Check if there's already an active recording
       const { data: existingRecording, error: checkError } = await client
@@ -85,8 +85,8 @@ export const POST = enhanceRouteHandler(
           client_id: clientId,
           status: 'recording',
           last_heartbeat_at: new Date().toISOString(),
-          standalone_chunks,
-          transcription_engine
+          standalone_chunks: standaloneChunks,  // Map client param to DB column
+          transcription_engine: transcriptionEngine  // Map client param to DB column
         })
         .select()
         .single();

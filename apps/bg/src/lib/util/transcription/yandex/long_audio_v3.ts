@@ -109,6 +109,7 @@ export class YandexLongAudioV3Provider extends YandexBaseProvider {
       console.error('Error during v3 transcription:', error);
       throw error;
     } finally {
+
       // Clean up resources
       try {
         // Clean up the storage object if it was created
@@ -116,12 +117,15 @@ export class YandexLongAudioV3Provider extends YandexBaseProvider {
           console.log(`Cleaning up temporary storage object: ${storageUri}`);
           await this.deleteFromObjectStorage(storageUri);
         }
-        
-        // Clean up the recognition result to avoid storage costs
-        if (operationId) {
-          console.log(`Cleaning up recognition result for operation: ${operationId}`);
-          await this.deleteRecognitionResult(operationId, this.getAuthorizationHeader());
-        }
+
+        // TODO: Cleanup!!!!
+        console.log(`Keeping recognition result on Yandex for debugging, operation: ${operationId}`)
+
+        // // Clean up the recognition result to avoid storage costs
+        // if (operationId) {
+        //   console.log(`Cleaning up recognition result for operation: ${operationId}`);
+        //   await this.deleteRecognitionResult(operationId, this.getAuthorizationHeader());
+        // }
       } catch (cleanupError) {
         console.error('Error during cleanup:', cleanupError);
         // Don't throw the cleanup error, as the transcription was successful
@@ -268,7 +272,7 @@ export class YandexLongAudioV3Provider extends YandexBaseProvider {
     
     const estimatedTranscriptionTimeSeconds = Math.max(
       1, // Minimum 1 second initial wait
-      Math.floor(estimatedDurationSeconds / 15)
+      Math.floor(estimatedDurationSeconds / 20)
     );
     
     console.log(`Estimated transcription time: ${estimatedTranscriptionTimeSeconds} seconds (${Math.floor(estimatedTranscriptionTimeSeconds / 60)} minutes ${estimatedTranscriptionTimeSeconds % 60} seconds)`);
@@ -278,7 +282,7 @@ export class YandexLongAudioV3Provider extends YandexBaseProvider {
       60, // Minimum 1 minute wait
       Math.min(
         7200, // Maximum 2 hours wait
-        estimatedTranscriptionTimeSeconds * 2 // 2x the estimated transcription time
+        estimatedTranscriptionTimeSeconds * 4 // 4x the estimated transcription time ()
       )
     );
     
@@ -318,20 +322,35 @@ export class YandexLongAudioV3Provider extends YandexBaseProvider {
         const req = https.request(options, (res: any) => {
           console.log(`V3 operation status response code: ${res.statusCode}`);
           
-          // If status code is not 200, continue polling
+          // If status code is not 200, handle accordingly
           if (res.statusCode !== 200) {
-            console.warn(`Non-200 status code: ${res.statusCode}, continuing to poll`);
+            // Collect the response body
+            let responseBody = '';
+            res.on('data', (chunk: any) => {
+              responseBody += chunk;
+            });
             
-            // For 404, it just means the operation isn't ready yet, so continue polling immediately
-            // For other errors, we might want to add a delay in the future if needed
-            resolve({
-              done: false,
-              status: 'POLLING',
-              statusCode: res.statusCode,
-              error: {
-                code: 'HTTP_ERROR',
-                message: `Received HTTP ${res.statusCode} from API`
+            res.on('end', () => {
+              // If status code is 400, fail immediately
+              if (res.statusCode === 400) {
+                console.error(`Received 400 Bad Request from API. Response body:`, responseBody);
+                reject(new Error(`API returned 400 Bad Request: ${responseBody}`));
+                return;
               }
+              
+              console.warn(`Non-200 status code: ${res.statusCode}, continuing to poll. Response body:`, responseBody);
+              
+              // For 404, it just means the operation isn't ready yet, so continue polling immediately
+              // For other non-400 errors, we continue polling
+              resolve({
+                done: false,
+                status: 'POLLING',
+                statusCode: res.statusCode,
+                error: {
+                  code: 'HTTP_ERROR',
+                  message: `Received HTTP ${res.statusCode} from API`
+                }
+              });
             });
             return;
           }
