@@ -32,6 +32,7 @@
     "pino": "^9.6.0"
   },
   "devDependencies": {
+    "@kit/eslint-config": "workspace:*",
     "@types/node": "^22.13.4",
     "typescript": "^5.8.2"
   },

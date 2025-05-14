@@ -52,8 +52,8 @@ const getEnv = () => {
 const createPinoLogger = (): Logger => {
   try {
     // Dynamic import to avoid issues with module resolution
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const pino = require('pino');
+    
     const logger = pino({
       browser: {
         asObject: true,
