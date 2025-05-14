@@ -1,10 +1,11 @@
 import { pino } from 'pino';
+import { Logger } from './logger';
 
 /**
- * @name Logger
+ * @name PinoLogger
  * @description A logger implementation using Pino
  */
-const Logger = pino({
+const PinoLogger = pino({
   browser: {
     asObject: true,
   },
@@ -13,6 +14,6 @@ const Logger = pino({
     env: process.env.NODE_ENV,
   },
   errorKey: 'error',
-});
+}) as unknown as Logger;
 
-export { Logger };
+export { PinoLogger };

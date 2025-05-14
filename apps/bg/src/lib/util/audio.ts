@@ -2,20 +2,11 @@
  * Audio processing utility functions
  */
 
-import * as fs from 'fs';
-import * as path from 'path';
-import { promisify } from 'util';
-import { exec } from 'child_process';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+import { executeFFmpeg } from './ffmpeg';
 
-/**
- * Create input arguments for FFmpeg
- * @param chunkFiles - Array of paths to the chunk files
- * @returns Input arguments for FFmpeg
- */
-export function createInputArgs(chunkFiles: string[]): string {
-  // Create input arguments for FFmpeg (-i file1 -i file2 ...)
-  return chunkFiles.map(file => `-i "${file}"`).join(' ');
-}
+// No longer needed as we're using the ffmpeg utility
 
 /**
  * Combine audio chunks using FFmpeg
@@ -28,18 +19,20 @@ export async function combineAudioChunks(
   outputFilePath: string, 
   standaloneChunks: boolean
 ): Promise<void> {
-  const execPromise = promisify(exec);
-  
   try {
-    let command: string;
-    
     if (standaloneChunks) {
       // For standalone chunks, create a filter complex for concatenation
       // This approach works well for complete WebM files
-      const inputArgs = createInputArgs(chunkFiles);
-      const filterComplex = `"concat=n=${chunkFiles.length}:v=0:a=1[outa]"`;
+      const filterComplex = `concat=n=${chunkFiles.length}:v=0:a=1[outa]`;
       
-      command = `ffmpeg -nostdin -hide_banner ${inputArgs} -filter_complex ${filterComplex} -map "[outa]" "${outputFilePath}"`;
+      await executeFFmpeg({
+        input: chunkFiles,
+        output: outputFilePath,
+        args: [
+          '-filter_complex', filterComplex,
+          '-map', '[outa]'
+        ]
+      });
     } else {
       // For non-standalone chunks, try direct binary concatenation
       // First, create a temporary file to hold the concatenated data
@@ -53,15 +46,18 @@ export async function combineAudioChunks(
       await fs.promises.writeFile(tempOutputPath, concatenated);
       
       // Use FFmpeg to validate and possibly fix the concatenated file
-      command = `ffmpeg -nostdin -hide_banner -i "${tempOutputPath}" -c copy "${outputFilePath}"`;
-    }
-    
-    console.log(`Executing FFmpeg command: ${command}`);
-    
-    const { stdout, stderr } = await execPromise(command);
-    
-    if (stderr) {
-      console.log('FFmpeg stderr:', stderr);
+      await executeFFmpeg({
+        input: tempOutputPath,
+        output: outputFilePath,
+        args: ['-c', 'copy']
+      });
+      
+      // Clean up the temporary file
+      try {
+        await fs.promises.unlink(tempOutputPath);
+      } catch (error) {
+        console.warn(`Warning: Failed to clean up temporary file ${tempOutputPath}:`, error);
+      }
     }
     
     if (!fs.existsSync(outputFilePath)) {

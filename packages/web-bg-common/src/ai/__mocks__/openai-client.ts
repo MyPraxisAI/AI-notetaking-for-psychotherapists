@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * Mock implementation of the OpenAI client for testing
  * This file will be automatically used by Jest when tests import from '../openai-client'
@@ -61,13 +59,13 @@ class MockChatOpenAI {
 export function getOpenAIClient(options: {
   model?: string;
   temperature?: number;
-  max_tokens?: number;
+  maxTokens?: number;
   [key: string]: string | number | boolean | undefined;
 } = {}): MockChatOpenAI {  
   // Always return the mock in test environments
   return new MockChatOpenAI({
     modelName: options.model || 'gpt-4o-mini',
     temperature: options.temperature || 0.7,
-    maxTokens: options.max_tokens
+    maxTokens: options.maxTokens
   });
 }

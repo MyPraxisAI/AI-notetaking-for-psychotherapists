@@ -1,25 +1,12 @@
 import { SupabaseClient } from '@supabase/supabase-js';
-import { ArtifactType } from '../../../../../../lib/utils/artifacts';
-
-/**
- * Interface for prompt data from the database
- */
-interface PromptData {
-  id: string;
-  artifact_type: ArtifactType | null;
-  name: string | null;
-  template: string;
-  provider: string;
-  model: string;
-  parameters: Record<string, string | number | boolean | null>;
-}
+import { ArtifactType, PromptData, PromptApi } from '../types';
 
 /**
  * Create a prompt API instance
  * @param client Supabase client
  * @returns Prompt API methods
  */
-export function createPromptApi(client: SupabaseClient) {
+export function createPromptApi(client: SupabaseClient): PromptApi {
   /**
    * Get a prompt by artifact type
    * @param artifactType The artifact type to get the prompt for

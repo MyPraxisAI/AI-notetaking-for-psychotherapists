@@ -64,6 +64,7 @@ export function RecordingModal({
   const [selectedClient, setSelectedClient] = useState(clientId)
   const [selectedClientName, setSelectedClientName] = useState(clientName)
   const [selectedDevice, setSelectedDevice] = useState("MacBook Air Microphone (Built-in)")
+  const [selectedTranscriptionEngine, setSelectedTranscriptionEngine] = useState("yandex-v3-ru")
   const [timer, setTimer] = useState(0)
   const [isRecording, setIsRecording] = useState(false)
   const [recordingId, setRecordingId] = useState<string | null>(null)
@@ -136,7 +137,10 @@ export function RecordingModal({
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ clientId: selectedClient })
+        body: JSON.stringify({ 
+          clientId: selectedClient,
+          transcription_engine: selectedTranscriptionEngine 
+        })
       })
       
       if (!response.ok) {
@@ -864,6 +868,31 @@ export function RecordingModal({
             {(modalState === "initial" || modalState === "soundCheck") && (
               <div className="p-6 pb-4 bg-gray-50 border-b border-gray-200">
                 <h2 className="text-lg font-medium text-center">Session with <span className="underline">{selectedClientName}</span></h2>
+                
+                {/* Transcription engine selection */}
+                <div className="p-4 bg-white rounded-lg mt-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-sm font-medium">Transcription</h3>
+                    </div>
+                    <div className="w-64">
+                      <Select 
+                        value={selectedTranscriptionEngine} 
+                        onValueChange={setSelectedTranscriptionEngine}
+                        data-test="transcription-engine-select"
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select engine" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="yandex-v3-ru" data-test="transcription-engine-option-yandex-v3-ru">
+                            Yandex SpeechKit v3 (Russian)
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
                 
                 {/* Intake session toggle - temporarily hidden, can be re-enabled in the future
                 <div className="p-4 bg-white rounded-lg">

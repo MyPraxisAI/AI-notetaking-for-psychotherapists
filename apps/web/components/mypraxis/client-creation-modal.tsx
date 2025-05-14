@@ -113,7 +113,7 @@ export function ClientCreationModal({
             <div className="p-6 pb-4 bg-gray-50 border-b border-gray-200">
               <h2 className="text-xl font-semibold text-gray-800">Add New Client</h2>
               <p className="text-sm text-gray-500 mt-1">
-                Enter the client's name to create a new profile.
+                Enter the client&apos;s name to create a new profile.
               </p>
             </div>
             

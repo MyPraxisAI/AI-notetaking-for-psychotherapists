@@ -36,8 +36,8 @@ services:
   # Production test application
   prod-test:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ../../
+      dockerfile: apps/bg/Dockerfile
       target: prod
     networks:
       - localstack-net
@@ -55,7 +55,8 @@ services:
   # Service for sending test messages
   test-message:
     build:
-      context: .
+      context: ../../
+      dockerfile: apps/bg/Dockerfile
       target: build
     networks:
       - localstack-net
@@ -67,25 +68,7 @@ services:
       - .env.development
       - .env.local
     volumes:
-      - ./:/app
+      - ../../:/app
       - /app/node_modules
       
-  # Development service with TypeScript support (better debugging)
-  dev-ts:
-    build:
-      context: .
-      target: dev
-    networks:
-      - localstack-net
-    depends_on:
-      localstack:
-        condition: service_healthy
-    env_file:
-      - .env.development
-      - .env.local
-    volumes:
-      - ./:/app
-      - /app/node_modules
-    command: ["npx", "ts-node", "src/index.ts"]
-    ports:
-      - "8080:8080"
+

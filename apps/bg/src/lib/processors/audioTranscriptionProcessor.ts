@@ -1,12 +1,15 @@
-import { SupabaseClient, createClient } from '@supabase/supabase-js';
+import { SupabaseClient } from '@supabase/supabase-js';
 import { AudioProcessingTaskData, TranscriptionChunk } from '../../types';
-import { setSupabaseUser } from '../supabase';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import { promisify } from 'util';
 import { exec } from 'child_process';
-import { transcribeAudio, TranscriptionResult } from '../util/transcription';
+import { 
+  transcribeAudio, 
+  TranscriptionResult
+} from '../util/transcription';
+import { YandexV3RuOptions } from '../util/transcription/yandex/long_audio_v3';
 import { combineAudioChunks } from '../util/audio';
 
 // TranscriptionResult interface is now imported from '../util/transcription'
@@ -34,11 +37,6 @@ export class AudioTranscriptionProcessor {
       const { accountId, recordingId } = task;
       
       console.log(`Processing audio recording: accountId=${accountId}, recordingId=${recordingId}`);
-      
-      // Set the Supabase user session to the accountId for this specific task
-      // accountId is guaranteed to exist as it's required in AudioProcessingTaskData
-      await setSupabaseUser(supabase, accountId);
-      console.log(`Set Supabase user session to account ID: ${accountId}`);
       
       // Perform the transcription
       const transcriptionResult = await this.performTranscription(task);
@@ -96,15 +94,28 @@ export class AudioTranscriptionProcessor {
       const outputFilePath = path.join(tempDir, `${recordingId}.webm`);
       await combineAudioChunks(chunkFiles, outputFilePath, standaloneChunks);
       console.log(`Combined audio chunks into ${outputFilePath}`);
+            
+      // Get the transcription engine from the recording info
+      const transcriptionEngine = recordingInfo.transcription_engine || 'yandex-v3-ru';
+      console.log(`Using transcription engine: ${transcriptionEngine}`);
       
-      // Send to OpenAI for transcription using the utility function
-      console.log('Sending audio to OpenAI for transcription...');
+      let result: TranscriptionResult;
       
-      const result = await transcribeAudio(outputFilePath, {
-        model: 'whisper-1', // Using Whisper for basic transcription
-        // Use gpt-4o-audio-preview for more advanced audio understanding if needed
-        // model: 'gpt-4o-audio-preview'
-      });
+      // Currently only yandex-v3-ru is supported
+      if (transcriptionEngine === 'yandex-v3-ru') {
+        // Use Yandex SpeechKit V3 with default options for Russian language
+        console.log('Using Yandex SpeechKit V3 (Russian) for transcription');
+        result = await transcribeAudio(this.supabase, outputFilePath, YandexV3RuOptions, 'yandex');
+      } else {
+        // Fallback to Yandex V3 if an unsupported engine is specified
+        console.log(`Unsupported transcription engine: ${transcriptionEngine}, falling back to yandex-v3-ru`);
+        result = await transcribeAudio(this.supabase, outputFilePath, YandexV3RuOptions, 'yandex');
+      }
+      
+      console.log(`Transcription completed using ${transcriptionEngine} engine`);
+      console.log(`Transcription result length: ${result.text.length} characters`);
+      
+      // Return the transcription result
       
       return result;
     } catch (error) {
@@ -280,7 +291,8 @@ export class AudioTranscriptionProcessor {
           session_id: recordingData.session_id,
           account_id: accountId,
           transcription_model: result.model || 'openai/whisper-1',
-          content: result.text
+          content: result.text,
+          content_json: result.content_json
         });
         
       if (error) {

@@ -36,7 +36,7 @@ const config = {
       fullUrl: true,
     },
   },
-  serverExternalPackages: [],
+  serverExternalPackages: ['@kit/web-bg-common', 'nunjucks'], // do not bundle, server-only
   // needed for supporting dynamic imports for local content
   outputFileTracingIncludes: {
     '/*': ['./content/**/*'],
