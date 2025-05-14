@@ -877,10 +877,12 @@ export default function Page() {
           {isSmallScreen && (
             <Button
               variant="ghost"
-              className="h-8 w-8 flex-shrink-0"
+              size="icon"
+              className="h-8 w-8 flex-shrink-0 border border-gray-200 hover:bg-gray-100"
               onClick={() => setIsNavVisible(!isNavVisible)}
+              aria-label="Toggle navigation menu"
             >
-              <Menu className="h-5 w-5" />
+              <Menu className="h-4 w-4 text-gray-700" aria-hidden="true" />
             </Button>
           )}
           <Button
