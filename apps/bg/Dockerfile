@@ -1,5 +1,5 @@
 ################ Base Stage ################
-FROM ubuntu:22.04 as base
+FROM ubuntu:22.04 AS base
 
 # Avoid prompts from apt
 ENV DEBIAN_FRONTEND=noninteractive
@@ -22,7 +22,7 @@ RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
 WORKDIR /app
 
 ################ Build Stage ################
-FROM base as build
+FROM base AS build
 
 # Set working directory
 WORKDIR /app
@@ -63,7 +63,7 @@ RUN pnpm --filter @kit/web-bg-common build
 RUN pnpm --filter bg build
 
 ################ Production Stage ################
-FROM base as prod
+FROM base AS prod
 
 # Set working directory
 WORKDIR /app
@@ -73,8 +73,17 @@ RUN npm install -g pnpm
 
 # Copy package.json files for production
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json tsconfig.base.json ./
-COPY packages/shared-common/package.json /app/packages/shared-common/
-COPY packages/web-bg-common/package.json /app/packages/web-bg-common/
+
+# Create minimal package.json files for production without devDependencies
+RUN mkdir -p /app/packages/shared-common /app/packages/web-bg-common
+COPY --from=build /app/packages/shared-common/package.json /tmp/shared-common-pkg.json
+COPY --from=build /app/packages/web-bg-common/package.json /tmp/web-bg-common-pkg.json
+
+# Create production-only package.json files
+RUN node -e "const pkg = require('/tmp/shared-common-pkg.json'); delete pkg.devDependencies; require('fs').writeFileSync('/app/packages/shared-common/package.json', JSON.stringify(pkg, null, 2));"
+RUN node -e "const pkg = require('/tmp/web-bg-common-pkg.json'); delete pkg.devDependencies; require('fs').writeFileSync('/app/packages/web-bg-common/package.json', JSON.stringify(pkg, null, 2));"
+
+# Copy the bg app package.json
 COPY apps/bg/package.json ./package.json
 
 # Copy the built shared-common package with its index.js and src directory
@@ -92,7 +101,7 @@ COPY --from=build /app/apps/bg/dist ./dist
 
 # Install production dependencies
 # Use --ignore-scripts to skip postinstall scripts that require manypkg
-# Use --no-frozen-lockfile, otherwise problems with "overrides" configuration
+# Use --no-frozen-lockfile because of overrides configuration in the root package.json
 RUN pnpm install --prod --no-frozen-lockfile --ignore-scripts
 
 # Set up pnpm cache directory with proper permissions

@@ -37,7 +37,12 @@ fi
 
 # Build for AMD64 platform (AWS Fargate runs on x86_64/amd64)
 echo -e "${YELLOW}Building Docker image for AMD64 platform...${NC}"
-docker buildx build --platform linux/amd64 --target prod -t "mypraxis/bg-worker:latest" --load .
+
+# Navigate to the monorepo root directory
+cd "$(dirname "$0")/../../.."
+
+# Build using the monorepo root as context
+docker buildx build --platform linux/amd64 --target prod -t "mypraxis/bg-worker:latest" --load -f apps/bg/Dockerfile .
 
 # Tag the image
 echo -e "${YELLOW}Tagging image...${NC}"
