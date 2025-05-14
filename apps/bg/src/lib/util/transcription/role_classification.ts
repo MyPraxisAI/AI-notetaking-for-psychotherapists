@@ -41,8 +41,7 @@ export async function classifySpeakerRoles(
 
   // Parse the classification result
   const classificationResult = JSON.parse(classificationResultRaw);
-  console.log('Speaker roles classification result:', classificationResult);
-  
+  console.log('Speaker roles classification result:', JSON.stringify(classificationResult));
   // Validate the result against expected schema
   if (!validateClassificationResult(classificationResult)) {
     // TODO: retry, or use something similar to pyannotate

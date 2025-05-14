@@ -90,10 +90,10 @@ export class AudioTranscriptionProcessor {
       const chunkFiles = await this.downloadChunks(chunks, tempDir);
       console.log(`Downloaded ${chunkFiles.length} audio chunks to ${tempDir}`);
       
-      // 4. Combine the chunks using FFmpeg
-      const outputFilePath = path.join(tempDir, `${recordingId}.webm`);
-      await combineAudioChunks(chunkFiles, outputFilePath, standaloneChunks);
-      console.log(`Combined audio chunks into ${outputFilePath}`);
+      // 4. Combine the chunks using FFmpeg (extension will be determined in combineAudioChunks)
+      const outputBasePath = path.join(tempDir, `${recordingId}`);
+      const finalOutputPath = await combineAudioChunks(chunkFiles, outputBasePath, standaloneChunks);
+      console.log(`Combined audio chunks into ${finalOutputPath}`);
             
       // Get the transcription engine from the recording info
       const transcriptionEngine = recordingInfo.transcription_engine || 'yandex-v3-ru';
@@ -105,11 +105,11 @@ export class AudioTranscriptionProcessor {
       if (transcriptionEngine === 'yandex-v3-ru') {
         // Use Yandex SpeechKit V3 with default options for Russian language
         console.log('Using Yandex SpeechKit V3 (Russian) for transcription');
-        result = await transcribeAudio(this.supabase, outputFilePath, YandexV3RuOptions, 'yandex');
+        result = await transcribeAudio(this.supabase, finalOutputPath, YandexV3RuOptions, 'yandex');
       } else {
         // Fallback to Yandex V3 if an unsupported engine is specified
         console.log(`Unsupported transcription engine: ${transcriptionEngine}, falling back to yandex-v3-ru`);
-        result = await transcribeAudio(this.supabase, outputFilePath, YandexV3RuOptions, 'yandex');
+        result = await transcribeAudio(this.supabase, finalOutputPath, YandexV3RuOptions, 'yandex');
       }
       
       console.log(`Transcription completed using ${transcriptionEngine} engine`);
@@ -236,7 +236,9 @@ export class AudioTranscriptionProcessor {
     
     for (const chunk of chunks) {
       const { storage_bucket, storage_path, chunk_number } = chunk;
-      const outputPath = path.join(tempDir, `chunk_${chunk_number.toString().padStart(5, '0')}.webm`);
+      // Extract the file extension from the storage_path
+      const fileExtension = path.extname(storage_path) || '.webm'; // Default to .webm if no extension found
+      const outputPath = path.join(tempDir, `chunk_${chunk_number.toString().padStart(5, '0')}${fileExtension}`);
       
       let attempts = 0;
       let success = false;

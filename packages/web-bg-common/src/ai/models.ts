@@ -144,15 +144,10 @@ async function generateWithGoogle(
   const completionTokens = aiService.estimateTokenCount(content);
   
   // Log success
-  console.log(`Successfully generated text with ${options.provider}`, { 
-    duration: `${duration}ms`,
-    promptTokens,
-    completionTokens,
-    totalTokens: promptTokens + completionTokens
-  });
-  
-  // Return the result
-  return {
+  console.log(`Successfully generated text with ${options.provider}`, 
+    JSON.stringify({ duration: `${duration}ms`, promptTokens, completionTokens, totalTokens: promptTokens + completionTokens }));
+
+    return {
     content,
     promptTokens,
     completionTokens,
