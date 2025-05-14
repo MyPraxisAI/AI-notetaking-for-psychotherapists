@@ -6,7 +6,7 @@
     "clean": "git clean -xdf .turbo node_modules",
     "format": "prettier --check \"**/*.{ts,tsx}\"",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "pnpm --filter=@kit/shared-common build && tsc --noEmit"
   },
   "prettier": "@kit/prettier-config",
   "exports": {
@@ -20,7 +20,8 @@
     "@kit/eslint-config": "workspace:*",
     "@kit/prettier-config": "workspace:*",
     "@kit/tsconfig": "workspace:*",
-    "@types/react": "19.0.10"
+    "@types/react": "19.0.10",
+    "typescript": "^5.8.2"
   },
   "dependencies": {
     "@kit/shared-common": "workspace:*"
