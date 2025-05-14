@@ -2,7 +2,8 @@ import { SupabaseClient } from '@supabase/supabase-js';
 import { AsyncLocalStorage } from 'async_hooks';
 
 // Define the type for our context store
-type ContextStore = Map<string, any>;
+type ContextStore = Map<string, string | null>;
+
 
 // Create a singleton AsyncLocalStorage instance to store context
 const contextStorage = new AsyncLocalStorage<ContextStore>();
@@ -28,7 +29,7 @@ export async function withCurrentAccountId<T>(accountId: string, fn: () => Promi
 export function getCurrentAccountIdFromContext(): string | null {
   const store = contextStorage.getStore();
   if (store && store.has(ACCOUNT_ID_KEY)) {
-    return store.get(ACCOUNT_ID_KEY);
+    return store.get(ACCOUNT_ID_KEY) as string;
   }
   return null;
 }

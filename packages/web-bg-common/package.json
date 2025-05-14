@@ -38,6 +38,7 @@
     "build": "tsc",
     "dev": "tsc --watch",
     "clean": "rm -rf dist",
+    "lint": "eslint .",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -54,6 +55,7 @@
     "openai": ">=4.0.0"
   },
   "devDependencies": {
+    "@kit/eslint-config": "workspace:*",
     "@langchain/google-genai": "^0.2.4",
     "@langchain/openai": "^0.5.5",
     "@supabase/supabase-js": "2.49.1",

@@ -321,7 +321,7 @@ export async function generateSessionSummaries(client: SupabaseClient, variableC
     throw new Error('Session summaries generation requires a client context');
   }
   
-  const clientId = variableContext?.contextId;
+  const _clientId = variableContext?.contextId;
   // Not implemented yet, YSTM-578
   return '';
 }
