@@ -41,7 +41,10 @@
     "env:generate": "turbo gen env",
     "env:validate": "turbo gen validate-env",
     "web-bg-common:build": "pnpm --filter web-bg-common build",
-    "webg:build": "pnpm web-bg-common:build"
+    "webg:build": "pnpm web-bg-common:build",
+    "prod:db:deploy": "pnpm --filter web supabase:deploy",
+    "prod:bg:deploy": "pnpm --filter bg deploy:production"
+    
   },
   "prettier": "@kit/prettier-config",
   "packageManager": "pnpm@9.12.0",
