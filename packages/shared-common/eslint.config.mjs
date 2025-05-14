@@ -3,6 +3,9 @@ import eslintConfigBase from '@kit/eslint-config/base.js';
 // Create a modified configuration that extends the base config
 // but disables specific rules for the logger implementation
 export default [
+  {
+    ignores: ['index.js']
+  },
   ...eslintConfigBase,
   {
     files: ['src/logger/impl/**/*.ts'],

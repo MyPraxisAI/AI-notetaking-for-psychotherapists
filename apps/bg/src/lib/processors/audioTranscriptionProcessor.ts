@@ -198,37 +198,76 @@ export class AudioTranscriptionProcessor {
    * @param tempDir - Temporary directory to store the chunks
    * @returns Array of paths to the downloaded chunk files
    */
+  /**
+   * Helper function to attempt a download with better error handling
+   * @param storage_bucket - The storage bucket name
+   * @param storage_path - The path to the file in the bucket
+   * @param chunk_number - The chunk number for error reporting
+   * @returns The downloaded blob
+   */
+  private async attemptDownloadChunk(storage_bucket: string, storage_path: string, chunk_number: number): Promise<Blob> {
+    const { data, error } = await this.supabase
+      .storage
+      .from(storage_bucket)
+      .download(storage_path);
+      
+    if (error) {
+      // Properly format the error message with all available details
+      const errorDetails = JSON.stringify(error, Object.getOwnPropertyNames(error));
+      throw new Error(`Failed to download chunk ${chunk_number}: ${error.message || errorDetails}`);
+    }
+    
+    if (!data) {
+      throw new Error(`No data received for chunk ${chunk_number}`);
+    }
+    
+    return data;
+  }
+
+  /**
+   * Downloads all chunks to a temporary directory
+   * @param chunks - Array of chunk objects with storage information
+   * @param tempDir - Temporary directory to store the chunks
+   * @returns Array of paths to the downloaded chunk files
+   */
   private async downloadChunks(chunks: any[], tempDir: string): Promise<string[]> {
     const chunkFiles: string[] = [];
+    const MAX_RETRIES = 1;
     
     for (const chunk of chunks) {
       const { storage_bucket, storage_path, chunk_number } = chunk;
       const outputPath = path.join(tempDir, `chunk_${chunk_number.toString().padStart(5, '0')}.webm`);
       
-      try {
-        // Download the chunk from storage
-        const { data, error } = await this.supabase
-          .storage
-          .from(storage_bucket)
-          .download(storage_path);
+      let attempts = 0;
+      let success = false;
+      let lastError: Error | null = null;
+      
+      while (attempts <= MAX_RETRIES && !success) {
+        try {
+          attempts++;
+          if (attempts > 1) {
+            console.log(`Retry attempt ${attempts-1} for chunk ${chunk_number}...`);
+          }
           
-        if (error) {
-          throw new Error(`Failed to download chunk ${chunk_number}: ${error.message}`);
+          // Download the chunk from storage with improved error handling
+          const data = await this.attemptDownloadChunk(storage_bucket, storage_path, chunk_number);
+          
+          // Convert Blob to Buffer and write to file
+          const buffer = await data.arrayBuffer().then(arrayBuffer => Buffer.from(arrayBuffer));
+          await fs.promises.writeFile(outputPath, buffer);
+          
+          chunkFiles.push(outputPath);
+          console.log(`Downloaded chunk ${chunk_number} to ${outputPath}`);
+          success = true;
+        } catch (error) {
+          lastError = error instanceof Error ? error : new Error(String(error));
+          if (attempts > MAX_RETRIES) {
+            console.error(`Error downloading chunk ${chunk_number} after ${attempts} attempts:`, lastError);
+            throw lastError;
+          }
+          // Wait briefly before retrying
+          await new Promise(resolve => setTimeout(resolve, 1000));
         }
-        
-        if (!data) {
-          throw new Error(`No data received for chunk ${chunk_number}`);
-        }
-        
-        // Convert Blob to Buffer and write to file
-        const buffer = await data.arrayBuffer().then(arrayBuffer => Buffer.from(arrayBuffer));
-        await fs.promises.writeFile(outputPath, buffer);
-        
-        chunkFiles.push(outputPath);
-        console.log(`Downloaded chunk ${chunk_number} to ${outputPath}`);
-      } catch (error) {
-        console.error(`Error downloading chunk ${chunk_number}:`, error);
-        throw error;
       }
     }
     
