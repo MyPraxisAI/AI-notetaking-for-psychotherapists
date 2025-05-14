@@ -259,6 +259,8 @@ export abstract class YandexBaseProvider {
     }
   }
 
+
+
   /**
    * Estimate audio duration in seconds using ffprobe or file size fallback
    * 
@@ -267,15 +269,13 @@ export abstract class YandexBaseProvider {
    */
   protected async estimateAudioDuration(audioFilePath: string): Promise<number> {
     try {
-      // Use ffprobe to get the duration (more accurate)
-      const { execSync } = require('child_process');
-      const command = `ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "${audioFilePath}"`;
-      const output = execSync(command).toString().trim();
-      const duration = parseFloat(output);
+      // Use the getAudioInfo function from audio.ts
+      const { getAudioInfo } = require('../../../util/audio');
+      const audioInfo = await getAudioInfo(audioFilePath);
       
-      if (!isNaN(duration)) {
-        console.log(`Estimated audio duration using ffprobe: ${duration} seconds`);
-        return duration;
+      if (audioInfo.duration > 0) {
+        console.log(`Estimated audio duration using ffprobe: ${audioInfo.duration} seconds`);
+        return audioInfo.duration;
       }
     } catch (error) {
       console.warn('Failed to get audio duration using ffprobe:', error);

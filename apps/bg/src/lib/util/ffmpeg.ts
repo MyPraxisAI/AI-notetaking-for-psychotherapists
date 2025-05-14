@@ -46,7 +46,8 @@ export function executeFFmpegSync(options: FFmpegOptions): string {
     : `-i "${input}"`;
   
   // Build command with standard flags
-  let command = `ffmpeg -nostdin -hide_banner ${inputArgs}`;
+  // Use -loglevel error to suppress progress output (bitrate, speed, etc.)
+  let command = `ffmpeg -nostdin -hide_banner -loglevel error ${inputArgs}`;
   
   // Add additional arguments
   if (args.length > 0) {
@@ -79,7 +80,8 @@ export async function executeFFmpeg(options: FFmpegOptions): Promise<string> {
     : `-i "${input}"`;
   
   // Build command with standard flags
-  let command = `ffmpeg -nostdin -hide_banner ${inputArgs}`;
+  // Use -loglevel error to suppress progress output (bitrate, speed, etc.)
+  let command = `ffmpeg -nostdin -hide_banner -loglevel error ${inputArgs}`;
   
   // Add additional arguments
   if (args.length > 0) {
