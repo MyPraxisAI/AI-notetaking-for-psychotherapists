@@ -11,6 +11,7 @@ import {
 } from '../util/transcription';
 import { YandexV3RuOptions } from '../util/transcription/yandex/long_audio_v3';
 import { combineAudioChunks } from '../util/audio';
+import { invalidateSessionAndClientArtifacts } from '@kit/web-bg-common/db';
 
 // TranscriptionResult interface is now imported from '../util/transcription'
 
@@ -342,6 +343,20 @@ export class AudioTranscriptionProcessor {
       } else {
         console.log('Transcript inserted into transcripts table successfully');
       }
+
+      // Invalidate all artifacts related to this session and its client
+      // This will mark them as stale so they can be regenerated with the new transcript data
+      try {
+        const { sessionCount, clientCount } = await invalidateSessionAndClientArtifacts(
+          supabase,
+          recordingData.session_id
+        );
+        console.log(`Invalidated ${sessionCount} session artifacts and ${clientCount} client artifacts`);
+      } catch (invalidateError) {
+        console.error('Error invalidating artifacts:', invalidateError);
+        // Continue processing even if invalidation fails
+      }
+      
     } catch (error) {
       console.error('Error in Supabase operation:', error);
       throw error;

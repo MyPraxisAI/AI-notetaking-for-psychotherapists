@@ -5,6 +5,7 @@ import { createPromptApi, getUserLanguage } from '..';
 import { getLogger } from '../logger';
 import { generateVariableData, extractTemplateVariables, canGenerateVariable } from './artifact-vars';
 import { cleanupMarkdownCodeBlocks } from './artifact-utils';
+import { getArtifact, saveArtifact } from '../db/artifact-api';
 
 // Import types
 import type { ArtifactType, PromptSourceType, LanguageType, VariableContext } from '../types';
@@ -166,77 +167,7 @@ export async function generateArtifact(
   return generateContent(client, { type: 'artifact_type', value: type }, variables, variableContext);
 }
 
-/**
- * Save an artifact to the database
- * @param client Supabase client
- * @param referenceId ID of the reference (session or client)
- * @param referenceType Type of reference ('session' or 'client')
- * @param type Artifact type
- * @param content Artifact content
- * @param language Language of the artifact
- * @returns Success status
- */
-export async function saveArtifact(
-  client: SupabaseClient,
-  referenceId: string,
-  referenceType: 'session' | 'client',
-  type: ArtifactType,
-  content: string,
-  language: LanguageType
-): Promise<boolean> {
-  const logger = await getLogger();
-  const ctx = {
-    name: 'save-artifact',
-    referenceId,
-    referenceType,
-    type,
-    language
-  };
-  
-  try {
-    logger.info(ctx, `Saving ${type} artifact to database`);
-    
-    // Check if the artifact already exists
-    const { data: existingArtifact } = await client
-      .from('artifacts')
-      .select('id')
-      .eq('reference_id', referenceId)
-      .eq('reference_type', referenceType)
-      .eq('type', type)
-      .eq('language', language)
-      .single();
-    
-    if (existingArtifact) {
-      // Update existing artifact
-      logger.info(ctx, `Updating existing ${type} artifact`);
-      const { error } = await client
-        .from('artifacts')
-        .update({ content })
-        .eq('id', existingArtifact.id);
-      
-      if (error) throw error;
-    } else {
-      // Create new artifact
-      logger.info(ctx, `Creating new ${type} artifact`);
-      const { error } = await client
-        .from('artifacts')
-        .insert({
-          reference_id: referenceId,
-          reference_type: referenceType,
-          type,
-          content,
-          language
-        });
-      
-      if (error) throw error;
-    }
-    
-    return true;
-  } catch (error) {
-    logger.error(ctx, `Error saving ${type} artifact:`, error);
-    throw error;
-  }
-}
+// saveArtifact function has been moved to db/artifact-api.ts
 
 // Template variable functions moved to artifact-vars.ts
 
@@ -269,14 +200,8 @@ export async function getOrCreateArtifact(
   
   try {
     logger.info(ctx, `Checking if artifact exists for ${referenceType} ${referenceId}`);
-    // Check if the artifact already exists in the database
-    const { data: existingArtifact } = await client
-      .from('artifacts')
-      .select('content, language')
-      .eq('reference_type', referenceType)
-      .eq('reference_id', referenceId)
-      .eq('type', artifactType)
-      .maybeSingle();
+    // Check if the artifact already exists in the database using the new API
+    const existingArtifact = await getArtifact(client, referenceId, referenceType, artifactType, userLanguage);
     
     // If the artifact exists, return it
     if (existingArtifact) {

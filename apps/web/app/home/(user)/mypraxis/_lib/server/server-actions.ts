@@ -6,6 +6,7 @@ import { getSupabaseServerClient } from '@kit/supabase/server-client';
 import { SessionSchema, SessionMetadata } from '../schemas/session';
 import { getLogger } from '@kit/web-bg-common/logger';
 import { generateContent, createSessionApi } from '@kit/web-bg-common';
+import { invalidateSessionAndClientArtifacts } from '@kit/web-bg-common/db/artifact-api';
 import type { User, SupabaseClient } from '@supabase/supabase-js';
 
 // Schema for updating a session
@@ -320,7 +321,7 @@ export const updateSessionAction = enhanceAction(
 
       // 5. If content changed, handle artifacts and potentially generate title
       if (contentChanged) {
-        console.log('Content changed, deleting artifacts', {
+        console.log('Content changed, marking artifacts as stale', {
           transcriptChanged,
           noteChanged
         });
@@ -329,45 +330,18 @@ export const updateSessionAction = enhanceAction(
         await generateSessionTitle(client, data.id, data.transcript || null, data.note || null);
         // Note: We don't need to handle errors here as the function handles them internally
 
-        // 5b. Delete session artifacts
-        const { error: deleteSessionArtifactsError } = await client
-          .from('artifacts')
-          .delete()
-          .eq('reference_id', data.id)
-          .eq('reference_type', 'session');
-
-        if (deleteSessionArtifactsError) {
-          console.error('Failed to delete session artifacts', deleteSessionArtifactsError);
+        // 5b. Mark session and client artifacts as stale instead of deleting them
+        try {
+          const { sessionCount, clientCount } = await invalidateSessionAndClientArtifacts(client, data.id);
+          _logger.info({ ..._ctx, sessionCount, clientCount }, 'Invalidated session and client artifacts');
+        } catch (invalidateError) {
+          _logger.error({ ..._ctx, error: invalidateError }, 'Failed to invalidate artifacts');
           // Don't throw here, as the session update was successful
           // Just log the error and continue
-        } else {
-          console.log('Successfully deleted session artifacts');
         }
         
-        // Also delete client artifacts
-        // First get the client ID for this session
-        const { data: sessionData, error: sessionError } = await client
-          .from('sessions')
-          .select('client_id')
-          .eq('id', data.id)
-          .single();
-        
-        if (sessionError) {
-          console.error('Failed to fetch client ID for session', sessionError);
-        } else if (sessionData?.client_id) {
-          // Delete all client artifacts
-          const { error: deleteClientArtifactsError } = await client
-            .from('artifacts')
-            .delete()
-            .eq('reference_id', sessionData.client_id)
-            .eq('reference_type', 'client');
-          
-          if (deleteClientArtifactsError) {
-            console.error('Failed to delete client artifacts', deleteClientArtifactsError);
-          } else {
-            console.log('Successfully deleted client artifacts');
-          }
-        }
+        // Note: We no longer need to separately handle client artifacts
+        // as invalidateSessionAndClientArtifacts handles both session and client artifacts
       } else {
         console.log('Content unchanged, skipping artifact deletion');
       }

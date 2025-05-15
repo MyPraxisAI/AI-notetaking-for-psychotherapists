@@ -36,8 +36,12 @@ export {
 // Re-export logger utilities
 export * from './logger';
 
-// Re-export artifact utilities
-export * from './ai/artifacts';
+// Export specific functions from artifacts to maintain backward compatibility
+export { 
+  generateContent,
+  generateArtifact,
+  getOrCreateArtifact
+} from './ai/artifacts';
 
 // Re-export types for convenience in server contexts
 export * from './types';

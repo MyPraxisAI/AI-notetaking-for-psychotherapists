@@ -32,6 +32,10 @@
     "./artifacts": {
       "types": "./dist/artifacts.d.ts",
       "default": "./dist/artifacts.js"
+    },
+    "./db/artifact-api": {
+      "types": "./dist/db/artifact-api.d.ts",
+      "default": "./dist/db/artifact-api.js"
     }
   },
   "scripts": {

@@ -5,4 +5,5 @@
 export * from './prompt-api';
 export * from './session-api';
 export * from './therapist-api';
-export * from './accounts-api';
+export * from './account-api';
+export * from './artifact-api';
