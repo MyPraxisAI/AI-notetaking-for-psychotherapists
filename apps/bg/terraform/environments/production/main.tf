@@ -56,6 +56,7 @@ module "ecs_service" {
   subnet_ids         = module.vpc.subnet_ids
   security_group_id  = module.vpc.security_group_id
   sqs_queue_name     = module.sqs_queues.queue_name
+  sqs_queue_url      = module.sqs_queues.queue_url
   task_role_arn      = module.iam.task_role_arn
   execution_role_arn = module.iam.execution_role_arn
   aws_account_id     = data.aws_caller_identity.current.account_id

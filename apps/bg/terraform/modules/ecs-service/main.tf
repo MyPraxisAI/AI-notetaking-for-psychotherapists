@@ -43,6 +43,11 @@ variable "sqs_queue_name" {
   type        = string
 }
 
+variable "sqs_queue_url" {
+  description = "SQS queue URL"
+  type        = string
+}
+
 variable "task_role_arn" {
   description = "Task role ARN"
   type        = string
@@ -113,8 +118,10 @@ resource "aws_ecs_task_definition" "bg_worker" {
     
     environment = [
       { name = "NODE_ENV", value = var.environment },
+      # DEPRECATED: SQS_QUEUE_NAME is kept for backward compatibility and will be removed in a future update
       { name = "SQS_QUEUE_NAME", value = var.sqs_queue_name },
-      { name = "AWS_REGION", value = var.aws_region }
+      { name = "AWS_REGION", value = var.aws_region },
+      { name = "BACKGROUND_TASKS_QUEUE_URL", value = var.sqs_queue_url }
       # Add other environment variables as needed
     ],
     
