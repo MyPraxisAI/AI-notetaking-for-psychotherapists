@@ -87,8 +87,8 @@ export async function updateArtifact(
 }
 
 /**
- * Create a new artifact in the database
- * @param client Supabase client
+ * Create a new artifact
+ * @param client Supabase client or transaction client
  * @param referenceId ID of the reference (session or client)
  * @param referenceType Type of reference ('session' or 'client')
  * @param type Artifact type
@@ -168,18 +168,38 @@ export async function saveArtifact(
   try {
     logger.info(ctx, `Saving ${type} artifact to database`);
     
-    // Check if the artifact already exists
-    const existingArtifact = await getArtifact(client, referenceId, referenceType, type, language);
+    // First attempt an upsert operation with ON CONFLICT DO UPDATE
+    // This is a more robust approach that handles concurrency at the database level
+    const { data, error } = await client
+      .from('artifacts')
+      .upsert(
+        {
+          reference_id: referenceId,
+          reference_type: referenceType,
+          type,
+          content,
+          language,
+          stale: false, // Set stale to false when saving
+          updated_at: new Date().toISOString() // Update the timestamp
+        },
+        {
+          // Use a composite unique constraint to identify existing records
+          onConflict: 'reference_id,reference_type,type,language',
+          // Specify which fields to update if a record exists
+          ignoreDuplicates: false
+        }
+      )
+      .select();
     
-    if (existingArtifact) {
-      // Update existing artifact
-      logger.info(ctx, `Updating existing ${type} artifact`);
-      return await updateArtifact(client, existingArtifact.id, content);
-    } else {
-      // Create new artifact
-      logger.info(ctx, `Creating new ${type} artifact`);
-      return await createArtifact(client, referenceId, referenceType, type, content, language);
+    if (error) {
+      logger.error(ctx, `Error upserting artifact:`, { error });
+      throw error;
     }
+    
+    const isNew = !data || data.length === 0 || !data[0].id;
+    logger.info(ctx, `${isNew ? 'Created new' : 'Updated existing'} ${type} artifact`);
+    
+    return true;
   } catch (error) {
     logger.error(ctx, `Error saving ${type} artifact:`, { error });
     throw error;

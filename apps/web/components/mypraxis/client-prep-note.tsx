@@ -23,7 +23,9 @@ export function ClientPrepNote({ clientId }: ClientPrepNoteProps) {
     refetch
   } = useClientArtifact(clientId, 'client_prep_note', !!clientId);
   
-  // Force refetch when component mounts or becomes visible
+  // We no longer need to force refetch as we're using prefetching
+  // This commented code is kept for reference
+  /*
   useEffect(() => {
     // Force refetch when component mounts
     refetch();
@@ -43,6 +45,7 @@ export function ClientPrepNote({ clientId }: ClientPrepNoteProps) {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [clientId, refetch, queryClient]);
+  */
   
   // Track if the prep note is stale (being updated)
   const [isPrepNoteStale, setIsPrepNoteStale] = useState(false);

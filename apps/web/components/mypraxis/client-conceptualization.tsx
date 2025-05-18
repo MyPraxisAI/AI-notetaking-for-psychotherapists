@@ -23,7 +23,9 @@ export function ClientConceptualization({ clientId }: ClientConceptualizationPro
     refetch
   } = useClientArtifact(clientId, 'client_conceptualization', !!clientId);
   
-  // Force refetch when component mounts or becomes visible
+  // We no longer need to force refetch as we're using prefetching
+  // This commented code is kept for reference
+  /*
   useEffect(() => {
     // Force refetch when component mounts
     refetch();
@@ -43,6 +45,7 @@ export function ClientConceptualization({ clientId }: ClientConceptualizationPro
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [clientId, refetch, queryClient]);
+  */
   
   // Track if the conceptualization is stale (being updated)
   const [isConceptualizationStale, setIsConceptualizationStale] = useState(false);

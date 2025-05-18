@@ -7,6 +7,8 @@ import { Button } from "@kit/ui/button"
 import { useSignOut } from '@kit/supabase/hooks/use-sign-out'
 import { useUserData } from './_lib/hooks/use-user-data'
 import { useCreateSession, useSessions } from "./_lib/hooks/use-sessions"
+import { prefetchSessionArtifacts } from "./_lib/hooks/use-session-artifacts"
+import { prefetchClientArtifacts } from "./_lib/hooks/use-client-artifacts"
 import { SessionWithId } from "./_lib/schemas/session"
 import {
   Users2,
@@ -268,6 +270,9 @@ export default function Page() {
     setSelectedClient(setClientId(clientId))
     localStorage.setItem("selectedClient", clientId)
     
+    // Prefetch client artifacts to avoid loading flash
+    prefetchClientArtifacts(clientId);
+    
     // Close client list on small screens when a client is clicked
     if (window.innerWidth <= 1050) {
       setIsClientListVisible(false)
@@ -329,6 +334,9 @@ export default function Page() {
    */
   const navigateToSession = async (sessionId: string, openTab?: 'transcript' | 'notes') => {
     console.log(`Navigating to session ${sessionId}${openTab ? ` (${openTab} tab)` : ''}`)
+    
+    // Prefetch session artifacts to avoid loading flash
+    prefetchSessionArtifacts(sessionId);
     
     // First, ensure we have the session in our sessions list
     const sessionExists = sessions.some(s => s.id === sessionId);

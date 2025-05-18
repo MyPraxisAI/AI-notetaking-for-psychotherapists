@@ -196,7 +196,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
   // Use the session hook from Supabase to load session data
   const { data: sessionData, isLoading: _isLoadingSession } = useSession(sessionId)
   
-  // Fetch therapist summary when therapist tab is active
+  // Always fetch both summaries regardless of active tab
   const { 
     data: therapistSummaryData, 
     isLoading: isLoadingTherapistSummaryQuery,
@@ -204,10 +204,10 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
   } = useSessionArtifact(
     sessionId, 
     'session_therapist_summary', 
-    !!(sessionData?.transcript || sessionData?.note) && summaryView === 'therapist'
+    !!(sessionData?.transcript || sessionData?.note) // Remove conditional based on active tab
   )
   
-  // Fetch client summary when client tab is active
+  // Always fetch client summary regardless of active tab
   const { 
     data: clientSummaryData, 
     isLoading: isLoadingClientSummaryQuery,
@@ -215,7 +215,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
   } = useSessionArtifact(
     sessionId, 
     'session_client_summary', 
-    !!(sessionData?.transcript || sessionData?.note) && summaryView === 'client'
+    !!(sessionData?.transcript || sessionData?.note) // Remove conditional based on active tab
   )
   
   // Update local state when session data changes
@@ -835,7 +835,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                       <div className="rounded-lg bg-[#FFF9E8] px-6 py-6 text-[14px] text-muted-foreground flex items-center justify-center min-h-[100px]">
                         <div className="flex items-center gap-2">
                           <Loader2 className="h-4 w-4 animate-spin" />
-                          <span>Generating therapist summary...</span>
+                          <span>Loading therapist summary...</span>
                         </div>
                       </div>
                     ) : therapistSummary ? (
@@ -880,7 +880,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                       <div className="rounded-lg bg-[#FFF9E8] px-6 py-6 text-[14px] text-muted-foreground flex items-center justify-center min-h-[100px]">
                         <div className="flex items-center gap-2">
                           <Loader2 className="h-4 w-4 animate-spin" />
-                          <span>Generating client summary...</span>
+                          <span>Loading client summary...</span>
                         </div>
                       </div>
                     ) : clientSummary ? (

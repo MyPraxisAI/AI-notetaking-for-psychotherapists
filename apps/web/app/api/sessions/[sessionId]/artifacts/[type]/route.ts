@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 import { enhanceRouteHandler } from '@kit/next/routes';
 import { getSupabaseServerClient } from '@kit/supabase/server-client';
 import { 
-  getUserLanguage
+  getUserLanguage,
+  getOrCreateArtifact
 } from '@kit/web-bg-common';
 import { getArtifact } from '@kit/web-bg-common/db/artifact-api';
 import type { ArtifactType, LanguageType } from '@kit/web-bg-common/types';
@@ -43,8 +44,40 @@ export const GET = enhanceRouteHandler(
         userLanguage
       );
       
-      // If the artifact doesn't exist, return a 404 response
+      // If the artifact doesn't exist, trigger regeneration and return a 404 response
       if (!artifact) {
+        
+        // Temporary Code: trigger generation of session artifacts (since they might not have been eagerly generated before)
+        // Later we can remove this (or just pregenerate all the artifacts using a script)
+
+        try {
+          // Try to generate the artifact on-demand
+          console.log(`Artifact not found, attempting to create it for session ${sessionId}`);
+          
+          // Use getOrCreateArtifact to generate the specific artifact
+          const result = await getOrCreateArtifact(
+            client,
+            sessionId,
+            'session',
+            artifactType,
+            userLanguage
+          );
+          
+          if (result && result.content) {
+            // If we successfully created the artifact, return it immediately
+            console.log(`Successfully created artifact for session ${sessionId}`);
+            return NextResponse.json({
+              content: result.content,
+              language: result.language,
+              stale: false,
+              dataTest: `session-artifact-${artifactType}`
+            });
+          }
+        } catch (genError) {
+          // Log the error but continue to return 404
+          console.error(`Error generating artifact for session ${sessionId}:`, genError);
+        }
+
         return NextResponse.json(
           { error: 'Artifact not found' },
           { status: 404 }
