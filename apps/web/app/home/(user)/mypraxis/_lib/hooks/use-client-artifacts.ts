@@ -1,6 +1,7 @@
 'use client';
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import { toast } from 'sonner';
 
 interface ClientArtifactResponse {
@@ -63,19 +64,49 @@ export function useClientArtifact(
   enabled = true
 ) {
   const queryClient = useQueryClient();
+  const queryKey = ['client', clientId, 'artifact', type];
   
-  // Check if we have this data in the cache already
-  const cachedData = queryClient.getQueryData<ClientArtifactResponse>(['client', clientId, 'artifact', type]);
+  // Check if we have cached data and if it's stale
+  const cachedData = queryClient.getQueryData<ClientArtifactResponse>(queryKey);
+  const isStale = cachedData?.stale === true;
+  
+  // Log cache status when hook is called
+  console.log(`[useClientArtifact] HOOK CALLED for ${type}:`, {
+    clientId,
+    type,
+    enabled,
+    cacheHit: !!cachedData,
+    isStale: isStale
+  });
+  
+  // Set up a polling effect if the artifact is stale
+  useEffect(() => {
+    if (isStale && enabled) {
+      console.log(`[useClientArtifact] Setting up polling for stale artifact: ${type}`);
+      
+      // Create polling interval
+      const intervalId = setInterval(() => {
+        console.log(`[useClientArtifact] Polling stale artifact: ${type}`);
+        queryClient.invalidateQueries({ queryKey });
+      }, 3000); // Poll every 3 seconds
+      
+      // Clean up interval on unmount
+      return () => {
+        console.log(`[useClientArtifact] Cleaning up polling for: ${type}`);
+        clearInterval(intervalId);
+      };
+    }
+  }, [isStale, queryClient, queryKey, type, enabled]);
   
   return useQuery<ClientArtifactResponse>({
-    queryKey: ['client', clientId, 'artifact', type],
+    queryKey,
     queryFn: async () => {
+      console.log(`[useClientArtifact] QUERY FUNCTION EXECUTING for ${type} at ${new Date().toISOString()}`);
       try {
         const response = await fetch(`/api/clients/${clientId}/artifacts/${type}`);
         
         if (response.status === 404) {
-          // If the artifact doesn't exist yet, return null
-          // This will trigger the loading state in the UI
+          console.log(`[useClientArtifact] 404 NOT FOUND for ${type}`);
           return null;
         }
         
@@ -84,24 +115,24 @@ export function useClientArtifact(
           throw new Error(error.error || 'Failed to fetch artifact');
         }
         
+        console.log(`[useClientArtifact] FETCH SUCCESS for ${type}`);
         return response.json();
       } catch (error) {
-        toast.error(`Error loading ${type.replace('client_', '').replace('_', ' ')}`);
+        console.error(`[useClientArtifact] ERROR fetching ${type}:`, error);
+        toast.error(`Failed to load ${type.replace('_', ' ')}`);
         throw error;
       }
     },
-    enabled: !!clientId && enabled,
-    staleTime: 1000 * 60 * 5, // 5 minutes
-    // Use cached data as placeholder to avoid loading flash
-    placeholderData: cachedData || undefined,
-    // Poll every 3 seconds if the artifact is stale or doesn't exist
-    refetchInterval: (query) => {
-      // If data is null (404) or has stale=true, poll every 3 seconds
-      if (query.state.data === null || (query.state.data && query.state.data.stale)) {
-        return 3000; // 3 seconds
-      }
-      return false; // Don't poll if the artifact exists and is not stale
+    enabled: enabled,
+    // Standard stale time for normal operation
+    staleTime: isStale ? 0 : 1000 * 60 * 5, // 0 if stale (always refetch), otherwise 5 minutes
+    // We're handling polling manually with useEffect for stale artifacts
+    placeholderData: (previousData) => {
+      console.log(`[useClientArtifact] PLACEHOLDER DATA for ${type}:`, { 
+        hasPreviousData: !!previousData
+      });
+      return previousData;
     },
-    refetchIntervalInBackground: true
+    refetchOnWindowFocus: true
   });
 }

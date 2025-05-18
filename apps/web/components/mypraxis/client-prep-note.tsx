@@ -14,14 +14,47 @@ interface ClientPrepNoteProps {
 
 export function ClientPrepNote({ clientId }: ClientPrepNoteProps) {
   const queryClient = useQueryClient();
+  const mountCountRef = useRef(0);
+  const renderCountRef = useRef(0);
+  
+  // THEORY 1: Component Remounting - Log when component mounts/renders
+  useEffect(() => {
+    mountCountRef.current += 1;
+    console.log(`[ClientPrepNote] MOUNTED (count: ${mountCountRef.current}) for client: ${clientId}`);
+    
+    return () => {
+      console.log(`[ClientPrepNote] UNMOUNTED for client: ${clientId}`);
+    };
+  }, [clientId]);
   
   // Fetch the prep note for the client
   const { 
     data: prepNoteData, 
     isLoading: isLoadingPrepNote,
+    isFetching,
     error,
     refetch
   } = useClientArtifact(clientId, 'client_prep_note', !!clientId);
+  
+  // THEORY 2: Loading State Management - Log React Query state
+  useEffect(() => {
+    renderCountRef.current += 1;
+    console.log(`[ClientPrepNote] RENDER #${renderCountRef.current} for client: ${clientId}`);
+    console.log(`[ClientPrepNote] QUERY STATE:`, { 
+      hasData: !!prepNoteData, 
+      isLoading: isLoadingPrepNote, 
+      isFetching
+    });
+  });
+  
+  // THEORY 3: Cache Structure Mismatch - Check if cache is being hit
+  useEffect(() => {
+    const queryKey = ['client', clientId, 'artifact', 'client_prep_note'];
+    const cachedData = queryClient.getQueryData(queryKey);
+    console.log(`[ClientPrepNote] CACHE CHECK for ${queryKey.join(':')}:`, { 
+      cacheHit: !!cachedData
+    });
+  }, [clientId, queryClient]);
   
   // We no longer need to force refetch as we're using prefetching
   // This commented code is kept for reference

@@ -81,6 +81,7 @@ const variableGenerators: Record<string, (client: SupabaseClient, context?: Vari
   session_note: generateSessionNote, // session
   client_conceptualization: generateClientConceptualization, // client, artifact
   client_bio: generateClientBio, // client, artifact
+  client_previous_bio: generateClientPreviousBio, // client, artifact
   language: generateLanguage, // global
   primary_therapeutic_approach: generatePrimaryTherapeuticApproach // global
 };
