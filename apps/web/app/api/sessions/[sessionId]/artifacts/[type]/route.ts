@@ -2,9 +2,9 @@ import { NextResponse } from 'next/server';
 import { enhanceRouteHandler } from '@kit/next/routes';
 import { getSupabaseServerClient } from '@kit/supabase/server-client';
 import { 
-  getUserLanguage, 
-  getOrCreateArtifact
+  getUserLanguage
 } from '@kit/web-bg-common';
+import { getArtifact } from '@kit/web-bg-common/db/artifact-api';
 import type { ArtifactType, LanguageType } from '@kit/web-bg-common/types';
 
 // This route handler returns artifacts for a session
@@ -34,7 +34,8 @@ export const GET = enhanceRouteHandler(
     const userLanguage = await getUserLanguage(client) as LanguageType;
     
     try {
-      const { content, language, isNew } = await getOrCreateArtifact(
+      // Get the artifact from the database
+      const artifact = await getArtifact(
         client,
         sessionId,
         'session',
@@ -42,22 +43,25 @@ export const GET = enhanceRouteHandler(
         userLanguage
       );
       
-      // Return the artifact
+      // If the artifact doesn't exist, return a 404 response
+      if (!artifact) {
+        return NextResponse.json(
+          { error: 'Artifact not found' },
+          { status: 404 }
+        );
+      }
+      
+      // Return the artifact with all its data including the stale field
       return NextResponse.json({
-        content,
-        language,
-        generated: isNew,
-        dataTest: isNew ? `session-artifact-${artifactType}-generated` : `session-artifact-${artifactType}`
+        ...artifact,
+        dataTest: `session-artifact-${artifactType}`
       });
     } catch (error) {
-      console.error('Error getting or creating artifact:', error);
+      console.error('Error fetching artifact:', error);
       
-      // Return an error message if generation fails
+      // Return an error message if fetching fails
       return NextResponse.json({
-        content: `Unable to generate this ${artifactType.replace('session_', '').replace('_', ' ')}. Please try again later.`,
-        language: userLanguage,
-        generated: false,
-        error: true,
+        error: 'Failed to fetch artifact',
         dataTest: `session-artifact-${artifactType}-error`
       }, { status: 500 });
     }

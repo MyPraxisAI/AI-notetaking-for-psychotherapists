@@ -1,10 +1,9 @@
 import { SupabaseClient } from '@supabase/supabase-js';
 import { getSupabaseAdminClient } from './supabase';
 import { SQSQueueManager } from './sqs';
-import { AudioTranscriptionProcessor } from './processors';
+import { AudioTranscriptionProcessor, AudioProcessingTaskData, ArtifactsGenerationProcessor, ArtifactsGenerateTaskData } from './processors';
 import { withCurrentAccountId } from '@kit/web-bg-common/db';
 import { 
-  AudioProcessingTaskData, 
   BaseBackgroundTask, 
   SQSMessage 
 } from '../types';
@@ -19,6 +18,7 @@ interface MessageProcessorOptions {
 export class MessageProcessor {
   private options: MessageProcessorOptions;
   private audioTranscriptionProcessor: AudioTranscriptionProcessor;
+  private artifactsGenerationProcessor: ArtifactsGenerationProcessor;
 
   /**
    * Create a new message processor
@@ -27,6 +27,7 @@ export class MessageProcessor {
   constructor(options: MessageProcessorOptions = {}) {
     this.options = options;
     this.audioTranscriptionProcessor = new AudioTranscriptionProcessor();
+    this.artifactsGenerationProcessor = new ArtifactsGenerationProcessor();
   }
 
   /**
@@ -60,12 +61,11 @@ export class MessageProcessor {
       // Process the message within the account context using AsyncLocalStorage
       await withCurrentAccountId(body.accountId, async () => {
         // Process the message based on its operation
-        if (body.operation) {
-          await this.processMessageByOperation(body, message.MessageId, supabase);
-        } else {
-          console.log('Message has no operation field, using default processing');
-          await this.defaultProcessing(body, message.MessageId, supabase);
+        if (!body.operation) {
+          throw new Error(`Message has no operation field. Message ID: ${message.MessageId}`);
+          // This will cause the message to go to the dead letter queue
         }
+        await this.processMessageByOperation(body, message.MessageId, supabase);
       });
       
       console.log('Message processed successfully');
@@ -86,39 +86,16 @@ export class MessageProcessor {
    */
   async processMessageByOperation(body: any, messageId: string, supabase: SupabaseClient): Promise<void> {
     const { operation } = body;
-    
     switch (operation) {
       case 'audio:transcribe':
-        await this.processAudioTranscription(body as AudioProcessingTaskData, messageId, supabase);
+        await this.audioTranscriptionProcessor.process(supabase, body as AudioProcessingTaskData, messageId);
+        break;
+      case 'artifacts:generate':
+        await this.artifactsGenerationProcessor.process(supabase, body as ArtifactsGenerateTaskData, messageId);
         break;
       default:
-        console.log(`Unknown operation: ${operation}, using default processing`);
-        await this.defaultProcessing(body, messageId, supabase);
+        throw new Error(`Unknown operation: ${operation}. Message ID: ${messageId}`);
+        // This will cause the message to go to the dead letter queue
     }
-  }
-
-  /**
-   * Process audio transcription message
-   * @param body - The parsed message body
-   * @param messageId - The SQS message ID
-   * @param supabase - The Supabase client to use for this task
-   */
-  async processAudioTranscription(body: AudioProcessingTaskData, messageId: string, supabase: SupabaseClient): Promise<void> {
-    // Delegate to the specialized processor
-    await this.audioTranscriptionProcessor.process(supabase, body, messageId);
-  }
-
-  /**
-   * Default message processing
-   * @param body - The parsed message body
-   * @param messageId - The SQS message ID
-   * @param supabase - The Supabase client to use for this task
-   */
-  async defaultProcessing(body: BaseBackgroundTask, messageId: string, supabase: SupabaseClient): Promise<void> {
-    console.log(`Default processing for message: ${messageId}`);
-    console.log('Message content:', body);
-    
-    // For demonstration, we'll just log the message
-    // In a real application, you might have default handling logic
   }
 }

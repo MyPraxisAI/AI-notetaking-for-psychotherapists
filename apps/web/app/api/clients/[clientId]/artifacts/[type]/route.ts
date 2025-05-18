@@ -2,9 +2,9 @@ import { NextResponse } from 'next/server';
 import { enhanceRouteHandler } from '@kit/next/routes';
 import { getSupabaseServerClient } from '@kit/supabase/server-client';
 import { 
-  getUserLanguage, 
-  getOrCreateArtifact
+  getUserLanguage
 } from '@kit/web-bg-common';
+import { getArtifact } from '@kit/web-bg-common/db/artifact-api';
 import type { ArtifactType, LanguageType } from '@kit/web-bg-common/types';
 
 // This route handler returns artifacts for a client
@@ -30,9 +30,8 @@ export const GET = enhanceRouteHandler(
     const userLanguage = await getUserLanguage(client) as LanguageType;
     
     try {
-      
-      // Get or create the artifact
-      const { content, language, isNew } = await getOrCreateArtifact(
+      // Get the artifact from the database
+      const artifact = await getArtifact(
         client, 
         clientId, 
         'client', 
@@ -40,20 +39,27 @@ export const GET = enhanceRouteHandler(
         userLanguage
       );
       
-      // Return the artifact
+      // If the artifact doesn't exist, return a 404 response
+      if (!artifact) {
+        return NextResponse.json(
+          { error: 'Artifact not found' },
+          { status: 404 }
+        );
+      }
+      
+      // Return the artifact with all its data including the stale field
       return NextResponse.json({
-        content,
-        language,
-        generated: true,
-        isNew,
+        ...artifact,
         dataTest: `client-artifact-${artifactType}`
       });
     } catch (error) {
-      console.error(`Error getting or creating ${artifactType}:`, error);
-      return NextResponse.json(
-        { error: `Failed to get or create ${artifactType}: ${error instanceof Error ? error.message : 'Unknown error'}` },
-        { status: 500 }
-      );
+      console.error(`Error fetching artifact:`, error);
+      
+      // Return an error message if fetching fails
+      return NextResponse.json({
+        error: 'Failed to fetch artifact',
+        dataTest: `client-artifact-${artifactType}-error`
+      }, { status: 500 });
     }
   },
   {

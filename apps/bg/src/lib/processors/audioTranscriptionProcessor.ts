@@ -1,5 +1,15 @@
 import { SupabaseClient } from '@supabase/supabase-js';
-import { AudioProcessingTaskData, TranscriptionChunk } from '../../types';
+import { TranscriptionChunk } from '../../types';
+import { BaseBackgroundTask } from '../../types';
+
+/**
+ * Audio Processing Task Data
+ */
+export interface AudioProcessingTaskData extends BaseBackgroundTask {
+  operation: 'audio:transcribe';
+  accountId: string;
+  recordingId: string;
+}
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
@@ -11,7 +21,7 @@ import {
 } from '../util/transcription';
 import { YandexV3RuOptions } from '../util/transcription/yandex/long_audio_v3';
 import { combineAudioChunks } from '../util/audio';
-import { invalidateSessionAndClientArtifacts } from '@kit/web-bg-common/db';
+import { regenerateArtifactsForSession } from '@kit/web-bg-common';
 
 // TranscriptionResult interface is now imported from '../util/transcription'
 
@@ -344,16 +354,16 @@ export class AudioTranscriptionProcessor {
         console.log('Transcript inserted into transcripts table successfully');
       }
 
-      // Invalidate all artifacts related to this session and its client
-      // This will mark them as stale so they can be regenerated with the new transcript data
+      // Invalidate all artifacts related to this session and its client and queue regeneration
+      // This will mark them as stale and trigger a background task to regenerate them
       try {
-        const { sessionCount, clientCount } = await invalidateSessionAndClientArtifacts(
+        await regenerateArtifactsForSession(
           supabase,
-          recordingData.session_id
+          recordingData.session_id,
+          task.accountId
         );
-        console.log(`Invalidated ${sessionCount} session artifacts and ${clientCount} client artifacts`);
       } catch (invalidateError) {
-        console.error('Error invalidating artifacts:', invalidateError);
+        console.error('Error invalidating artifacts and queueing regeneration:', invalidateError);
         // Continue processing even if invalidation fails
       }
       

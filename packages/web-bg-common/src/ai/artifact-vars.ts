@@ -76,11 +76,11 @@ export function extractTemplateVariables(templateString: string): string[] {
 const variableGenerators: Record<string, (client: SupabaseClient, context?: VariableContext) => Promise<string>> = {
   full_session_contents: generateFullSessionContents, // client
   last_session_content: generateLastSessionContent, // client
-  session_summaries: generateSessionSummaries, // client
+  session_summaries: generateSessionSummaries, // client, artifact
   session_transcript: generateSessionTranscript, // session
   session_note: generateSessionNote, // session
-  client_conceptualization: generateClientConceptualization, // client
-  client_bio: generateClientBio, // client
+  client_conceptualization: generateClientConceptualization, // client, artifact
+  client_bio: generateClientBio, // client, artifact
   language: generateLanguage, // global
   primary_therapeutic_approach: generatePrimaryTherapeuticApproach // global
 };

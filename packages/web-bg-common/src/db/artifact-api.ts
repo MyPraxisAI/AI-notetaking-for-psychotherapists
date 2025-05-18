@@ -190,12 +190,11 @@ export async function saveArtifact(
  * Invalidate all artifacts related to a specific session by marking them as stale
  * @param client Supabase client
  * @param sessionId ID of the session
- * @returns Number of artifacts marked as stale
  */
 export async function invalidateSessionArtifacts(
   client: SupabaseClient,
   sessionId: string
-): Promise<number> {
+): Promise<void> {
   const logger = await getLogger();
   const ctx = {
     name: 'invalidate-session-artifacts',
@@ -205,7 +204,7 @@ export async function invalidateSessionArtifacts(
   try {
     logger.info(ctx, `Invalidating all artifacts for session ${sessionId}`);
     
-    const { error, count } = await client
+    const { error } = await client
       .from('artifacts')
       .update({ stale: true })
       .eq('reference_type', 'session')
@@ -213,9 +212,7 @@ export async function invalidateSessionArtifacts(
     
     if (error) throw error;
     
-    const updatedCount = count || 0;
-    logger.info(ctx, `Marked ${updatedCount} session artifacts as stale`);
-    return updatedCount;
+    logger.info(ctx, `Marked session artifacts as stale`);
   } catch (error) {
     logger.error(ctx, `Error invalidating session artifacts:`, { error });
     throw error;
@@ -226,12 +223,11 @@ export async function invalidateSessionArtifacts(
  * Invalidate all artifacts related to a specific client by marking them as stale
  * @param client Supabase client
  * @param clientId ID of the client
- * @returns Number of artifacts marked as stale
  */
 export async function invalidateClientArtifacts(
   client: SupabaseClient,
   clientId: string
-): Promise<number> {
+): Promise<void> {
   const logger = await getLogger();
   const ctx = {
     name: 'invalidate-client-artifacts',
@@ -241,7 +237,7 @@ export async function invalidateClientArtifacts(
   try {
     logger.info(ctx, `Invalidating all artifacts for client ${clientId}`);
     
-    const { error, count } = await client
+    const { error } = await client
       .from('artifacts')
       .update({ stale: true })
       .eq('reference_type', 'client')
@@ -249,9 +245,7 @@ export async function invalidateClientArtifacts(
     
     if (error) throw error;
     
-    const updatedCount = count || 0;
-    logger.info(ctx, `Marked ${updatedCount} client artifacts as stale`);
-    return updatedCount;
+    logger.info(ctx, `Marked client artifacts as stale`);
   } catch (error) {
     logger.error(ctx, `Error invalidating client artifacts:`, { error });
     throw error;
@@ -262,12 +256,11 @@ export async function invalidateClientArtifacts(
  * Invalidate all artifacts related to a specific session and its associated client
  * @param client Supabase client
  * @param sessionId ID of the session
- * @returns Object with counts of session and client artifacts marked as stale
  */
 export async function invalidateSessionAndClientArtifacts(
   client: SupabaseClient,
   sessionId: string
-): Promise<{ sessionCount: number; clientCount: number }> {
+): Promise<void> {
   const logger = await getLogger();
   const ctx = {
     name: 'invalidate-session-and-client-artifacts',
@@ -278,7 +271,7 @@ export async function invalidateSessionAndClientArtifacts(
     logger.info(ctx, `Invalidating session artifacts and finding associated client`);
     
     // First, mark session artifacts as stale
-    const sessionCount = await invalidateSessionArtifacts(client, sessionId);
+    await invalidateSessionArtifacts(client, sessionId);
     
     // Then, find the client ID associated with this session
     const { data: sessionData, error: sessionError } = await client
@@ -290,17 +283,14 @@ export async function invalidateSessionAndClientArtifacts(
     if (sessionError) throw sessionError;
     
     if (!sessionData || !sessionData.client_id) {
-      logger.info(ctx, `No client found for session ${sessionId}`);
-      return { sessionCount, clientCount: 0 };
+      logger.error(ctx, `No client found for session ${sessionId}`);
+      return;
     }
     
     const clientId = sessionData.client_id;
-    logger.info(ctx, `Found client ${clientId} for session ${sessionId}`);
     
     // Finally, mark client artifacts as stale
-    const clientCount = await invalidateClientArtifacts(client, clientId);
-    
-    return { sessionCount, clientCount };
+    await invalidateClientArtifacts(client, clientId);
   } catch (error) {
     logger.error(ctx, `Error invalidating session and client artifacts:`, { error });
     throw error;

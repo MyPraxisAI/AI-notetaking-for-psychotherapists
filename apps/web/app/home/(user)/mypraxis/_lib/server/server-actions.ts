@@ -5,8 +5,7 @@ import { enhanceAction } from '@kit/next/actions';
 import { getSupabaseServerClient } from '@kit/supabase/server-client';
 import { SessionSchema, SessionMetadata } from '../schemas/session';
 import { getLogger } from '@kit/web-bg-common/logger';
-import { generateContent, createSessionApi } from '@kit/web-bg-common';
-import { invalidateSessionAndClientArtifacts } from '@kit/web-bg-common/db/artifact-api';
+import { generateContent, createSessionApi, regenerateArtifactsForSession } from '@kit/web-bg-common';
 import type { User, SupabaseClient } from '@supabase/supabase-js';
 
 // Schema for updating a session
@@ -197,8 +196,8 @@ export const generateSessionTitleAction = enhanceAction(
 export const updateSessionAction = enhanceAction(
   async function updateSessionAction(data: UpdateSessionData, user: User) {
     const client = getSupabaseServerClient();
-    const _logger = await getLogger();
-    const _ctx = {
+    const logger = await getLogger();
+    const ctx = {
       name: 'update-session',
       sessionId: data.id,
       userId: user?.id
@@ -213,7 +212,7 @@ export const updateSessionAction = enhanceAction(
         .single();
         
       if (fetchError) {
-        _logger.error({ ..._ctx, error: fetchError }, 'Failed to fetch current session data');
+        logger.error({ ...ctx, error: fetchError }, 'Failed to fetch current session data');
         throw new Error('Failed to fetch current session data');
       }
       
@@ -298,7 +297,7 @@ export const updateSessionAction = enhanceAction(
             .eq('id', currentTranscript.id);
             
           if (updateTranscriptError) {
-            _logger.error({ ..._ctx, error: updateTranscriptError }, 'Failed to update transcript');
+            logger.error({ ...ctx, error: updateTranscriptError }, 'Failed to update transcript');
             throw new Error('Failed to update transcript');
           }
         } else {
@@ -313,7 +312,7 @@ export const updateSessionAction = enhanceAction(
             });
             
           if (insertTranscriptError) {
-            _logger.error({ ..._ctx, error: insertTranscriptError }, 'Failed to insert transcript');
+            logger.error({ ...ctx, error: insertTranscriptError }, 'Failed to insert transcript');
             throw new Error('Failed to insert transcript');
           }
         }
@@ -330,18 +329,18 @@ export const updateSessionAction = enhanceAction(
         await generateSessionTitle(client, data.id, data.transcript || null, data.note || null);
         // Note: We don't need to handle errors here as the function handles them internally
 
-        // 5b. Mark session and client artifacts as stale instead of deleting them
+        // 5b. Mark session and client artifacts as stale and queue regeneration
         try {
-          const { sessionCount, clientCount } = await invalidateSessionAndClientArtifacts(client, data.id);
-          _logger.info({ ..._ctx, sessionCount, clientCount }, 'Invalidated session and client artifacts');
+          await regenerateArtifactsForSession(
+            client, 
+            data.id, 
+            currentSession.account_id
+          );
+          logger.info({ ...ctx }, 'Invalidated artifacts and queued regeneration');
         } catch (invalidateError) {
-          _logger.error({ ..._ctx, error: invalidateError }, 'Failed to invalidate artifacts');
-          // Don't throw here, as the session update was successful
-          // Just log the error and continue
+          logger.error({ ...ctx, error: invalidateError }, 'Failed to invalidate artifacts and queue regeneration');
         }
         
-        // Note: We no longer need to separately handle client artifacts
-        // as invalidateSessionAndClientArtifacts handles both session and client artifacts
       } else {
         console.log('Content unchanged, skipping artifact deletion');
       }

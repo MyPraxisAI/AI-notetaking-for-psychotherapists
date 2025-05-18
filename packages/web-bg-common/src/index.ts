@@ -40,8 +40,12 @@ export * from './logger';
 export { 
   generateContent,
   generateArtifact,
-  getOrCreateArtifact
+  getOrCreateArtifact,
+  regenerateArtifactsForSession
 } from './ai/artifacts';
 
 // Re-export types for convenience in server contexts
 export * from './types';
+
+// Re-export AWS utilities
+export * as aws from './aws';

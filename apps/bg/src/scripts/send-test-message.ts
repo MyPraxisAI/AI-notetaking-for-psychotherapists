@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 import { SQSQueueManager } from '../lib/sqs';
-import { AudioProcessingTaskData } from '../types';
+import { AudioProcessingTaskData } from '../lib/processors/audioTranscriptionProcessor';
 
 // Load environment variables
 dotenv.config();
