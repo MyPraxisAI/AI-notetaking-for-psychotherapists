@@ -853,7 +853,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                             <ReactMarkdown>{therapistSummary || ''}</ReactMarkdown>
                           </div>
                         </div>
-                        <div className="absolute right-2 top-[7px] flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="absolute right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity" style={{ top: isTherapistSummaryStale ? '40px' : '7px' }}>
                           <Button
                             variant="ghost"
                             size="icon"
@@ -866,23 +866,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
 
                         </div>
                       </div>
-                    ) : session?.summary?.therapist ? (
-                      <div className="relative">
-                        <div className="rounded-lg bg-[#FFF9E8] px-6 pb-6 pt-7 text-[14px] leading-[1.6] whitespace-pre-wrap">
-                          {session.summary?.therapist}
-                        </div>
-                        <div className="absolute right-2 top-[7px] flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6 hover:bg-transparent"
-                            onClick={() => handleCopyText(session.summary?.therapist)}
-                          >
-                            {isCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                          </Button>
 
-                        </div>
-                      </div>
                     ) : (
                       <div className="rounded-lg bg-[#FFF9E8] px-6 py-6 text-[14px] text-muted-foreground" data-test="therapist-summary-placeholder">
                         Therapist summary will be generated automatically once you add either a transcript or session notes
@@ -914,7 +898,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                             <ReactMarkdown>{clientSummary || ''}</ReactMarkdown>
                           </div>
                         </div>
-                        <div className="absolute right-2 top-[7px] flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="absolute right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity" style={{ top: isClientSummaryStale ? '40px' : '7px' }}>
                           <Button
                             variant="ghost"
                             size="icon"
@@ -927,23 +911,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
 
                         </div>
                       </div>
-                    ) : session?.summary?.client ? (
-                      <div className="relative">
-                        <div className="rounded-lg bg-[#FFF9E8] px-6 pb-6 pt-7 text-[14px] leading-[1.6] whitespace-pre-wrap">
-                          {session.summary?.client}
-                        </div>
-                        <div className="absolute right-2 top-[7px] flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6 hover:bg-transparent"
-                            onClick={() => handleCopyText(session.summary?.client, true)}
-                          >
-                            {isClientSummaryCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                          </Button>
 
-                        </div>
-                      </div>
                     ) : (
                       <div className="rounded-lg bg-[#FFF9E8] px-6 py-6 text-[14px] text-muted-foreground" data-test="client-summary-placeholder">
                         Client summary will be generated automatically once you add either a transcript or session notes

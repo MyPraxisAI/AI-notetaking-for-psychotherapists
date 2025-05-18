@@ -110,7 +110,8 @@ export function ClientConceptualization({ clientId }: ClientConceptualizationPro
           <Button
             variant="ghost"
             size="icon"
-            className="h-6 w-6 hover:bg-transparent absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity"
+            className="h-6 w-6 hover:bg-transparent absolute right-3 opacity-0 group-hover:opacity-100 transition-opacity"
+            style={{ top: isConceptualizationStale ? '40px' : '3px' }}
             onClick={() => handleCopyText(conceptualizationData.content)}
             data-test="copy-conceptualization-button"
           >

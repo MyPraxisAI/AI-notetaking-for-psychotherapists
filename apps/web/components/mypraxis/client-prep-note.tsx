@@ -110,7 +110,8 @@ export function ClientPrepNote({ clientId }: ClientPrepNoteProps) {
           <Button
             variant="ghost"
             size="icon"
-            className="h-6 w-6 hover:bg-transparent absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity"
+            className="h-6 w-6 hover:bg-transparent absolute right-3 opacity-0 group-hover:opacity-100 transition-opacity"
+            style={{ top: isPrepNoteStale ? '40px' : '3px' }}
             onClick={() => handleCopyText(prepNoteData.content)}
             data-test="copy-prep-note-button"
           >
