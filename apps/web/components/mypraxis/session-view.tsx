@@ -8,9 +8,10 @@ import { SessionMetadata } from "../../types/session"
 import { sessionTranscripts as _sessionTranscripts } from "../../data/mypraxis/session-transcripts"
 import { Textarea } from "@kit/ui/textarea"
 import { Label } from "@kit/ui/label"
-import { Check, Edit2, Plus, Copy, MoreVertical, Loader2 } from "lucide-react"
+import { Check, Edit2, Plus, Copy, MoreVertical, Loader2, RefreshCw } from "lucide-react"
 import { Button } from "@kit/ui/button"
 import { Input } from "@kit/ui/input"
+import { Badge } from "@kit/ui/badge"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@kit/ui/dropdown-menu"
 import { DeleteSessionModal } from "../mypraxis/delete-session-modal"
 import type { Session } from "../../types/session"
@@ -178,6 +179,8 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
   const [clientSummary, setClientSummary] = useState<string | null>(null)
   const [isLoadingTherapistSummary, setIsLoadingTherapistSummary] = useState(false)
   const [isLoadingClientSummary, setIsLoadingClientSummary] = useState(false)
+  const [isTherapistSummaryStale, setIsTherapistSummaryStale] = useState(false)
+  const [isClientSummaryStale, setIsClientSummaryStale] = useState(false)
   const [session, setSession] = useState<Session | null>(null)
   const [isEditingTitle, setIsEditingTitle] = useState(false) // Added state for title editing
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
@@ -271,14 +274,24 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
   useEffect(() => {
     if (therapistSummaryData) {
       setTherapistSummary(therapistSummaryData.content)
+      // If the artifact is stale, set the stale state but don't show loading
+      setIsTherapistSummaryStale(!!therapistSummaryData.stale)
       setIsLoadingTherapistSummary(false)
+    } else {
+      // If there's no data, show loading state (404 case)
+      setIsLoadingTherapistSummary(true)
     }
   }, [therapistSummaryData])
   
   useEffect(() => {
     if (clientSummaryData) {
       setClientSummary(clientSummaryData.content)
+      // If the artifact is stale, set the stale state but don't show loading
+      setIsClientSummaryStale(!!clientSummaryData.stale)
       setIsLoadingClientSummary(false)
+    } else {
+      // If there's no data, show loading state (404 case)
+      setIsLoadingClientSummary(true)
     }
   }, [clientSummaryData])
   
@@ -828,6 +841,14 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                     ) : therapistSummary ? (
                       <div className="relative">
                         <div className="rounded-lg bg-[#FFF9E8] px-6 pb-6 pt-7 text-[14px] leading-[1.6]">
+                          {isTherapistSummaryStale && (
+                            <div className="absolute right-2 top-2">
+                              <Badge variant="outline" className="flex items-center gap-1 bg-white">
+                                <RefreshCw className="h-3 w-3 animate-spin" />
+                                <span>Updating</span>
+                              </Badge>
+                            </div>
+                          )}
                           <div className="markdown-content">
                             <ReactMarkdown>{therapistSummary || ''}</ReactMarkdown>
                           </div>
@@ -881,6 +902,14 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                     ) : clientSummary ? (
                       <div className="relative">
                         <div className="rounded-lg bg-[#FFF9E8] px-6 pb-6 pt-7 text-[14px] leading-[1.6]">
+                          {isClientSummaryStale && (
+                            <div className="absolute right-2 top-2">
+                              <Badge variant="outline" className="flex items-center gap-1 bg-white">
+                                <RefreshCw className="h-3 w-3 animate-spin" />
+                                <span>Updating</span>
+                              </Badge>
+                            </div>
+                          )}
                           <div className="markdown-content">
                             <ReactMarkdown>{clientSummary || ''}</ReactMarkdown>
                           </div>

@@ -1,9 +1,10 @@
 'use client';
 
 import { useClientArtifact } from '../../app/home/(user)/mypraxis/_lib/hooks/use-client-artifacts';
-import { Loader2, Copy, Check } from 'lucide-react';
+import { Loader2, Copy, Check, RefreshCw } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { Button } from '@kit/ui/button';
+import { Badge } from '@kit/ui/badge';
 import { useState, useRef, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -42,6 +43,16 @@ export function ClientPrepNote({ clientId }: ClientPrepNoteProps) {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [clientId, refetch, queryClient]);
+  
+  // Track if the prep note is stale (being updated)
+  const [isPrepNoteStale, setIsPrepNoteStale] = useState(false);
+  
+  // Update stale state when data changes
+  useEffect(() => {
+    if (prepNoteData) {
+      setIsPrepNoteStale(prepNoteData.stale);
+    }
+  }, [prepNoteData]);
   
   // Copy functionality
   const [isCopied, setIsCopied] = useState(false);
@@ -88,6 +99,14 @@ export function ClientPrepNote({ clientId }: ClientPrepNoteProps) {
         </div>
       ) : (
         <div className="mt-5 rounded-lg bg-[#FFF9E8] p-6 relative group" data-test="client-prep-note-content">
+          {isPrepNoteStale && (
+            <div className="absolute right-2 top-2">
+              <Badge variant="outline" className="flex items-center gap-1 bg-white">
+                <RefreshCw className="h-3 w-3 animate-spin" />
+                <span>Updating</span>
+              </Badge>
+            </div>
+          )}
           <Button
             variant="ghost"
             size="icon"
