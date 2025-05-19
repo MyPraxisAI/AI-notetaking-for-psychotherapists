@@ -4,15 +4,29 @@ import { getLogger } from '../logger';
 /**
  * Get the SQS client instance
  * This is a function to ensure we get fresh credentials each time
+ * Handles both environments:
+ * - On Vercel: Uses explicit AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY env vars
+ * - On ECS: Uses IAM role credentials via the default provider chain
  */
-function getSQSClient() {
-  return new SQSClient({
+async function getSQSClient() {
+  const logger = await getLogger();
+  const config: { region: string; credentials?: { accessKeyId: string; secretAccessKey: string } } = {
     region: process.env.AWS_REGION || 'us-east-1',
-    credentials: {
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
-    },
-  });
+  };
+    
+  // Check if we're running on Vercel (not ECS) by checking for Vercel-specific env vars
+  // If AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY are available, use them explicitly
+  if (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY) {
+    logger.info({ name: 'get-sqs-client' }, 'Using explicit AWS credentials from environment variables');
+    config.credentials = {
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    };
+  } else {
+    logger.info({ name: 'get-sqs-client' }, 'No explicit AWS credentials found, using default credential provider chain');
+  }
+  
+  return new SQSClient(config);
 }
 
 /**
@@ -70,7 +84,7 @@ export async function sendSQSMessage({
     // Send the message
     logger.info({ ...ctx, messageSize: JSON.stringify(messageBody).length }, 'Sending message to SQS queue');
     
-    const sqsClient = getSQSClient();
+    const sqsClient = await getSQSClient();
     const command = new SendMessageCommand(params);
     const response = await sqsClient.send(command);
     
@@ -78,7 +92,25 @@ export async function sendSQSMessage({
     
     return response.MessageId;
   } catch (error) {
-    logger.error({ ...ctx, error }, 'Failed to send message to SQS queue');
+    // Enhanced error logging with more details
+    const errorDetails = {
+      ...ctx,
+      error,
+      errorName: error instanceof Error ? error.name : 'Unknown',
+      errorMessage: error instanceof Error ? error.message : String(error),
+      errorStack: error instanceof Error ? error.stack : undefined,
+      // Include additional AWS-specific error properties if available
+      awsErrorType: error && typeof error === 'object' && '$metadata' in error && error.$metadata && typeof error.$metadata === 'object' ? 
+        'httpStatusCode' in error.$metadata ? error.$metadata.httpStatusCode : undefined : undefined,
+      awsRequestId: error && typeof error === 'object' && '$metadata' in error && error.$metadata && typeof error.$metadata === 'object' ? 
+        'requestId' in error.$metadata ? error.$metadata.requestId : undefined : undefined,
+      // Include environment information for context
+      awsRegion: process.env.AWS_REGION,
+      hasCredentials: !!(process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY),
+      nodeEnv: process.env.NODE_ENV,
+    };
+    
+    logger.error(errorDetails, 'Failed to send message to SQS queue');
     throw error;
   }
 }

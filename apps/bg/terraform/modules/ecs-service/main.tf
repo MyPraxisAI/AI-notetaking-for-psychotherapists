@@ -69,6 +69,12 @@ variable "min_capacity" {
   default     = 1
 }
 
+variable "image_tag" {
+  description = "Docker image tag to deploy"
+  type        = string
+  default     = "latest"
+}
+
 resource "aws_cloudwatch_log_group" "bg_worker" {
   name              = "/ecs/${var.environment}-${var.app_name}"
   retention_in_days = 30
@@ -104,7 +110,7 @@ resource "aws_ecs_task_definition" "bg_worker" {
 
   container_definitions = jsonencode([{
     name      = "${var.environment}-${var.app_name}"
-    image     = "${var.ecr_repository_url}:latest"
+    image     = "${var.ecr_repository_url}:${var.image_tag}"
     essential = true
     
     logConfiguration = {
