@@ -28,7 +28,6 @@ import {
   Brain,
   ChevronLeft,
   ChevronRight,
-  Loader2,
 } from "lucide-react"
 import { PrepNote as _PrepNote } from "../../../../components/mypraxis/prep-note"
 import { ProfileForm } from "../../../../components/mypraxis/profile-form"
