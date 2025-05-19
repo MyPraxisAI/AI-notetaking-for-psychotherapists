@@ -145,7 +145,7 @@ async function generateWithGoogle(
   
   // Log success
   console.log(`Successfully generated text with ${options.provider}`, 
-    JSON.stringify({ duration: `${duration}ms`, promptTokens, completionTokens, totalTokens: promptTokens + completionTokens }));
+    JSON.stringify({ duration: `${duration}ms`, promptTokens, completionTokens, totalTokens: promptTokens + completionTokens }, null, 0));
 
     return {
     content,

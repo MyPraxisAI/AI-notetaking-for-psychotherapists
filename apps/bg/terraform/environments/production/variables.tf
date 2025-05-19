@@ -32,3 +32,9 @@ variable "min_capacity" {
   description = "Minimum number of tasks to run"
   default     = 1
 }
+
+variable "image_tag" {
+  description = "Docker image tag to deploy"
+  type        = string
+  default     = "latest"  # Default, but should be overridden during deployment
+}
