@@ -7,8 +7,8 @@ import { Button } from "@kit/ui/button"
 import { useSignOut } from '@kit/supabase/hooks/use-sign-out'
 import { useUserData } from './_lib/hooks/use-user-data'
 import { useCreateSession, useSessions } from "./_lib/hooks/use-sessions"
-import { usePrefetchSessionArtifacts, prefetchSessionArtifactsNonHook } from './_lib/hooks/use-session-artifacts'
-import { prefetchClientArtifacts } from "./_lib/hooks/use-client-artifacts"
+import { usePrefetchSessionArtifacts } from './_lib/hooks/use-session-artifacts'
+import { usePrefetchClientArtifacts } from "./_lib/hooks/use-client-artifacts"
 import { SessionWithId } from "./_lib/schemas/session"
 import {
   Users2,
@@ -86,6 +86,9 @@ export default function Page() {
   const [selectedItem, setSelectedItem] = useState<MenuItem>("clients")
   const [selectedClient, setSelectedClient] = useState<ClientId>("")
   const [selectedDetailItem, setSelectedDetailItem] = useState<DetailItem>("prep-note")
+  
+  // Initialize hooks for prefetching artifacts
+  const prefetchClientArtifacts = usePrefetchClientArtifacts()
   const { data: clients = [], isLoading: _isLoadingClients } = useClients()
   const [sessions, setSessions] = useState<Session[]>([])
   const [localClientNames, setLocalClientNames] = useState<Record<string, string>>({})
@@ -586,12 +589,6 @@ export default function Page() {
       return <SessionView clientId={selectedClient} sessionId={selectedDetailItem} />
     }
 
-    // Create loading component for reuse (still useful for session loading)
-    const LoadingComponent = () => (
-      <div className="flex items-center justify-center h-full">
-        <Loader2 className="h-6 w-6 animate-spin" />
-      </div>
-    )
 
     // Using static imports with stable keys to prevent remounting
     // Each component gets a stable key based on the client ID, not the selected tab

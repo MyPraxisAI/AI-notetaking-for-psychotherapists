@@ -1,7 +1,7 @@
 'use client';
 
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect } from 'react';
+import { useQuery, useQueryClient, QueryClient } from '@tanstack/react-query';
+import { useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
 
 interface ClientArtifactResponse {
@@ -14,13 +14,12 @@ interface ClientArtifactResponse {
  * Hook to fetch client artifacts (prep note, conceptualization, bio)
  * Follows the client-side data fetching pattern with React Query
  */
+
 /**
- * Prefetch client artifacts to avoid loading flashes
- * Call this function when you know a client will be viewed soon
+ * Non-hook version for prefetching client artifacts
+ * This is for use in non-React contexts or where hooks can't be used
  */
-export function prefetchClientArtifacts(clientId: string) {
-  const queryClient = useQueryClient();
-  
+export function prefetchClientArtifactsNonHook(queryClient: QueryClient, clientId: string) {
   // Define artifact types to prefetch
   const artifactTypes = ['client_prep_note', 'client_conceptualization', 'client_bio'] as const;
   
@@ -58,13 +57,27 @@ export function prefetchClientArtifacts(clientId: string) {
   });
 }
 
+/**
+ * React hook for prefetching client artifacts
+ * Call this function when you know a client will be viewed soon
+ */
+export function usePrefetchClientArtifacts() {
+  const queryClient = useQueryClient();
+  
+  return (clientId: string) => {
+    prefetchClientArtifactsNonHook(queryClient, clientId);
+  };
+}
+
 export function useClientArtifact(
   clientId: string, 
   type: 'client_prep_note' | 'client_conceptualization' | 'client_bio', 
   enabled = true
 ) {
   const queryClient = useQueryClient();
-  const queryKey = ['client', clientId, 'artifact', type];
+  
+  // Use useMemo to memoize the queryKey array to avoid unnecessary re-renders
+  const queryKey = useMemo(() => ['client', clientId, 'artifact', type], [clientId, type]);
   
   // Check if we have cached data and if it's stale
   const cachedData = queryClient.getQueryData<ClientArtifactResponse>(queryKey);

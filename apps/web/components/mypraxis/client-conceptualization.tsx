@@ -6,7 +6,6 @@ import ReactMarkdown from 'react-markdown';
 import { Button } from '@kit/ui/button';
 import { Badge } from '@kit/ui/badge';
 import { useState, useRef, useEffect } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
 
 interface ClientConceptualizationProps {
   clientId: string;
