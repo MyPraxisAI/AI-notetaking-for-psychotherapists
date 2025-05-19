@@ -103,11 +103,7 @@ export async function sendSQSMessage({
       awsErrorType: error && typeof error === 'object' && '$metadata' in error && error.$metadata && typeof error.$metadata === 'object' ? 
         'httpStatusCode' in error.$metadata ? error.$metadata.httpStatusCode : undefined : undefined,
       awsRequestId: error && typeof error === 'object' && '$metadata' in error && error.$metadata && typeof error.$metadata === 'object' ? 
-        'requestId' in error.$metadata ? error.$metadata.requestId : undefined : undefined,
-      // Include environment information for context
-      awsRegion: process.env.AWS_REGION,
-      hasCredentials: !!(process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY),
-      nodeEnv: process.env.NODE_ENV,
+        'requestId' in error.$metadata ? error.$metadata.requestId : undefined : undefined
     };
     
     logger.error(errorDetails, 'Failed to send message to SQS queue');
