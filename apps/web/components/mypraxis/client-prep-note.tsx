@@ -33,7 +33,7 @@ export function ClientPrepNote({ clientId }: ClientPrepNoteProps) {
     isLoading: isLoadingPrepNote,
     isFetching,
     error,
-    refetch
+    refetch: _refetch // Renamed to indicate it's unused
   } = useClientArtifact(clientId, 'client_prep_note', !!clientId);
   
   // THEORY 2: Loading State Management - Log React Query state

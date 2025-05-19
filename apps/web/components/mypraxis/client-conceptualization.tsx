@@ -13,14 +13,13 @@ interface ClientConceptualizationProps {
 }
 
 export function ClientConceptualization({ clientId }: ClientConceptualizationProps) {
-  const queryClient = useQueryClient();
   
   // Fetch the conceptualization for the client
   const { 
     data: conceptualizationData, 
     isLoading: isLoadingConceptualization,
     error,
-    refetch
+    refetch: _refetch // Renamed to indicate it's unused
   } = useClientArtifact(clientId, 'client_conceptualization', !!clientId);
   
   // We no longer need to force refetch as we're using prefetching

@@ -333,10 +333,7 @@ export async function generateSessionSummaries(client: SupabaseClient, variableC
   
   const clientId = variableContext.contextId;
   logger.info(ctx, `Generating session summaries for client ${clientId}`);
-  
-  // Get the user's preferred language
-  const userLanguage = await getUserLanguage(client) as LanguageType;
-  
+    
   try {
     // Fetch all sessions for the client, ordered by creation date (newest first)
     const { data: sessions, error: sessionsError } = await client
@@ -369,7 +366,7 @@ export async function generateSessionSummaries(client: SupabaseClient, variableC
     logger.info(ctx, `Retrieved ${artifacts.length} therapist summaries for ${sessionIds.length} sessions`);
     
     // Create a map of artifacts by sessionId for faster lookup
-    const artifactsMap: Record<string, any> = {};
+    const artifactsMap: Record<string, { content: string; reference_id: string }> = {};
     artifacts.forEach(artifact => {
       if (artifact && artifact.reference_id) {
         artifactsMap[artifact.reference_id] = artifact;
@@ -511,7 +508,7 @@ export async function generateClientConceptualization(client: SupabaseClient, va
   }
   
   const clientId = variableContext.contextId;
-  // Get the user's preferred language
+  // Get the user's preferred language (not used directly but kept for clarity)
   const userLanguage = await getUserLanguage(client) as LanguageType;
   
   // Generate variable data for the client
@@ -543,7 +540,7 @@ export async function generateClientBio(client: SupabaseClient, variableContext?
   }
   
   const clientId = variableContext.contextId;
-  // Get the user's preferred language
+  // Get the user's preferred language (not used directly but kept for clarity)
   const userLanguage = await getUserLanguage(client) as LanguageType;
   
   // Generate variable data for the client
@@ -582,10 +579,7 @@ export async function generatePreviousClientBio(client: SupabaseClient, variable
     throw new Error('Client previous bio generation requires a client context');
   }
   
-  const clientId = variableContext.contextId;
-  // Get the user's preferred language
-  const userLanguage = await getUserLanguage(client) as LanguageType;
-  
+  const clientId = variableContext.contextId;  
   try {
     // Simply fetch the existing client_bio artifact if it exists
     const artifact = await getArtifact(

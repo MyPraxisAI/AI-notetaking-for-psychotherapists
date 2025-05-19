@@ -2,12 +2,11 @@ import { NextResponse } from 'next/server';
 import { enhanceRouteHandler } from '@kit/next/routes';
 import { getSupabaseServerClient } from '@kit/supabase/server-client';
 import { 
-  getUserLanguage,
   getOrCreateArtifact,
   getArtifact,
   getSessionContent
 } from '@kit/web-bg-common';
-import type { ArtifactType, LanguageType } from '@kit/web-bg-common/types';
+import type { ArtifactType } from '@kit/web-bg-common/types';
 
 // This route handler returns artifacts for a session
 // It will be enhanced with authentication and error handling
@@ -30,8 +29,6 @@ export const GET = enhanceRouteHandler(
     // Get the Supabase client for database access
     const client = getSupabaseServerClient();
     
-    // Get the user's preferred language
-    const userLanguage = await getUserLanguage(client) as LanguageType;
     
     try {
       // Get the artifact from the database

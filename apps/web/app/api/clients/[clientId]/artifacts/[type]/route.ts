@@ -1,11 +1,8 @@
 import { NextResponse } from 'next/server';
 import { enhanceRouteHandler } from '@kit/next/routes';
 import { getSupabaseServerClient } from '@kit/supabase/server-client';
-import { 
-  getUserLanguage
-} from '@kit/web-bg-common';
-import { getArtifact } from '@kit/web-bg-common/db/artifact-api';
-import type { ArtifactType, LanguageType } from '@kit/web-bg-common/types';
+import { getArtifact } from '@kit/web-bg-common';
+import type { ArtifactType } from '@kit/web-bg-common/types';
 
 // This route handler returns artifacts for a client
 export const GET = enhanceRouteHandler(
@@ -26,8 +23,6 @@ export const GET = enhanceRouteHandler(
     // Get the Supabase client for database access
     const client = getSupabaseServerClient();
     
-    // Get the user's preferred language
-    const userLanguage = await getUserLanguage(client) as LanguageType;
     
     try {
       // Get the artifact from the database
