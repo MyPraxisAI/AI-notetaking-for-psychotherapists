@@ -207,7 +207,7 @@ export async function getOrCreateArtifact(
   try {
     logger.info(ctx, `Checking if artifact exists for ${referenceType} ${referenceId}`);
     // Check if the artifact already exists in the database using the new API
-    const existingArtifact = await getArtifact(client, referenceId, referenceType, artifactType, language);
+    const existingArtifact = await getArtifact(client, referenceId, referenceType, artifactType);
     
     // If the artifact exists and is not stale, return it
     if (existingArtifact && !existingArtifact.stale) {

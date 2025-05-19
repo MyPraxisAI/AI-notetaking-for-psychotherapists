@@ -1,4 +1,5 @@
 import { SupabaseClient } from '@supabase/supabase-js';
+import { getArtifact, getArtifacts } from '../db/artifact-api';
 import { getUserLanguage, getOrCreateArtifact, getFullLanguageName, createTherapistApi } from '..';
 import type { ArtifactType, LanguageType, VariableContext } from '../types';
 import { getLogger } from '../logger';
@@ -81,7 +82,7 @@ const variableGenerators: Record<string, (client: SupabaseClient, context?: Vari
   session_note: generateSessionNote, // session
   client_conceptualization: generateClientConceptualization, // client, artifact
   client_bio: generateClientBio, // client, artifact
-  client_previous_bio: generateClientPreviousBio, // client, artifact
+  previous_client_bio: generatePreviousClientBio, // client, artifact
   language: generateLanguage, // global
   primary_therapeutic_approach: generatePrimaryTherapeuticApproach // global
 };
@@ -317,14 +318,96 @@ export async function generateLastSessionContent(client: SupabaseClient, variabl
  * @returns Formatted session summaries
  */
 export async function generateSessionSummaries(client: SupabaseClient, variableContext?: VariableContext): Promise<string> {
+  const logger = await getLogger();
+  const ctx = {
+    name: 'generate-session-summaries',
+    contextType: variableContext?.contextType || 'unknown',
+    contextId: variableContext?.contextId || 'unknown'
+  };
+  
   // Validate that we have a client context type
-  if (variableContext && (!variableContext.contextType || variableContext.contextType !== 'client' || !variableContext.contextId)) {
+  if (!variableContext || !variableContext.contextType || variableContext.contextType !== 'client' || !variableContext.contextId) {
+    logger.error(ctx, 'Invalid variable context for generating session summaries');
     throw new Error('Session summaries generation requires a client context');
   }
   
-  const _clientId = variableContext?.contextId;
-  // Not implemented yet, YSTM-578
-  return '';
+  const clientId = variableContext.contextId;
+  logger.info(ctx, `Generating session summaries for client ${clientId}`);
+  
+  // Get the user's preferred language
+  const userLanguage = await getUserLanguage(client) as LanguageType;
+  
+  try {
+    // Fetch all sessions for the client, ordered by creation date (newest first)
+    const { data: sessions, error: sessionsError } = await client
+      .from('sessions')
+      .select('id, title, created_at, note')
+      .eq('client_id', clientId)
+      .order('created_at', { ascending: true });
+    
+    if (sessionsError) {
+      logger.error(ctx, 'Error fetching sessions:', { error: sessionsError });
+      throw sessionsError;
+    }
+    
+    if (!sessions || sessions.length === 0) {
+      logger.info(ctx, 'No sessions found for client');
+      return 'No session data available.';
+    }
+    
+    // Get all session IDs
+    const sessionIds = sessions.map(session => session.id);
+    
+    // Fetch all therapist summary artifacts in a single query
+    const artifacts = await getArtifacts(
+      client,
+      sessionIds,
+      'session',
+      'session_therapist_summary'
+    );
+    
+    logger.info(ctx, `Retrieved ${artifacts.length} therapist summaries for ${sessionIds.length} sessions`);
+    
+    // Create a map of artifacts by sessionId for faster lookup
+    const artifactsMap: Record<string, any> = {};
+    artifacts.forEach(artifact => {
+      if (artifact && artifact.reference_id) {
+        artifactsMap[artifact.reference_id] = artifact;
+      }
+    });
+ 
+    // TODO: if any session therapist summary artifacts are missing or stale, regenerate them.
+    // For now can assume that any changes to session therapist 
+
+    // Format the session data with summaries
+    const formattedSummaries = sessions.map((session: { id: string; title?: string; created_at: string; note?: string }) => {
+      const date = new Date(session.created_at).toLocaleDateString();
+      let content = `## Session on ${date} - ${session.title || 'Untitled'}\n\n`;
+      
+      // Get the matching artifact from the map
+      const artifact = artifactsMap[session.id];
+      
+      // Add the therapist summary if available
+      if (artifact && artifact.content) {
+        content += `### Session Summary:\n${artifact.content}\n\n`;
+      } else {
+        content += `### No therapist summary available for this session.\n\n`;
+      }
+      
+      // Add therapist notes if available
+      if (session.note) {
+        content += `### Therapist Notes:\n${session.note}\n\n`;
+      }
+      
+      return content;
+    }).join('---\n\n');
+    
+    logger.info(ctx, `Successfully generated summaries for ${artifacts.length} of ${sessions.length} sessions`);
+    return formattedSummaries;
+  } catch (error) {
+    logger.error(ctx, 'Error generating session summaries:', { error });
+    throw error;
+  }
 }
 
 /**
@@ -477,4 +560,51 @@ export async function generateClientBio(client: SupabaseClient, variableContext?
   );
   
   return content;
+}
+
+/**
+ * Generate previous client bio - simply fetches the existing client_bio artifact content
+ * @param client Supabase client
+ * @param variableContext Context for variable generation
+ * @returns Client previous bio content or empty string if not found
+ */
+export async function generatePreviousClientBio(client: SupabaseClient, variableContext?: VariableContext): Promise<string> {
+  const logger = await getLogger();
+  const ctx = {
+    name: 'generate-client-previous-bio',
+    contextType: variableContext?.contextType || 'unknown',
+    contextId: variableContext?.contextId || 'unknown'
+  };
+  
+  // Validate that we have a client context type
+  if (!variableContext || !variableContext.contextType || variableContext.contextType !== 'client' || !variableContext.contextId) {
+    logger.error(ctx, 'Invalid variable context for generating client previous bio');
+    throw new Error('Client previous bio generation requires a client context');
+  }
+  
+  const clientId = variableContext.contextId;
+  // Get the user's preferred language
+  const userLanguage = await getUserLanguage(client) as LanguageType;
+  
+  try {
+    // Simply fetch the existing client_bio artifact if it exists
+    const artifact = await getArtifact(
+      client,
+      clientId,
+      'client',
+      'client_bio'
+    );
+    
+    // Return the content if the artifact exists, otherwise return null
+    if (artifact && artifact.content) {
+      logger.info(ctx, 'Found existing client bio for previous bio variable');
+      return artifact.content;
+    } else {
+      logger.info(ctx, 'No existing client bio found for previous bio variable');
+      return '';
+    }
+  } catch (error) {
+    logger.error(ctx, 'Error fetching client bio for previous bio variable:', { error });
+    return '';
+  }
 }

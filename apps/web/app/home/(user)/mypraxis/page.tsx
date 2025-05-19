@@ -7,7 +7,7 @@ import { Button } from "@kit/ui/button"
 import { useSignOut } from '@kit/supabase/hooks/use-sign-out'
 import { useUserData } from './_lib/hooks/use-user-data'
 import { useCreateSession, useSessions } from "./_lib/hooks/use-sessions"
-import { prefetchSessionArtifacts } from "./_lib/hooks/use-session-artifacts"
+import { usePrefetchSessionArtifacts, prefetchSessionArtifactsNonHook } from './_lib/hooks/use-session-artifacts'
 import { prefetchClientArtifacts } from "./_lib/hooks/use-client-artifacts"
 import { SessionWithId } from "./_lib/schemas/session"
 import {
@@ -328,6 +328,9 @@ export default function Page() {
   
   // Client creation modal state
   const [isClientCreationModalOpen, setIsClientCreationModalOpen] = useState(false)
+
+  // Get the prefetch function from our custom hook
+  const prefetchSessionArtifacts = usePrefetchSessionArtifacts();
 
   /**
    * Navigate to a specific session and optionally open a specific tab

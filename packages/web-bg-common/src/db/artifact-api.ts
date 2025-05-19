@@ -8,23 +8,20 @@ import type { ArtifactType, LanguageType } from '../types';
  * @param referenceId ID of the reference (session or client)
  * @param referenceType Type of reference ('session' or 'client')
  * @param type Artifact type
- * @param language Language of the artifact
  * @returns Artifact data or null if not found
  */
 export async function getArtifact(
   client: SupabaseClient,
   referenceId: string,
   referenceType: 'session' | 'client',
-  type: ArtifactType,
-  language: LanguageType
+  type: ArtifactType
 ) {
   const logger = await getLogger();
   const ctx = {
     name: 'get-artifact',
     referenceId,
     referenceType,
-    type,
-    language
+    type
   };
   
   try {
@@ -36,7 +33,6 @@ export async function getArtifact(
       .eq('reference_id', referenceId)
       .eq('reference_type', referenceType)
       .eq('type', type)
-      .eq('language', language)
       .maybeSingle();
     
     if (error) throw error;
@@ -44,6 +40,52 @@ export async function getArtifact(
     return data;
   } catch (error) {
     logger.error(ctx, `Error fetching ${type} artifact:`, { error });
+    throw error;
+  }
+}
+
+/**
+ * Get multiple artifacts from the database in a single query
+ * @param client Supabase client
+ * @param referenceIds Array of reference IDs (e.g., session IDs or client IDs)
+ * @param referenceType Type of reference ('session' or 'client')
+ * @param type Type of artifact
+ * @returns Array of artifacts
+ */
+export async function getArtifacts(
+  client: SupabaseClient,
+  referenceIds: string[],
+  referenceType: 'session' | 'client',
+  type: ArtifactType
+) {
+  const logger = await getLogger();
+  const ctx = {
+    name: 'get-artifacts',
+    referenceType,
+    type,
+    referenceCount: referenceIds.length
+  };
+  
+  // If no reference IDs, return empty array
+  if (!referenceIds.length) {
+    return [];
+  }
+  
+  try {
+    logger.info(ctx, `Fetching ${type} artifacts for ${referenceIds.length} references`);
+    
+    const { data, error } = await client
+      .from('artifacts')
+      .select('id, reference_id, content, language, stale')
+      .in('reference_id', referenceIds)
+      .eq('reference_type', referenceType)
+      .eq('type', type);
+    
+    if (error) throw error;
+    
+    return data || [];
+  } catch (error) {
+    logger.error(ctx, `Error fetching ${type} artifacts:`, { error });
     throw error;
   }
 }
@@ -184,7 +226,7 @@ export async function saveArtifact(
         },
         {
           // Use a composite unique constraint to identify existing records
-          onConflict: 'reference_id,reference_type,type,language',
+          onConflict: 'reference_type,reference_id,type',
           // Specify which fields to update if a record exists
           ignoreDuplicates: false
         }

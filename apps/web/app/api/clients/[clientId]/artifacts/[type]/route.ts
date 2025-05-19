@@ -35,8 +35,7 @@ export const GET = enhanceRouteHandler(
         client, 
         clientId, 
         'client', 
-        artifactType, 
-        userLanguage
+        artifactType
       );
       
       // If the artifact doesn't exist, return a 404 response
