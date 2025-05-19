@@ -1,9 +1,10 @@
 'use client';
 
 import { useClientArtifact } from '../../app/home/(user)/mypraxis/_lib/hooks/use-client-artifacts';
-import { Loader2, Copy, Check } from 'lucide-react';
+import { Loader2, Copy, Check, RefreshCw } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { Button } from '@kit/ui/button';
+import { Badge } from '@kit/ui/badge';
 import { useState, useRef, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -13,16 +14,51 @@ interface ClientPrepNoteProps {
 
 export function ClientPrepNote({ clientId }: ClientPrepNoteProps) {
   const queryClient = useQueryClient();
+  const mountCountRef = useRef(0);
+  const renderCountRef = useRef(0);
+  
+  // THEORY 1: Component Remounting - Log when component mounts/renders
+  useEffect(() => {
+    mountCountRef.current += 1;
+    console.log(`[ClientPrepNote] MOUNTED (count: ${mountCountRef.current}) for client: ${clientId}`);
+    
+    return () => {
+      console.log(`[ClientPrepNote] UNMOUNTED for client: ${clientId}`);
+    };
+  }, [clientId]);
   
   // Fetch the prep note for the client
   const { 
     data: prepNoteData, 
     isLoading: isLoadingPrepNote,
+    isFetching,
     error,
-    refetch
+    refetch: _refetch // Renamed to indicate it's unused
   } = useClientArtifact(clientId, 'client_prep_note', !!clientId);
   
-  // Force refetch when component mounts or becomes visible
+  // THEORY 2: Loading State Management - Log React Query state
+  useEffect(() => {
+    renderCountRef.current += 1;
+    console.log(`[ClientPrepNote] RENDER #${renderCountRef.current} for client: ${clientId}`);
+    console.log(`[ClientPrepNote] QUERY STATE:`, { 
+      hasData: !!prepNoteData, 
+      isLoading: isLoadingPrepNote, 
+      isFetching
+    });
+  });
+  
+  // THEORY 3: Cache Structure Mismatch - Check if cache is being hit
+  useEffect(() => {
+    const queryKey = ['client', clientId, 'artifact', 'client_prep_note'];
+    const cachedData = queryClient.getQueryData(queryKey);
+    console.log(`[ClientPrepNote] CACHE CHECK for ${queryKey.join(':')}:`, { 
+      cacheHit: !!cachedData
+    });
+  }, [clientId, queryClient]);
+  
+  // We no longer need to force refetch as we're using prefetching
+  // This commented code is kept for reference
+  /*
   useEffect(() => {
     // Force refetch when component mounts
     refetch();
@@ -42,6 +78,17 @@ export function ClientPrepNote({ clientId }: ClientPrepNoteProps) {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [clientId, refetch, queryClient]);
+  */
+  
+  // Track if the prep note is stale (being updated)
+  const [isPrepNoteStale, setIsPrepNoteStale] = useState(false);
+  
+  // Update stale state when data changes
+  useEffect(() => {
+    if (prepNoteData) {
+      setIsPrepNoteStale(prepNoteData.stale);
+    }
+  }, [prepNoteData]);
   
   // Copy functionality
   const [isCopied, setIsCopied] = useState(false);
@@ -88,10 +135,19 @@ export function ClientPrepNote({ clientId }: ClientPrepNoteProps) {
         </div>
       ) : (
         <div className="mt-5 rounded-lg bg-[#FFF9E8] p-6 relative group" data-test="client-prep-note-content">
+          {isPrepNoteStale && (
+            <div className="absolute right-2 top-2">
+              <Badge variant="outline" className="flex items-center gap-1 bg-white">
+                <RefreshCw className="h-3 w-3 animate-spin" />
+                <span>Updating</span>
+              </Badge>
+            </div>
+          )}
           <Button
             variant="ghost"
             size="icon"
-            className="h-6 w-6 hover:bg-transparent absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity"
+            className="h-6 w-6 hover:bg-transparent absolute right-3 opacity-0 group-hover:opacity-100 transition-opacity"
+            style={{ top: isPrepNoteStale ? '40px' : '3px' }}
             onClick={() => handleCopyText(prepNoteData.content)}
             data-test="copy-prep-note-button"
           >

@@ -1,28 +1,29 @@
 'use client';
 
 import { useClientArtifact } from '../../app/home/(user)/mypraxis/_lib/hooks/use-client-artifacts';
-import { Loader2, Copy, Check } from 'lucide-react';
+import { Check, Copy, Loader2, RefreshCw } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { Button } from '@kit/ui/button';
+import { Badge } from '@kit/ui/badge';
 import { useState, useRef, useEffect } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
 
 interface ClientConceptualizationProps {
   clientId: string;
 }
 
 export function ClientConceptualization({ clientId }: ClientConceptualizationProps) {
-  const queryClient = useQueryClient();
   
   // Fetch the conceptualization for the client
   const { 
     data: conceptualizationData, 
     isLoading: isLoadingConceptualization,
     error,
-    refetch
+    refetch: _refetch // Renamed to indicate it's unused
   } = useClientArtifact(clientId, 'client_conceptualization', !!clientId);
   
-  // Force refetch when component mounts or becomes visible
+  // We no longer need to force refetch as we're using prefetching
+  // This commented code is kept for reference
+  /*
   useEffect(() => {
     // Force refetch when component mounts
     refetch();
@@ -42,6 +43,17 @@ export function ClientConceptualization({ clientId }: ClientConceptualizationPro
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [clientId, refetch, queryClient]);
+  */
+  
+  // Track if the conceptualization is stale (being updated)
+  const [isConceptualizationStale, setIsConceptualizationStale] = useState(false);
+  
+  // Update stale state when data changes
+  useEffect(() => {
+    if (conceptualizationData) {
+      setIsConceptualizationStale(conceptualizationData.stale);
+    }
+  }, [conceptualizationData]);
   
   // Copy functionality
   const [isCopied, setIsCopied] = useState(false);
@@ -88,10 +100,19 @@ export function ClientConceptualization({ clientId }: ClientConceptualizationPro
         </div>
       ) : (
         <div className="mt-5 rounded-lg bg-[#FFF9E8] p-6 relative group" data-test="client-conceptualization-content">
+          {isConceptualizationStale && (
+            <div className="absolute right-2 top-2">
+              <Badge variant="outline" className="flex items-center gap-1 bg-white">
+                <RefreshCw className="h-3 w-3 animate-spin" />
+                <span>Updating</span>
+              </Badge>
+            </div>
+          )}
           <Button
             variant="ghost"
             size="icon"
-            className="h-6 w-6 hover:bg-transparent absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity"
+            className="h-6 w-6 hover:bg-transparent absolute right-3 opacity-0 group-hover:opacity-100 transition-opacity"
+            style={{ top: isConceptualizationStale ? '40px' : '3px' }}
             onClick={() => handleCopyText(conceptualizationData.content)}
             data-test="copy-conceptualization-button"
           >

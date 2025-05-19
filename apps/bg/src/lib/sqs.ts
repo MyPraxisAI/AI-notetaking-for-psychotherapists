@@ -60,7 +60,18 @@ export class SQSQueueManager {
    */
   constructor(queueName?: string, options: SQSQueueManagerOptions = {}) {
     this.sqs = initSQSClient();
-    this.queueName = queueName || process.env.SQS_QUEUE_NAME || 'mypraxis-background-tasks-dev';
+    
+    // Use BACKGROUND_TASKS_QUEUE_URL directly if available
+    if (process.env.BACKGROUND_TASKS_QUEUE_URL) {
+      this.queueUrl = process.env.BACKGROUND_TASKS_QUEUE_URL;
+      // Extract queue name from URL if needed
+      const urlParts = this.queueUrl.split('/');
+      this.queueName = queueName || urlParts[urlParts.length - 1] || 'mypraxis-background-tasks-dev';
+    } else {
+      // Fallback to queue name if URL is not available
+      this.queueName = queueName || process.env.SQS_QUEUE_NAME || 'mypraxis-background-tasks-dev';
+    }
+    
     this.isLocalDevelopment = process.env.NODE_ENV === 'development' || 
       !!(process.env.AWS_ENDPOINT && (process.env.AWS_ENDPOINT?.includes('localstack') || process.env.AWS_ENDPOINT?.includes('localhost')));
     
@@ -69,7 +80,7 @@ export class SQSQueueManager {
       MaxNumberOfMessages: options.maxMessages || 10,
       WaitTimeSeconds: options.waitTimeSeconds || 20, // Long polling
       VisibilityTimeout: options.visibilityTimeout || 30, // 30 seconds
-      QueueUrl: '' // Will be set before use
+      QueueUrl: this.queueUrl || '' // Set from constructor if available
     };
   }
 
@@ -117,7 +128,13 @@ export class SQSQueueManager {
    * Ensures the queue exists, creating it if necessary
    */
   async ensureQueueExists(): Promise<void> {    
-    // First try to get the queue URL if it exists
+    // If we already have a queue URL from the constructor (BACKGROUND_TASKS_QUEUE_URL), use it
+    if (this.queueUrl) {
+      console.log(`Using queue URL from environment: ${this.queueUrl}`);
+      return;
+    }
+    
+    // Otherwise, try to get the queue URL if it exists
     try {
       console.log(`Checking if queue '${this.queueName}' exists...`);
       const getQueueUrlParams: AWS.SQS.GetQueueUrlRequest = {
