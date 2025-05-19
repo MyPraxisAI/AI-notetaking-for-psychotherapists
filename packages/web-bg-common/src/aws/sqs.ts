@@ -1,8 +1,5 @@
 import { SQSClient, SendMessageCommand } from '@aws-sdk/client-sqs';
-import { getLogger } from '@kit/shared/logger';
-
-// Initialize logger
-const logger = await getLogger();
+import { getLogger } from '../logger';
 
 /**
  * Get the SQS client instance
@@ -41,6 +38,7 @@ export async function sendSQSMessage({
   messageGroupId?: string;
   messageDeduplicationId?: string;
 }): Promise<string | undefined> {
+  const logger = await getLogger();
   const ctx = {
     name: 'send-sqs-message',
     queueUrl,
@@ -91,6 +89,8 @@ export async function sendSQSMessage({
 export type BackgroundTaskOperation = 
   // Audio processing operations
   | 'audio:transcribe'
+  // Artifact operations
+  | 'artifacts:generate'
   // Add other operation types as needed
 
 /**
@@ -112,12 +112,21 @@ export interface AudioProcessingTaskData extends BaseBackgroundTaskData {
   recordingId: string;
 }
 
+/**
+ * Artifacts generation task data
+ */
+export interface ArtifactsGenerateTaskData extends BaseBackgroundTaskData {
+  operation: 'artifacts:generate';
+  accountId: string;
+  sessionId: string;
+}
 
 /**
  * Union type of all background task data types
  */
 export type BackgroundTaskData = 
-  | AudioProcessingTaskData;
+  | AudioProcessingTaskData
+  | ArtifactsGenerateTaskData;
 
 /**
  * Queue a background task
@@ -126,6 +135,7 @@ export type BackgroundTaskData =
  * @returns The message ID if successful
  */
 export async function queueBackgroundTask(taskData: BackgroundTaskData): Promise<string | undefined> {
+  const logger = await getLogger();
   const queueUrl = process.env.BACKGROUND_TASKS_QUEUE_URL;
   
   if (!queueUrl) {
@@ -198,5 +208,25 @@ export async function queueAudioTranscribe({
     recordingId,
     priority: 'normal',
     idempotencyKey: `transcribe-${recordingId}`,
+  });
+}
+
+/**
+ * Queue an artifacts generation task
+ * This is triggered when artifacts need to be generated or regenerated for a session
+ */
+export async function queueArtifactsGenerate({
+  sessionId,
+  accountId,
+}: {
+  sessionId: string;
+  accountId: string;
+}): Promise<string | undefined> {
+  return queueBackgroundTask({
+    operation: 'artifacts:generate',
+    accountId,
+    sessionId,
+    priority: 'normal',
+    idempotencyKey: `artifacts-generate-${sessionId}`,
   });
 }

@@ -32,6 +32,10 @@
     "./artifacts": {
       "types": "./dist/artifacts.d.ts",
       "default": "./dist/artifacts.js"
+    },
+    "./db/artifact-api": {
+      "types": "./dist/db/artifact-api.d.ts",
+      "default": "./dist/db/artifact-api.js"
     }
   },
   "scripts": {
@@ -42,6 +46,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@aws-sdk/client-sqs": "^3.797.0",
     "@kit/shared-common": "workspace:*",
     "js-tiktoken": "^1.0.19",
     "nunjucks": "^3.2.4",

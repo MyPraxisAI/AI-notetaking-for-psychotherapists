@@ -1,5 +1,5 @@
 import { SupabaseClient } from '@supabase/supabase-js';
-import { createAccountsApi } from './accounts-api';
+import { createAccountsApi } from './account-api';
 
 /**
  * Create a therapist API instance

@@ -5,12 +5,6 @@ export interface BaseBackgroundTask {
   timestamp: string;
 }
 
-// Audio transcription task interface
-export interface AudioProcessingTaskData extends BaseBackgroundTask {
-  operation: 'audio:transcribe';
-  accountId: string;
-  recordingId: string;
-}
 
 // Database interfaces
 export interface TranscriptionChunk {

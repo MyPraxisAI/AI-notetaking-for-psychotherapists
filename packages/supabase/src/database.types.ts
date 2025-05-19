@@ -147,6 +147,7 @@ export type Database = {
           language: Database["public"]["Enums"]["language"]
           reference_id: string
           reference_type: Database["public"]["Enums"]["artifact_reference_type"]
+          stale: boolean
           type: Database["public"]["Enums"]["artifact_type"]
           updated_at: string
         }
@@ -158,6 +159,7 @@ export type Database = {
           language?: Database["public"]["Enums"]["language"]
           reference_id: string
           reference_type: Database["public"]["Enums"]["artifact_reference_type"]
+          stale?: boolean
           type: Database["public"]["Enums"]["artifact_type"]
           updated_at?: string
         }
@@ -169,6 +171,7 @@ export type Database = {
           language?: Database["public"]["Enums"]["language"]
           reference_id?: string
           reference_type?: Database["public"]["Enums"]["artifact_reference_type"]
+          stale?: boolean
           type?: Database["public"]["Enums"]["artifact_type"]
           updated_at?: string
         }

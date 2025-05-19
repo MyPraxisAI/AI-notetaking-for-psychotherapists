@@ -9,6 +9,36 @@ interface SessionMetadata {
 }
 
 /**
+ * Interface for session with content
+ */
+export interface SessionWithContent {
+  note: string | null;
+  transcript: { id: string } | null;
+}
+
+/**
+ * Get session content including transcript and note
+ * @param client Supabase client
+ * @param sessionId Session ID
+ * @returns Session content or null if not found
+ */
+export async function getSessionContent(
+  client: SupabaseClient,
+  sessionId: string
+): Promise<SessionWithContent | null> {
+  const { data } = await client
+    .from('sessions')
+    .select(`
+      note,
+      transcript:transcripts!left (id)
+    `)
+    .eq('id', sessionId)
+    .maybeSingle<SessionWithContent>();
+
+  return data;
+}
+
+/**
  * Create a session API instance
  * @param client Supabase client
  * @returns Session API methods

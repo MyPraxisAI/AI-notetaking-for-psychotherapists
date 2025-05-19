@@ -7,6 +7,8 @@ import { Button } from "@kit/ui/button"
 import { useSignOut } from '@kit/supabase/hooks/use-sign-out'
 import { useUserData } from './_lib/hooks/use-user-data'
 import { useCreateSession, useSessions } from "./_lib/hooks/use-sessions"
+import { usePrefetchSessionArtifacts } from './_lib/hooks/use-session-artifacts'
+import { usePrefetchClientArtifacts } from "./_lib/hooks/use-client-artifacts"
 import { SessionWithId } from "./_lib/schemas/session"
 import {
   Users2,
@@ -26,16 +28,15 @@ import {
   Brain,
   ChevronLeft,
   ChevronRight,
-  Loader2,
 } from "lucide-react"
 import { PrepNote as _PrepNote } from "../../../../components/mypraxis/prep-note"
-import { ClientOverview as _ClientOverview } from "../../../../components/mypraxis/client-overview"
-import { ClientBio as _ClientBio } from "../../../../components/mypraxis/client-bio"
 import { ProfileForm } from "../../../../components/mypraxis/profile-form"
 import { SettingsForm } from "../../../../components/mypraxis/settings-form"
 import { SessionView } from "../../../../components/mypraxis/session-view"
 import { RecordingModal } from "../../../../components/mypraxis/recording-modal"
-import dynamic from "next/dynamic"
+import { ClientPrepNote } from '../../../../components/mypraxis/client-prep-note';
+import { ClientConceptualization } from '../../../../components/mypraxis/client-conceptualization';
+import { ClientBio } from '../../../../components/mypraxis/client-bio';
 import { useClients, useCreateClient, useDeleteClient } from "./_lib/hooks/use-clients"
 import { ClientCreationModal } from "../../../../components/mypraxis/client-creation-modal"
 
@@ -84,6 +85,9 @@ export default function Page() {
   const [selectedItem, setSelectedItem] = useState<MenuItem>("clients")
   const [selectedClient, setSelectedClient] = useState<ClientId>("")
   const [selectedDetailItem, setSelectedDetailItem] = useState<DetailItem>("prep-note")
+  
+  // Initialize hooks for prefetching artifacts
+  const prefetchClientArtifacts = usePrefetchClientArtifacts()
   const { data: clients = [], isLoading: _isLoadingClients } = useClients()
   const [sessions, setSessions] = useState<Session[]>([])
   const [localClientNames, setLocalClientNames] = useState<Record<string, string>>({})
@@ -268,6 +272,9 @@ export default function Page() {
     setSelectedClient(setClientId(clientId))
     localStorage.setItem("selectedClient", clientId)
     
+    // Prefetch client artifacts to avoid loading flash
+    prefetchClientArtifacts(clientId);
+    
     // Close client list on small screens when a client is clicked
     if (window.innerWidth <= 1050) {
       setIsClientListVisible(false)
@@ -324,11 +331,17 @@ export default function Page() {
   // Client creation modal state
   const [isClientCreationModalOpen, setIsClientCreationModalOpen] = useState(false)
 
+  // Get the prefetch function from our custom hook
+  const prefetchSessionArtifacts = usePrefetchSessionArtifacts();
+
   /**
    * Navigate to a specific session and optionally open a specific tab
    */
   const navigateToSession = async (sessionId: string, openTab?: 'transcript' | 'notes') => {
     console.log(`Navigating to session ${sessionId}${openTab ? ` (${openTab} tab)` : ''}`)
+    
+    // Prefetch session artifacts to avoid loading flash
+    prefetchSessionArtifacts(sessionId);
     
     // First, ensure we have the session in our sessions list
     const sessionExists = sessions.some(s => s.id === sessionId);
@@ -575,69 +588,37 @@ export default function Page() {
       return <SessionView clientId={selectedClient} sessionId={selectedDetailItem} />
     }
 
-    // Create loading component for reuse
-    const LoadingComponent = () => (
-      <div className="flex items-center justify-center h-full">
-        <Loader2 className="h-6 w-6 animate-spin" />
+
+    // Using static imports with stable keys to prevent remounting
+    // Each component gets a stable key based on the client ID, not the selected tab
+    return (
+      <div className="w-full h-full">
+        {selectedDetailItem === 'overview' && (
+          <ClientConceptualization 
+            key={`conceptualization-${selectedClient}`} 
+            clientId={selectedClient} 
+          />
+        )}
+        
+        {selectedDetailItem === 'client-bio' && (
+          <ClientBio 
+            key={`bio-${selectedClient}`}
+            clientId={selectedClient}
+            clientName={localClientNames[selectedClient] || clients.find(c => c.id === selectedClient)?.fullName || ""} 
+          />
+        )}
+        
+        {(selectedDetailItem === 'prep-note' || 
+          (selectedDetailItem !== 'overview' && 
+           selectedDetailItem !== 'client-bio' && 
+           !sessions.find(s => s.id === selectedDetailItem))) && (
+          <ClientPrepNote 
+            key={`prep-note-${selectedClient}`}
+            clientId={selectedClient} 
+          />
+        )}
       </div>
     )
-
-    // Only render the component for the selected tab
-    // This prevents unnecessary data fetching for tabs that aren't visible
-    switch (selectedDetailItem) {
-      case "overview": {
-        // Import the ClientConceptualization component dynamically
-        const ClientConceptualization = dynamic(
-          () => import('../../../../components/mypraxis/client-conceptualization').then(mod => mod.ClientConceptualization),
-          {
-            loading: LoadingComponent,
-            ssr: false
-          }
-        )
-        return <ClientConceptualization clientId={selectedClient} />
-      }
-      
-      case "client-bio": {
-        // Import the ClientBio component dynamically
-        const ClientBio = dynamic(
-          () => import('../../../../components/mypraxis/client-bio').then(mod => mod.ClientBio),
-          {
-            loading: LoadingComponent,
-            ssr: false
-          }
-        )
-        return <ClientBio 
-          clientId={selectedClient}
-          clientName={localClientNames[selectedClient] || clients.find(c => c.id === selectedClient)?.fullName || ""} 
-        />
-      }
-      
-      case "prep-note": {
-        // Import the ClientPrepNote component dynamically
-        const ClientPrepNote = dynamic(
-          () => import('../../../../components/mypraxis/client-prep-note').then(mod => mod.ClientPrepNote),
-          {
-            loading: LoadingComponent,
-            ssr: false
-          }
-        )
-        return <ClientPrepNote clientId={selectedClient} />
-      }
-      
-      default: {
-        // Fallback to prep-note if no other tab is selected
-        // This should never happen with the current implementation
-        // but provides a safety fallback
-        const ClientPrepNoteFallback = dynamic(
-          () => import('../../../../components/mypraxis/client-prep-note').then(mod => mod.ClientPrepNote),
-          {
-            loading: LoadingComponent,
-            ssr: false
-          }
-        )
-        return <ClientPrepNoteFallback clientId={selectedClient} />
-      }
-    }
   }
 
   // Update isNavVisibleRef when isNavVisible changes

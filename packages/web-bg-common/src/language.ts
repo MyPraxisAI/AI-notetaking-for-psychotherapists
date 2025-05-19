@@ -1,5 +1,5 @@
 import { SupabaseClient } from '@supabase/supabase-js';
-import { createAccountsApi } from './db/accounts-api';
+import { createAccountsApi } from './db/account-api';
 
 /**
  * Map of language codes to full language names

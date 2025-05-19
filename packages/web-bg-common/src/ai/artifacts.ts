@@ -5,6 +5,9 @@ import { createPromptApi, getUserLanguage } from '..';
 import { getLogger } from '../logger';
 import { generateVariableData, extractTemplateVariables, canGenerateVariable } from './artifact-vars';
 import { cleanupMarkdownCodeBlocks } from './artifact-utils';
+import { getArtifact, saveArtifact } from '../db/artifact-api';
+import { invalidateSessionAndClientArtifacts } from '../db/artifact-api';
+import { aws } from '..';
 
 // Import types
 import type { ArtifactType, PromptSourceType, LanguageType, VariableContext } from '../types';
@@ -166,77 +169,7 @@ export async function generateArtifact(
   return generateContent(client, { type: 'artifact_type', value: type }, variables, variableContext);
 }
 
-/**
- * Save an artifact to the database
- * @param client Supabase client
- * @param referenceId ID of the reference (session or client)
- * @param referenceType Type of reference ('session' or 'client')
- * @param type Artifact type
- * @param content Artifact content
- * @param language Language of the artifact
- * @returns Success status
- */
-export async function saveArtifact(
-  client: SupabaseClient,
-  referenceId: string,
-  referenceType: 'session' | 'client',
-  type: ArtifactType,
-  content: string,
-  language: LanguageType
-): Promise<boolean> {
-  const logger = await getLogger();
-  const ctx = {
-    name: 'save-artifact',
-    referenceId,
-    referenceType,
-    type,
-    language
-  };
-  
-  try {
-    logger.info(ctx, `Saving ${type} artifact to database`);
-    
-    // Check if the artifact already exists
-    const { data: existingArtifact } = await client
-      .from('artifacts')
-      .select('id')
-      .eq('reference_id', referenceId)
-      .eq('reference_type', referenceType)
-      .eq('type', type)
-      .eq('language', language)
-      .single();
-    
-    if (existingArtifact) {
-      // Update existing artifact
-      logger.info(ctx, `Updating existing ${type} artifact`);
-      const { error } = await client
-        .from('artifacts')
-        .update({ content })
-        .eq('id', existingArtifact.id);
-      
-      if (error) throw error;
-    } else {
-      // Create new artifact
-      logger.info(ctx, `Creating new ${type} artifact`);
-      const { error } = await client
-        .from('artifacts')
-        .insert({
-          reference_id: referenceId,
-          reference_type: referenceType,
-          type,
-          content,
-          language
-        });
-      
-      if (error) throw error;
-    }
-    
-    return true;
-  } catch (error) {
-    logger.error(ctx, `Error saving ${type} artifact:`, error);
-    throw error;
-  }
-}
+// saveArtifact function has been moved to db/artifact-api.ts
 
 // Template variable functions moved to artifact-vars.ts
 
@@ -246,7 +179,7 @@ export async function saveArtifact(
  * @param referenceId ID of the reference (session or client)
  * @param referenceType Type of reference ('session' or 'client')
  * @param artifactType Type of artifact to get or create
- * @param userLanguage User's preferred language
+ * @param userLanguage User's preferred language (optional, will use language API if not provided)
  * @param variableData Optional data for template variables
  * @returns Artifact content and metadata
  */
@@ -255,32 +188,30 @@ export async function getOrCreateArtifact(
   referenceId: string,
   referenceType: 'session' | 'client',
   artifactType: ArtifactType,
-  userLanguage: LanguageType,
+  userLanguage?: LanguageType,
   variableData?: Record<string, string>
 ): Promise<{ content: string; language: string; isNew: boolean }> {
   const logger = await getLogger();
+  
+  // If language is not provided, fetch it using the language API
+  const language = userLanguage || await getUserLanguage(client) as LanguageType;
+  
   const ctx = {
     name: 'get-or-create-artifact',
     referenceId,
     referenceType,
     artifactType,
-    userLanguage
+    language
   };
   
   try {
     logger.info(ctx, `Checking if artifact exists for ${referenceType} ${referenceId}`);
-    // Check if the artifact already exists in the database
-    const { data: existingArtifact } = await client
-      .from('artifacts')
-      .select('content, language')
-      .eq('reference_type', referenceType)
-      .eq('reference_id', referenceId)
-      .eq('type', artifactType)
-      .maybeSingle();
+    // Check if the artifact already exists in the database using the new API
+    const existingArtifact = await getArtifact(client, referenceId, referenceType, artifactType);
     
-    // If the artifact exists, return it
-    if (existingArtifact) {
-      logger.info(ctx, `Found existing artifact for ${referenceType} ${referenceId}`);
+    // If the artifact exists and is not stale, return it
+    if (existingArtifact && !existingArtifact.stale) {
+      logger.info(ctx, `Found existing non-stale artifact for ${referenceType} ${referenceId}`);
       return {
         content: existingArtifact.content,
         language: existingArtifact.language,
@@ -288,7 +219,13 @@ export async function getOrCreateArtifact(
       };
     }
     
-    logger.info(ctx, `No existing artifact found for ${referenceType} ${referenceId}, generating...`);
+    // If the artifact exists but is stale, we'll regenerate it
+    if (existingArtifact && existingArtifact.stale) {
+      logger.info(ctx, `Found stale artifact for ${referenceType} ${referenceId}, regenerating...`);
+    }
+    
+    // At this point either no artifact exists or it's stale and needs regeneration
+    logger.info(ctx, `${existingArtifact ? 'Regenerating stale' : 'Creating new'} artifact for ${referenceType} ${referenceId}...`);
         
     // Use provided variable data or empty object
     const variables = variableData || {};
@@ -312,12 +249,12 @@ export async function getOrCreateArtifact(
     }
     
     // Save the generated artifact to the database
-    await saveArtifact(client, referenceId, referenceType, artifactType, content, userLanguage);
+    await saveArtifact(client, referenceId, referenceType, artifactType, content, language);
     
     return {
       content,
-      language: userLanguage,
-      isNew: true
+      language,
+      isNew: !existingArtifact // Only true if we created a new artifact, false if we regenerated a stale one
     };
   } catch (error) {
     logger.error(ctx, `Error getting or creating artifact for ${referenceType} ${referenceId}:`, error);
@@ -330,7 +267,7 @@ export async function getOrCreateArtifact(
       logger.error(ctx, `Request timed out. This could be due to high server load or an issue with the API.`);
       return {
         content: `We're sorry, but we couldn't generate this content at the moment due to high demand. Please try again later.`,
-        language: userLanguage,
+        language,
         isNew: true
       };
     }
@@ -339,4 +276,47 @@ export async function getOrCreateArtifact(
   }
 }
 
-
+/**
+ * Regenerate artifacts for a session
+ * This function will:
+ * 1. Invalidate all artifacts related to the session and its client (mark them as stale)
+ * 2. Queue a background task to regenerate the artifacts
+ * 
+ * @param client Supabase client
+ * @param sessionId ID of the session
+ * @param accountId ID of the account
+ */
+export async function regenerateArtifactsForSession(
+  client: SupabaseClient,
+  sessionId: string,
+  accountId: string
+): Promise<void> {
+  const logger = await getLogger();
+  const ctx = {
+    name: 'regenerate-artifacts-for-session',
+    sessionId,
+    accountId
+  };
+  
+  try {
+    logger.info(ctx, `Invalidating artifacts and queueing regeneration for session ${sessionId}`);
+    
+    // 1. Invalidate all artifacts related to the session and its client
+    await invalidateSessionAndClientArtifacts(
+      client,
+      sessionId
+    );
+    
+    // 2. Queue a background task to regenerate the artifacts
+    await aws.queueArtifactsGenerate({
+      sessionId,
+      accountId
+    });
+    
+    // Log a comprehensive message with all the actions taken
+    logger.info(ctx, `Invalidated artifacts and queued regeneration for session ${sessionId}`);
+  } catch (error) {
+    logger.error(ctx, `Error regenerating artifacts for session ${sessionId}:`, { error });
+    throw error;
+  }
+}
