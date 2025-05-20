@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { Button } from "@kit/ui/button"
-import { Mic, Pause, Play, Loader2 } from "lucide-react"
+import { Mic, Pause, Play, Loader2, Upload } from "lucide-react"
 
 // Define the interface for audio chunks
 interface AudioChunk {
@@ -64,13 +64,16 @@ export function RecordingModal({
   const [selectedClient, setSelectedClient] = useState(clientId)
   const [selectedClientName, setSelectedClientName] = useState(clientName)
   const [selectedDevice, setSelectedDevice] = useState("MacBook Air Microphone (Built-in)")
+  const [selectedTranscriptionEngine, setSelectedTranscriptionEngine] = useState("yandex-v3-ru")
   const [timer, setTimer] = useState(0)
   const [isRecording, setIsRecording] = useState(false)
   const [recordingId, setRecordingId] = useState<string | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isImporting, setIsImporting] = useState(false)
   const timerInterval = useRef<NodeJS.Timeout | null>(null)
   const heartbeatInterval = useRef<NodeJS.Timeout | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   
   // Use a ref to track the current timer value for direct access
   const currentTimerRef = useRef<number>(0)
@@ -123,7 +126,7 @@ export function RecordingModal({
   // because it's defined later in the file
   
   // API functions for recording
-  const startRecording = async () => {
+  const startRecording = async (options: { standaloneChunks?: boolean } = {}) => {
     try {
       setIsProcessing(true)
       setError(null)
@@ -136,7 +139,11 @@ export function RecordingModal({
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ clientId: selectedClient })
+        body: JSON.stringify({ 
+          clientId: selectedClient,
+          transcriptionEngine: selectedTranscriptionEngine,
+          standaloneChunks: options.standaloneChunks
+        })
       })
       
       if (!response.ok) {
@@ -261,29 +268,6 @@ export function RecordingModal({
     }
   }
   
-  const _uploadAudioChunk = async (blob: Blob, chunkNumber: number, startTime: number, endTime: number) => {
-    if (!recordingId) return
-    
-    try {
-      const formData = new FormData()
-      formData.append('audioFile', blob, `chunk-${chunkNumber}.webm`)
-      formData.append('chunkNumber', chunkNumber.toString())
-      formData.append('startTime', startTime.toString())
-      formData.append('endTime', endTime.toString())
-      
-      const response = await fetch(`/api/recordings/${recordingId}/chunk`, {
-        method: 'POST',
-        body: formData
-      })
-      
-      if (!response.ok) {
-        console.error('Failed to upload audio chunk')
-      }
-    } catch (err) {
-      console.error('Chunk upload error:', err)
-    }
-  }
-
   useEffect(() => {
     if (isOpen) {
       setModalState("initial")
@@ -471,7 +455,6 @@ export function RecordingModal({
             console.log(`Processing chunk ${chunkNumber}: ${chunkStartTimeSec.toFixed(3)}s to ${chunkEndTimeSec.toFixed(3)}s (duration: ${durationSec.toFixed(3)}s) with recordingId: ${currentRecordingId}`);
             
             // Prepare for next chunk - do this immediately, not after upload
-            const _currentChunkNumber = chunkNumber;
             chunkNumber++;
             chunkStartTimeMs = currentTimeMs;
             console.log(`Next chunk will start at ${(chunkStartTimeMs - recordingStartTime) / 1000}s`);
@@ -483,8 +466,10 @@ export function RecordingModal({
           }
         }
         
-        // Start the MediaRecorder with 5-second chunks
-        mediaRecorder.current.start(5000);
+        // Start the MediaRecorder with 4 minute chunks, experimentally this works out to 3.7Mb
+        // TODO: A better implementation might be to use a smaller period here, aggregate chunks in an in-memory array,
+        // but attempt to upload them only when the total size of the chunks in memory reaches 4Mb
+        mediaRecorder.current.start(4 * 60 * 1000);
         
         // Request data immediately to test the ondataavailable handler
         setTimeout(() => {
@@ -734,55 +719,155 @@ export function RecordingModal({
     }
   }
   
+  // Handle import button click - trigger file input
+  const handleImportClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+
+  // Handle file selection
+  const handleFileSelected = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    
+    try {
+      setIsImporting(true);
+      setError(null);
+      
+      // 1. Create a new recording
+      const newRecordingId = await startRecording({ standaloneChunks: false });
+      if (!newRecordingId) {
+        throw new Error('Failed to create recording');
+      }
+      
+      // 2. Calculate chunks needed without creating them all at once
+      const MAX_CHUNK_SIZE = 4.2 * 1024 * 1024; // 4.5mb is the Vercel upload limit, above that get errors
+      const totalChunks = Math.ceil(file.size / MAX_CHUNK_SIZE);
+      console.log(`Will process file in ${totalChunks} chunks`);
+      
+      // Estimate total duration based on file size (rough estimate)
+      // For MP3, ~1MB ≈ 1 minute of audio at 128kbps
+      const estimatedTotalDuration = (file.size / (128 * 1024)) * 8;
+      const durationPerChunk = estimatedTotalDuration / totalChunks;
+      
+      // 3. Process and upload one chunk at a time to reduce memory usage
+      for (let i = 0; i < totalChunks; i++) {
+        const start = i * MAX_CHUNK_SIZE;
+        const end = Math.min(start + MAX_CHUNK_SIZE, file.size);
+        const chunk = file.slice(start, end, file.type);
+        
+        const chunkNumber = i + 1;
+        const startTime = i * durationPerChunk;
+        const endTime = (i + 1) * durationPerChunk;
+        
+        const formData = new FormData();
+        formData.append('audio', chunk, `chunk-${chunkNumber}.${file.name.split('.').pop()}`);
+        formData.append('chunkNumber', chunkNumber.toString());
+        formData.append('startTime', startTime.toString());
+        formData.append('endTime', endTime.toString());
+        formData.append('mimeType', file.type);
+        
+        console.log(`Uploading chunk ${chunkNumber}/${totalChunks}, size: ${(chunk.size / (1024 * 1024)).toFixed(2)}MB`);
+        
+        const response = await fetch(`/api/recordings/${newRecordingId}/chunk`, {
+          method: 'POST',
+          body: formData
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || `Failed to upload chunk ${chunkNumber}`);
+        }
+      }
+      
+      // 4. Complete the recording
+      const result = await fetch(`/api/recordings/${newRecordingId}/complete`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ createSession: true })
+      });
+      
+      if (!result.ok) {
+        const errorData = await result.json();
+        throw new Error(errorData.error || 'Failed to complete recording');
+      }
+      
+      const data = await result.json();
+      
+      // 5. Navigate to the session
+      toast.success('Audio file imported successfully');
+      if (data.sessionId) {
+        await onSave(data.sessionId);
+      } else if (data.session_id) {
+        await onSave(data.session_id);
+      } else {
+        await onSave();
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to import audio file');
+      toast.error(err instanceof Error ? err.message : 'Failed to import audio file');
+    } finally {
+      setIsImporting(false);
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
   const handleSaveSession = async () => {
     try {
-    setModalState("saving")
-    
-    // Stop the MediaRecorder and get final data
-    if (mediaRecorder.current && mediaRecorder.current.state !== 'inactive') {
-      mediaRecorder.current.requestData() // Get any remaining data
-      mediaRecorder.current.stop()
-    }
-    
-    // Make sure all chunks are uploaded before completing the recording
-    if (recordingId) {
-      await uploadAudioChunks(recordingId).catch(err => {
-        console.error('Error uploading final chunks:', err);
-      });
-    }
-    
-    // Complete the recording in the API
-    const result = await completeRecording()
-    
-    // Log the result to see what we're getting back
-    console.log('Recording complete result:', result)
-    
-    if (result) {
-      cleanupRecording()
-      toast.success('Recording saved successfully')
+      setModalState("saving")
       
-      // Pass the session ID to the onSave callback for navigation
-      if (result.sessionId) {
-        console.log('Found session ID in result:', result.sessionId)
-        await onSave(result.sessionId)
-      } else if (result.session_id) {
-        // Try snake_case version as well
-        console.log('Found session_id in result:', result.session_id)
-        await onSave(result.session_id)
-      } else {
-        console.log('No session ID found in result:', result)
-        await onSave()
+      // Stop the MediaRecorder and get final data
+      if (mediaRecorder.current && mediaRecorder.current.state !== 'inactive') {
+        mediaRecorder.current.requestData() // Get any remaining data
+        mediaRecorder.current.stop()
       }
-    } else {
-      setModalState("paused")
-      toast.error('Failed to save recording. Please try again.')
-    }
+      
+      // Make sure all chunks are uploaded before completing the recording
+      if (recordingId) {
+        await uploadAudioChunks(recordingId).catch(err => {
+          console.error('Error uploading final chunks:', err);
+        });
+      }
+      
+      // Complete the recording in the API
+      const result = await completeRecording()
+      
+      // Log the result to see what we're getting back
+      console.log('Recording complete result:', result)
+      
+      if (result) {
+        cleanupRecording()
+        toast.success('Recording saved successfully')
+        
+        // Pass the session ID to the onSave callback for navigation
+        if (result.sessionId) {
+          console.log('Found session ID in result:', result.sessionId)
+          await onSave(result.sessionId)
+        } else if (result.session_id) {
+          // Try snake_case version as well
+          console.log('Found session_id in result:', result.session_id)
+          await onSave(result.session_id)
+        } else {
+          console.log('No session ID found in result:', result)
+          await onSave()
+        }
+      } else {
+        setModalState("paused")
+        toast.error('Failed to save recording. Please try again.')
+      }
     } catch (error) {
       console.error('Error in handleSaveSession:', error)
       setModalState("paused")
       toast.error('An error occurred while saving the recording.')
     }
-  }
+  };
   
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600)
@@ -865,6 +950,31 @@ export function RecordingModal({
               <div className="p-6 pb-4 bg-gray-50 border-b border-gray-200">
                 <h2 className="text-lg font-medium text-center">Session with <span className="underline">{selectedClientName}</span></h2>
                 
+                {/* Transcription engine selection */}
+                <div className="p-4 bg-white rounded-lg mt-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-sm font-medium">Transcription</h3>
+                    </div>
+                    <div className="w-64">
+                      <Select 
+                        value={selectedTranscriptionEngine} 
+                        onValueChange={setSelectedTranscriptionEngine}
+                        data-test="transcription-engine-select"
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select engine" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="yandex-v3-ru" data-test="transcription-engine-option-yandex-v3-ru">
+                            Yandex SpeechKit v3 (Russian)
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+                
                 {/* Intake session toggle - temporarily hidden, can be re-enabled in the future
                 <div className="p-4 bg-white rounded-lg">
                   <div className="flex items-center justify-between">
@@ -925,23 +1035,59 @@ export function RecordingModal({
               )}
               
               {modalState === "initial" && (
-                <Button 
-                  className="w-full bg-green-500 hover:bg-green-600 text-white"
-                  onClick={handleMicrophoneAccess}
-                  disabled={isProcessing}
-                >
-                  {isProcessing ? (
-                    <>
-                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                      Checking Microphone...
-                    </>
-                  ) : (
-                    <>
-                      <Mic className="mr-2 h-5 w-5" />
-                      Allow Microphone Access
-                    </>
-                  )}
-                </Button>
+                <div className="space-y-4">
+                  <Button 
+                    className="w-full bg-green-500 hover:bg-green-600 text-white"
+                    onClick={handleMicrophoneAccess}
+                    disabled={isProcessing || isImporting}
+                  >
+                    {isProcessing ? (
+                      <>
+                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                        Checking Microphone...
+                      </>
+                    ) : (
+                      <>
+                        <Mic className="mr-2 h-5 w-5" />
+                        Allow Microphone Access
+                      </>
+                    )}
+                  </Button>
+                  
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-gray-300" />
+                    </div>
+                    <div className="relative flex justify-center text-sm">
+                      <span className="px-2 bg-white text-gray-500">or</span>
+                    </div>
+                  </div>
+                  
+                  <Button 
+                    className="w-full bg-blue-500 hover:bg-blue-600 text-white"
+                    onClick={handleImportClick}
+                    disabled={isProcessing || isImporting}
+                  >
+                    {isImporting ? (
+                      <>
+                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                        Importing Audio File...
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="mr-2 h-5 w-5" />
+                        Import Audio File
+                      </>
+                    )}
+                  </Button>
+                  <input 
+                    type="file" 
+                    ref={fileInputRef}
+                    className="hidden" 
+                    accept="audio/mp3,audio/mpeg"
+                    onChange={handleFileSelected}
+                  />
+                </div>
               )}
               
               {modalState === "soundCheck" && (

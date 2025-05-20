@@ -147,6 +147,7 @@ export type Database = {
           language: Database["public"]["Enums"]["language"]
           reference_id: string
           reference_type: Database["public"]["Enums"]["artifact_reference_type"]
+          stale: boolean
           type: Database["public"]["Enums"]["artifact_type"]
           updated_at: string
         }
@@ -158,6 +159,7 @@ export type Database = {
           language?: Database["public"]["Enums"]["language"]
           reference_id: string
           reference_type: Database["public"]["Enums"]["artifact_reference_type"]
+          stale?: boolean
           type: Database["public"]["Enums"]["artifact_type"]
           updated_at?: string
         }
@@ -169,6 +171,7 @@ export type Database = {
           language?: Database["public"]["Enums"]["language"]
           reference_id?: string
           reference_type?: Database["public"]["Enums"]["artifact_reference_type"]
+          stale?: boolean
           type?: Database["public"]["Enums"]["artifact_type"]
           updated_at?: string
         }
@@ -687,6 +690,7 @@ export type Database = {
           session_id: string | null
           standalone_chunks: boolean
           status: Database["public"]["Enums"]["recording_status"]
+          transcription_engine: string | null
           updated_at: string
         }
         Insert: {
@@ -698,6 +702,7 @@ export type Database = {
           session_id?: string | null
           standalone_chunks?: boolean
           status?: Database["public"]["Enums"]["recording_status"]
+          transcription_engine?: string | null
           updated_at?: string
         }
         Update: {
@@ -709,6 +714,7 @@ export type Database = {
           session_id?: string | null
           standalone_chunks?: boolean
           status?: Database["public"]["Enums"]["recording_status"]
+          transcription_engine?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -1206,6 +1212,7 @@ export type Database = {
         Row: {
           account_id: string
           content: string | null
+          content_json: Json | null
           created_at: string
           id: string
           session_id: string
@@ -1215,6 +1222,7 @@ export type Database = {
         Insert: {
           account_id: string
           content?: string | null
+          content_json?: Json | null
           created_at?: string
           id?: string
           session_id: string
@@ -1224,6 +1232,7 @@ export type Database = {
         Update: {
           account_id?: string
           content?: string | null
+          content_json?: Json | null
           created_at?: string
           id?: string
           session_id?: string
@@ -1637,6 +1646,12 @@ export type Database = {
           updated_at: string
         }
       }
+      validate_transcript_segments: {
+        Args: {
+          data: Json
+        }
+        Returns: boolean
+      }
       verify_nonce: {
         Args: {
           p_token: string
@@ -1664,6 +1679,7 @@ export type Database = {
         | "client_prep_note"
         | "client_conceptualization"
         | "client_bio"
+        | "session_speaker_roles_classification"
       billing_provider: "stripe" | "lemon-squeezy" | "paddle"
       language: "en" | "ru"
       notification_channel: "in_app" | "email"

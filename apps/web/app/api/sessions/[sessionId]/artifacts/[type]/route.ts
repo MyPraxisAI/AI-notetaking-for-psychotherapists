@@ -1,13 +1,12 @@
 import { NextResponse } from 'next/server';
 import { enhanceRouteHandler } from '@kit/next/routes';
 import { getSupabaseServerClient } from '@kit/supabase/server-client';
-import { getUserLanguage } from '../../../../../../lib/utils/language';
 import { 
-  generateArtifact, 
-  saveArtifact, 
-  ArtifactType, 
-  LanguageType 
-} from '../../../../../../lib/utils/artifacts';
+  getOrCreateArtifact,
+  getArtifact,
+  getSessionContent
+} from '@kit/web-bg-common';
+import type { ArtifactType } from '@kit/web-bg-common/types';
 
 // This route handler returns artifacts for a session
 // It will be enhanced with authentication and error handling
@@ -16,8 +15,6 @@ export const GET = enhanceRouteHandler(
     const { params } = req;
     const { sessionId, type } = params as { sessionId: string; type: string };
 
-    // Use the ArtifactType and LanguageType from the openai utility
-    
     // Validate the artifact type
     if (!['session_therapist_summary', 'session_client_summary'].includes(type)) {
       return NextResponse.json(
@@ -32,96 +29,80 @@ export const GET = enhanceRouteHandler(
     // Get the Supabase client for database access
     const client = getSupabaseServerClient();
     
-    // Get the user's preferred language
-    const userLanguage = await getUserLanguage() as LanguageType;
     
-    // Fetch the artifact from the database
-    const { data: artifact, error } = await client
-      .from('artifacts')
-      .select('content, language')
-      .eq('reference_type', 'session')
-      .eq('reference_id', sessionId)
-      .eq('type', artifactType)
-      .eq('language', userLanguage)
-      .single();
-    
-    // If there's an error or no artifact found, generate it with OpenAI
-    if (error || !artifact) {
-      try {
-        // Get the session data needed for generation
-        const { data: session } = await client
-          .from('sessions')
-          .select('id, note')
-          .eq('id', sessionId)
-          .single();
+    try {
+      // Get the artifact from the database
+      const artifact = await getArtifact(
+        client,
+        sessionId,
+        'session',
+        artifactType
+      );
+      
+      // If the artifact doesn't exist, trigger regeneration and return a 404 response
+      if (!artifact) {
         
-        // Fetch transcript data from the transcripts table
-        const { data: transcriptData } = await client
-          .from('transcripts')
-          .select('content')
-          .eq('session_id', sessionId)
-          .single();
-          
-        const transcriptContent = transcriptData?.content || null;
-        
-        if (!session || (!transcriptContent && !session.note)) {
-          // If there's no session or neither transcript nor note, we can't generate an artifact
-          return NextResponse.json({
-            content: `This ${artifactType.replace('session_', '').replace('_', ' ')} cannot be generated without either a transcript or session notes.`,
-            language: userLanguage,
-            generated: false,
-            dataTest: `session-artifact-${artifactType}-missing-data`
-          });
-        }
-        
-        // Generate the artifact content using OpenAI
-        const generatedContent = await generateArtifact(
-          artifactType,
-          {
-            session_transcript: transcriptContent || '',
-            session_note: session.note || ''
+        // Temporary Code: trigger generation of session artifacts (since they might not have been eagerly generated before)
+        // Later we can remove this (or just pregenerate all the artifacts using a script)
+
+        try {
+          // Check if the session has a transcript or note before generating
+          const session = await getSessionContent(client, sessionId);
+
+          // Only generate if we have content to generate from
+          if (session && (session.transcript || session.note)) {
+            console.log(`Session ${sessionId} has content, attempting to create artifact`);
+            
+            // Use getOrCreateArtifact to generate the specific artifact
+            const result = await getOrCreateArtifact(
+              client,
+              sessionId,
+              'session',
+              artifactType
+            );
+            
+            if (result && result.content) {
+              // If we successfully created the artifact, return it immediately
+              console.log(`Successfully created artifact for session ${sessionId}`);
+              return NextResponse.json({
+                content: result.content,
+                language: result.language,
+                stale: false,
+                dataTest: `session-artifact-${artifactType}`
+              });
+            }
+          } else {
+            console.log(`Session ${sessionId} has no content yet, skipping artifact generation`);
+            return NextResponse.json(
+              { error: 'Session has no content yet' },
+              { status: 404 }
+            );
           }
+        } catch (genError) {
+          // Log the error but continue to return 404
+          console.error(`Error generating artifact for session ${sessionId}:`, genError);
+        }
+
+        return NextResponse.json(
+          { error: 'Artifact not found' },
+          { status: 404 }
         );
-        
-        // Save the generated artifact to the database
-        await saveArtifact(
-          client,
-          sessionId,
-          'session',
-          artifactType,
-          generatedContent,
-          userLanguage as LanguageType
-        );
-        
-        // Return the generated content
-        return NextResponse.json({
-          content: generatedContent,
-          language: userLanguage,
-          generated: true,
-          dataTest: `session-artifact-${artifactType}-generated`
-        });
-      } catch (generationError) {
-        console.error('Error generating artifact:', generationError);
-        
-        // Return an error message if generation fails
-        return NextResponse.json({
-          content: `Unable to generate this ${artifactType.replace('session_', '').replace('_', ' ')}. Please try again later.`,
-          language: userLanguage,
-          generated: false,
-          error: true,
-          dataTest: `session-artifact-${artifactType}-error`
-        }, { status: 500 });
       }
+      
+      // Return the artifact with all its data including the stale field
+      return NextResponse.json({
+        ...artifact,
+        dataTest: `session-artifact-${artifactType}`
+      });
+    } catch (error) {
+      console.error('Error fetching artifact:', error);
+      
+      // Return an error message if fetching fails
+      return NextResponse.json({
+        error: 'Failed to fetch artifact',
+        dataTest: `session-artifact-${artifactType}-error`
+      }, { status: 500 });
     }
-    
-    // Return the artifact content
-    return NextResponse.json({
-      content: artifact.content,
-      language: artifact.language,
-      generated: false,
-      // Add data-test attribute for E2E testing
-      dataTest: `session-artifact-${artifactType}`
-    });
   },
   {
     auth: true,

@@ -1,5 +1,5 @@
 ################ Base Stage ################
-FROM ubuntu:22.04 as base
+FROM ubuntu:22.04 AS base
 
 # Avoid prompts from apt
 ENV DEBIAN_FRONTEND=noninteractive
@@ -22,61 +22,103 @@ RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
 WORKDIR /app
 
 ################ Build Stage ################
-FROM node:18 as build
+FROM base AS build
 
 # Set working directory
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
-COPY tsconfig.json ./
+# Install pnpm
+RUN npm install -g pnpm
 
-# Install all dependencies including devDependencies for build
-RUN npm install
+# Create monorepo directory structure
+RUN mkdir -p /app/packages/web-bg-common
+RUN mkdir -p /app/packages/shared-common
+RUN mkdir -p /app/apps/bg
 
-# Install ts-node globally for running TypeScript directly
-RUN npm install -g ts-node typescript
+# Copy package files first for better caching
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json tsconfig.base.json ./
 
-# Copy source code
-COPY src ./src
+# Copy the shared-common package
+COPY packages/shared-common/package.json packages/shared-common/tsconfig.json packages/shared-common/index.js /app/packages/shared-common/
+COPY packages/shared-common/src /app/packages/shared-common/src/
 
-# Build TypeScript code
-RUN npm run build
+# Copy the web-bg-common package
+COPY packages/web-bg-common/package.json packages/web-bg-common/tsconfig.json packages/web-bg-common/index.js /app/packages/web-bg-common/
+COPY packages/web-bg-common/src /app/packages/web-bg-common/src/
 
-################ Development Stage ################
-FROM base as dev
+# Copy the bg app source
+COPY apps/bg/src /app/apps/bg/src/
+COPY apps/bg/package.json apps/bg/tsconfig.json /app/apps/bg/
 
-# Install ts-node globally for running TypeScript directly
-RUN npm install -g ts-node typescript
+# Install dependencies using pnpm (skip postinstall scripts)
+RUN pnpm install --frozen-lockfile --ignore-scripts
 
-# Copy package files for dependency installation
-COPY package*.json ./
+# Build the shared-common package first
+RUN pnpm --filter @kit/shared-common build
 
-# Install all dependencies from package.json
-RUN npm install
+# Build the web-bg-common package
+RUN pnpm --filter @kit/web-bg-common build
+
+# Build the bg app
+RUN pnpm --filter bg build
 
 ################ Production Stage ################
-FROM base as prod
+FROM base AS prod
 
 # Set working directory
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
+# Install pnpm
+RUN npm install -g pnpm
 
-# Install production dependencies only
-RUN npm install --production
+# Copy package.json files for production
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json tsconfig.base.json ./
 
-# Copy built application from build stage
-COPY --from=build /app/dist ./dist
+# Create minimal package.json files for production without devDependencies
+RUN mkdir -p /app/packages/shared-common /app/packages/web-bg-common
+COPY --from=build /app/packages/shared-common/package.json /tmp/shared-common-pkg.json
+COPY --from=build /app/packages/web-bg-common/package.json /tmp/web-bg-common-pkg.json
+
+# Create production-only package.json files
+RUN node -e "const pkg = require('/tmp/shared-common-pkg.json'); delete pkg.devDependencies; require('fs').writeFileSync('/app/packages/shared-common/package.json', JSON.stringify(pkg, null, 2));"
+RUN node -e "const pkg = require('/tmp/web-bg-common-pkg.json'); delete pkg.devDependencies; require('fs').writeFileSync('/app/packages/web-bg-common/package.json', JSON.stringify(pkg, null, 2));"
+
+# Copy the bg app package.json
+COPY apps/bg/package.json ./package.json
+
+# Copy the built shared-common package with its index.js and src directory
+COPY --from=build /app/packages/shared-common/dist /app/packages/shared-common/dist
+COPY --from=build /app/packages/shared-common/index.js /app/packages/shared-common/index.js
+COPY --from=build /app/packages/shared-common/src /app/packages/shared-common/src
+
+# Copy the built web-bg-common package with its index.js and src directory
+COPY --from=build /app/packages/web-bg-common/dist /app/packages/web-bg-common/dist
+COPY --from=build /app/packages/web-bg-common/index.js /app/packages/web-bg-common/index.js
+COPY --from=build /app/packages/web-bg-common/src /app/packages/web-bg-common/src
+
+# Copy the built application
+COPY --from=build /app/apps/bg/dist ./dist
+
+# Install production dependencies
+# Use --ignore-scripts to skip postinstall scripts that require manypkg
+# Use --no-frozen-lockfile because of overrides configuration in the root package.json
+RUN pnpm install --prod --no-frozen-lockfile --ignore-scripts
+
+# Set up pnpm cache directory with proper permissions
+RUN mkdir -p /home/node/.pnpm-store && \
+    mkdir -p /home/node/.local/share/pnpm
 
 # Set non-root user for security
 RUN groupadd -r appuser && useradd -r -g appuser appuser
-RUN chown -R appuser:appuser /app
+RUN chown -R appuser:appuser /app /home/node
 USER appuser
+
+# Configure pnpm to use a directory with proper permissions
+ENV PNPM_HOME=/home/node/.local/share/pnpm
+ENV PATH=$PNPM_HOME:$PATH
 
 # Expose health check port if needed
 EXPOSE 8080
 
-# Default command
-CMD ["node", "dist/index.js"]
+# Use pnpm start for proper module resolution
+CMD ["pnpm", "start"]

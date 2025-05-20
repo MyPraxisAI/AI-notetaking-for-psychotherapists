@@ -58,7 +58,7 @@ class Application {
       
       // Log startup information
       console.log(`Starting SQS poller for queue: ${this.sqsManager.queueName}`);
-      
+            
       // Start polling for messages
       this.startPolling();
       

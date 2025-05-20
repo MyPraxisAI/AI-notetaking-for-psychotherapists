@@ -5,7 +5,7 @@ import { getLogger } from '@kit/shared/logger';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { getSupabaseServerClient } from '@kit/supabase/server-client';
 import { getUserPersonalAccount } from '../../../_lib/get-user-account';
-import { queueAudioTranscribe } from '../../../../../lib/aws/sqs';
+import { aws } from '@kit/web-bg-common';
 import { z } from 'zod';
 
 // Initialize logger properly with await
@@ -132,7 +132,7 @@ export const POST = enhanceRouteHandler(
         logger.info({ ...ctx, sessionId }, 'Recording completed successfully');
         
         try {
-          await queueAudioTranscribe({
+          await aws.queueAudioTranscribe({
             recordingId,
             accountId,
           });

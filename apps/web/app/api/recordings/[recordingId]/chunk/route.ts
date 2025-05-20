@@ -66,6 +66,7 @@ export const POST = enhanceRouteHandler(
       // Determine file extension based on MIME type
       const fileExtension = mimeType.includes('webm') ? 'webm' : 
                            mimeType.includes('ogg') ? 'ogg' : 
+                           mimeType.includes('mpeg') || mimeType.includes('mp3') ? 'mp3' : 
                            'webm'; // Default to webm if unknown
       
       // Define the storage path: {account_id}/{recording_id}/chunk-{0-padded chunk number}.<extension>

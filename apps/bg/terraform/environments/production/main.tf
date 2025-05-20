@@ -56,15 +56,24 @@ module "ecs_service" {
   subnet_ids         = module.vpc.subnet_ids
   security_group_id  = module.vpc.security_group_id
   sqs_queue_name     = module.sqs_queues.queue_name
+  sqs_queue_url      = module.sqs_queues.queue_url
   task_role_arn      = module.iam.task_role_arn
   execution_role_arn = module.iam.execution_role_arn
   aws_account_id     = data.aws_caller_identity.current.account_id
   min_capacity       = var.min_capacity
+  image_tag          = var.image_tag
 }
 
 # Use data source to reference existing ECR repository
 data "aws_ecr_repository" "bg_worker" {
   name = var.ecr_repository_name
+}
+
+# Add lifecycle policy to ECR repository to keep only the last 5 images
+module "ecr_lifecycle" {
+  source = "../../modules/ecr-lifecycle"
+  
+  repository_name = var.ecr_repository_name
 }
 
 # Output values
@@ -78,4 +87,9 @@ output "ecs_cluster_name" {
 
 output "ecs_service_name" {
   value = module.ecs_service.service_name
+}
+
+output "ecr_lifecycle_policy_id" {
+  value = module.ecr_lifecycle.lifecycle_policy_id
+  description = "ID of the ECR lifecycle policy that keeps only the last 5 images"
 }

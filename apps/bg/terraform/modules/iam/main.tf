@@ -82,7 +82,8 @@ resource "aws_iam_policy" "sqs_access" {
         "sqs:GetQueueAttributes",
         "sqs:ChangeMessageVisibility",
         "sqs:GetQueueUrl",
-        "sqs:ListQueues"
+        "sqs:ListQueues",
+        "sqs:SendMessage"
       ]
       Effect   = "Allow"
       Resource = var.sqs_queue_arn

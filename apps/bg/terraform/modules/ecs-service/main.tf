@@ -43,6 +43,11 @@ variable "sqs_queue_name" {
   type        = string
 }
 
+variable "sqs_queue_url" {
+  description = "SQS queue URL"
+  type        = string
+}
+
 variable "task_role_arn" {
   description = "Task role ARN"
   type        = string
@@ -62,6 +67,12 @@ variable "min_capacity" {
   description = "Minimum number of tasks to run"
   type        = number
   default     = 1
+}
+
+variable "image_tag" {
+  description = "Docker image tag to deploy"
+  type        = string
+  default     = "latest"
 }
 
 resource "aws_cloudwatch_log_group" "bg_worker" {
@@ -99,7 +110,7 @@ resource "aws_ecs_task_definition" "bg_worker" {
 
   container_definitions = jsonencode([{
     name      = "${var.environment}-${var.app_name}"
-    image     = "${var.ecr_repository_url}:latest"
+    image     = "${var.ecr_repository_url}:${var.image_tag}"
     essential = true
     
     logConfiguration = {
@@ -113,8 +124,10 @@ resource "aws_ecs_task_definition" "bg_worker" {
     
     environment = [
       { name = "NODE_ENV", value = var.environment },
+      # DEPRECATED: SQS_QUEUE_NAME is kept for backward compatibility and will be removed in a future update
       { name = "SQS_QUEUE_NAME", value = var.sqs_queue_name },
-      { name = "AWS_REGION", value = var.aws_region }
+      { name = "AWS_REGION", value = var.aws_region },
+      { name = "BACKGROUND_TASKS_QUEUE_URL", value = var.sqs_queue_url }
       # Add other environment variables as needed
     ],
     
@@ -139,6 +152,26 @@ resource "aws_ecs_task_definition" "bg_worker" {
       {
         name = "SUPABASE_SERVICE_ROLE_KEY",
         valueFrom = "arn:aws:ssm:${var.aws_region}:${var.aws_account_id}:parameter/${var.environment}/${var.app_name}/SUPABASE_SERVICE_ROLE_KEY"
+      },
+      {
+        name = "YANDEX_FOLDER_ID",
+        valueFrom = "arn:aws:ssm:${var.aws_region}:${var.aws_account_id}:parameter/${var.environment}/${var.app_name}/YANDEX_FOLDER_ID"
+      },
+      {
+        name = "YANDEX_STORAGE_BUCKET",
+        valueFrom = "arn:aws:ssm:${var.aws_region}:${var.aws_account_id}:parameter/${var.environment}/${var.app_name}/YANDEX_STORAGE_BUCKET"
+      },
+      {
+        name = "YANDEX_API_KEY",
+        valueFrom = "arn:aws:ssm:${var.aws_region}:${var.aws_account_id}:parameter/${var.environment}/${var.app_name}/YANDEX_API_KEY"
+      },
+      {
+        name = "YANDEX_ACCESS_KEY_ID",
+        valueFrom = "arn:aws:ssm:${var.aws_region}:${var.aws_account_id}:parameter/${var.environment}/${var.app_name}/YANDEX_ACCESS_KEY_ID"
+      },
+      {
+        name = "YANDEX_SECRET_ACCESS_KEY",
+        valueFrom = "arn:aws:ssm:${var.aws_region}:${var.aws_account_id}:parameter/${var.environment}/${var.app_name}/YANDEX_SECRET_ACCESS_KEY"
       }
       # Add other secrets as needed
     ]

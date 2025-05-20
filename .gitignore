@@ -45,4 +45,5 @@ yarn-error.log*
 
 # contentlayer
 .contentlayer/
-apps/web/dist/
+dist/
+.latest-image-tag

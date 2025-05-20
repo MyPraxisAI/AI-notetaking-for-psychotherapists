@@ -1,13 +1,27 @@
-import { SupabaseClient, createClient } from '@supabase/supabase-js';
-import { AudioProcessingTaskData, TranscriptionChunk } from '../../types';
-import { setSupabaseUser } from '../supabase';
+import { SupabaseClient } from '@supabase/supabase-js';
+import { TranscriptionChunk } from '../../types';
+import { BaseBackgroundTask } from '../../types';
+
+/**
+ * Audio Processing Task Data
+ */
+export interface AudioProcessingTaskData extends BaseBackgroundTask {
+  operation: 'audio:transcribe';
+  accountId: string;
+  recordingId: string;
+}
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import { promisify } from 'util';
 import { exec } from 'child_process';
-import { transcribeAudio, TranscriptionResult } from '../util/transcription';
+import { 
+  transcribeAudio, 
+  TranscriptionResult
+} from '../util/transcription';
+import { YandexV3RuOptions } from '../util/transcription/yandex/long_audio_v3';
 import { combineAudioChunks } from '../util/audio';
+import { regenerateArtifactsForSession } from '@kit/web-bg-common';
 
 // TranscriptionResult interface is now imported from '../util/transcription'
 
@@ -34,11 +48,6 @@ export class AudioTranscriptionProcessor {
       const { accountId, recordingId } = task;
       
       console.log(`Processing audio recording: accountId=${accountId}, recordingId=${recordingId}`);
-      
-      // Set the Supabase user session to the accountId for this specific task
-      // accountId is guaranteed to exist as it's required in AudioProcessingTaskData
-      await setSupabaseUser(supabase, accountId);
-      console.log(`Set Supabase user session to account ID: ${accountId}`);
       
       // Perform the transcription
       const transcriptionResult = await this.performTranscription(task);
@@ -92,19 +101,32 @@ export class AudioTranscriptionProcessor {
       const chunkFiles = await this.downloadChunks(chunks, tempDir);
       console.log(`Downloaded ${chunkFiles.length} audio chunks to ${tempDir}`);
       
-      // 4. Combine the chunks using FFmpeg
-      const outputFilePath = path.join(tempDir, `${recordingId}.webm`);
-      await combineAudioChunks(chunkFiles, outputFilePath, standaloneChunks);
-      console.log(`Combined audio chunks into ${outputFilePath}`);
+      // 4. Combine the chunks using FFmpeg (extension will be determined in combineAudioChunks)
+      const outputBasePath = path.join(tempDir, `${recordingId}`);
+      const finalOutputPath = await combineAudioChunks(chunkFiles, outputBasePath, standaloneChunks);
+      console.log(`Combined audio chunks into ${finalOutputPath}`);
+            
+      // Get the transcription engine from the recording info
+      const transcriptionEngine = recordingInfo.transcription_engine || 'yandex-v3-ru';
+      console.log(`Using transcription engine: ${transcriptionEngine}`);
       
-      // Send to OpenAI for transcription using the utility function
-      console.log('Sending audio to OpenAI for transcription...');
+      let result: TranscriptionResult;
       
-      const result = await transcribeAudio(outputFilePath, {
-        model: 'whisper-1', // Using Whisper for basic transcription
-        // Use gpt-4o-audio-preview for more advanced audio understanding if needed
-        // model: 'gpt-4o-audio-preview'
-      });
+      // Currently only yandex-v3-ru is supported
+      if (transcriptionEngine === 'yandex-v3-ru') {
+        // Use Yandex SpeechKit V3 with default options for Russian language
+        console.log('Using Yandex SpeechKit V3 (Russian) for transcription');
+        result = await transcribeAudio(this.supabase, finalOutputPath, YandexV3RuOptions, 'yandex');
+      } else {
+        // Fallback to Yandex V3 if an unsupported engine is specified
+        console.log(`Unsupported transcription engine: ${transcriptionEngine}, falling back to yandex-v3-ru`);
+        result = await transcribeAudio(this.supabase, finalOutputPath, YandexV3RuOptions, 'yandex');
+      }
+      
+      console.log(`Transcription completed using ${transcriptionEngine} engine`);
+      console.log(`Transcription result length: ${result.text.length} characters`);
+      
+      // Return the transcription result
       
       return result;
     } catch (error) {
@@ -187,38 +209,93 @@ export class AudioTranscriptionProcessor {
    * @param tempDir - Temporary directory to store the chunks
    * @returns Array of paths to the downloaded chunk files
    */
+  /**
+   * Helper function to attempt a download with better error handling
+   * @param storage_bucket - The storage bucket name
+   * @param storage_path - The path to the file in the bucket
+   * @param chunk_number - The chunk number for error reporting
+   * @returns The downloaded blob
+   */
+  private async attemptDownloadChunk(storage_bucket: string, storage_path: string, chunk_number: number): Promise<Blob> {
+    const { data, error } = await this.supabase
+      .storage
+      .from(storage_bucket)
+      .download(storage_path);
+      
+    if (error) {
+      // Properly format the error message with all available details
+      const errorDetails = JSON.stringify(error, Object.getOwnPropertyNames(error));
+      throw new Error(`Failed to download chunk ${chunk_number}: ${error.message || errorDetails}`);
+    }
+    
+    if (!data) {
+      throw new Error(`No data received for chunk ${chunk_number}`);
+    }
+    
+    return data;
+  }
+
+  /**
+   * Downloads all chunks to a temporary directory with parallelism
+   * @param chunks - Array of chunk objects with storage information
+   * @param tempDir - Temporary directory to store the chunks
+   * @returns Array of paths to the downloaded chunk files
+   */
   private async downloadChunks(chunks: any[], tempDir: string): Promise<string[]> {
     const chunkFiles: string[] = [];
+    const MAX_RETRIES = 1;
+    const PARALLELISM = 5; // Download 5 chunks in parallel
     
-    for (const chunk of chunks) {
-      const { storage_bucket, storage_path, chunk_number } = chunk;
-      const outputPath = path.join(tempDir, `chunk_${chunk_number.toString().padStart(5, '0')}.webm`);
+    // Process chunks in batches for controlled parallelism
+    for (let i = 0; i < chunks.length; i += PARALLELISM) {
+      const batch = chunks.slice(i, i + PARALLELISM);
+      console.log(`Processing batch ${Math.floor(i/PARALLELISM) + 1}/${Math.ceil(chunks.length/PARALLELISM)}: chunks ${i+1}-${Math.min(i+PARALLELISM, chunks.length)} of ${chunks.length}`);
       
-      try {
-        // Download the chunk from storage
-        const { data, error } = await this.supabase
-          .storage
-          .from(storage_bucket)
-          .download(storage_path);
-          
-        if (error) {
-          throw new Error(`Failed to download chunk ${chunk_number}: ${error.message}`);
+      // Create an array of download promises for this batch
+      const batchPromises = batch.map(async (chunk) => {
+        const { storage_bucket, storage_path, chunk_number } = chunk;
+        // Extract the file extension from the storage_path
+        const fileExtension = path.extname(storage_path) || '.webm'; // Default to .webm if no extension found
+        const outputPath = path.join(tempDir, `chunk_${chunk_number.toString().padStart(5, '0')}${fileExtension}`);
+        
+        let attempts = 0;
+        let success = false;
+        let lastError: Error | null = null;
+        
+        while (attempts <= MAX_RETRIES && !success) {
+          try {
+            attempts++;
+            if (attempts > 1) {
+              console.log(`Retry attempt ${attempts-1} for chunk ${chunk_number}...`);
+            }
+            
+            // Download the chunk from storage with improved error handling
+            const data = await this.attemptDownloadChunk(storage_bucket, storage_path, chunk_number);
+            
+            // Convert Blob to Buffer and write to file
+            const buffer = await data.arrayBuffer().then(arrayBuffer => Buffer.from(arrayBuffer));
+            await fs.promises.writeFile(outputPath, buffer);
+            
+            console.log(`Downloaded chunk ${chunk_number} to ${outputPath}`);
+            success = true;
+            return outputPath; // Return the path for this chunk
+          } catch (error) {
+            lastError = error instanceof Error ? error : new Error(String(error));
+            if (attempts > MAX_RETRIES) {
+              console.error(`Error downloading chunk ${chunk_number} after ${attempts} attempts:`, lastError);
+              throw lastError;
+            }
+            // Wait briefly before retrying
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          }
         }
         
-        if (!data) {
-          throw new Error(`No data received for chunk ${chunk_number}`);
-        }
-        
-        // Convert Blob to Buffer and write to file
-        const buffer = await data.arrayBuffer().then(arrayBuffer => Buffer.from(arrayBuffer));
-        await fs.promises.writeFile(outputPath, buffer);
-        
-        chunkFiles.push(outputPath);
-        console.log(`Downloaded chunk ${chunk_number} to ${outputPath}`);
-      } catch (error) {
-        console.error(`Error downloading chunk ${chunk_number}:`, error);
-        throw error;
-      }
+        return outputPath; // This will be reached if success = true
+      });
+      
+      // Wait for all downloads in this batch to complete
+      const batchResults = await Promise.all(batchPromises);
+      chunkFiles.push(...batchResults);
     }
     
     return chunkFiles;
@@ -280,7 +357,8 @@ export class AudioTranscriptionProcessor {
           session_id: recordingData.session_id,
           account_id: accountId,
           transcription_model: result.model || 'openai/whisper-1',
-          content: result.text
+          content: result.text,
+          content_json: result.content_json
         });
         
       if (error) {
@@ -289,6 +367,20 @@ export class AudioTranscriptionProcessor {
       } else {
         console.log('Transcript inserted into transcripts table successfully');
       }
+
+      // Invalidate all artifacts related to this session and its client and queue regeneration
+      // This will mark them as stale and trigger a background task to regenerate them
+      try {
+        await regenerateArtifactsForSession(
+          supabase,
+          recordingData.session_id,
+          task.accountId
+        );
+      } catch (invalidateError) {
+        console.error('Error invalidating artifacts and queueing regeneration:', invalidateError);
+        // Continue processing even if invalidation fails
+      }
+      
     } catch (error) {
       console.error('Error in Supabase operation:', error);
       throw error;

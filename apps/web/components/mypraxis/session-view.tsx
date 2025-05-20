@@ -8,9 +8,10 @@ import { SessionMetadata } from "../../types/session"
 import { sessionTranscripts as _sessionTranscripts } from "../../data/mypraxis/session-transcripts"
 import { Textarea } from "@kit/ui/textarea"
 import { Label } from "@kit/ui/label"
-import { Check, Edit2, Plus, Copy, MoreVertical, Loader2 } from "lucide-react"
+import { Check, Edit2, Plus, Copy, MoreVertical, Loader2, RefreshCw } from "lucide-react"
 import { Button } from "@kit/ui/button"
 import { Input } from "@kit/ui/input"
+import { Badge } from "@kit/ui/badge"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@kit/ui/dropdown-menu"
 import { DeleteSessionModal } from "../mypraxis/delete-session-modal"
 import type { Session } from "../../types/session"
@@ -109,29 +110,16 @@ function TranscriptContent({ clientId, sessionId, session, onEditTranscript, han
   // If we have a transcript, show it
   if (session?.transcript) {
     return (
-      <div className="relative group">
+      <div className="relative">
         <div 
-          className="rounded-lg bg-[#FFF9E8] px-6 pb-6 pt-7 text-[14px] leading-[1.6] whitespace-pre-wrap cursor-pointer" 
-          onClick={() => onEditTranscript(session.transcript?.content || "")}
+          className="rounded-lg bg-[#FFF9E8] px-6 pb-6 pt-7 text-[14px] leading-[1.6] whitespace-pre-wrap" 
           data-test="session-transcript-value"
         >
           {session.transcript.content}
         </div>
-        <div className="absolute right-2 top-[7px] flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-6 w-6 hover:bg-transparent"
-            onClick={() => onEditTranscript(session.transcript?.content || "")}
-          >
-            <Edit2 className="h-4 w-4" />
-          </Button>
-        </div>
       </div>
     )
   }
-  
-
   
   // Show loading state while we check for recording status
   if (isLoadingRecording) {    
@@ -191,6 +179,8 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
   const [clientSummary, setClientSummary] = useState<string | null>(null)
   const [isLoadingTherapistSummary, setIsLoadingTherapistSummary] = useState(false)
   const [isLoadingClientSummary, setIsLoadingClientSummary] = useState(false)
+  const [isTherapistSummaryStale, setIsTherapistSummaryStale] = useState(false)
+  const [isClientSummaryStale, setIsClientSummaryStale] = useState(false)
   const [session, setSession] = useState<Session | null>(null)
   const [isEditingTitle, setIsEditingTitle] = useState(false) // Added state for title editing
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
@@ -206,7 +196,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
   // Use the session hook from Supabase to load session data
   const { data: sessionData, isLoading: _isLoadingSession } = useSession(sessionId)
   
-  // Fetch therapist summary when therapist tab is active
+  // Always fetch both summaries regardless of active tab
   const { 
     data: therapistSummaryData, 
     isLoading: isLoadingTherapistSummaryQuery,
@@ -214,10 +204,10 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
   } = useSessionArtifact(
     sessionId, 
     'session_therapist_summary', 
-    !!(sessionData?.transcript || sessionData?.note) && summaryView === 'therapist'
+    !!(sessionData?.transcript || sessionData?.note) // Remove conditional based on active tab
   )
   
-  // Fetch client summary when client tab is active
+  // Always fetch client summary regardless of active tab
   const { 
     data: clientSummaryData, 
     isLoading: isLoadingClientSummaryQuery,
@@ -225,7 +215,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
   } = useSessionArtifact(
     sessionId, 
     'session_client_summary', 
-    !!(sessionData?.transcript || sessionData?.note) && summaryView === 'client'
+    !!(sessionData?.transcript || sessionData?.note) // Remove conditional based on active tab
   )
   
   // Update local state when session data changes
@@ -284,14 +274,24 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
   useEffect(() => {
     if (therapistSummaryData) {
       setTherapistSummary(therapistSummaryData.content)
+      // If the artifact is stale, set the stale state but don't show loading
+      setIsTherapistSummaryStale(!!therapistSummaryData.stale)
       setIsLoadingTherapistSummary(false)
+    } else {
+      // If there's no data, show loading state (404 case)
+      setIsLoadingTherapistSummary(true)
     }
   }, [therapistSummaryData])
   
   useEffect(() => {
     if (clientSummaryData) {
       setClientSummary(clientSummaryData.content)
+      // If the artifact is stale, set the stale state but don't show loading
+      setIsClientSummaryStale(!!clientSummaryData.stale)
       setIsLoadingClientSummary(false)
+    } else {
+      // If there's no data, show loading state (404 case)
+      setIsLoadingClientSummary(true)
     }
   }, [clientSummaryData])
   
@@ -743,7 +743,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
             data-tab="notes"
             data-test="notes-tab"
           >
-            Notes
+            Summaries & Notes
           </TabsTrigger>
           <TabsTrigger
             value="transcript"
@@ -819,14 +819,14 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                     className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#111827] data-[state=active]:bg-transparent px-4 py-2 font-medium text-[14px] text-[#6B7280] data-[state=active]:text-[#111827] data-[state=active]:shadow-none"
                     data-test="session-tab-therapist-summary"
                   >
-                    Therapist Summary
+                    My Summary
                   </TabsTrigger>
                   <TabsTrigger
                     value="client"
                     className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#111827] data-[state=active]:bg-transparent px-4 py-2 font-medium text-[14px] text-[#6B7280] data-[state=active]:text-[#111827] data-[state=active]:shadow-none"
                     data-test="session-tab-client-summary"
                   >
-                    Client Summary
+                    Summary For Client
                   </TabsTrigger>
                 </TabsList>
                 <TabsContent value="therapist" className="mt-3" data-test="session-therapist-summary">
@@ -835,17 +835,25 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                       <div className="rounded-lg bg-[#FFF9E8] px-6 py-6 text-[14px] text-muted-foreground flex items-center justify-center min-h-[100px]">
                         <div className="flex items-center gap-2">
                           <Loader2 className="h-4 w-4 animate-spin" />
-                          <span>Generating therapist summary...</span>
+                          <span>Loading my summary...</span>
                         </div>
                       </div>
                     ) : therapistSummary ? (
                       <div className="relative">
                         <div className="rounded-lg bg-[#FFF9E8] px-6 pb-6 pt-7 text-[14px] leading-[1.6]">
+                          {isTherapistSummaryStale && (
+                            <div className="absolute right-2 top-2">
+                              <Badge variant="outline" className="flex items-center gap-1 bg-white">
+                                <RefreshCw className="h-3 w-3 animate-spin" />
+                                <span>Updating</span>
+                              </Badge>
+                            </div>
+                          )}
                           <div className="markdown-content">
                             <ReactMarkdown>{therapistSummary || ''}</ReactMarkdown>
                           </div>
                         </div>
-                        <div className="absolute right-2 top-[7px] flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="absolute right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity" style={{ top: isTherapistSummaryStale ? '40px' : '7px' }}>
                           <Button
                             variant="ghost"
                             size="icon"
@@ -858,26 +866,10 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
 
                         </div>
                       </div>
-                    ) : session?.summary?.therapist ? (
-                      <div className="relative">
-                        <div className="rounded-lg bg-[#FFF9E8] px-6 pb-6 pt-7 text-[14px] leading-[1.6] whitespace-pre-wrap">
-                          {session.summary?.therapist}
-                        </div>
-                        <div className="absolute right-2 top-[7px] flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6 hover:bg-transparent"
-                            onClick={() => handleCopyText(session.summary?.therapist)}
-                          >
-                            {isCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                          </Button>
 
-                        </div>
-                      </div>
                     ) : (
                       <div className="rounded-lg bg-[#FFF9E8] px-6 py-6 text-[14px] text-muted-foreground" data-test="therapist-summary-placeholder">
-                        Therapist summary will be generated automatically once you add either a transcript or session notes
+                        My summary will be generated automatically once either transcript or session notes are added
                       </div>
                     )}
                   </div>
@@ -888,17 +880,25 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                       <div className="rounded-lg bg-[#FFF9E8] px-6 py-6 text-[14px] text-muted-foreground flex items-center justify-center min-h-[100px]">
                         <div className="flex items-center gap-2">
                           <Loader2 className="h-4 w-4 animate-spin" />
-                          <span>Generating client summary...</span>
+                          <span>Loading summary for client...</span>
                         </div>
                       </div>
                     ) : clientSummary ? (
                       <div className="relative">
                         <div className="rounded-lg bg-[#FFF9E8] px-6 pb-6 pt-7 text-[14px] leading-[1.6]">
+                          {isClientSummaryStale && (
+                            <div className="absolute right-2 top-2">
+                              <Badge variant="outline" className="flex items-center gap-1 bg-white">
+                                <RefreshCw className="h-3 w-3 animate-spin" />
+                                <span>Updating</span>
+                              </Badge>
+                            </div>
+                          )}
                           <div className="markdown-content">
                             <ReactMarkdown>{clientSummary || ''}</ReactMarkdown>
                           </div>
                         </div>
-                        <div className="absolute right-2 top-[7px] flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="absolute right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity" style={{ top: isClientSummaryStale ? '40px' : '7px' }}>
                           <Button
                             variant="ghost"
                             size="icon"
@@ -911,23 +911,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
 
                         </div>
                       </div>
-                    ) : session?.summary?.client ? (
-                      <div className="relative">
-                        <div className="rounded-lg bg-[#FFF9E8] px-6 pb-6 pt-7 text-[14px] leading-[1.6] whitespace-pre-wrap">
-                          {session.summary?.client}
-                        </div>
-                        <div className="absolute right-2 top-[7px] flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6 hover:bg-transparent"
-                            onClick={() => handleCopyText(session.summary?.client, true)}
-                          >
-                            {isClientSummaryCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                          </Button>
 
-                        </div>
-                      </div>
                     ) : (
                       <div className="rounded-lg bg-[#FFF9E8] px-6 py-6 text-[14px] text-muted-foreground" data-test="client-summary-placeholder">
                         Client summary will be generated automatically once you add either a transcript or session notes

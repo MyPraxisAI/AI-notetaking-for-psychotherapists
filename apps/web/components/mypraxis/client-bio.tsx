@@ -1,10 +1,11 @@
 'use client';
 
 import { useClientArtifact } from '../../app/home/(user)/mypraxis/_lib/hooks/use-client-artifacts';
-import { Loader2, Copy, Check } from 'lucide-react';
+import { Loader2, Copy, Check, RefreshCw } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { Button } from '@kit/ui/button';
-import { useState, useRef } from 'react';
+import { Badge } from '@kit/ui/badge';
+import { useState, useRef, useEffect } from 'react';
 
 interface ClientBioProps {
   clientId: string;
@@ -18,6 +19,16 @@ export function ClientBio({ clientId, clientName }: ClientBioProps) {
     isLoading: isLoadingBio,
     error
   } = useClientArtifact(clientId, 'client_bio', !!clientId);
+  
+  // Track if the bio is stale (being updated)
+  const [isBioStale, setIsBioStale] = useState(false);
+  
+  // Update stale state when data changes
+  useEffect(() => {
+    if (bioData) {
+      setIsBioStale(bioData.stale);
+    }
+  }, [bioData]);
   
   // Copy functionality
   const [isCopied, setIsCopied] = useState(false);
@@ -64,10 +75,19 @@ export function ClientBio({ clientId, clientName }: ClientBioProps) {
         </div>
       ) : (
         <div className="mt-5 rounded-lg bg-[#FFF9E8] p-6 relative group" data-test="client-bio-content">
+          {isBioStale && (
+            <div className="absolute right-2 top-2">
+              <Badge variant="outline" className="flex items-center gap-1 bg-white">
+                <RefreshCw className="h-3 w-3 animate-spin" />
+                <span>Updating</span>
+              </Badge>
+            </div>
+          )}
           <Button
             variant="ghost"
             size="icon"
-            className="h-6 w-6 hover:bg-transparent absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity"
+            className="h-6 w-6 hover:bg-transparent absolute right-3 opacity-0 group-hover:opacity-100 transition-opacity"
+            style={{ top: isBioStale ? '40px' : '3px' }}
             onClick={() => handleCopyText(bioData.content)}
             data-test="copy-bio-button"
           >
