@@ -726,19 +726,6 @@ export function RecordingModal({
     }
   };
 
-  // Helper function to split a file into chunks
-  const splitFileIntoChunks = (file: File, chunkSize: number = 4.2 * 1024 * 1024): Blob[] => {
-    const chunks: Blob[] = [];
-    let start = 0;
-    
-    while (start < file.size) {
-      const end = Math.min(start + chunkSize, file.size);
-      chunks.push(file.slice(start, end, file.type));
-      start = end;
-    }
-    
-    return chunks;
-  };
 
   // Handle file selection
   const handleFileSelected = async (event: React.ChangeEvent<HTMLInputElement>) => {
