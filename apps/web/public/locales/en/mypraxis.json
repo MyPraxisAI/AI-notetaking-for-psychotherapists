@@ -17,7 +17,7 @@
     "pa": "Psychoanalysis",
     "pdt": "Psychodynamic Therapy",
     "sfbt": "Solution-Focused Brief Therapy (SFBT)",
-    "other": "Other"
+    "int": "Integrative Therapy"
   },
   "geoLocalities": {
     "eu": "European Union",

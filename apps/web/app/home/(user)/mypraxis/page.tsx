@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useRef } from "react"
+import { useState, useEffect, useRef, useTransition as _useTransition, useCallback } from "react"
 import { Avatar, AvatarFallback } from "@kit/ui/avatar"
 import { Badge } from "@kit/ui/badge"
 import { Button } from "@kit/ui/button"
@@ -38,8 +38,9 @@ import { ClientPrepNote } from '../../../../components/mypraxis/client-prep-note
 import { ClientConceptualization } from '../../../../components/mypraxis/client-conceptualization';
 import { ClientBio } from '../../../../components/mypraxis/client-bio';
 import { useClients, useCreateClient, useDeleteClient } from "./_lib/hooks/use-clients"
+import { OnboardingModal } from "../../../../components/mypraxis/onboarding-modal"
+import { useUserSettings } from "./_lib/hooks/use-user-settings"
 import { ClientCreationModal } from "../../../../components/mypraxis/client-creation-modal"
-
 
 // Menu item type
 
@@ -668,6 +669,18 @@ export default function Page() {
     return () => window.removeEventListener("resize", handleResize)
   }, [])
 
+  // Get user settings to check if onboarding has been completed
+  const { settings, isLoading: isLoadingSettings } = useUserSettings()
+  
+  // Determine if mandatory onboarding should be shown
+  const showMandatoryOnboarding = !isLoadingSettings && settings ? !settings.onboarding_completed : false
+
+  // Handler for closing the onboarding modal - memoized to prevent unnecessary re-renders
+  const handleCloseOnboardingModal = useCallback(() => {
+    // This handler is kept for the mandatory onboarding modal
+    // No state to update since we're using settings directly
+  }, [])
+
   return (
     <div className="flex h-screen w-full relative">
       {/* Navigation Overlay */}
@@ -833,7 +846,9 @@ export default function Page() {
 
         {/* Logo at the bottom */}
         <div className="px-2 mt-auto">
-          <div className="w-full flex justify-center py-4 relative">
+          <div 
+            className="w-full flex justify-center py-4 relative"
+          >
             <img
               src="/logo.svg"
               alt="My Praxis Logo"
@@ -1093,6 +1108,14 @@ export default function Page() {
         clientId={selectedClient}
         clientName={localClientNames[selectedClient] || clients.find(c => c.id === selectedClient)?.fullName || ""}
       />
+
+      {/* Mandatory onboarding modal - shown when onboarding_completed is false */}
+      <OnboardingModal
+        isOpen={showMandatoryOnboarding}
+        onClose={handleCloseOnboardingModal}
+        isMandatory={true}
+      />
+
       {/* Client Creation Modal */}
       <ClientCreationModal
         isOpen={isClientCreationModalOpen}
