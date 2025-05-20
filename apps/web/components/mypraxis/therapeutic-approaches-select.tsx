@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 import { 
   Select, 
   SelectContent, 
@@ -8,7 +8,7 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@kit/ui/select";
-import { useTherapeuticApproaches, TherapeuticApproach } from '../../app/home/(user)/mypraxis/_lib/hooks/use-therapeutic-approaches';
+import { useTherapeuticApproaches, TherapeuticApproach as _TherapeuticApproach } from '../../app/home/(user)/mypraxis/_lib/hooks/use-therapeutic-approaches';
 import { useTranslation } from 'react-i18next';
 
 interface TherapeuticApproachesSelectProps {
@@ -22,8 +22,10 @@ interface TherapeuticApproachesSelectProps {
   filterPrimary?: boolean;
   filterSecondary?: boolean;
   testId?: string; // Data-test attribute for testing
+  disabled?: boolean; // Whether the select is disabled
 }
 
+// Completely rewritten component to avoid render loops
 export function TherapeuticApproachesSelect({
   value,
   onValueChange,
@@ -34,49 +36,53 @@ export function TherapeuticApproachesSelect({
   secondaryApproaches = [],
   filterPrimary = false,
   filterSecondary = false,
-  testId = 'settings-therapeutic-approach-select'
+  testId = 'settings-therapeutic-approach-select',
+  disabled = false
 }: TherapeuticApproachesSelectProps) {
-  const { data: therapeuticApproaches, isLoading } = useTherapeuticApproaches();
-  const [approaches, setApproaches] = useState<TherapeuticApproach[]>([]);
+  
+  // Fetch therapeutic approaches
+  const { data: therapeuticApproaches = [], isLoading } = useTherapeuticApproaches();
   const { t } = useTranslation();
 
-  useEffect(() => {
-    if (therapeuticApproaches) {
-      // Filter approaches if needed
-      let filteredApproaches = [...therapeuticApproaches];
-      
-      if (filterPrimary && primaryApproach) {
-        filteredApproaches = filteredApproaches.filter(approach => 
-          approach.id !== primaryApproach
-        );
-      }
-      
-      if (filterSecondary && secondaryApproaches.length > 0) {
-        filteredApproaches = filteredApproaches.filter(approach => 
-          !secondaryApproaches.includes(approach.id)
-        );
-      }
-      
-      // Sort the approaches by their localized values
-      const sortedApproaches = filteredApproaches.sort((a, b) => {
-        // Always put 'other' at the end
-        if (a.name === 'other') return 1;
-        if (b.name === 'other') return -1;
-        
-        // Sort by translated values
-        const aTranslated = t(`mypraxis:therapeuticApproaches.${a.name}`, { defaultValue: a.name });
-        const bTranslated = t(`mypraxis:therapeuticApproaches.${b.name}`, { defaultValue: b.name });
-        return aTranslated.localeCompare(bTranslated);
-      });
-      
-      setApproaches(sortedApproaches);
+  // Process approaches with useMemo instead of useState + useEffect
+  const processedApproaches = useMemo(() => {
+    if (!therapeuticApproaches.length) return [];
+    
+    // Filter approaches if needed
+    let filteredApproaches = [...therapeuticApproaches];
+    
+    if (filterPrimary && primaryApproach) {
+      filteredApproaches = filteredApproaches.filter(approach => 
+        approach.id !== primaryApproach
+      );
     }
+    
+    if (filterSecondary && secondaryApproaches.length > 0) {
+      filteredApproaches = filteredApproaches.filter(approach => 
+        !secondaryApproaches.includes(approach.id)
+      );
+    }
+    
+    // Sort the approaches by their localized values
+    return filteredApproaches.sort((a, b) => {
+      // Always put 'other' at the end
+      if (a.name === 'other') return 1;
+      if (b.name === 'other') return -1;
+      
+      // Sort by translated values
+      const aTranslated = t(`mypraxis:therapeuticApproaches.${a.name}`, { defaultValue: a.name });
+      const bTranslated = t(`mypraxis:therapeuticApproaches.${b.name}`, { defaultValue: b.name });
+      return aTranslated.localeCompare(bTranslated);
+    });
   }, [therapeuticApproaches, primaryApproach, secondaryApproaches, filterPrimary, filterSecondary, t]);
-
+  
+  
+  // Render the select component
   return (
     <Select
       value={value}
       onValueChange={onValueChange}
+      disabled={disabled}
     >
       <SelectTrigger 
         id="primaryTherapeuticApproach"
@@ -89,10 +95,10 @@ export function TherapeuticApproachesSelect({
       <SelectContent>
         {isLoading ? (
           <SelectItem value="loading" disabled>Loading...</SelectItem>
-        ) : approaches.length === 0 ? (
+        ) : processedApproaches.length === 0 ? (
           <SelectItem value="none" disabled>No approaches found</SelectItem>
         ) : (
-          approaches.map((approach) => (
+          processedApproaches.map((approach) => (
             <SelectItem key={approach.id} value={approach.id}>
               {t(`mypraxis:therapeuticApproaches.${approach.name}`, { defaultValue: approach.name })}
             </SelectItem>

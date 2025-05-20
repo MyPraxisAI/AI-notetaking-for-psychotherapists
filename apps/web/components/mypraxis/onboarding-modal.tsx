@@ -1,18 +1,12 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Button } from "@kit/ui/button"
 import { Loader2 } from "lucide-react"
-import { useTherapeuticApproaches } from "../../app/home/(user)/mypraxis/_lib/hooks/use-therapeutic-approaches"
-import { useUpdateTherapistField } from "../../app/home/(user)/mypraxis/_lib/hooks/use-therapist-profile"
+import { useUpdateTherapistField, useMyPraxisTherapistProfile } from "../../app/home/(user)/mypraxis/_lib/hooks/use-therapist-profile"
+import { useUserSettings } from "../../app/home/(user)/mypraxis/_lib/hooks/use-user-settings"
 import { useTranslation } from 'react-i18next'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@kit/ui/select"
+import { TherapeuticApproachesSelect } from "./therapeutic-approaches-select"
 
 // Define overlay styles similar to recording modal
 const overlayStyles = `
@@ -35,19 +29,25 @@ const overlayStyles = `
   }
 `;
 
-interface TherapeuticApproachOnboardingModalProps {
+interface OnboardingModalProps {
   isOpen: boolean
   onClose: () => void
+  isMandatory?: boolean
 }
 
-export function TherapeuticApproachOnboardingModal({
+export function OnboardingModal({
   isOpen,
   onClose,
-}: TherapeuticApproachOnboardingModalProps) {
+  isMandatory = false,
+}: OnboardingModalProps) {
+
   // Modal state: "selection" or "success"
   const [modalState, setModalState] = useState<"selection" | "success">("selection")
   
-  // Selected approach state
+  // Fetch the current therapist profile
+  const { data: therapistProfile, isLoading: _isLoadingProfile } = useMyPraxisTherapistProfile()
+  
+  // Selected approach state - initialize with the existing value (if any)
   const [selectedApproach, setSelectedApproach] = useState<string>("")
   
   // Loading state
@@ -57,13 +57,13 @@ export function TherapeuticApproachOnboardingModal({
   const [error, setError] = useState<string | null>(null)
   
   // Translation hook
-  const { t } = useTranslation()
-  
-  // Fetch therapeutic approaches
-  const { data: therapeuticApproaches, isLoading: isLoadingApproaches } = useTherapeuticApproaches()
+  const { t: _t } = useTranslation()
   
   // Get therapist field update hook
-  const { updateField, isLoading: isUpdating } = useUpdateTherapistField()
+  const { updateField, isLoading: _isUpdating } = useUpdateTherapistField()
+  
+  // Get user settings hook
+  const { completeOnboarding } = useUserSettings()
   
   // Add styles to document
   useEffect(() => {
@@ -82,23 +82,27 @@ export function TherapeuticApproachOnboardingModal({
     }
   }, []);
   
-  // Reset modal state when opened
+  // Set initial approach from profile when opened or when profile data changes
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && therapistProfile && therapistProfile.primaryTherapeuticApproach) {
+      // Pre-select the existing approach
+      setSelectedApproach(therapistProfile.primaryTherapeuticApproach)
+    } else if (isOpen) {
+      // Reset if there's no existing approach
       setModalState("selection")
       setSelectedApproach("")
       setError(null)
     }
-  }, [isOpen]);
+  }, [isOpen, therapistProfile]);
   
-  // Handle approach selection
-  const handleApproachChange = (value: string) => {
+  // Handle approach selection - memoized to prevent unnecessary re-renders
+  const handleApproachChange = useCallback((value: string) => {
     setSelectedApproach(value)
     setError(null)
-  }
+  }, [])
   
-  // Handle next button click
-  const handleNext = async () => {
+  // Handle next button click - memoized with dependencies
+  const handleNext = useCallback(async () => {
     if (!selectedApproach) {
       setError("Please select a therapeutic approach")
       return
@@ -111,49 +115,59 @@ export function TherapeuticApproachOnboardingModal({
       // Update therapist profile with selected approach
       await updateField('primaryTherapeuticApproach', selectedApproach)
       
-      // Show success state
+      // Show success state - onboarding is NOT marked complete here
       setModalState("success")
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to update therapeutic approach")
     } finally {
       setIsProcessing(false)
     }
-  }
+  }, [selectedApproach, updateField])
   
-  // Handle close
-  const handleClose = () => {
+  // Handle close - memoized with dependencies
+  const handleClose = useCallback(() => {
+    // If modal is mandatory and we're not in success state, don't allow closing
+    // This handleClose is for the overlay click or an explicit close action
+    // that doesn't complete onboarding (e.g., if a close 'X' button existed).
+    if (isMandatory && modalState !== "success") {
+      return
+    }
     onClose()
-  }
-  
-  // Sort approaches similar to the settings page
-  const sortedApproaches = therapeuticApproaches ? [...therapeuticApproaches].sort((a, b) => {
-    // Always put 'other' at the end
-    if (a.name === 'other') return 1;
-    if (b.name === 'other') return -1;
+  }, [isMandatory, modalState, onClose])
+
+  // Handle finish onboarding - called from success screen
+  const handleFinishOnboarding = useCallback(async () => {
+    try {
+      setIsProcessing(true) // Indicate processing
+      await completeOnboarding() // Mark onboarding as complete
+      onClose() // Close the modal
+    } catch (err) {
+      // Handle any errors during completeOnboarding, though it's less common for this specific action
+      setError(err instanceof Error ? err.message : "Failed to complete onboarding")
+    } finally {
+      setIsProcessing(false)
+    }
+  }, [completeOnboarding, onClose])
     
-    // Sort by translated values
-    const aTranslated = t(`mypraxis:therapeuticApproaches.${a.name}`, { defaultValue: a.name });
-    const bTranslated = t(`mypraxis:therapeuticApproaches.${b.name}`, { defaultValue: b.name });
-    return aTranslated.localeCompare(bTranslated);
-  }) : [];
-  
   if (!isOpen) return null
   
   return (
     <>
       <div 
         className={`onboarding-modal-overlay ${isOpen ? 'active' : ''}`}
-        onClick={handleClose}
+        onClick={isMandatory && modalState !== "success" ? undefined : handleClose}
+        data-test="onboarding-modal-overlay"
+        aria-hidden="true"
       ></div>
       
       {isOpen && (
-        <div className="fixed inset-0 flex flex-col items-center justify-center z-50">
-          <div className="relative bg-white rounded-lg w-full max-w-md mx-4 overflow-hidden">
+        <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
             {/* Modal header */}
             <div className="p-6 border-b border-gray-200">
               <h2 className="text-xl font-semibold text-gray-900">
                 {modalState === "selection" 
-                  ? "Welcome to MyPraxis!" 
+                  ? "Welcome to MyPraxis" 
                   : "Setup Complete"}
               </h2>
             </div>
@@ -163,38 +177,21 @@ export function TherapeuticApproachOnboardingModal({
               {modalState === "selection" && (
                 <>
                   <p className="text-gray-600 mb-4">
-                    Select your primary therapeutic approach — we need it to correctly process your sessions' data.
+                    Select your therapy style and we shall use it to analyze the sessions you will record.
                   </p>
                   
                   <div className="mb-3">
                     <label className="block text-sm font-medium text-gray-700 mb-2.5">
                       Primary Therapeutic Approach
                     </label>
-                    <Select
+                    <TherapeuticApproachesSelect
                       value={selectedApproach}
                       onValueChange={handleApproachChange}
-                      disabled={isLoadingApproaches || isProcessing}
-                    >
-                      <SelectTrigger 
-                        className="w-full focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)]"
-                        data-test="onboarding-therapeutic-approach-select"
-                      >
-                        <SelectValue placeholder="Choose approach" />
-                      </SelectTrigger>
-                      <SelectContent side="bottom" className="max-h-[200px]">
-                        {isLoadingApproaches ? (
-                          <SelectItem value="loading" disabled>Loading...</SelectItem>
-                        ) : sortedApproaches.length === 0 ? (
-                          <SelectItem value="none" disabled>No approaches found</SelectItem>
-                        ) : (
-                          sortedApproaches.map((approach) => (
-                            <SelectItem key={approach.id} value={approach.id}>
-                              {t(`mypraxis:therapeuticApproaches.${approach.name}`, { defaultValue: approach.name })}
-                            </SelectItem>
-                          ))
-                        )}
-                      </SelectContent>
-                    </Select>
+                      placeholder="Choose approach"
+                      className="w-full"
+                      testId="onboarding-therapeutic-approach-select"
+                      disabled={isProcessing}
+                    />
                     {error && (
                       <p className="mt-2 text-sm text-red-600">{error}</p>
                     )}
@@ -205,10 +202,10 @@ export function TherapeuticApproachOnboardingModal({
               {modalState === "success" && (
                 <div className="text-center py-4">
                   <p className="text-gray-600 mb-5">
-                    Thanks, you are good to go! You can always change your therapeutic approach in the settings.
+                    Thanks, you are good to go! You can always change your Therapeutic Approach in the Settings on the left.
                   </p>
                   <p className="text-gray-600 mb-5">
-                    Now check out the demo client or add a new one to start recording your first session.
+                    Now check out the demo client or add a new client to start recording your first session.
                   </p>
                 </div>
               )}
@@ -236,9 +233,17 @@ export function TherapeuticApproachOnboardingModal({
               {modalState === "success" && (
                 <Button 
                   className="w-full bg-green-500 hover:bg-green-600 text-white"
-                  onClick={handleClose}
+                  onClick={handleFinishOnboarding} // Use the new handler
+                  disabled={isProcessing} // Disable while processing
                 >
-                  Get Started
+                  {isProcessing ? (
+                    <>
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      Finishing...
+                    </>
+                  ) : (
+                    "Finish"
+                  )}
                 </Button>
               )}
             </div>
