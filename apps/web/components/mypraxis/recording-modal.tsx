@@ -455,7 +455,6 @@ export function RecordingModal({
             console.log(`Processing chunk ${chunkNumber}: ${chunkStartTimeSec.toFixed(3)}s to ${chunkEndTimeSec.toFixed(3)}s (duration: ${durationSec.toFixed(3)}s) with recordingId: ${currentRecordingId}`);
             
             // Prepare for next chunk - do this immediately, not after upload
-            const _currentChunkNumber = chunkNumber;
             chunkNumber++;
             chunkStartTimeMs = currentTimeMs;
             console.log(`Next chunk will start at ${(chunkStartTimeMs - recordingStartTime) / 1000}s`);
@@ -467,7 +466,9 @@ export function RecordingModal({
           }
         }
         
-        // Start the MediaRecorder with 4 minute chunks
+        // Start the MediaRecorder with 4 minute chunks, experimentally this works out to 3.7Mb
+        // TODO: A better implementation might be to use a smaller period here, aggregate chunks in an in-memory array,
+        // but attempt to upload them only when the total size of the chunks in memory reaches 4Mb
         mediaRecorder.current.start(4 * 60 * 1000);
         
         // Request data immediately to test the ondataavailable handler

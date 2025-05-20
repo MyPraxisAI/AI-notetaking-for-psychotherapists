@@ -236,7 +236,7 @@ export class AudioTranscriptionProcessor {
   }
 
   /**
-   * Downloads all chunks to a temporary directory
+   * Downloads all chunks to a temporary directory with parallelism
    * @param chunks - Array of chunk objects with storage information
    * @param tempDir - Temporary directory to store the chunks
    * @returns Array of paths to the downloaded chunk files
@@ -244,44 +244,58 @@ export class AudioTranscriptionProcessor {
   private async downloadChunks(chunks: any[], tempDir: string): Promise<string[]> {
     const chunkFiles: string[] = [];
     const MAX_RETRIES = 1;
+    const PARALLELISM = 5; // Download 5 chunks in parallel
     
-    for (const chunk of chunks) {
-      const { storage_bucket, storage_path, chunk_number } = chunk;
-      // Extract the file extension from the storage_path
-      const fileExtension = path.extname(storage_path) || '.webm'; // Default to .webm if no extension found
-      const outputPath = path.join(tempDir, `chunk_${chunk_number.toString().padStart(5, '0')}${fileExtension}`);
+    // Process chunks in batches for controlled parallelism
+    for (let i = 0; i < chunks.length; i += PARALLELISM) {
+      const batch = chunks.slice(i, i + PARALLELISM);
+      console.log(`Processing batch ${Math.floor(i/PARALLELISM) + 1}/${Math.ceil(chunks.length/PARALLELISM)}: chunks ${i+1}-${Math.min(i+PARALLELISM, chunks.length)} of ${chunks.length}`);
       
-      let attempts = 0;
-      let success = false;
-      let lastError: Error | null = null;
-      
-      while (attempts <= MAX_RETRIES && !success) {
-        try {
-          attempts++;
-          if (attempts > 1) {
-            console.log(`Retry attempt ${attempts-1} for chunk ${chunk_number}...`);
+      // Create an array of download promises for this batch
+      const batchPromises = batch.map(async (chunk) => {
+        const { storage_bucket, storage_path, chunk_number } = chunk;
+        // Extract the file extension from the storage_path
+        const fileExtension = path.extname(storage_path) || '.webm'; // Default to .webm if no extension found
+        const outputPath = path.join(tempDir, `chunk_${chunk_number.toString().padStart(5, '0')}${fileExtension}`);
+        
+        let attempts = 0;
+        let success = false;
+        let lastError: Error | null = null;
+        
+        while (attempts <= MAX_RETRIES && !success) {
+          try {
+            attempts++;
+            if (attempts > 1) {
+              console.log(`Retry attempt ${attempts-1} for chunk ${chunk_number}...`);
+            }
+            
+            // Download the chunk from storage with improved error handling
+            const data = await this.attemptDownloadChunk(storage_bucket, storage_path, chunk_number);
+            
+            // Convert Blob to Buffer and write to file
+            const buffer = await data.arrayBuffer().then(arrayBuffer => Buffer.from(arrayBuffer));
+            await fs.promises.writeFile(outputPath, buffer);
+            
+            console.log(`Downloaded chunk ${chunk_number} to ${outputPath}`);
+            success = true;
+            return outputPath; // Return the path for this chunk
+          } catch (error) {
+            lastError = error instanceof Error ? error : new Error(String(error));
+            if (attempts > MAX_RETRIES) {
+              console.error(`Error downloading chunk ${chunk_number} after ${attempts} attempts:`, lastError);
+              throw lastError;
+            }
+            // Wait briefly before retrying
+            await new Promise(resolve => setTimeout(resolve, 1000));
           }
-          
-          // Download the chunk from storage with improved error handling
-          const data = await this.attemptDownloadChunk(storage_bucket, storage_path, chunk_number);
-          
-          // Convert Blob to Buffer and write to file
-          const buffer = await data.arrayBuffer().then(arrayBuffer => Buffer.from(arrayBuffer));
-          await fs.promises.writeFile(outputPath, buffer);
-          
-          chunkFiles.push(outputPath);
-          console.log(`Downloaded chunk ${chunk_number} to ${outputPath}`);
-          success = true;
-        } catch (error) {
-          lastError = error instanceof Error ? error : new Error(String(error));
-          if (attempts > MAX_RETRIES) {
-            console.error(`Error downloading chunk ${chunk_number} after ${attempts} attempts:`, lastError);
-            throw lastError;
-          }
-          // Wait briefly before retrying
-          await new Promise(resolve => setTimeout(resolve, 1000));
         }
-      }
+        
+        return outputPath; // This will be reached if success = true
+      });
+      
+      // Wait for all downloads in this batch to complete
+      const batchResults = await Promise.all(batchPromises);
+      chunkFiles.push(...batchResults);
     }
     
     return chunkFiles;
