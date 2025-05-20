@@ -743,7 +743,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
             data-tab="notes"
             data-test="notes-tab"
           >
-            Notes
+            Summaries & Notes
           </TabsTrigger>
           <TabsTrigger
             value="transcript"
@@ -819,14 +819,14 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                     className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#111827] data-[state=active]:bg-transparent px-4 py-2 font-medium text-[14px] text-[#6B7280] data-[state=active]:text-[#111827] data-[state=active]:shadow-none"
                     data-test="session-tab-therapist-summary"
                   >
-                    Therapist Summary
+                    My Summary
                   </TabsTrigger>
                   <TabsTrigger
                     value="client"
                     className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#111827] data-[state=active]:bg-transparent px-4 py-2 font-medium text-[14px] text-[#6B7280] data-[state=active]:text-[#111827] data-[state=active]:shadow-none"
                     data-test="session-tab-client-summary"
                   >
-                    Client Summary
+                    Summary For Client
                   </TabsTrigger>
                 </TabsList>
                 <TabsContent value="therapist" className="mt-3" data-test="session-therapist-summary">
@@ -835,7 +835,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                       <div className="rounded-lg bg-[#FFF9E8] px-6 py-6 text-[14px] text-muted-foreground flex items-center justify-center min-h-[100px]">
                         <div className="flex items-center gap-2">
                           <Loader2 className="h-4 w-4 animate-spin" />
-                          <span>Loading therapist summary...</span>
+                          <span>Loading my summary...</span>
                         </div>
                       </div>
                     ) : therapistSummary ? (
@@ -869,7 +869,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
 
                     ) : (
                       <div className="rounded-lg bg-[#FFF9E8] px-6 py-6 text-[14px] text-muted-foreground" data-test="therapist-summary-placeholder">
-                        Therapist summary will be generated automatically once you add either a transcript or session notes
+                        My summary will be generated automatically once either transcript or session notes are added
                       </div>
                     )}
                   </div>
@@ -880,7 +880,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                       <div className="rounded-lg bg-[#FFF9E8] px-6 py-6 text-[14px] text-muted-foreground flex items-center justify-center min-h-[100px]">
                         <div className="flex items-center gap-2">
                           <Loader2 className="h-4 w-4 animate-spin" />
-                          <span>Loading client summary...</span>
+                          <span>Loading summary for client...</span>
                         </div>
                       </div>
                     ) : clientSummary ? (
