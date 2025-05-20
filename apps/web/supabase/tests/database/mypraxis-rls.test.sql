@@ -240,6 +240,21 @@ select isnt_empty(
   'Transcript should be inserted correctly'
 );
 
+-- Test updating a transcript
+select lives_ok(
+  $$ UPDATE public.transcripts 
+     SET content = 'Updated transcript content' 
+     WHERE id = '44444444-4444-4444-4444-444444444444' $$,
+  'Account owner should be able to update their transcript'
+);
+
+-- Verify the transcript was updated correctly
+select isnt_empty(
+  $$ SELECT * FROM public.transcripts 
+     WHERE id = '44444444-4444-4444-4444-444444444444' AND content = 'Updated transcript content' $$,
+  'Transcript should be updated correctly'
+);
+
 -- Test artifacts table
 select makerkit.authenticate_as('account_owner');
 
@@ -290,6 +305,76 @@ select isnt_empty(
   'User preferences should be inserted correctly'
 );
 
+-- Test user_settings table
+select makerkit.authenticate_as('account_owner');
+
+-- First, delete any existing user_settings for the account to avoid unique constraint violation
+select lives_ok(
+  $$ DELETE FROM public.user_settings 
+     WHERE account_id = (SELECT id FROM public.accounts WHERE primary_owner_user_id = tests.get_supabase_uid('account_owner')) $$,
+  'Account owner should be able to delete their own user_settings'
+);
+
+-- Insert a user_settings record
+select lives_ok(
+  $$ INSERT INTO public.user_settings (id, account_id, onboarding_completed)
+     VALUES ('99999999-9999-9999-9999-999999999999', 
+             (SELECT id FROM public.accounts WHERE primary_owner_user_id = tests.get_supabase_uid('account_owner')),
+             true) $$,
+  'Account owner should be able to insert user_settings for their account'
+);
+
+-- Verify the record was inserted correctly
+select isnt_empty(
+  $$ SELECT * FROM public.user_settings WHERE id = '99999999-9999-9999-9999-999999999999' $$,
+  'User settings should be inserted correctly'
+);
+
+-- Test recordings table
+select makerkit.authenticate_as('account_owner');
+
+-- Insert a recording record with only the required fields that match the schema
+select lives_ok(
+  $$ INSERT INTO public.recordings (id, account_id, client_id, session_id, status, standalone_chunks)
+     VALUES ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 
+             (SELECT id FROM public.accounts WHERE primary_owner_user_id = tests.get_supabase_uid('account_owner')),
+             'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee',
+             '55555555-5555-5555-5555-555555555555',
+             'completed',
+             false) $$,
+  'Account owner should be able to insert recordings for their account'
+);
+
+-- Verify the recording was inserted correctly
+select isnt_empty(
+  $$ SELECT * FROM public.recordings WHERE id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa' $$,
+  'Recording should be inserted correctly'
+);
+
+-- Test recordings_chunks table
+select makerkit.authenticate_as('account_owner');
+
+-- Insert a recording_chunk record with required fields that match the schema
+select lives_ok(
+  $$ INSERT INTO public.recordings_chunks (id, account_id, recording_id, start_time, end_time, chunk_number, storage_bucket, storage_path, transcript)
+     VALUES ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 
+             (SELECT id FROM public.accounts WHERE primary_owner_user_id = tests.get_supabase_uid('account_owner')),
+             'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+             0.0,
+             60.0,
+             1,
+             'recordings',
+             'recordings/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/chunk1.mp3',
+             'Test transcript text') $$,
+  'Account owner should be able to insert recording chunks for their recordings'
+);
+
+-- Verify the recording chunk was inserted correctly
+select isnt_empty(
+  $$ SELECT * FROM public.recordings_chunks WHERE id = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb' $$,
+  'Recording chunk should be inserted correctly'
+);
+
 -- Test cross-account visibility for all tables
 select makerkit.authenticate_as('other_owner');
 
@@ -322,6 +407,102 @@ SELECT is_empty(
 SELECT is_empty(
   $$ SELECT * FROM public.user_preferences WHERE account_id = (SELECT id FROM public.accounts WHERE primary_owner_user_id = tests.get_supabase_uid('account_owner')) $$,
   'Other owner should not see account_owner user_preferences'
+);
+
+SELECT is_empty(
+  $$ SELECT * FROM public.user_settings WHERE account_id = (SELECT id FROM public.accounts WHERE primary_owner_user_id = tests.get_supabase_uid('account_owner')) $$,
+  'Other owner should not see account_owner user_settings'
+);
+
+SELECT is_empty(
+  $$ SELECT * FROM public.recordings WHERE account_id = (SELECT id FROM public.accounts WHERE primary_owner_user_id = tests.get_supabase_uid('account_owner')) $$,
+  'Other owner should not see account_owner recordings'
+);
+
+SELECT is_empty(
+  $$ SELECT * FROM public.recordings_chunks WHERE recording_id IN (SELECT id FROM public.recordings WHERE account_id = (SELECT id FROM public.accounts WHERE primary_owner_user_id = tests.get_supabase_uid('account_owner'))) $$,
+  'Other owner should not see account_owner recording chunks'
+);
+
+-- Test prompts table
+select diag('Testing prompts table RLS for authenticated users');
+
+-- First confirm the actual RLS policies on the prompts table
+select results_eq(
+  $$ SELECT policyname, cmd FROM pg_policies WHERE tablename = 'prompts' AND roles @> '{authenticated}' ORDER BY cmd $$,
+  $$ VALUES ('prompts_read_policy'::name, 'SELECT'::text) $$,
+  'Authenticated users should only have SELECT policy on prompts table'
+);
+
+-- Now authenticate as account_owner and test the behavior
+select makerkit.authenticate_as('account_owner');
+
+-- Attempt to insert a prompt as authenticated user (should be blocked by RLS)
+select throws_ok(
+  $$ INSERT INTO public.prompts (id, name, template, provider, model, active)
+     VALUES ('cccccccc-cccc-cccc-cccc-cccccccccccc', 'Test Prompt', 'This is a test prompt template', 'openai', 'gpt-4', true) $$,
+  '42501',
+  NULL, 
+  'Authenticated user should be blocked when inserting into prompts table'
+);
+
+-- Set role to service_role to insert test prompts
+SET ROLE service_role;
+
+-- Create test prompts - one active and one inactive
+INSERT INTO public.prompts (id, name, template, provider, model, active)
+VALUES ('cccccccc-cccc-cccc-cccc-cccccccccccc', 'Test Active Prompt', 'This is an active test prompt template', 'openai', 'gpt-4', true);
+
+INSERT INTO public.prompts (id, name, template, provider, model, active)
+VALUES ('dddddddd-dddd-dddd-dddd-dddddddddddd', 'Test Inactive Prompt', 'This is an inactive test prompt template', 'openai', 'gpt-4', false);
+
+-- Switch back to authenticated user
+select makerkit.authenticate_as('account_owner');
+
+-- Verify authenticated user can see active prompts
+select results_eq(
+  $$ SELECT id FROM public.prompts WHERE id = 'cccccccc-cccc-cccc-cccc-cccccccccccc' $$,
+  $$ VALUES ('cccccccc-cccc-cccc-cccc-cccccccccccc'::uuid) $$,
+  'Authenticated user should be able to see active prompts'
+);
+
+-- Verify authenticated user cannot see inactive prompts
+select is_empty(
+  $$ SELECT * FROM public.prompts WHERE id = 'dddddddd-dddd-dddd-dddd-dddddddddddd' $$,
+  'Authenticated user should not be able to see inactive prompts'
+);
+
+-- Test UPDATE on active prompts - RLS prevents modification without throwing errors
+select diag('Testing if authenticated users can UPDATE prompts (should be prevented by RLS)');
+
+-- Attempt to update an active prompt - this will execute without error
+-- but should not modify data due to RLS filtering
+select lives_ok(
+  $$ UPDATE public.prompts SET template = 'Modified template' WHERE id = 'cccccccc-cccc-cccc-cccc-cccccccccccc' $$,
+  'UPDATE operation on prompts does not throw errors (but should not modify data due to RLS filtering)'
+);
+
+-- Verify template was NOT changed despite the UPDATE not throwing an error
+select is(
+  (SELECT template FROM public.prompts WHERE id = 'cccccccc-cccc-cccc-cccc-cccccccccccc'),
+  'This is an active test prompt template'::text, 
+  'Prompt template should remain unchanged due to RLS filtering'
+);
+
+-- Test DELETE on active prompts - RLS prevents deletion without throwing errors
+select diag('Testing if authenticated users can DELETE prompts (should be prevented by RLS)');
+
+-- Attempt to delete an active prompt - this will execute without error
+-- but should not delete data due to RLS filtering
+select lives_ok(
+  $$ DELETE FROM public.prompts WHERE id = 'cccccccc-cccc-cccc-cccc-cccccccccccc' $$,
+  'DELETE operation on prompts does not throw errors (but should not delete data due to RLS filtering)'
+);
+
+-- Verify prompt still exists despite the DELETE not throwing an error
+select isnt_empty(
+  $$ SELECT id FROM public.prompts WHERE id = 'cccccccc-cccc-cccc-cccc-cccccccccccc' $$,
+  'Prompt should still exist due to RLS filtering'
 );
 
 -- Test reference data tables for authenticated users
