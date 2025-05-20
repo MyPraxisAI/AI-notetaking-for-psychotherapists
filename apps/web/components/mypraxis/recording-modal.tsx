@@ -268,29 +268,6 @@ export function RecordingModal({
     }
   }
   
-  const _uploadAudioChunk = async (blob: Blob, chunkNumber: number, startTime: number, endTime: number) => {
-    if (!recordingId) return
-    
-    try {
-      const formData = new FormData()
-      formData.append('audioFile', blob, `chunk-${chunkNumber}.webm`)
-      formData.append('chunkNumber', chunkNumber.toString())
-      formData.append('startTime', startTime.toString())
-      formData.append('endTime', endTime.toString())
-      
-      const response = await fetch(`/api/recordings/${recordingId}/chunk`, {
-        method: 'POST',
-        body: formData
-      })
-      
-      if (!response.ok) {
-        console.error('Failed to upload audio chunk')
-      }
-    } catch (err) {
-      console.error('Chunk upload error:', err)
-    }
-  }
-
   useEffect(() => {
     if (isOpen) {
       setModalState("initial")
@@ -490,8 +467,8 @@ export function RecordingModal({
           }
         }
         
-        // Start the MediaRecorder with 5-second chunks
-        mediaRecorder.current.start(5000);
+        // Start the MediaRecorder with 4 minute chunks
+        mediaRecorder.current.start(4 * 60 * 1000);
         
         // Request data immediately to test the ondataavailable handler
         setTimeout(() => {
@@ -748,6 +725,20 @@ export function RecordingModal({
     }
   };
 
+  // Helper function to split a file into chunks
+  const splitFileIntoChunks = (file: File, chunkSize: number = 4.2 * 1024 * 1024): Blob[] => {
+    const chunks: Blob[] = [];
+    let start = 0;
+    
+    while (start < file.size) {
+      const end = Math.min(start + chunkSize, file.size);
+      chunks.push(file.slice(start, end, file.type));
+      start = end;
+    }
+    
+    return chunks;
+  };
+
   // Handle file selection
   const handleFileSelected = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -757,35 +748,53 @@ export function RecordingModal({
       setIsImporting(true);
       setError(null);
       
-      // 1. Create a new recording with standaloneChunks set to true for imported files
-      const newRecordingId = await startRecording({ standaloneChunks: true });
+      // 1. Create a new recording
+      const newRecordingId = await startRecording({ standaloneChunks: false });
       if (!newRecordingId) {
         throw new Error('Failed to create recording');
       }
       
-      // 2. Upload the file as a single chunk
-      const formData = new FormData();
-      formData.append('audio', file);
-      formData.append('chunkNumber', '1');
-      formData.append('startTime', '0');
+      // 2. Calculate chunks needed without creating them all at once
+      const MAX_CHUNK_SIZE = 4.2 * 1024 * 1024; // 4.5mb is the Vercel upload limit, above that get errors
+      const totalChunks = Math.ceil(file.size / MAX_CHUNK_SIZE);
+      console.log(`Will process file in ${totalChunks} chunks`);
       
-      // Estimate duration based on file size (rough estimate)
+      // Estimate total duration based on file size (rough estimate)
       // For MP3, ~1MB ≈ 1 minute of audio at 128kbps
-      const estimatedDuration = (file.size / (128 * 1024)) * 8;
-      formData.append('endTime', estimatedDuration.toString());
-      formData.append('mimeType', file.type);
+      const estimatedTotalDuration = (file.size / (128 * 1024)) * 8;
+      const durationPerChunk = estimatedTotalDuration / totalChunks;
       
-      const response = await fetch(`/api/recordings/${newRecordingId}/chunk`, {
-        method: 'POST',
-        body: formData
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to upload audio file');
+      // 3. Process and upload one chunk at a time to reduce memory usage
+      for (let i = 0; i < totalChunks; i++) {
+        const start = i * MAX_CHUNK_SIZE;
+        const end = Math.min(start + MAX_CHUNK_SIZE, file.size);
+        const chunk = file.slice(start, end, file.type);
+        
+        const chunkNumber = i + 1;
+        const startTime = i * durationPerChunk;
+        const endTime = (i + 1) * durationPerChunk;
+        
+        const formData = new FormData();
+        formData.append('audio', chunk, `chunk-${chunkNumber}.${file.name.split('.').pop()}`);
+        formData.append('chunkNumber', chunkNumber.toString());
+        formData.append('startTime', startTime.toString());
+        formData.append('endTime', endTime.toString());
+        formData.append('mimeType', file.type);
+        
+        console.log(`Uploading chunk ${chunkNumber}/${totalChunks}, size: ${(chunk.size / (1024 * 1024)).toFixed(2)}MB`);
+        
+        const response = await fetch(`/api/recordings/${newRecordingId}/chunk`, {
+          method: 'POST',
+          body: formData
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || `Failed to upload chunk ${chunkNumber}`);
+        }
       }
       
-      // 3. Complete the recording
+      // 4. Complete the recording
       const result = await fetch(`/api/recordings/${newRecordingId}/complete`, {
         method: 'POST',
         headers: {
@@ -801,7 +810,7 @@ export function RecordingModal({
       
       const data = await result.json();
       
-      // 4. Navigate to the session
+      // 5. Navigate to the session
       toast.success('Audio file imported successfully');
       if (data.sessionId) {
         await onSave(data.sessionId);
@@ -810,7 +819,6 @@ export function RecordingModal({
       } else {
         await onSave();
       }
-      
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to import audio file');
       toast.error(err instanceof Error ? err.message : 'Failed to import audio file');
@@ -825,53 +833,53 @@ export function RecordingModal({
 
   const handleSaveSession = async () => {
     try {
-    setModalState("saving")
-    
-    // Stop the MediaRecorder and get final data
-    if (mediaRecorder.current && mediaRecorder.current.state !== 'inactive') {
-      mediaRecorder.current.requestData() // Get any remaining data
-      mediaRecorder.current.stop()
-    }
-    
-    // Make sure all chunks are uploaded before completing the recording
-    if (recordingId) {
-      await uploadAudioChunks(recordingId).catch(err => {
-        console.error('Error uploading final chunks:', err);
-      });
-    }
-    
-    // Complete the recording in the API
-    const result = await completeRecording()
-    
-    // Log the result to see what we're getting back
-    console.log('Recording complete result:', result)
-    
-    if (result) {
-      cleanupRecording()
-      toast.success('Recording saved successfully')
+      setModalState("saving")
       
-      // Pass the session ID to the onSave callback for navigation
-      if (result.sessionId) {
-        console.log('Found session ID in result:', result.sessionId)
-        await onSave(result.sessionId)
-      } else if (result.session_id) {
-        // Try snake_case version as well
-        console.log('Found session_id in result:', result.session_id)
-        await onSave(result.session_id)
-      } else {
-        console.log('No session ID found in result:', result)
-        await onSave()
+      // Stop the MediaRecorder and get final data
+      if (mediaRecorder.current && mediaRecorder.current.state !== 'inactive') {
+        mediaRecorder.current.requestData() // Get any remaining data
+        mediaRecorder.current.stop()
       }
-    } else {
-      setModalState("paused")
-      toast.error('Failed to save recording. Please try again.')
-    }
+      
+      // Make sure all chunks are uploaded before completing the recording
+      if (recordingId) {
+        await uploadAudioChunks(recordingId).catch(err => {
+          console.error('Error uploading final chunks:', err);
+        });
+      }
+      
+      // Complete the recording in the API
+      const result = await completeRecording()
+      
+      // Log the result to see what we're getting back
+      console.log('Recording complete result:', result)
+      
+      if (result) {
+        cleanupRecording()
+        toast.success('Recording saved successfully')
+        
+        // Pass the session ID to the onSave callback for navigation
+        if (result.sessionId) {
+          console.log('Found session ID in result:', result.sessionId)
+          await onSave(result.sessionId)
+        } else if (result.session_id) {
+          // Try snake_case version as well
+          console.log('Found session_id in result:', result.session_id)
+          await onSave(result.session_id)
+        } else {
+          console.log('No session ID found in result:', result)
+          await onSave()
+        }
+      } else {
+        setModalState("paused")
+        toast.error('Failed to save recording. Please try again.')
+      }
     } catch (error) {
       console.error('Error in handleSaveSession:', error)
       setModalState("paused")
       toast.error('An error occurred while saving the recording.')
     }
-  }
+  };
   
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600)

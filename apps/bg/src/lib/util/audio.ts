@@ -87,6 +87,7 @@ export async function combineAudioChunks(
     if (standaloneChunks) {
       // For standalone chunks, create a filter complex for concatenation
       // This approach works well for complete audio files
+      // Note: Didn't try this for real standalone chunks, but it also works for non-standalone (mp3s at least)
       const filterComplex = `concat=n=${chunkFiles.length}:v=0:a=1[outa]`;
       
       await executeFFmpeg({

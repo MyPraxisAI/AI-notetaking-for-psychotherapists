@@ -272,7 +272,7 @@ export class YandexLongAudioV3Provider extends YandexBaseProvider {
     
     const estimatedTranscriptionTimeSeconds = Math.max(
       1, // Minimum 1 second initial wait
-      Math.floor(estimatedDurationSeconds / 20)
+      Math.floor(estimatedDurationSeconds / 25)
     );
     
     console.log(`Estimated transcription time: ${estimatedTranscriptionTimeSeconds} seconds (${Math.floor(estimatedTranscriptionTimeSeconds / 60)} minutes ${estimatedTranscriptionTimeSeconds % 60} seconds)`);
