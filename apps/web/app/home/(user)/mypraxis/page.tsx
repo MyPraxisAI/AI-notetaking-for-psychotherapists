@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef, useTransition as _useTransition, useCallback } from "react"
+import { useTranslation } from "react-i18next"
 import { Avatar, AvatarFallback } from "@kit/ui/avatar"
 import { Badge } from "@kit/ui/badge"
 import { Button } from "@kit/ui/button"
@@ -43,25 +44,17 @@ import { useUserSettings } from "./_lib/hooks/use-user-settings"
 import { ClientCreationModal } from "../../../../components/mypraxis/client-creation-modal"
 
 // Menu item type
-
-
 type MenuItem = "clients" | "settings" | "billing" | "help" | "gift" | "logout"
 
 // Client types
-type DemoClientId = "mike" | "yossi" | "jacob"
 type ClientId = string
-
-// Client type guards
-const isDemoClient = (id: string): id is DemoClientId => {
-  return ["mike", "yossi", "jacob"].includes(id as DemoClientId)
-}
 
 // Function to ensure type safety when setting client ID
 const setClientId = (id: string): ClientId => {
   return id
 }
 
-type DetailItem = "profile" | "prep-note" | "overview" | "client-bio" | "2024-03-28" | "2024-02-15" | "2024-01-25" | string
+type DetailItem = "profile" | "prep-note" | "overview" | "client-bio" | string
 
 interface Session {
   id: string
@@ -70,19 +63,8 @@ interface Session {
   createdAt: string
 }
 
-const sessionTranscripts: {
-  mike: {
-    [key: string]: { title: string }
-  }
-} = {
-  mike: {
-    "2024-03-28": { title: "Setting Boundaries" },
-    "2024-02-15": { title: "Grandmother's Memory" },
-    "2024-01-25": { title: "Over-Responsibility" },
-  },
-}
-
 export default function Page() {
+  const { t } = useTranslation();
   const [selectedItem, setSelectedItem] = useState<MenuItem>("clients")
   const [selectedClient, setSelectedClient] = useState<ClientId>("")
   const [selectedDetailItem, setSelectedDetailItem] = useState<DetailItem>("prep-note")
@@ -209,10 +191,7 @@ export default function Page() {
       const { clientId: _clientId, sessionId, title } = event.detail
       setSessions((prev) => prev.map((s) => (s.id === sessionId ? { ...s, title } : s)))
 
-      // Update demo sessions if needed
-      if (sessionTranscripts.mike[sessionId]) {
-        sessionTranscripts.mike[sessionId].title = title
-      }
+      // No need to update demo sessions anymore as they've been removed
     }
 
     window.addEventListener("sessionTitleChanged", handleSessionTitleChange as EventListener)
@@ -903,7 +882,7 @@ export default function Page() {
                 data-test={`client-row-${client.id}`}
               >
                 <span data-test="client-name-cell">{localClientNames[client.id] || client.fullName}</span>
-                {client.id === "mike" && (
+                { client.id === "mike" && (
                   <Badge
                     variant="secondary"
                     className="ml-0.5 mr-6 text-xs font-medium bg-white text-[#6B7280] px-2.5 py-0.5 rounded-full border border-[#E5E7EB]"
@@ -1068,37 +1047,12 @@ export default function Page() {
                   ))}
                 </div>
 
-                {/* Sample sessions for Mike */}
-                {isDemoClient(selectedClient) && selectedClient === "mike" && (
-                  <div className="mt-4 space-y-0.5">
-                    {Object.entries(sessionTranscripts.mike).map(([date, { title }]) => (
-                      <div
-                        key={date}
-                        className={`w-full px-4 py-2 rounded cursor-pointer transition-colors ${
-                          selectedDetailItem === date
-                            ? "bg-[#F3F4F6] font-semibold text-[#111827]"
-                            : "font-medium text-[#374151] hover:bg-[#F3F4F6]"
-                        }`}
-                        onClick={() => handleDetailItemClick(date)}
-                        data-test="session-item"
-                      >
-                        <div className="flex flex-col items-start w-full">
-                          <div className="text-[14px] font-medium text-[#111827] w-full break-words" data-test="session-list-title">
-                            {title}
-                          </div>
-                          <div className="text-[12px] text-[#6B7280]" data-test="sessions-list-date">
-                            {formatDisplayDate(date)}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+
               </>
             )}
           </div>
+          </div>
         </div>
-      </div>
 
       {/* Recording Modal */}
       <RecordingModal
@@ -1123,5 +1077,5 @@ export default function Page() {
         onSave={handleCreateClient}
       />
     </div>
-  )
+  );
 }

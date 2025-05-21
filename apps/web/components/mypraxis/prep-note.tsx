@@ -1,19 +1,15 @@
-import { type DemoClientId, type ClientId, prepNotes } from "../../data/mypraxis/prep-notes"
+// No imports needed
 
 interface PrepNoteProps {
-  clientId: ClientId
+  clientId: string
+  title?: string
+  content?: string[]
   isNewClient?: boolean // Keeping for backward compatibility
 }
 
-export function PrepNote({ clientId }: PrepNoteProps) {
-  // Check if this is a demo client with predefined notes
-  const isDemoClient = (id: string): id is DemoClientId => {
-    return Object.keys(prepNotes).includes(id)
-  }
-  
-  const note = isDemoClient(clientId) ? prepNotes[clientId] : null
-
-  if (!note) {
+export function PrepNote({ clientId, title, content }: PrepNoteProps) {
+  // If no content is provided, show placeholder
+  if (!content || content.length === 0) {
     return (
       <div className="w-full px-6 pt-6 bg-white">
         <h2 className="text-[24px] font-semibold text-[#111827] tracking-[-0.011em]">Prep Note</h2>
@@ -28,11 +24,11 @@ export function PrepNote({ clientId }: PrepNoteProps) {
 
   return (
     <div className="w-full px-6 pt-6 bg-white">
-      <h2 className="text-[24px] font-semibold text-[#111827] tracking-[-0.011em] truncate">{note.title}</h2>
+      <h2 className="text-[24px] font-semibold text-[#111827] tracking-[-0.011em] truncate">{title || "Prep Note"}</h2>
 
       <div className="mt-5 rounded-lg bg-[#FFF9E8] p-6">
         <div className="space-y-4 text-[#374151] text-[14px] leading-[1.6]">
-          {note.content.map((paragraph, index) => (
+          {content.map((paragraph, index) => (
             <p key={index}>{paragraph}</p>
           ))}
         </div>

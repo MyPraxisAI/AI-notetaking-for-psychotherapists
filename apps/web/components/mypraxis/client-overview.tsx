@@ -3,14 +3,7 @@ interface ClientOverviewProps {
   isNewClient?: boolean // Keeping for backward compatibility
 }
 
-const CLIENT_OVERVIEWS: Record<string, string[]> = {
-  mike: [
-    "Mike Miller was born in the summer of 1985 in a small coastal town in Maine. He grew up as the second oldest of four children in a close-knit family. After high school, he moved to Boston to attend a community college, eventually transferring to a larger university to study business. Early in his twenties, he briefly struggled with balancing part-time jobs and full-time classes.",
-    "One of the most meaningful events during this period was the death of his grandmother, who had been a central figure in his upbringing. Mike married his longtime partner, Sarah, in 2010, and they have two children, ages 8 and 5. He cites the birth of his daughter as a pivotal moment that solidified his desire to build a stable family life.",
-    "After college, Mike pursued a career in marketing, where he excelled in client relations. A major turning point was being offered a management position, which he initially found daunting but ultimately fulfilling. In the past few years, Mike has faced growing stress at work, leading him to seek therapy to balance career demands with family commitments.",
-    "He also remains actively involved in local community events, a habit he picked up from his parents. Overall, Mike&apos;s life story reflects a blend of strong family ties, career-driven aspirations, and the desire to maintain emotional well-being.",
-  ],
-}
+const CLIENT_OVERVIEWS: Record<string, string[]> = {}
 
 export function ClientOverview({ clientId }: ClientOverviewProps) {
   const overview = CLIENT_OVERVIEWS[clientId]
