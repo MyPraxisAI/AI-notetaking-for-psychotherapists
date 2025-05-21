@@ -11,11 +11,11 @@ const LANGUAGE_NAMES: Record<string, string> = {
 };
 
 /**
- * Get the user's preferred language from their preferences
- * Falls back to 'en' if no preference is found
+ * Get the user's raw language preference from their preferences
+ * Returns null if no explicit preference is found, allowing browser detection to be used
  * @param client Supabase client
  */
-export async function getUserLanguage(client: SupabaseClient): Promise<string> {
+export async function getUserLanguageRaw(client: SupabaseClient): Promise<string | null> {
   try {
     const api = createAccountsApi(client);
     
@@ -29,17 +29,23 @@ export async function getUserLanguage(client: SupabaseClient): Promise<string> {
       .eq('account_id', accountId)
       .single();
     
-    // Check if we have preferences and a language value
-    if (preferences?.language) {
-      return preferences.language as string;
-    }
-    
-    // Default to English if no language preference is found
-    return 'en';
+    // Return the language preference (which may be null)
+    // This allows the i18n system to fall back to browser detection
+    return preferences?.language || null;
   } catch (error) {
     console.error('Error getting user language:', error);
-    return 'en'; // Default to English in case of error
+    return null; // Return null to allow browser detection in case of error
   }
+}
+
+/**
+ * Get the user's preferred language from their preferences
+ * Falls back to 'en' if no preference is found
+ * @param client Supabase client
+ */
+export async function getUserLanguage(client: SupabaseClient): Promise<string> {
+  const language = await getUserLanguageRaw(client);
+  return language || 'en'; // Default to English if no preference is found
 }
 
 /**

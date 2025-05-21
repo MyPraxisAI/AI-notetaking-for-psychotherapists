@@ -28,5 +28,19 @@
     "au": "Australia",
     "ru": "Russian Federation",
     "other": "Other"
+  },
+  "onboarding": {
+    "welcomeTitle": "Welcome to MyPraxis",
+    "setupCompleteTitle": "Setup Complete",
+    "selectTherapyStyleText": "Select your therapy style and we shall use it to analyze the sessions you will record.",
+    "primaryApproachLabel": "Primary Therapeutic Approach",
+    "chooseApproachPlaceholder": "Choose approach",
+    "errorSelectApproach": "Please select a therapeutic approach",
+    "thanksText": "Thanks, you are good to go! You can always change your Therapeutic Approach in the Settings on the left.",
+    "checkoutDemoText": "Now check out the demo client or add a new client to start recording your first session.",
+    "nextButton": "Next",
+    "savingButton": "Saving...",
+    "finishButton": "Finish",
+    "finishingButton": "Finishing..."
   }
 }

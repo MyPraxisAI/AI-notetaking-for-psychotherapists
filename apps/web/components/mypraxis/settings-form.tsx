@@ -58,7 +58,7 @@ interface SettingsFormProps {
 
 
 export function SettingsForm({ setIsNavVisible, isSmallScreen }: SettingsFormProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   
   // Get user data from the Makerkit useUserWorkspace hook
   const { user } = useUserWorkspace();
@@ -455,6 +455,9 @@ export function SettingsForm({ setIsNavVisible, isSmallScreen }: SettingsFormPro
     if (field === 'language') {
       // Save to Supabase
       const promise = updatePreferenceField.updatePreference(field, value);
+      
+      // Also set the cookie for immediate effect and better performance
+      i18n.changeLanguage(value);
       
       toast.promise(promise, {
         loading: 'Saving language preference...',

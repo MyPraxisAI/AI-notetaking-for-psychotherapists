@@ -6,6 +6,8 @@ import {
   initializeServerI18n,
   parseAcceptLanguageHeader,
 } from '@kit/i18n/server';
+import { getUserLanguageRaw } from '@kit/web-bg-common';
+import { getSupabaseServerClient } from '@kit/supabase/server-client';
 
 import featuresFlagConfig from '~/config/feature-flags.config';
 import {
@@ -36,17 +38,49 @@ async function createInstance() {
 
   let selectedLanguage: string | undefined = undefined;
 
-  // if the cookie is set, use the language from the cookie
+  // First, try to get the language from the cookie (explicit user selection in UI)
   if (cookie) {
     selectedLanguage = getLanguageOrFallback(cookie);
   }
 
-  // if not, check if the language priority is set to user and
-  // use the user's preferred language
+  // If no cookie is set, check the user's database preference
+  if (!selectedLanguage) {
+    try {
+      const client = getSupabaseServerClient();
+      const userLanguage = await getUserLanguageRaw(client);
+      
+      if (userLanguage) {
+        selectedLanguage = getLanguageOrFallback(userLanguage);
+        
+        // Set the cookie for future requests
+        // This avoids unnecessary database lookups on subsequent requests
+        if (selectedLanguage) {
+          cookieStore.set(I18N_COOKIE_NAME, selectedLanguage, {
+            path: '/',
+            maxAge: 60 * 60 * 24 * 365, // 1 year
+            sameSite: 'lax'
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error getting user language from database:', error);
+      // Continue with browser detection if database lookup fails
+    }
+  }
+
+  // If still no language is selected, use browser preference
   if (!selectedLanguage && priority === 'user') {
     const userPreferredLanguage = await getPreferredLanguageFromBrowser();
-
     selectedLanguage = getLanguageOrFallback(userPreferredLanguage);
+    
+    // Set the cookie for future requests to avoid re-detection
+    if (selectedLanguage) {
+      cookieStore.set(I18N_COOKIE_NAME, selectedLanguage, {
+        path: '/',
+        maxAge: 60 * 60 * 24 * 365, // 1 year
+        sameSite: 'lax'
+      });
+    }
   }
 
   const settings = getI18nSettings(selectedLanguage);
