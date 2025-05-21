@@ -42,5 +42,69 @@
     "savingButton": "Сохранение...",
     "finishButton": "Завершить",
     "finishingButton": "Завершение..."
+  },
+  "settings": {
+    "title": "Настройки",
+    "profile": "Профиль",
+    "preferences": "Предпочтения",
+    "displayName": "Отображаемое имя",
+    "email": "Электронная почта",
+    "saveChanges": "Сохранить изменения",
+    "saving": "Сохранение...",
+    "language": "Язык",
+    "languageOptions": {
+      "en": "Английский",
+      "ru": "Русский"
+    },
+    "dateFormat": "Формат даты",
+    "timeFormat": "Формат времени",
+    "use24HourClock": "Использовать 24-часовой формат",
+    "use12HourClock": "Использовать 12-часовой формат",
+    "usDateFormat": "Использовать формат даты США (MM/DD/YYYY)",
+    "internationalDateFormat": "Использовать международный формат даты (DD/MM/YYYY)",
+    "primaryTherapeuticApproach": "Основной терапевтический подход",
+    "secondaryTherapeuticApproaches": "Дополнительные терапевтические подходы",
+    "selectPrimaryApproach": "Выберите основной подход",
+    "selectSecondaryApproaches": "Выберите дополнительные подходы",
+    "geoLocality": "Географическое местоположение",
+    "selectGeoLocality": "Выберите географическое местоположение",
+    "validationErrors": {
+      "displayName": "Пожалуйста, введите отображаемое имя",
+      "email": "Пожалуйста, введите действительный адрес электронной почты"
+    },
+    "successMessages": {
+      "profileUpdated": "Профиль успешно обновлен",
+      "preferencesUpdated": "Предпочтения успешно обновлены"
+    },
+    "errorMessages": {
+      "updateFailed": "Не удалось обновить. Пожалуйста, попробуйте еще раз."
+    },
+    "avatar": "Фотография профиля",
+    "changeAvatar": "Изменить фотографию профиля",
+    "enterDisplayName": "Введите ваше полное имя",
+    "enterEmail": "Введите ваш адрес электронной почты",
+    "emailUpdateInitiated": "Запущено обновление электронной почты",
+    "emailUpdateInstructions": "На ваш новый адрес отправлено письмо с подтверждением. Пожалуйста, проверьте вашу почту и следуйте инструкциям для завершения обновления.",
+    "emailVerificationRequired": "Изменение электронной почты потребует подтверждения нового адреса",
+    "credentials": "Профессиональные квалификации",
+    "enterCredentials": "например, LCSW, LMFT или психотерапевт",
+    "credentialsDescription": "Как вас будут представлять",
+    "professionalInformation": "Профессиональная информация",
+    "country": "Страна или территория",
+    "countryDescription": "Необходимо для обеспечения соответствия местным правилам конфиденциальности",
+    "addApproach": "Добавить подход (до 2)",
+    "addApproachFinal": "Добавить подход (последний)",
+    "secondaryTherapeuticApproachesDescription": "Будет использоваться для настройки ИИ-отчетов",
+    "loadingPreferences": "Загрузка предпочтений...",
+    "selectLanguage": "Выберите язык",
+    "security": "Безопасность",
+    "changePassword": "Изменить пароль",
+    "enterNewPassword": "Введите новый пароль",
+    "confirmNewPassword": "Подтвердите новый пароль",
+    "passwordsDoNotMatch": "Пароли не совпадают",
+    "passwordRequirements": "Пароль должен содержать минимум 8 символов и включать заглавные буквы, строчные буквы, цифры и специальные символы",
+    "updating": "Обновление...",
+    "invalidPassword": "Недействительный пароль",
+    "invalidPasswordFormat": "Недействительный формат пароля"
   }
 }

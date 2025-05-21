@@ -42,5 +42,69 @@
     "savingButton": "Saving...",
     "finishButton": "Finish",
     "finishingButton": "Finishing..."
+  },
+  "settings": {
+    "title": "Settings",
+    "profile": "Profile",
+    "preferences": "Preferences",
+    "displayName": "Display Name",
+    "email": "Email",
+    "saveChanges": "Save Changes",
+    "saving": "Saving...",
+    "language": "Language",
+    "languageOptions": {
+      "en": "English",
+      "ru": "Russian"
+    },
+    "dateFormat": "Date Format",
+    "timeFormat": "Time Format",
+    "use24HourClock": "Use 24-hour clock",
+    "use12HourClock": "Use 12-hour clock",
+    "usDateFormat": "Use US date format (MM/DD/YYYY)",
+    "internationalDateFormat": "Use international date format (DD/MM/YYYY)",
+    "primaryTherapeuticApproach": "Primary Therapeutic Approach",
+    "secondaryTherapeuticApproaches": "Secondary Therapeutic Approaches",
+    "selectPrimaryApproach": "Select primary approach",
+    "selectSecondaryApproaches": "Select secondary approaches",
+    "geoLocality": "Geographic Location",
+    "selectGeoLocality": "Select geographic location",
+    "validationErrors": {
+      "displayName": "Please enter a display name",
+      "email": "Please enter a valid email"
+    },
+    "successMessages": {
+      "profileUpdated": "Profile updated successfully",
+      "preferencesUpdated": "Preferences updated successfully"
+    },
+    "errorMessages": {
+      "updateFailed": "Update failed. Please try again."
+    },
+    "avatar": "Profile Picture",
+    "changeAvatar": "Change your profile picture",
+    "enterDisplayName": "Enter your full name",
+    "enterEmail": "Enter your email address",
+    "emailUpdateInitiated": "Email update initiated",
+    "emailUpdateInstructions": "A confirmation email has been sent to your new address. Please check your inbox and follow the instructions to complete the update.",
+    "emailVerificationRequired": "Changing your email will require verification of the new address",
+    "credentials": "Professional Credentials",
+    "enterCredentials": "e.g. LCSW, LMFT or psychotherapist",
+    "credentialsDescription": "The way you'll be introduced",
+    "professionalInformation": "Professional Information",
+    "country": "Country or Territory",
+    "countryDescription": "Needed to ensure adherence to local privacy regulations",
+    "addApproach": "Add approach (up to 2)",
+    "addApproachFinal": "Add approach (final one)",
+    "secondaryTherapeuticApproachesDescription": "Will be used to fine-tune AI reports",
+    "loadingPreferences": "Loading preferences...",
+    "selectLanguage": "Select language",
+    "security": "Security",
+    "changePassword": "Change Password",
+    "enterNewPassword": "Enter new password",
+    "confirmNewPassword": "Confirm new password",
+    "passwordsDoNotMatch": "Passwords do not match",
+    "passwordRequirements": "Password must be at least 8 characters and include uppercase, lowercase, number and special character",
+    "updating": "Updating...",
+    "invalidPassword": "Invalid password",
+    "invalidPasswordFormat": "Invalid password format"
   }
 }

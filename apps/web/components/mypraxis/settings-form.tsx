@@ -204,7 +204,7 @@ export function SettingsForm({ setIsNavVisible, isSmallScreen }: SettingsFormPro
     setValidation(prev => ({
       ...prev,
       email: isValidFormat,
-      emailError: !isValidFormat ? "Please enter a valid email" : ""
+      emailError: !isValidFormat ? t('mypraxis:settings.validationErrors.email') : ""
     }));
     
     return isValidFormat;
@@ -371,10 +371,10 @@ export function SettingsForm({ setIsNavVisible, isSmallScreen }: SettingsFormPro
         if (error instanceof z.ZodError) {
           passwordValid = false;
           // Get the first error message
-          passwordError = error.errors[0]?.message || "Invalid password";
+          passwordError = error.errors[0]?.message || t('mypraxis:settings.invalidPassword');
         } else {
           passwordValid = false;
-          passwordError = "Invalid password format";
+          passwordError = t('mypraxis:settings.invalidPasswordFormat');
         }
       }
     }
@@ -618,10 +618,10 @@ export function SettingsForm({ setIsNavVisible, isSmallScreen }: SettingsFormPro
         ...prev,
         secondaryTherapeuticApproaches: updatedApproaches,
       }));
-  
+
       // Show checkmark
       setSavedFields((prev) => new Set(prev).add("secondaryTherapeuticApproaches"));
-  
+
       // Clear checkmark after 1 second
       if (saveTimeout.current) {
         clearTimeout(saveTimeout.current);
@@ -788,19 +788,19 @@ export function SettingsForm({ setIsNavVisible, isSmallScreen }: SettingsFormPro
       
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-3">
-          <h2 className="text-[24px] font-semibold text-[#111827] tracking-[-0.011em]">Settings</h2>
+          <h2 className="text-[24px] font-semibold text-[#111827] tracking-[-0.011em]">{t('mypraxis:settings.title')}</h2>
         </div>
       </div>
       
       {/* Profile Section */}
       <div className="mt-5 space-y-6 pb-6 border-b border-[#E5E7EB]">
-        <h3 className="text-[18px] font-medium text-[#111827]">Profile</h3>
+        <h3 className="text-[18px] font-medium text-[#111827]">{t('mypraxis:settings.profile')}</h3>
         
         {/* Avatar Upload */}
         <div className="relative space-y-3">
           <div className="flex items-center">
             <Label className="text-right">
-              Profile Picture
+              {t('mypraxis:settings.avatar')}
             </Label>
           </div>
           <ImageUploader 
@@ -809,11 +809,11 @@ export function SettingsForm({ setIsNavVisible, isSmallScreen }: SettingsFormPro
           >
             <div className="flex flex-col space-y-1">
               <span className="text-sm">
-                Profile Picture
+                {t('mypraxis:settings.avatar')}
               </span>
 
               <span className="text-xs text-muted-foreground">
-                Change your profile picture
+                {t('mypraxis:settings.changeAvatar')}
               </span>
             </div>
           </ImageUploader>
@@ -823,7 +823,7 @@ export function SettingsForm({ setIsNavVisible, isSmallScreen }: SettingsFormPro
         <div className="relative space-y-3">
           <div className="flex items-center">
             <Label htmlFor="fullName" className="text-right">
-              Full Name
+              {t('mypraxis:settings.displayName')}
             </Label>
             <div className="w-5 h-5 ml-2">
               <Check 
@@ -844,7 +844,7 @@ export function SettingsForm({ setIsNavVisible, isSmallScreen }: SettingsFormPro
             onChange={handleInputChange}
             onBlur={(e) => handleBlur(e, "fullName")}
             onKeyDown={(e) => handleKeyDown(e, "fullName")}
-            placeholder="Enter your full name"
+            placeholder={t('mypraxis:settings.enterDisplayName')}
             className="focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)] w-full max-w-md"
           />
         </div>
@@ -853,7 +853,7 @@ export function SettingsForm({ setIsNavVisible, isSmallScreen }: SettingsFormPro
         <div className="relative space-y-3">
           <div className="flex items-center">
             <Label htmlFor="email" className="text-right">
-              Email
+              {t('mypraxis:settings.email')}
             </Label>
             <div className="w-5 h-5 ml-2">
               <Check 
@@ -875,9 +875,9 @@ export function SettingsForm({ setIsNavVisible, isSmallScreen }: SettingsFormPro
                   </svg>
                 </div>
                 <div className="ml-3">
-                  <h3 className="text-sm font-medium text-green-800">Email update initiated</h3>
+                  <h3 className="text-sm font-medium text-green-800">{t('mypraxis:settings.emailUpdateInitiated')}</h3>
                   <div className="mt-2 text-sm text-green-700">
-                    <p>A confirmation email has been sent to your new address. Please check your inbox and follow the instructions to complete the update.</p>
+                    <p>{t('mypraxis:settings.emailUpdateInstructions')}</p>
                   </div>
                 </div>
               </div>
@@ -894,15 +894,15 @@ export function SettingsForm({ setIsNavVisible, isSmallScreen }: SettingsFormPro
                 onChange={handleInputChange}
                 onBlur={handleEmailBlur}
                 onKeyDown={(e) => handleKeyDown(e, "email")}
-                placeholder="Enter your email address"
+                placeholder={t('mypraxis:settings.enterEmail')}
                 autoComplete="new-password"
                 className={`focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)] w-full max-w-md ${!validation.email ? "border-red-500" : ""}`}
               />
               {!validation.email && (
-                <p className="text-sm text-red-500 mt-1">{validation.emailError || "Please enter a valid email address"}</p>
+                <p className="text-sm text-red-500 mt-1">{validation.emailError || t('mypraxis:settings.validationErrors.email')}</p>
               )}
               <p className="text-xs text-muted-foreground mt-1">
-                Changing your email will require verification of the new address
+                {t('mypraxis:settings.emailVerificationRequired')}
               </p>
             </div>
           )}
@@ -912,7 +912,7 @@ export function SettingsForm({ setIsNavVisible, isSmallScreen }: SettingsFormPro
         <div className="relative space-y-3">
           <div className="flex items-center">
             <Label htmlFor="credentials" className="text-right">
-              Professional Credentials
+              {t('mypraxis:settings.credentials')}
             </Label>
             <div className="w-5 h-5 ml-2">
               <Check 
@@ -932,23 +932,25 @@ export function SettingsForm({ setIsNavVisible, isSmallScreen }: SettingsFormPro
             onChange={handleInputChange}
             onBlur={(e) => handleBlur(e, "credentials")}
             onKeyDown={(e) => handleKeyDown(e, "credentials")}
-            placeholder="e.g. LCSW, LMFT or psychotherapist"
+            placeholder={t('mypraxis:settings.enterCredentials')}
             className="focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)] w-full max-w-md"
             data-test="settings-credentials-input"
           />
-          <p className="text-sm text-muted-foreground">The way you&apos;ll be introduced</p>
+          <p className="text-sm text-muted-foreground">
+            {t('mypraxis:settings.credentialsDescription')}
+          </p>
         </div>
       </div>
       
       {/* Professional Information */}
       <div className="mt-6 space-y-6 pb-6 border-b border-[#E5E7EB]">
-        <h3 className="text-[18px] font-medium text-[#111827]">Professional Information</h3>
+        <h3 className="text-[18px] font-medium text-[#111827]">{t('mypraxis:settings.professionalInformation')}</h3>
         
         {/* Country or Territory */}
         <div className="space-y-2">
           <div className="flex items-center">
             <Label htmlFor="country" className="text-right">
-              Country or Territory
+              {t('mypraxis:settings.country')}
             </Label>
             <div className="w-5 h-5 ml-2">
               <Check 
@@ -964,15 +966,17 @@ export function SettingsForm({ setIsNavVisible, isSmallScreen }: SettingsFormPro
             value={settings.country}
             onValueChange={(value) => handleSelectChange(value, "country")}
             onKeyDown={(e) => handleSelectKeyDown(e, "country")}
-            placeholder="Select a country or territory"
+            placeholder={t('mypraxis:settings.selectGeoLocality')}
           />
-          <p className="text-sm text-muted-foreground">Needed to ensure adherence to local privacy regulations</p>
+          <p className="text-sm text-muted-foreground">
+            {t('mypraxis:settings.countryDescription')}
+          </p>
         </div>
         
         {/* Primary Therapeutic Approach */}
         <div className="relative space-y-3">
           <div className="flex items-center">
-            <Label>Primary Therapeutic Approach</Label>
+            <Label>{t('mypraxis:settings.primaryTherapeuticApproach')}</Label>
             <div className="w-5 h-5 ml-2">
               <Check 
                 className={`h-5 w-5 transition-opacity ${
@@ -987,7 +991,7 @@ export function SettingsForm({ setIsNavVisible, isSmallScreen }: SettingsFormPro
             value={settings.primaryTherapeuticApproach}
             onValueChange={handlePrimaryApproachChange}
             onKeyDown={(e) => handleSelectKeyDown(e, "primaryTherapeuticApproach")}
-            placeholder="Select primary approach"
+            placeholder={t('mypraxis:settings.selectPrimaryApproach')}
             secondaryApproaches={settings.secondaryTherapeuticApproaches}
             filterSecondary={true}
             testId="settings-primary-therapeutic-approach-select"
@@ -997,7 +1001,7 @@ export function SettingsForm({ setIsNavVisible, isSmallScreen }: SettingsFormPro
         {/* Secondary Therapeutic Approaches */}
         <div className="relative space-y-3">
           <div className="flex items-center">
-            <Label>Secondary Therapeutic Approaches</Label>
+            <Label>{t('mypraxis:settings.secondaryTherapeuticApproaches')}</Label>
             <div className="w-5 h-5 ml-2">
               <Check 
                 className={`h-5 w-5 transition-opacity ${
@@ -1037,8 +1041,8 @@ export function SettingsForm({ setIsNavVisible, isSmallScreen }: SettingsFormPro
               onValueChange={handleSecondaryApproachAdd}
               onKeyDown={(e) => handleSelectKeyDown(e, "secondaryTherapeuticApproaches")}
               placeholder={settings.secondaryTherapeuticApproaches.length === 0 
-                ? "Add approach (up to 2)" 
-                : "Add approach (final one)"}
+                ? t('mypraxis:settings.addApproach') 
+                : t('mypraxis:settings.addApproachFinal')}
               primaryApproach={settings.primaryTherapeuticApproach}
               secondaryApproaches={settings.secondaryTherapeuticApproaches}
               filterPrimary={true}
@@ -1047,21 +1051,23 @@ export function SettingsForm({ setIsNavVisible, isSmallScreen }: SettingsFormPro
             />
           )}
           
-          <p className="text-sm text-muted-foreground">Will be used to fine-tune AI reports</p>
+          <p className="text-sm text-muted-foreground">
+            {t('mypraxis:settings.secondaryTherapeuticApproachesDescription')}
+          </p>
         </div>
       </div>
       
       {/* Preferences */}
       <div className="mt-6 space-y-6 pb-6 border-b border-[#E5E7EB]">
         <div className="flex items-center justify-between">
-          <h3 className="text-[18px] font-medium text-[#111827]">Preferences</h3>
+          <h3 className="text-[18px] font-medium text-[#111827]">{t('mypraxis:settings.preferences')}</h3>
           {isLoadingPreferences && (
             <div className="text-sm text-muted-foreground flex items-center">
               <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              Loading preferences...
+              {t('mypraxis:settings.loadingPreferences')}
             </div>
           )}
         </div>
@@ -1069,7 +1075,7 @@ export function SettingsForm({ setIsNavVisible, isSmallScreen }: SettingsFormPro
         {/* UI Language */}
         <div className="relative space-y-3">
           <div className="flex items-center">
-            <Label>UI Language</Label>
+            <Label>{t('mypraxis:settings.language')}</Label>
             <div className="w-5 h-5 ml-2">
               <Check 
                 className={`h-5 w-5 transition-opacity ${
@@ -1090,11 +1096,11 @@ export function SettingsForm({ setIsNavVisible, isSmallScreen }: SettingsFormPro
               className="w-full max-w-md focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)]"
               onKeyDown={(e) => handleSelectKeyDown(e, "language")}
             >
-              <SelectValue placeholder="Select language" />
+              <SelectValue placeholder={t('mypraxis:settings.selectLanguage')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="en">English</SelectItem>
-              <SelectItem value="ru">Russian</SelectItem>
+              <SelectItem value="en">{t('mypraxis:settings.languageOptions.en')}</SelectItem>
+              <SelectItem value="ru">{t('mypraxis:settings.languageOptions.ru')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -1102,7 +1108,7 @@ export function SettingsForm({ setIsNavVisible, isSmallScreen }: SettingsFormPro
         {/* Time Format */}
         <div className="space-y-3">
           <div className="flex items-center">
-            <Label>Time Format</Label>
+            <Label>{t('mypraxis:settings.timeFormat')}</Label>
             <div className="w-5 h-5 ml-2">
               <Check 
                 className={`h-5 w-5 transition-opacity ${
@@ -1126,7 +1132,7 @@ export function SettingsForm({ setIsNavVisible, isSmallScreen }: SettingsFormPro
               htmlFor="use24HourClock" 
               className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
             >
-              Use 24-hour clock
+              {t('mypraxis:settings.use24HourClock')}
             </label>
           </div>
         </div>
@@ -1134,7 +1140,7 @@ export function SettingsForm({ setIsNavVisible, isSmallScreen }: SettingsFormPro
         {/* Date Format */}
         <div className="space-y-3">
           <div className="flex items-center">
-            <Label>Date Format</Label>
+            <Label>{t('mypraxis:settings.dateFormat')}</Label>
             <div className="w-5 h-5 ml-2">
               <Check 
                 className={`h-5 w-5 transition-opacity ${
@@ -1158,7 +1164,7 @@ export function SettingsForm({ setIsNavVisible, isSmallScreen }: SettingsFormPro
               htmlFor="useUSDateFormat" 
               className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
             >
-              Use US date format (MM/DD/YYYY)
+              {t('mypraxis:settings.usDateFormat')}
             </label>
           </div>
         </div>
@@ -1166,12 +1172,12 @@ export function SettingsForm({ setIsNavVisible, isSmallScreen }: SettingsFormPro
       
       {/* Security */}
       <div className="mt-6 space-y-6 pb-6 mb-12">
-        <h3 className="text-[18px] font-medium text-[#111827]">Security</h3>
+        <h3 className="text-[18px] font-medium text-[#111827]">{t('mypraxis:settings.security')}</h3>
         
         {/* Password Change */}
         <div className="relative space-y-3">
           <div className="flex items-center">
-            <Label>Change Password</Label>
+            <Label>{t('mypraxis:settings.changePassword')}</Label>
             <div className="w-5 h-5 ml-2">
               <Check 
                 className={`h-5 w-5 transition-opacity ${
@@ -1192,7 +1198,7 @@ export function SettingsForm({ setIsNavVisible, isSmallScreen }: SettingsFormPro
             onChange={handleInputChange}
             onBlur={(e) => handleBlur(e, "password")}
             onKeyDown={(e) => handleKeyDown(e, "password")}
-            placeholder="Enter new password"
+            placeholder={t('mypraxis:settings.enterNewPassword')}
             autoComplete="new-password"
             className="focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)] w-full max-w-md"
             data-test="settings-password-input"
@@ -1206,7 +1212,7 @@ export function SettingsForm({ setIsNavVisible, isSmallScreen }: SettingsFormPro
             onChange={(e) => setConfirmPassword(e.target.value)}
             onBlur={handlePasswordConfirmBlur}
             onKeyDown={(e) => handleKeyDown(e, "confirmPassword")}
-            placeholder="Confirm new password"
+            placeholder={t('mypraxis:settings.confirmNewPassword')}
             autoComplete="new-password"
             className={`focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)] w-full max-w-md ${
               !validation.passwordMatch ? "border-red-500" : ""
@@ -1214,13 +1220,13 @@ export function SettingsForm({ setIsNavVisible, isSmallScreen }: SettingsFormPro
             data-test="settings-confirm-password-input"
           />
           {!validation.passwordMatch && (
-            <p className="text-sm text-red-500 mt-1">Passwords do not match</p>
+            <p className="text-sm text-red-500 mt-1">{t('mypraxis:settings.passwordsDoNotMatch')}</p>
           )}
           {!validation.passwordValid && (
             <p className="text-sm text-red-500 mt-1">{validation.passwordError}</p>
           )}
           <p className="text-xs text-muted-foreground mt-1">
-            Password must be at least 8 characters and include uppercase, lowercase, number and special character
+            {t('mypraxis:settings.passwordRequirements')}
           </p>
           <Button 
             variant="outline" 
@@ -1241,7 +1247,7 @@ export function SettingsForm({ setIsNavVisible, isSmallScreen }: SettingsFormPro
             }}
             data-test="settings-change-password-button"
           >
-            {updatePassword.isPending ? "Updating..." : "Change Password"}
+            {updatePassword.isPending ? t('mypraxis:settings.updating') : t('mypraxis:settings.changePassword')}
           </Button>
         </div>
       </div>
