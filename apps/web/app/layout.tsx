@@ -1,4 +1,5 @@
 import { Toaster } from '@kit/ui/sonner';
+import { Analytics } from '@vercel/analytics/next';
 
 import { RootProviders } from '~/components/root-providers';
 import { getFontsClassName } from '~/lib/fonts';
@@ -29,6 +30,7 @@ export default async function RootLayout({
         </RootProviders>
 
         <Toaster richColors={true} theme={theme} position="top-center" />
+        <Analytics />
       </body>
     </html>
   );
