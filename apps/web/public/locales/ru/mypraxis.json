@@ -286,7 +286,7 @@
   },
   "sessionView": {
     "tabs": {
-      "summary": "Резюме",
+      "summary": "Резюме & Заметки",
       "transcript": "Транскрипт"
     },
     "summaryTabs": {
@@ -300,6 +300,7 @@
       "placeholder": "Введите транскрипт..."
     },
     "notes": {
+      "myNote": "Моя заметка",
       "addNote": "Нажмите, чтобы добавить заметку",
       "placeholder": "Введите заметки...",
       "saving": "Сохранение..."
