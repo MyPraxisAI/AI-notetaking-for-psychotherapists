@@ -54,6 +54,7 @@ export function RecordingModal({
   clientId,
   clientName
 }: RecordingModalProps) {
+  const { t } = useTranslation("mypraxis")
   const [modalState, setModalState] = useState<
     "initial" | "soundCheck" | "recording" | "paused" | "saving"
   >("initial")
@@ -657,11 +658,11 @@ export function RecordingModal({
                 <div className="mt-4">
                   <Select value={selectedDevice} onValueChange={setSelectedDevice}>
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select microphone" />
+                      <SelectValue placeholder={t("recordingModal.microphone.select")} />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="MacBook Air Microphone (Built-in)">
-                        MacBook Air Microphone (Built-in)
+                        {t("recordingModal.microphone.builtin")}
                       </SelectItem>
                     </SelectContent>
                   </Select>
@@ -671,13 +672,13 @@ export function RecordingModal({
             
             {(modalState === "initial" || modalState === "soundCheck") && (
               <div className="p-6 pb-4 bg-gray-50 border-b border-gray-200">
-                <h2 className="text-lg font-medium text-center">Session with <span className="underline">{selectedClientName}</span></h2>
+                <h2 className="text-lg font-medium text-center">{t("recordingModal.title")} <span className="underline">{selectedClientName}</span></h2>
                 
                 {/* Transcription engine selection */}
                 <div className="p-4 bg-white rounded-lg mt-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="text-sm font-medium">Transcription</h3>
+                      <h3 className="text-sm font-medium">{t("recordingModal.transcription.label")}</h3>
                     </div>
                     <div className="w-64">
                       <Select 
@@ -686,11 +687,11 @@ export function RecordingModal({
                         data-test="transcription-engine-select"
                       >
                         <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Select engine" />
+                          <SelectValue placeholder={t("recordingModal.transcription.select")} />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="yandex-v3-ru" data-test="transcription-engine-option-yandex-v3-ru">
-                            Yandex SpeechKit v3 (Russian)
+                            {t("recordingModal.transcription.yandex")}
                           </SelectItem>
                         </SelectContent>
                       </Select>
@@ -702,7 +703,7 @@ export function RecordingModal({
             
             {(modalState === "recording" || modalState === "paused" || modalState === "saving") && (
               <div className="p-6 pb-4 bg-gray-50 border-b border-gray-200">
-                <h2 className="text-lg font-medium text-center">Session with <span className="underline">{selectedClientName}</span></h2>
+                <h2 className="text-lg font-medium text-center">{t("recordingModal.title")} <span className="underline">{selectedClientName}</span></h2>
               </div>
             )}
             
@@ -736,12 +737,12 @@ export function RecordingModal({
                     {isProcessing ? (
                       <>
                         <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                        Checking Microphone...
+                        {t("recordingModal.microphone.checking")}
                       </>
                     ) : (
                       <>
                         <Mic className="mr-2 h-5 w-5" />
-                        Allow Microphone Access
+                        {t("recordingModal.microphone.allow")}
                       </>
                     )}
                   </Button>
@@ -751,7 +752,7 @@ export function RecordingModal({
                       <div className="w-full border-t border-gray-300" />
                     </div>
                     <div className="relative flex justify-center text-sm">
-                      <span className="px-2 bg-white text-gray-500">or</span>
+                      <span className="px-2 bg-white text-gray-500">{t("recordingModal.import.or")}</span>
                     </div>
                   </div>
                   
@@ -763,12 +764,12 @@ export function RecordingModal({
                     {isImporting ? (
                       <>
                         <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                        Importing Audio File...
+                        {t("recordingModal.import.importing")}
                       </>
                     ) : (
                       <>
                         <Upload className="mr-2 h-5 w-5" />
-                        Import Audio File
+                        {t("recordingModal.import.button")}
                       </>
                     )}
                   </Button>
@@ -791,12 +792,12 @@ export function RecordingModal({
                   {isProcessing ? (
                     <>
                       <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                      Starting Recording...
+                      {t("recordingModal.recording.starting")}
                     </>
                   ) : (
                     <>
                       <Mic className="mr-2 h-5 w-5" />
-                      Record
+                      {t("recordingModal.recording.start")}
                     </>
                   )}
                 </Button>
@@ -811,12 +812,12 @@ export function RecordingModal({
                   {isProcessing ? (
                     <>
                       <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                      Pausing...
+                      {t("recordingModal.recording.pausing")}
                     </>
                   ) : (
                     <>
                       <Pause className="mr-2 h-5 w-5" />
-                      Pause
+                      {t("recordingModal.recording.pause")}
                     </>
                   )}
                 </Button>
@@ -834,7 +835,7 @@ export function RecordingModal({
                     ) : (
                       <>
                         <Play className="mr-2 h-5 w-5" />
-                        Resume
+                        {t("recordingModal.recording.resume")}
                       </>
                     )}
                   </Button>
@@ -847,7 +848,7 @@ export function RecordingModal({
                     {isProcessing ? (
                       <Loader2 className="h-5 w-5 animate-spin" />
                     ) : (
-                      'Save Session'
+                      t("recordingModal.recording.save")
                     )}
                   </Button>
                 </div>
@@ -859,7 +860,7 @@ export function RecordingModal({
                   disabled
                 >
                   <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  Saving Recording...
+                  {t("recordingModal.recording.saving")}
                 </Button>
               )}
             </div>
@@ -871,7 +872,7 @@ export function RecordingModal({
               className="text-white underline text-sm hover:text-gray-200"
               onClick={handleClose}
             >
-              close
+              {t("recordingModal.close")}
             </button>
           </div>
         </div>

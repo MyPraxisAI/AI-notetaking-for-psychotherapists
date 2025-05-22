@@ -218,6 +218,35 @@
     "noApproachesFound": "No approaches found",
     "noLocalitiesFound": "No localities found"
   },
+  "recordingModal": {
+    "title": "Session with",
+    "microphone": {
+      "select": "Select microphone",
+      "builtin": "MacBook Air Microphone (Built-in)",
+      "allow": "Allow Microphone Access",
+      "checking": "Checking Microphone..."
+    },
+    "transcription": {
+      "label": "Transcription",
+      "select": "Select engine",
+      "yandex": "Yandex SpeechKit v3 (Russian)"
+    },
+    "recording": {
+      "start": "Record",
+      "starting": "Starting Recording...",
+      "pause": "Pause",
+      "pausing": "Pausing...",
+      "resume": "Resume",
+      "save": "Save Session",
+      "saving": "Saving Recording..."
+    },
+    "import": {
+      "or": "or",
+      "button": "Import Audio File",
+      "importing": "Importing Audio File..."
+    },
+    "close": "close"
+  },
   "sessionView": {
     "tabs": {
       "summary": "Summary",

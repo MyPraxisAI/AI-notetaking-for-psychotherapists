@@ -218,6 +218,35 @@
     "noApproachesFound": "Подходы не найдены",
     "noLocalitiesFound": "Местоположения не найдены"
   },
+  "recordingModal": {
+    "title": "Клиент:",
+    "microphone": {
+      "select": "Выберите микрофон",
+      "builtin": "Микрофон MacBook Air (встроенный)",
+      "allow": "Разрешить доступ к микрофону",
+      "checking": "Проверка микрофона..."
+    },
+    "transcription": {
+      "label": "Транскрипция",
+      "select": "Выберите движок",
+      "yandex": "Yandex SpeechKit v3 (Русский)"
+    },
+    "recording": {
+      "start": "Записать",
+      "starting": "Начинаем запись...",
+      "pause": "Пауза",
+      "pausing": "Приостановка...",
+      "resume": "Продолжить",
+      "save": "Сохранить сессию",
+      "saving": "Сохранение записи..."
+    },
+    "import": {
+      "or": "или",
+      "button": "Импортировать аудиофайл",
+      "importing": "Импорт аудиофайла..."
+    },
+    "close": "закрыть"
+  },
   "sessionView": {
     "tabs": {
       "summary": "Резюме",
