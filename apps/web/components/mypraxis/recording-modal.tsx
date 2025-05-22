@@ -3,6 +3,14 @@
 import { useState, useEffect, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "@kit/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+  DialogHeader,
+  DialogFooter,
+} from "@kit/ui/dialog"
 import { Mic, Pause, Play, Loader2, Upload } from "lucide-react"
 import { AudioChunk, uploadAudioChunks, processAudioFile } from "./utils/audio-upload"
 import * as RecordingAPI from "./utils/recording-api"
@@ -68,6 +76,7 @@ export function RecordingModal({
   const [isRecording, setIsRecording] = useState(false)
   const [recordingId, setRecordingId] = useState<string | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isImporting, setIsImporting] = useState(false)
   const timerInterval = useRef<NodeJS.Timeout | null>(null)
@@ -83,6 +92,9 @@ export function RecordingModal({
   
   // Lock for upload process to prevent concurrent executions
   const isUploading = useRef<boolean>(false)
+  
+  // Flag to track if recording has been aborted
+  const isAborted = useRef<boolean>(false)
   
   useEffect(() => {
     if (!document.getElementById('recording-modal-styles')) {
@@ -143,11 +155,12 @@ export function RecordingModal({
         setRecordingId(recordingId)
         return recordingId
       } else {
-        throw new Error('Failed to start recording')
+        throw new Error(t('mypraxis:recordingModal.errors.startFailed'))
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to start recording')
-      toast.error(err instanceof Error ? err.message : 'Failed to start recording')
+      const errorMessage = err instanceof Error ? err.message : t('mypraxis:recordingModal.errors.startFailed')
+      setError(errorMessage)
+      toast.error(errorMessage)
       return null
     } finally {
       setIsProcessing(false)
@@ -288,33 +301,63 @@ export function RecordingModal({
       }
     } catch (err) {
       console.error('Error accessing microphone:', err);
-      toast.error('Could not access microphone. Please check permissions.');
-      setError(err instanceof Error ? err.message : 'Failed to access microphone');
+      toast.error(t('mypraxis:recordingModal.microphone.accessError'));
+      setError(err instanceof Error ? err.message : t('mypraxis:recordingModal.microphone.failedAccess'));
       return false;
     }
   }
   
   const handleClose = () => {
     if (isRecording || modalState === "paused") {
-      if (window.confirm("Recording won't be saved if you proceed. Are you sure you want to close?")) {
-        cleanupRecording()
-        onClose()
-      }
+      setShowConfirmDialog(true)
     } else {
-      cleanupRecording()
-      onClose()
+      // For non-recording state, we can clean up without waiting
+      cleanupRecording().then(() => {
+        onClose()
+      })
     }
   }
   
-  const cleanupRecording = () => {
+  const handleConfirmClose = () => {
+    setShowConfirmDialog(false)
+    setIsProcessing(true)
+    
+    // For confirmed close during recording, show processing state
+    cleanupRecording().then(() => {
+      setIsProcessing(false)
+      onClose()
+    }).catch(() => {
+      setIsProcessing(false)
+      onClose()
+    })
+  }
+  
+  const handleCancelClose = () => {
+    setShowConfirmDialog(false)
+  }
+  
+  const cleanupRecording = async () => {
     // Clean up the MediaRecorder using the utility function
     if (mediaRecorder.current) {
       MediaRecorderUtils.cleanupMediaRecorder(mediaRecorder.current);
       mediaRecorder.current = null;
     }
     
-    // Clear audio chunks
-    audioChunks.current = []
+    // Set the aborted flag to prevent further uploads
+    isAborted.current = true;
+    
+    // Clear audio chunks before aborting to prevent any pending uploads
+    audioChunks.current = [];
+    
+    // If there's an active recording, delete it from the database
+    if (recordingId && (isRecording || modalState === "paused")) {
+      try {
+        await RecordingAPI.abortRecording(recordingId);
+        console.log('Recording deleted successfully:', recordingId);
+      } catch (err) {
+        console.error('Failed to delete recording:', err);
+      }
+    }
     
     // Reset recording state
     setIsRecording(false)
@@ -424,6 +467,11 @@ export function RecordingModal({
   
   // Helper function to upload all pending audio chunks - now using the extracted function
   const handleUploadAudioChunks = async (explicitRecordingId: string) => {
+    // Don't attempt to upload if the recording has been aborted
+    if (isAborted.current) {
+      console.log('Recording has been aborted, skipping chunk upload');
+      return false;
+    }
     return await uploadAudioChunks(explicitRecordingId, audioChunks, isUploading);
   };
   
@@ -877,6 +925,25 @@ export function RecordingModal({
           </div>
         </div>
       )}
+      {/* Confirmation Dialog */}
+      <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>{t('mypraxis:recordingModal.confirmCloseTitle')}</DialogTitle>
+            <DialogDescription>
+              {t('mypraxis:recordingModal.confirmClose')}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={handleCancelClose}>
+              {t('mypraxis:recordingModal.cancel')}
+            </Button>
+            <Button variant="destructive" onClick={handleConfirmClose}>
+              {t('mypraxis:recordingModal.confirm')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   )
 }

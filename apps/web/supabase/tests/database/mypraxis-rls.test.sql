@@ -354,7 +354,7 @@ select isnt_empty(
 -- Test recordings_chunks table
 select makerkit.authenticate_as('account_owner');
 
--- Insert a recording_chunk record with required fields that match the schema
+-- Insert a recordings_chunk record with required fields that match the schema
 select lives_ok(
   $$ INSERT INTO public.recordings_chunks (id, account_id, recording_id, start_time, end_time, chunk_number, storage_bucket, storage_path, transcript)
      VALUES ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 

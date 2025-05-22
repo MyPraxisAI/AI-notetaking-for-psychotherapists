@@ -3,6 +3,8 @@
  * This file contains functions for interacting with the recording API endpoints
  */
 
+import { getI18n } from 'react-i18next';
+
 export interface StartRecordingOptions {
   clientId: string;
   transcriptionEngine: string;
@@ -30,14 +32,21 @@ export const startRecording = async (options: StartRecordingOptions): Promise<st
     
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to start recording');
+      const t = getI18n().t;
+      throw new Error(errorData.error || t('mypraxis:recordingApi.errors.startFailed'));
     }
     
     const data = await response.json();
     return data.recording.id;
   } catch (err) {
     console.error('Error starting recording:', err);
-    return null;
+    // Re-throw the error so it can be caught and displayed in the UI
+    if (err instanceof Error) {
+      throw err;
+    } else {
+      const t = getI18n().t;
+      throw new Error(t('mypraxis:recordingApi.errors.startFailed'));
+    }
   }
 };
 
@@ -64,7 +73,8 @@ export const pauseRecording = async (recordingId: string): Promise<RecordingResp
     
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to pause recording');
+      const t = getI18n().t;
+      throw new Error(errorData.error || t('mypraxis:recordingApi.errors.pauseFailed'));
     }
     
     return await response.json();
@@ -89,7 +99,8 @@ export const resumeRecording = async (recordingId: string): Promise<RecordingRes
     
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to resume recording');
+      const t = getI18n().t;
+      throw new Error(errorData.error || t('mypraxis:recordingApi.errors.resumeFailed'));
     }
     
     return await response.json();
@@ -146,7 +157,8 @@ export const completeRecording = async (recordingId: string): Promise<CompleteRe
     
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to complete recording');
+      const t = getI18n().t;
+      throw new Error(errorData.error || t('mypraxis:recordingApi.errors.completeFailed'));
     }
     
     const data = await response.json();
@@ -180,6 +192,36 @@ export const sendHeartbeat = async (recordingId: string): Promise<void> => {
     }
   } catch (err) {
     console.error('Heartbeat error:', err);
+  }
+};
+
+/**
+ * Abort a recording session
+ * @param recordingId The ID of the recording to abort
+ * @returns True if successful, false otherwise
+ */
+export const abortRecording = async (recordingId: string): Promise<boolean> => {
+  if (!recordingId) return false;
+  
+  try {
+    const response = await fetch(`/api/recordings/${recordingId}/abort`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Failed to abort recording:', errorData.error);
+      return false;
+    }
+    
+    return true;
+  } catch (err) {
+    const t = getI18n().t;
+    console.error(t('mypraxis:recordingApi.errors.abortFailed'), err);
+    return false;
   }
 };
 
