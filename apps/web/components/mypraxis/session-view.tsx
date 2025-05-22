@@ -2,10 +2,10 @@
 
 import "../../styles/markdown.css"
 import { useEffect, useRef, useState, useTransition } from "react"
+import { useTranslation } from "react-i18next"
 import { useQueryClient } from "@tanstack/react-query"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@kit/ui/tabs"
 import { SessionMetadata } from "../../types/session"
-import { sessionTranscripts as _sessionTranscripts } from "../../data/mypraxis/session-transcripts"
 import { Textarea } from "@kit/ui/textarea"
 import { Label } from "@kit/ui/label"
 import { Check, Edit2, Plus, Copy, MoreVertical, Loader2, RefreshCw } from "lucide-react"
@@ -45,6 +45,7 @@ interface TranscriptContentProps {
  * 3. No transcript or recording - show "Add transcript" button
  */
 function TranscriptContent({ clientId, sessionId, session, onEditTranscript, handleSessionUpdate }: TranscriptContentProps) {
+  const { t } = useTranslation();
   console.log(`[TranscriptContent] Rendering for sessionId: ${sessionId}, has transcript: ${!!session?.transcript}`);
   
   // Disable polling if we already have a transcript
@@ -136,11 +137,10 @@ function TranscriptContent({ clientId, sessionId, session, onEditTranscript, han
       <div className="w-full h-[150px] border border-dashed border-input bg-muted/20 rounded-md flex flex-col items-center justify-center p-6 space-y-2">
         <div className="flex items-center justify-center space-x-2">
           <Loader2 className="h-5 w-5 animate-spin text-primary" />
-          <h3 className="text-lg font-medium">Transcription in progress...</h3>
+          <h3 className="text-lg font-medium">{t('mypraxis:sessionView.transcript.inProgress')}</h3>
         </div>
         <p className="text-sm text-muted-foreground text-center max-w-md">
-          We&apos;re processing your recording. This may take a few minutes depending on the length of the session.
-          The transcript will appear here automatically when it&apos;s ready.
+          {t('mypraxis:sessionView.transcript.processingMessage')}
         </p>
       </div>
     )
@@ -156,7 +156,7 @@ function TranscriptContent({ clientId, sessionId, session, onEditTranscript, han
     >
       <span className="flex items-center gap-2">
         <Plus className="h-4 w-4" />
-        Click to add a transcript
+        {t('mypraxis:sessionView.transcript.addTranscript')}
       </span>
     </Button>
   )
@@ -169,6 +169,7 @@ interface SessionViewProps {
 }
 
 export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps) {
+  const { t } = useTranslation();
   const [userNote, setUserNote] = useState("")
   const [isEditing, setIsEditing] = useState(false)
 
@@ -720,7 +721,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                 onClick={() => setIsDeleteModalOpen(true)}
                 data-test="delete-session-option"
               >
-                Delete session
+                {t('mypraxis:sessionView.actions.deleteSession')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -743,7 +744,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
             data-tab="notes"
             data-test="notes-tab"
           >
-            Summaries & Notes
+            {t('mypraxis:sessionView.tabs.summary')}
           </TabsTrigger>
           <TabsTrigger
             value="transcript"
@@ -751,7 +752,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
             data-tab="transcript"
             data-test="transcript-tab"
           >
-            Transcript
+            {t('mypraxis:sessionView.tabs.transcript')}
           </TabsTrigger>
         </TabsList>
 
@@ -768,7 +769,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                       setIsEditing(false)
                       handleSaveNote(userNote)
                     }}
-                    placeholder="Write anything"
+                    placeholder={t('mypraxis:sessionView.notes.placeholder')}
                     className="min-h-[72px] resize-vertical focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)] [&::-webkit-resizer]:appearance-none after:content-[''] after:absolute after:bottom-1 after:right-1 after:w-3 after:h-3 after:border-b-2 after:border-r-2 after:border-[#6B7280] after:cursor-se-resize relative"
                     autoFocus
                     data-test="session-note-input"
@@ -801,7 +802,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                 >
                 <span className="flex items-center gap-2">
                   <Plus className="h-4 w-4" />
-                  Click to add a note
+                  {t('mypraxis:sessionView.notes.addNote')}
                 </span>
                 </Button>
               )}
@@ -819,14 +820,14 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                     className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#111827] data-[state=active]:bg-transparent px-4 py-2 font-medium text-[14px] text-[#6B7280] data-[state=active]:text-[#111827] data-[state=active]:shadow-none"
                     data-test="session-tab-therapist-summary"
                   >
-                    My Summary
+                    {t('mypraxis:sessionView.summaryTabs.therapist')}
                   </TabsTrigger>
                   <TabsTrigger
                     value="client"
                     className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#111827] data-[state=active]:bg-transparent px-4 py-2 font-medium text-[14px] text-[#6B7280] data-[state=active]:text-[#111827] data-[state=active]:shadow-none"
                     data-test="session-tab-client-summary"
                   >
-                    Summary For Client
+                    {t('mypraxis:sessionView.summaryTabs.client')}
                   </TabsTrigger>
                 </TabsList>
                 <TabsContent value="therapist" className="mt-3" data-test="session-therapist-summary">
@@ -835,7 +836,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                       <div className="rounded-lg bg-[#FFF9E8] px-6 py-6 text-[14px] text-muted-foreground flex items-center justify-center min-h-[100px]">
                         <div className="flex items-center gap-2">
                           <Loader2 className="h-4 w-4 animate-spin" />
-                          <span>Loading my summary...</span>
+                          <span>{t('mypraxis:sessionView.summary.loadingTherapist')}</span>
                         </div>
                       </div>
                     ) : therapistSummary ? (
@@ -869,7 +870,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
 
                     ) : (
                       <div className="rounded-lg bg-[#FFF9E8] px-6 py-6 text-[14px] text-muted-foreground" data-test="therapist-summary-placeholder">
-                        My summary will be generated automatically once either transcript or session notes are added
+                        {t('mypraxis:sessionView.summary.therapistSummaryPlaceholder')}
                       </div>
                     )}
                   </div>
@@ -880,7 +881,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                       <div className="rounded-lg bg-[#FFF9E8] px-6 py-6 text-[14px] text-muted-foreground flex items-center justify-center min-h-[100px]">
                         <div className="flex items-center gap-2">
                           <Loader2 className="h-4 w-4 animate-spin" />
-                          <span>Loading summary for client...</span>
+                          <span>{t('mypraxis:sessionView.summary.loadingClient')}</span>
                         </div>
                       </div>
                     ) : clientSummary ? (
@@ -914,7 +915,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
 
                     ) : (
                       <div className="rounded-lg bg-[#FFF9E8] px-6 py-6 text-[14px] text-muted-foreground" data-test="client-summary-placeholder">
-                        Client summary will be generated automatically once you add either a transcript or session notes
+                        {t('mypraxis:sessionView.summary.clientSummaryPlaceholder')}
                       </div>
                     )}
                   </div>
@@ -937,14 +938,14 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                   handleSaveTranscript()
                 }}
                 className="min-h-[300px] resize-vertical focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)] [&::-webkit-resizer]:appearance-none after:content-[''] after:absolute after:bottom-1 after:right-1 after:w-3 after:h-3 after:border-b-2 after:border-r-2 after:border-[#6B7280] after:cursor-se-resize relative font-mono text-sm"
-                placeholder="Enter transcript..."
+                placeholder={t('mypraxis:sessionView.transcript.placeholder')}
                 autoFocus
                 data-test="session-transcript-editor"
               />
               {isPending && (
                 <div className="absolute right-3 bottom-3 flex items-center gap-2 text-sm text-muted-foreground">
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Saving...
+                  {t('mypraxis:sessionView.notes.saving')}
                 </div>
               )}
             </div>

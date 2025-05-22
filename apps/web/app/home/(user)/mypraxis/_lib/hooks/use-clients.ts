@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { useSupabase } from '@kit/supabase/hooks/use-supabase';
 import { useUserWorkspace } from '@kit/accounts/hooks/use-user-workspace';
 import { ClientData, ClientWithId, ClientRecord } from '../schemas/client';
+import { useTranslation } from 'react-i18next';
 
 /**
  * Hook to fetch all clients for the current user
@@ -126,6 +127,7 @@ export function useCreateClient() {
   const { workspace } = useUserWorkspace();
   const accountId = workspace?.id;
   const client = useSupabase();
+  const { t } = useTranslation('mypraxis');
 
   return useMutation({
     mutationFn: async (data: ClientData): Promise<ClientWithId> => {
@@ -183,7 +185,7 @@ export function useCreateClient() {
       }
     },
     onSuccess: () => {
-      toast.success('Client created successfully');
+      toast.success(t('hooks.clients.createdSuccess'));
       
       // Invalidate clients query to refetch the list
       if (accountId) {
@@ -193,7 +195,7 @@ export function useCreateClient() {
       }
     },
     onError: (error) => {
-      toast.error('Failed to create client');
+      toast.error(t('hooks.clients.createdError'));
       console.error(error);
     }
   });
@@ -207,6 +209,7 @@ export function useUpdateClient() {
   const { workspace } = useUserWorkspace();
   const accountId = workspace?.id;
   const client = useSupabase();
+  const { t } = useTranslation('mypraxis');
 
   return useMutation({
     mutationFn: async ({ id, ...data }: ClientWithId): Promise<ClientWithId> => {
@@ -246,7 +249,7 @@ export function useUpdateClient() {
       }
     },
     onSuccess: (_, variables) => {
-      toast.success('Client updated successfully');
+      toast.success(t('hooks.clients.updatedSuccess'));
       
       // Invalidate specific client query and clients list
       if (accountId) {
@@ -260,7 +263,7 @@ export function useUpdateClient() {
       }
     },
     onError: (error) => {
-      toast.error('Failed to update client');
+      toast.error(t('hooks.clients.updatedError'));
       console.error(error);
     }
   });
@@ -274,6 +277,7 @@ export function useDeleteClient() {
   const { workspace } = useUserWorkspace();
   const accountId = workspace?.id;
   const client = useSupabase();
+  const { t } = useTranslation('mypraxis');
 
   return useMutation({
     mutationFn: async (clientId: string) => {
@@ -299,7 +303,7 @@ export function useDeleteClient() {
       }
     },
     onSuccess: (_, clientId) => {
-      toast.success('Client deleted successfully');
+      toast.success(t('hooks.clients.deletedSuccess'));
       
       // Invalidate clients query to refetch the list
       if (accountId) {
@@ -315,7 +319,7 @@ export function useDeleteClient() {
       }
     },
     onError: (error) => {
-      toast.error('Failed to delete client');
+      toast.error(t('hooks.clients.deletedError'));
       console.error(error);
     }
   });

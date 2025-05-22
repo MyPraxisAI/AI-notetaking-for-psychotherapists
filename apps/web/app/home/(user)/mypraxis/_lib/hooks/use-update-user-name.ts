@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { useSupabase } from '@kit/supabase/hooks/use-supabase';
 import { z } from 'zod';
 import { NAME_UPDATED_EVENT } from './use-user-data';
+import { useTranslation } from 'react-i18next';
 
 // Name validation schema
 export const UserNameSchema = z.object({
@@ -13,11 +14,17 @@ export const UserNameSchema = z.object({
 
 export type UserNameFormValues = z.infer<typeof UserNameSchema>;
 
+// Create a function to get a schema with translations
+export const getUserNameSchema = (t: (key: string) => string) => z.object({
+  displayName: z.string().min(1, t('hooks.userProfile.nameRequired')),
+});
+
 /**
  * Hook for updating user's display name
  */
 export function useUpdateUserName() {
   const client = useSupabase();
+  const { t } = useTranslation('mypraxis');
 
   return useMutation({
     mutationFn: async (displayName: string) => {
@@ -39,11 +46,11 @@ export function useUpdateUserName() {
       window.dispatchEvent(new CustomEvent(NAME_UPDATED_EVENT, {
         detail: { fullName: displayName }
       }));
-      toast.success('Name updated successfully');
+      toast.success(t('hooks.userProfile.nameUpdatedSuccess'));
     },
     onError: (error) => {
       console.error('Error updating name:', error);
-      toast.error('Failed to update name. Please try again.');
+      toast.error(t('hooks.userProfile.nameUpdatedError'));
     },
   });
 }

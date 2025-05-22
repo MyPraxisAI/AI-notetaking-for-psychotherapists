@@ -28,5 +28,306 @@
     "au": "Australia",
     "ru": "Russian Federation",
     "other": "Other"
+  },
+  "onboarding": {
+    "welcomeTitle": "Welcome to MyPraxis",
+    "setupCompleteTitle": "Setup Complete",
+    "selectTherapyStyleText": "Select your therapy style and we shall use it to analyze the sessions you will record.",
+    "primaryApproachLabel": "Primary Therapeutic Approach",
+    "chooseApproachPlaceholder": "Choose approach",
+    "errorSelectApproach": "Please select a therapeutic approach",
+    "thanksText": "Thanks, you are good to go! You can always change your Therapeutic Approach in the Settings on the left.",
+    "checkoutDemoText": "Now check out the demo client or add a new client to start recording your first session.",
+    "nextButton": "Next",
+    "savingButton": "Saving...",
+    "finishButton": "Finish",
+    "finishingButton": "Finishing..."
+  },
+  "settings": {
+    "title": "Settings",
+    "profile": "Profile",
+    "preferences": "Preferences",
+    "displayName": "Display Name",
+    "email": "Email",
+    "saveChanges": "Save Changes",
+    "saving": "Saving...",
+    "language": "Language",
+    "languageOptions": {
+      "en": "English",
+      "ru": "Russian"
+    },
+    "dateFormat": "Date Format",
+    "timeFormat": "Time Format",
+    "use24HourClock": "Use 24-hour clock",
+    "use12HourClock": "Use 12-hour clock",
+    "usDateFormat": "Use US date format (MM/DD/YYYY)",
+    "internationalDateFormat": "Use international date format (DD/MM/YYYY)",
+    "primaryTherapeuticApproach": "Primary Therapeutic Approach",
+    "secondaryTherapeuticApproaches": "Secondary Therapeutic Approaches",
+    "selectPrimaryApproach": "Select primary approach",
+    "selectSecondaryApproaches": "Select secondary approaches",
+    "geoLocality": "Geographic Location",
+    "selectGeoLocality": "Select geographic location",
+    "validationErrors": {
+      "displayName": "Please enter a display name",
+      "email": "Please enter a valid email"
+    },
+    "successMessages": {
+      "profileUpdated": "Profile updated successfully",
+      "preferencesUpdated": "Preferences updated successfully"
+    },
+    "errorMessages": {
+      "updateFailed": "Update failed. Please try again."
+    },
+    "avatar": "Profile Picture",
+    "changeAvatar": "Change your profile picture",
+    "enterDisplayName": "Enter your full name",
+    "enterEmail": "Enter your email address",
+    "emailUpdateInitiated": "Email update initiated",
+    "emailUpdateInstructions": "A confirmation email has been sent to your new address. Please check your inbox and follow the instructions to complete the update.",
+    "emailVerificationRequired": "Changing your email will require verification of the new address",
+    "credentials": "Professional Credentials",
+    "enterCredentials": "e.g. LCSW, LMFT or psychotherapist",
+    "credentialsDescription": "The way you'll be introduced",
+    "professionalInformation": "Professional Information",
+    "country": "Country or Territory",
+    "countryDescription": "Needed to ensure adherence to local privacy regulations",
+    "addApproach": "Add approach (up to 2)",
+    "addApproachFinal": "Add approach (final one)",
+    "secondaryTherapeuticApproachesDescription": "Will be used to fine-tune AI reports",
+    "loadingPreferences": "Loading preferences...",
+    "selectLanguage": "Select language",
+    "security": "Security",
+    "changePassword": "Change Password",
+    "enterNewPassword": "Enter new password",
+    "confirmNewPassword": "Confirm new password",
+    "passwordsDoNotMatch": "Passwords do not match",
+    "passwordRequirements": "Password must be at least 8 characters and include uppercase, lowercase, number and special character",
+    "updating": "Updating...",
+    "invalidPassword": "Invalid password",
+    "invalidPasswordFormat": "Invalid password format"
+  },
+  "page": {
+    "newClient": "New client",
+    "demo": "Demo",
+    "viewProfile": "View Profile",
+    "startRecording": "Start recording",
+    "recordingDesktopOnly": "Available on desktop",
+    "recordingFeatures": "transcript, notes, recap",
+    "navigation": {
+      "clients": "Clients",
+      "settings": "Settings",
+      "billing": "Billing",
+      "giftPraxis": "Gift Praxis",
+      "help": "Get help",
+      "signOut": "Sign Out"
+    },
+    "controlLine": {
+      "clients": "Clients",
+      "sessions": "Sessions"
+    },
+    "detailsColumn": {
+      "prepNote": "Prep Note",
+      "conceptualization": "Conceptualization",
+      "clientBio": "Client Bio",
+      "aiSupervision": "AI Supervision"
+    }
+  },
+  "profileForm": {
+    "title": "Client Profile",
+    "loading": "Loading...",
+    "clientNotFound": "Client not found",
+    "fullName": "Full Name",
+    "email": "Email",
+    "phone": "Phone",
+    "enterFullName": "Enter full name",
+    "enterEmail": "Enter email address",
+    "enterPhone": "Enter phone number",
+    "actions": {
+      "newSession": "New session",
+      "deleteClient": "Delete client"
+    },
+    "validationErrors": {
+      "email": "Please enter a valid email address",
+      "phone": "Please enter numbers or + character only"
+    }
+  },
+  "deleteClientModal": {
+    "title": "Delete Client",
+    "confirmText": "Please type <1>{{clientName}}</1> to confirm.",
+    "warningText": "All client data will be perpetually deleted. This can not be undone.",
+    "enterClientName": "Enter client name",
+    "errorMessage": "Please enter the exact client name to confirm deletion",
+    "cancel": "Cancel",
+    "delete": "Delete Client"
+  },
+  "clientGuidanceBanner": {
+    "dismissAriaLabel": "Dismiss guidance",
+    "successMessage": "Client profile created successfully. Ready to start recording a session.",
+    "startRecording": "Start Recording"
+  },
+  "clientBio": {
+    "title": "Client Bio",
+    "loading": "Loading client bio...",
+    "error": "Error loading client bio",
+    "tryAgain": "Please try again later",
+    "notAvailable": "Not available yet. Will be generated by AI once sufficient information is gathered.",
+    "updating": "Updating"
+  },
+  "clientConceptualization": {
+    "title": "Conceptualization",
+    "loading": "Loading conceptualization...",
+    "error": "Error loading conceptualization",
+    "tryAgain": "Please try again later",
+    "notAvailable": "Not available yet. Will be generated by AI once sufficient information is gathered.",
+    "updating": "Updating"
+  },
+  "clientCreationModal": {
+    "title": "Add New Client",
+    "subtitle": "Enter the client's name to create a new profile.",
+    "clientNameLabel": "Client Name",
+    "clientNamePlaceholder": "Joanne Smith",
+    "cancelButton": "Cancel",
+    "createButton": "Create Client",
+    "creatingStatus": "Creating..."
+  },
+  "clientPrepNote": {
+    "title": "Preparation Note",
+    "loading": "Loading preparation note...",
+    "error": "Error loading preparation note",
+    "tryAgain": "Please try again later",
+    "notAvailable": "Not available yet. Will be generated by AI once sufficient information is gathered.",
+    "updating": "Updating"
+  },
+  "deleteSessionModal": {
+    "title": "Delete Session",
+    "confirmationText": "Are you sure you want to delete \"{{sessionTitle}}\"?",
+    "warningText": "This action cannot be undone.",
+    "cancelButton": "Cancel",
+    "deleteButton": "Delete Session"
+  },
+  "errorBoundary": {
+    "title": "Something went wrong",
+    "defaultErrorMessage": "An unexpected error occurred",
+    "tryAgainButton": "Try again"
+  },
+  "selects": {
+    "geoLocalitiesPlaceholder": "Select a country or territory",
+    "therapeuticApproachesPlaceholder": "Select a therapeutic approach",
+    "loading": "Loading...",
+    "noApproachesFound": "No approaches found",
+    "noLocalitiesFound": "No localities found"
+  },
+  "recordingModal": {
+    "title": "Session with",
+    "microphone": {
+      "select": "Select microphone",
+      "builtin": "MacBook Air Microphone (Built-in)",
+      "allow": "Allow Microphone Access",
+      "checking": "Checking Microphone..."
+    },
+    "transcription": {
+      "label": "Transcription",
+      "select": "Select engine",
+      "yandex": "Yandex SpeechKit v3 (Russian)"
+    },
+    "recording": {
+      "start": "Record",
+      "starting": "Starting Recording...",
+      "pause": "Pause",
+      "pausing": "Pausing...",
+      "resume": "Resume",
+      "save": "Save Session",
+      "saving": "Saving Recording..."
+    },
+    "import": {
+      "or": "or",
+      "button": "Import Audio File",
+      "importing": "Importing Audio File..."
+    },
+    "close": "close"
+  },
+  "hooks": {
+    "clientArtifacts": {
+      "failedToLoad": "Failed to load {{type}}"
+    },
+    "sessionArtifacts": {
+      "failedToLoad": "Error loading {{type}}"
+    },
+    "sessions": {
+      "createdSuccess": "Session created successfully",
+      "createdError": "Failed to create session",
+      "updatedSuccess": "Session updated successfully",
+      "updatedError": "Failed to update session",
+      "deletedSuccess": "Session deleted successfully",
+      "deletedError": "Failed to delete session"
+    },
+    "clients": {
+      "createdSuccess": "Client created successfully",
+      "createdError": "Failed to create client",
+      "updatedSuccess": "Client updated successfully",
+      "updatedError": "Failed to update client",
+      "deletedSuccess": "Client deleted successfully",
+      "deletedError": "Failed to delete client"
+    },
+    "userProfile": {
+      "nameRequired": "Name is required",
+      "nameUpdatedSuccess": "Name updated successfully",
+      "nameUpdatedError": "Failed to update name. Please try again.",
+      "emailInvalid": "Please enter a valid email",
+      "emailVerificationSent": "Verification email sent. Please check your inbox.",
+      "emailUpdatedError": "Failed to update email. Please try again.",
+      "passwordMinLength": "Password must be at least 8 characters",
+      "passwordRequirements": "Password must include uppercase, lowercase, number and special character",
+      "passwordsDoNotMatch": "Passwords do not match",
+      "passwordUpdatedSuccess": "Password updated successfully",
+      "passwordUpdatedError": "Failed to update password. Please try again."
+    }
+  },
+  "sessionView": {
+    "tabs": {
+      "summary": "Summary",
+      "transcript": "Transcript"
+    },
+    "summaryTabs": {
+      "therapist": "My Summary",
+      "client": "Summary For Client"
+    },
+    "transcript": {
+      "inProgress": "Transcription in progress...",
+      "processingMessage": "We're processing your recording. This may take a few minutes depending on the length of the session. The transcript will appear here automatically when it's ready.",
+      "addTranscript": "Click to add a transcript",
+      "placeholder": "Enter transcript..."
+    },
+    "notes": {
+      "addNote": "Click to add a note",
+      "placeholder": "Enter notes...",
+      "saving": "Saving..."
+    },
+    "summary": {
+      "loadingTherapist": "Loading my summary...",
+      "loadingClient": "Loading summary for client...",
+      "updating": "Updating",
+      "clientSummaryPlaceholder": "Client summary will be generated automatically once you add either a transcript or session notes",
+      "therapistSummaryPlaceholder": "My summary will be generated automatically once either transcript or session notes are added"
+    },
+    "actions": {
+      "save": "Save",
+      "saved": "Saved",
+      "saving": "Saving...",
+      "edit": "Edit",
+      "delete": "Delete",
+      "deleteSession": "Delete session"
+    },
+    "messages": {
+      "sessionDeletedSuccess": "Session deleted successfully",
+      "sessionDeletedError": "Failed to delete session",
+      "titleUpdatedSuccess": "Session title updated",
+      "titleUpdatedError": "Failed to update session title",
+      "noteUpdatedSuccess": "Session note updated",
+      "noteUpdatedError": "Failed to update session note",
+      "transcriptUpdatedSuccess": "Transcript updated",
+      "transcriptUpdatedError": "Failed to update transcript"
+    }
   }
 }

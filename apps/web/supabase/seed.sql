@@ -340,7 +340,7 @@ SET
   "id" = 'f1b930c9-0a76-412e-a836-4bc4849a3271',
   "use_24hr_clock" = true, 
   "use_us_date_format" = false, 
-  "language" = 'en',
+  "language" = NULL, -- it will be set via onboarding
   "created_at" = '2025-03-27 17:55:11.181332+00', 
   "updated_at" = '2025-03-27 17:55:11.181332+00'
 WHERE "account_id" = 'e5b930c9-0a76-412e-a836-4bc4849a3271';

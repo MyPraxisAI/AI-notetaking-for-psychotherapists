@@ -1275,7 +1275,7 @@ export type Database = {
           account_id: string
           created_at: string
           id: string
-          language: string
+          language: string | null
           updated_at: string
           use_24hr_clock: boolean
           use_us_date_format: boolean
@@ -1284,7 +1284,7 @@ export type Database = {
           account_id: string
           created_at?: string
           id?: string
-          language?: string
+          language?: string | null
           updated_at?: string
           use_24hr_clock?: boolean
           use_us_date_format?: boolean
@@ -1293,7 +1293,7 @@ export type Database = {
           account_id?: string
           created_at?: string
           id?: string
-          language?: string
+          language?: string | null
           updated_at?: string
           use_24hr_clock?: boolean
           use_us_date_format?: boolean

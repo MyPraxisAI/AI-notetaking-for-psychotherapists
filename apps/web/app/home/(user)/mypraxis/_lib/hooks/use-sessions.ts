@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { useSupabase } from '@kit/supabase/hooks/use-supabase';
 import { useUserWorkspace } from '@kit/accounts/hooks/use-user-workspace';
 import { SessionData, SessionWithId } from '../schemas/session';
+import { useTranslation } from 'react-i18next';
 
 // Define the database record structure
 // This interface is kept for reference but no longer directly used after transcript column removal
@@ -138,6 +139,7 @@ export function useCreateSession() {
   const { workspace } = useUserWorkspace();
   const accountId = workspace?.id;
   const client = useSupabase();
+  const { t } = useTranslation('mypraxis');
 
   return useMutation({
     mutationFn: async ({ clientId, ...data }: SessionData & { clientId: string }): Promise<SessionWithId> => {
@@ -177,7 +179,7 @@ export function useCreateSession() {
       }
     },
     onSuccess: (_, variables) => {
-      toast.success('Session created successfully');
+      toast.success(t('hooks.sessions.createdSuccess'));
       
       // Invalidate sessions query to refetch the list
       if (accountId) {
@@ -187,7 +189,7 @@ export function useCreateSession() {
       }
     },
     onError: (error) => {
-      toast.error('Failed to create session');
+      toast.error(t('hooks.sessions.createdError'));
       console.error(error);
     }
   });
@@ -201,6 +203,7 @@ export function useUpdateSession() {
   const { workspace } = useUserWorkspace();
   const accountId = workspace?.id;
   const client = useSupabase();
+  const { t } = useTranslation('mypraxis');
 
   return useMutation({
     mutationFn: async ({ id, clientId: _clientId, ...data }: SessionWithId): Promise<SessionWithId> => {
@@ -239,7 +242,7 @@ export function useUpdateSession() {
       }
     },
     onSuccess: (_, variables) => {
-      toast.success('Session updated successfully');
+      toast.success(t('hooks.sessions.updatedSuccess'));
       
       // Invalidate specific session query and sessions list
       if (accountId) {
@@ -253,7 +256,7 @@ export function useUpdateSession() {
       }
     },
     onError: (error) => {
-      toast.error('Failed to update session');
+      toast.error(t('hooks.sessions.updatedError'));
       console.error(error);
     }
   });
@@ -267,6 +270,7 @@ export function useDeleteSession() {
   const { workspace } = useUserWorkspace();
   const accountId = workspace?.id;
   const client = useSupabase();
+  const { t } = useTranslation('mypraxis');
 
   return useMutation({
     mutationFn: async ({ sessionId, clientId: _clientId }: { sessionId: string, clientId: string }) => {
@@ -292,7 +296,7 @@ export function useDeleteSession() {
       }
     },
     onSuccess: (_, variables) => {
-      toast.success('Session deleted successfully');
+      toast.success(t('hooks.sessions.deletedSuccess'));
       
       // Invalidate sessions query to refetch the list
       if (accountId) {
@@ -308,7 +312,7 @@ export function useDeleteSession() {
       }
     },
     onError: (error) => {
-      toast.error('Failed to delete session');
+      toast.error(t('hooks.sessions.deletedError'));
       console.error(error);
     }
   });

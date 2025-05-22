@@ -24,7 +24,7 @@ export function GeoLocalitiesSelect({
   onValueChange,
   onKeyDown,
   className = '',
-  placeholder = 'Select a country or territory'
+  placeholder = undefined
 }: GeoLocalitiesSelectProps) {
   const { data: geoLocalities, isLoading } = useGeoLocalities();
   const [localities, setLocalities] = useState<GeoLocality[]>([]);
@@ -59,13 +59,13 @@ export function GeoLocalitiesSelect({
         onKeyDown={onKeyDown}
         data-test="settings-country-select"
       >
-        <SelectValue placeholder={placeholder} />
+        <SelectValue placeholder={placeholder || t('mypraxis:selects.geoLocalitiesPlaceholder')} />
       </SelectTrigger>
       <SelectContent>
         {isLoading ? (
-          <SelectItem value="loading" disabled>Loading...</SelectItem>
+          <SelectItem value="loading" disabled>{t('mypraxis:selects.loading')}</SelectItem>
         ) : localities.length === 0 ? (
-          <SelectItem value="none" disabled>No localities found</SelectItem>
+          <SelectItem value="none" disabled>{t('mypraxis:selects.noLocalitiesFound', 'No localities found')}</SelectItem>
         ) : (
           localities.map((locality) => (
             <SelectItem key={locality.id} value={locality.id}>
