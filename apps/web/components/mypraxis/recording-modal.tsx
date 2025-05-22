@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "@kit/ui/button"
 import { Mic, Pause, Play, Loader2, Upload } from "lucide-react"
-import { AudioChunk, uploadAudioChunks, uploadAudioChunkWithId, processAudioFile } from "./utils/audio-upload"
+import { AudioChunk, uploadAudioChunks, processAudioFile } from "./utils/audio-upload"
 import * as RecordingAPI from "./utils/recording-api"
 import * as MediaRecorderUtils from "./utils/media-recorder"
 
@@ -368,7 +368,7 @@ export function RecordingModal({
         console.log('Configuring MediaRecorder for chunks')
         
         // Configure the MediaRecorder to handle audio chunks
-        const recordingStartTime = MediaRecorderUtils.configureMediaRecorderForChunks(
+        const _recordingStartTime = MediaRecorderUtils.configureMediaRecorderForChunks(
           mediaRecorder.current,
           currentRecordingId,
           audioChunks,

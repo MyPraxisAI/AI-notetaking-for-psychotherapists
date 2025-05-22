@@ -247,6 +247,43 @@
     },
     "close": "закрыть"
   },
+  "hooks": {
+    "clientArtifacts": {
+      "failedToLoad": "Не удалось загрузить {{type}}"
+    },
+    "sessionArtifacts": {
+      "failedToLoad": "Ошибка загрузки {{type}}"
+    },
+    "sessions": {
+      "createdSuccess": "Сессия успешно создана",
+      "createdError": "Не удалось создать сессию",
+      "updatedSuccess": "Сессия успешно обновлена",
+      "updatedError": "Не удалось обновить сессию",
+      "deletedSuccess": "Сессия успешно удалена",
+      "deletedError": "Не удалось удалить сессию"
+    },
+    "clients": {
+      "createdSuccess": "Клиент успешно создан",
+      "createdError": "Не удалось создать клиента",
+      "updatedSuccess": "Данные клиента успешно обновлены",
+      "updatedError": "Не удалось обновить данные клиента",
+      "deletedSuccess": "Клиент успешно удален",
+      "deletedError": "Не удалось удалить клиента"
+    },
+    "userProfile": {
+      "nameRequired": "Имя обязательно",
+      "nameUpdatedSuccess": "Имя успешно обновлено",
+      "nameUpdatedError": "Не удалось обновить имя. Пожалуйста, попробуйте снова.",
+      "emailInvalid": "Пожалуйста, введите действительный email",
+      "emailVerificationSent": "Письмо с подтверждением отправлено. Пожалуйста, проверьте вашу почту.",
+      "emailUpdatedError": "Не удалось обновить email. Пожалуйста, попробуйте снова.",
+      "passwordMinLength": "Пароль должен содержать не менее 8 символов",
+      "passwordRequirements": "Пароль должен содержать заглавные, строчные буквы, цифры и специальные символы",
+      "passwordsDoNotMatch": "Пароли не совпадают",
+      "passwordUpdatedSuccess": "Пароль успешно обновлен",
+      "passwordUpdatedError": "Не удалось обновить пароль. Пожалуйста, попробуйте снова."
+    }
+  },
   "sessionView": {
     "tabs": {
       "summary": "Резюме",

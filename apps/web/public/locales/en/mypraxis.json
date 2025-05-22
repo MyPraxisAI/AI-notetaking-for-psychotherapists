@@ -247,6 +247,43 @@
     },
     "close": "close"
   },
+  "hooks": {
+    "clientArtifacts": {
+      "failedToLoad": "Failed to load {{type}}"
+    },
+    "sessionArtifacts": {
+      "failedToLoad": "Error loading {{type}}"
+    },
+    "sessions": {
+      "createdSuccess": "Session created successfully",
+      "createdError": "Failed to create session",
+      "updatedSuccess": "Session updated successfully",
+      "updatedError": "Failed to update session",
+      "deletedSuccess": "Session deleted successfully",
+      "deletedError": "Failed to delete session"
+    },
+    "clients": {
+      "createdSuccess": "Client created successfully",
+      "createdError": "Failed to create client",
+      "updatedSuccess": "Client updated successfully",
+      "updatedError": "Failed to update client",
+      "deletedSuccess": "Client deleted successfully",
+      "deletedError": "Failed to delete client"
+    },
+    "userProfile": {
+      "nameRequired": "Name is required",
+      "nameUpdatedSuccess": "Name updated successfully",
+      "nameUpdatedError": "Failed to update name. Please try again.",
+      "emailInvalid": "Please enter a valid email",
+      "emailVerificationSent": "Verification email sent. Please check your inbox.",
+      "emailUpdatedError": "Failed to update email. Please try again.",
+      "passwordMinLength": "Password must be at least 8 characters",
+      "passwordRequirements": "Password must include uppercase, lowercase, number and special character",
+      "passwordsDoNotMatch": "Passwords do not match",
+      "passwordUpdatedSuccess": "Password updated successfully",
+      "passwordUpdatedError": "Failed to update password. Please try again."
+    }
+  },
   "sessionView": {
     "tabs": {
       "summary": "Summary",

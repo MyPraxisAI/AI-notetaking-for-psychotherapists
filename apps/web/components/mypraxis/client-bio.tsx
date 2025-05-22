@@ -10,10 +10,10 @@ import { useTranslation } from 'react-i18next';
 
 interface ClientBioProps {
   clientId: string;
-  clientName: string;
+  _clientName: string;
 }
 
-export function ClientBio({ clientId, clientName }: ClientBioProps) {
+export function ClientBio({ clientId }: ClientBioProps) {
   const { t } = useTranslation();
   
   // Fetch the bio for the client

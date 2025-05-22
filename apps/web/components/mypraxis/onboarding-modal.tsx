@@ -122,7 +122,7 @@ export function OnboardingModal({
     } finally {
       setIsProcessing(false)
     }
-  }, [selectedApproach, updateField])
+  }, [selectedApproach, updateField, t])
   
   // Handle close - memoized with dependencies
   const handleClose = useCallback(() => {

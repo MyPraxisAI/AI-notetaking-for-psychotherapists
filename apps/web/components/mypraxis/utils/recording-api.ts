@@ -46,7 +46,15 @@ export const startRecording = async (options: StartRecordingOptions): Promise<st
  * @param recordingId The ID of the recording to pause
  * @returns The response data if successful, null otherwise
  */
-export const pauseRecording = async (recordingId: string): Promise<any | null> => {
+interface RecordingResponse {
+  id: string;
+  status: string;
+  session_id?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export const pauseRecording = async (recordingId: string): Promise<RecordingResponse | null> => {
   if (!recordingId) return null;
   
   try {
@@ -71,7 +79,7 @@ export const pauseRecording = async (recordingId: string): Promise<any | null> =
  * @param recordingId The ID of the recording to resume
  * @returns The response data if successful, null otherwise
  */
-export const resumeRecording = async (recordingId: string): Promise<any | null> => {
+export const resumeRecording = async (recordingId: string): Promise<RecordingResponse | null> => {
   if (!recordingId) return null;
   
   try {
@@ -103,7 +111,7 @@ export const resumeRecording = async (recordingId: string): Promise<any | null> 
  * @returns The response data if successful
  * @throws Error if the upload fails
  */
-export const uploadAudioChunk = async (recordingId: string, formData: FormData): Promise<any> => {
+export const uploadAudioChunk = async (recordingId: string, formData: FormData): Promise<RecordingResponse> => {
   if (!recordingId) throw new Error('Recording ID is required');
   
   const response = await fetch(`/api/recordings/${recordingId}/chunk`, {
@@ -119,7 +127,12 @@ export const uploadAudioChunk = async (recordingId: string, formData: FormData):
   return await response.json();
 };
 
-export const completeRecording = async (recordingId: string): Promise<{ recording: any; sessionId: string } | null> => {
+interface CompleteRecordingResponse {
+  recording: RecordingResponse;
+  sessionId: string;
+}
+
+export const completeRecording = async (recordingId: string): Promise<CompleteRecordingResponse | null> => {
   if (!recordingId) return null;
   
   try {

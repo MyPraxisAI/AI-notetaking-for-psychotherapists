@@ -470,7 +470,7 @@ export default function Page() {
     return `${baseClass} ${selectedDetailItem === tab ? selectedClass : unselectedClass}`
   }
 
-  const formatDisplayDate = (dateStr: string) => {
+  const _formatDisplayDate = (dateStr: string) => {
     const date = new Date(dateStr)
     return `${date.getDate().toString().padStart(2, "0")}/${(date.getMonth() + 1).toString().padStart(2, "0")}`
   }
@@ -584,7 +584,7 @@ export default function Page() {
           <ClientBio 
             key={`bio-${selectedClient}`}
             clientId={selectedClient}
-            clientName={localClientNames[selectedClient] || clients.find(c => c.id === selectedClient)?.fullName || ""} 
+            _clientName={localClientNames[selectedClient] || clients.find(c => c.id === selectedClient)?.fullName || ""} 
           />
         )}
         

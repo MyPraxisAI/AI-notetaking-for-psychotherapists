@@ -2,6 +2,7 @@
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 interface SessionArtifactResponse {
   content: string;
@@ -90,6 +91,7 @@ export function useSessionArtifact(
   enabled = true
 ) {
   const queryClient = useQueryClient();
+  const { t } = useTranslation('mypraxis');
   
   // Check if we have this data in the cache already
   const cachedData = queryClient.getQueryData<SessionArtifactResponse>(['session', sessionId, 'artifact', type]);
@@ -113,7 +115,7 @@ export function useSessionArtifact(
         
         return response.json();
       } catch (error) {
-        toast.error(`Error loading ${type.replace('session_', '').replace('_', ' ')}`);
+        toast.error(t('hooks.sessionArtifacts.failedToLoad', { type: type.replace('session_', '').replace('_', ' ') }));
         throw error;
       }
     },

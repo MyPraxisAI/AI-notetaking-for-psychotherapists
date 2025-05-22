@@ -4,7 +4,8 @@ import type React from "react"
 
 import { useEffect, useState } from "react"
 import { Button } from "@kit/ui/button"
-import { useTranslation, Trans } from "react-i18next"
+import { useTranslation } from "react-i18next"
+import { Trans } from "@kit/ui/trans"
 import {
   Dialog,
   DialogContent,
@@ -69,7 +70,7 @@ export function DeleteClientModal({ isOpen, onClose, onDelete, clientName }: Del
             <Trans
               i18nKey="mypraxis:deleteClientModal.confirmText"
               values={{ clientName }}
-              components={[<span className="font-medium" />]}
+              components={[<span key="client-name" className="font-medium" />]}
             />
           </DialogDescription>
           <DialogDescription className="text-destructive mt-2">
