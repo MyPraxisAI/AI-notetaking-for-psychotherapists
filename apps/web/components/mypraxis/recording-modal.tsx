@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
+import { useTranslation } from "react-i18next"
 import { Button } from "@kit/ui/button"
 import { Mic, Pause, Play, Loader2, Upload } from "lucide-react"
 

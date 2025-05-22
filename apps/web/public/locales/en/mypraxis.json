@@ -217,5 +217,51 @@
     "loading": "Loading...",
     "noApproachesFound": "No approaches found",
     "noLocalitiesFound": "No localities found"
+  },
+  "sessionView": {
+    "tabs": {
+      "summary": "Summary",
+      "transcript": "Transcript"
+    },
+    "summaryTabs": {
+      "therapist": "My Summary",
+      "client": "Summary For Client"
+    },
+    "transcript": {
+      "inProgress": "Transcription in progress...",
+      "processingMessage": "We're processing your recording. This may take a few minutes depending on the length of the session. The transcript will appear here automatically when it's ready.",
+      "addTranscript": "Click to add a transcript",
+      "placeholder": "Enter transcript..."
+    },
+    "notes": {
+      "addNote": "Click to add a note",
+      "placeholder": "Enter notes...",
+      "saving": "Saving..."
+    },
+    "summary": {
+      "loadingTherapist": "Loading my summary...",
+      "loadingClient": "Loading summary for client...",
+      "updating": "Updating",
+      "clientSummaryPlaceholder": "Client summary will be generated automatically once you add either a transcript or session notes",
+      "therapistSummaryPlaceholder": "My summary will be generated automatically once either transcript or session notes are added"
+    },
+    "actions": {
+      "save": "Save",
+      "saved": "Saved",
+      "saving": "Saving...",
+      "edit": "Edit",
+      "delete": "Delete",
+      "deleteSession": "Delete session"
+    },
+    "messages": {
+      "sessionDeletedSuccess": "Session deleted successfully",
+      "sessionDeletedError": "Failed to delete session",
+      "titleUpdatedSuccess": "Session title updated",
+      "titleUpdatedError": "Failed to update session title",
+      "noteUpdatedSuccess": "Session note updated",
+      "noteUpdatedError": "Failed to update session note",
+      "transcriptUpdatedSuccess": "Transcript updated",
+      "transcriptUpdatedError": "Failed to update transcript"
+    }
   }
 }
