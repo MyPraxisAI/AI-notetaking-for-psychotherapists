@@ -9,6 +9,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@kit/ui/dialog"
+import { useTranslation } from "react-i18next"
 
 interface DeleteSessionModalProps {
   isOpen: boolean
@@ -18,22 +19,24 @@ interface DeleteSessionModalProps {
 }
 
 export function DeleteSessionModal({ isOpen, onClose, onDelete, sessionTitle }: DeleteSessionModalProps) {
+  const { t } = useTranslation();
+  
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Delete Session</DialogTitle>
+          <DialogTitle>{t('mypraxis:deleteSessionModal.title')}</DialogTitle>
           <DialogDescription className="space-y-2">
-            <p>Are you sure you want to delete &quot;{sessionTitle}&quot;?</p>
-            <p className="text-destructive">This action cannot be undone.</p>
+            <p>{t('mypraxis:deleteSessionModal.confirmationText', { sessionTitle })}</p>
+            <p className="text-destructive">{t('mypraxis:deleteSessionModal.warningText')}</p>
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>
-            Cancel
+            {t('mypraxis:deleteSessionModal.cancelButton')}
           </Button>
           <Button variant="destructive" onClick={onDelete}>
-            Delete Session
+            {t('mypraxis:deleteSessionModal.deleteButton')}
           </Button>
         </DialogFooter>
       </DialogContent>

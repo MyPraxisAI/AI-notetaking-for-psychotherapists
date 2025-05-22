@@ -198,5 +198,24 @@
     "tryAgain": "Пожалуйста, попробуйте еще раз позже",
     "notAvailable": "Пока недоступно. Будет сгенерировано искусственным интеллектом после сбора достаточного количества информации.",
     "updating": "Обновление"
+  },
+  "deleteSessionModal": {
+    "title": "Удалить сессию",
+    "confirmationText": "Вы уверены, что хотите удалить \"{{sessionTitle}}\"?",
+    "warningText": "Это действие нельзя отменить.",
+    "cancelButton": "Отмена",
+    "deleteButton": "Удалить сессию"
+  },
+  "errorBoundary": {
+    "title": "Что-то пошло не так",
+    "defaultErrorMessage": "Произошла непредвиденная ошибка",
+    "tryAgainButton": "Попробовать снова"
+  },
+  "selects": {
+    "geoLocalitiesPlaceholder": "Выберите страну или территорию",
+    "therapeuticApproachesPlaceholder": "Выберите терапевтический подход",
+    "loading": "Загрузка...",
+    "noApproachesFound": "Подходы не найдены",
+    "noLocalitiesFound": "Местоположения не найдены"
   }
 }

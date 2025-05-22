@@ -31,7 +31,7 @@ export function TherapeuticApproachesSelect({
   onValueChange,
   onKeyDown,
   className = '',
-  placeholder = 'Select a therapeutic approach',
+  placeholder = undefined,
   primaryApproach = '',
   secondaryApproaches = [],
   filterPrimary = false,
@@ -90,13 +90,13 @@ export function TherapeuticApproachesSelect({
         onKeyDown={onKeyDown}
         data-test={testId}
       >
-        <SelectValue placeholder={placeholder} />
+        <SelectValue placeholder={placeholder || t('mypraxis:selects.therapeuticApproachesPlaceholder')} />
       </SelectTrigger>
       <SelectContent>
         {isLoading ? (
-          <SelectItem value="loading" disabled>Loading...</SelectItem>
+          <SelectItem value="loading" disabled>{t('mypraxis:selects.loading')}</SelectItem>
         ) : processedApproaches.length === 0 ? (
-          <SelectItem value="none" disabled>No approaches found</SelectItem>
+          <SelectItem value="none" disabled>{t('mypraxis:selects.noApproachesFound')}</SelectItem>
         ) : (
           processedApproaches.map((approach) => (
             <SelectItem key={approach.id} value={approach.id}>
