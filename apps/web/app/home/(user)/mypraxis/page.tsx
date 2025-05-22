@@ -30,7 +30,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react"
-import { PrepNote as _PrepNote } from "../../../../components/mypraxis/prep-note"
+
 import { ProfileForm } from "../../../../components/mypraxis/profile-form"
 import { SettingsForm } from "../../../../components/mypraxis/settings-form"
 import { SessionView } from "../../../../components/mypraxis/session-view"
