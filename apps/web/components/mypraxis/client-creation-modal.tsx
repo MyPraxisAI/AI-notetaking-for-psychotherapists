@@ -5,6 +5,7 @@ import { Button } from "@kit/ui/button"
 import { Input } from "@kit/ui/input"
 import { Label } from "@kit/ui/label"
 import { Loader2 } from "lucide-react"
+import { useTranslation } from "react-i18next"
 
 // Define overlay styles similar to recording modal
 const overlayStyles = `
@@ -38,6 +39,7 @@ export function ClientCreationModal({
   onClose,
   onSave
 }: ClientCreationModalProps) {
+  const { t } = useTranslation();
   const [clientName, setClientName] = useState("")
   const [isProcessing, setIsProcessing] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -111,9 +113,9 @@ export function ClientCreationModal({
           <div className="relative bg-white rounded-lg w-full max-w-md mx-4 overflow-hidden">
             {/* Modal header */}
             <div className="p-6 pb-4 bg-gray-50 border-b border-gray-200">
-              <h2 className="text-xl font-semibold text-gray-800">Add New Client</h2>
+              <h2 className="text-xl font-semibold text-gray-800">{t('mypraxis:clientCreationModal.title')}</h2>
               <p className="text-sm text-gray-500 mt-1">
-                Enter the client&apos;s name to create a new profile.
+                {t('mypraxis:clientCreationModal.subtitle')}
               </p>
             </div>
             
@@ -121,14 +123,14 @@ export function ClientCreationModal({
             <div className="p-6">
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="clientName">Client Name</Label>
+                  <Label htmlFor="clientName">{t('mypraxis:clientCreationModal.clientNameLabel')}</Label>
                   <Input
                     ref={inputRef}
                     id="clientName"
                     value={clientName}
                     onChange={(e) => setClientName(e.target.value)}
                     onKeyDown={handleKeyPress}
-                    placeholder="Joanne Smith"
+                    placeholder={t('mypraxis:clientCreationModal.clientNamePlaceholder')}
                     className="mt-1"
                     disabled={isProcessing}
                   />
@@ -141,7 +143,7 @@ export function ClientCreationModal({
                     onClick={handleClose}
                     disabled={isProcessing}
                   >
-                    Cancel
+                    {t('mypraxis:clientCreationModal.cancelButton')}
                   </Button>
                   
                   <Button
@@ -152,10 +154,10 @@ export function ClientCreationModal({
                     {isProcessing ? (
                       <>
                         <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                        Creating...
+                        {t('mypraxis:clientCreationModal.creatingStatus')}
                       </>
                     ) : (
-                      'Create Client'
+                      t('mypraxis:clientCreationModal.createButton')
                     )}
                   </Button>
                 </div>

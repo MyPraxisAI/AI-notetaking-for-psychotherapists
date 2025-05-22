@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { Button } from "@kit/ui/button"
 import { Info, Mic, X } from "lucide-react"
+import { useTranslation } from "react-i18next"
 
 interface ClientGuidanceBannerProps {
   clientId: string
@@ -17,6 +18,7 @@ export function ClientGuidanceBanner({
   isMobileView,
   hasNoSessions
 }: ClientGuidanceBannerProps) {
+  const { t } = useTranslation()
   const [isVisible, setIsVisible] = useState(false)
   const [showButton, setShowButton] = useState(false)
   
@@ -65,7 +67,7 @@ export function ClientGuidanceBanner({
       <button 
         onClick={handleDismiss}
         className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
-        aria-label="Dismiss guidance"
+        aria-label={t('mypraxis:clientGuidanceBanner.dismissAriaLabel')}
       >
         <X className="h-4 w-4" />
       </button>
@@ -74,7 +76,7 @@ export function ClientGuidanceBanner({
       <div className="flex items-center mr-4 mb-2 sm:mb-0">
         <Info className="h-5 w-5 text-blue-500 mr-2 flex-shrink-0" />
         <p className="text-sm text-gray-700">
-          Client profile created successfully. Ready to start recording a session.
+          {t('mypraxis:clientGuidanceBanner.successMessage')}
         </p>
       </div>
       
@@ -85,7 +87,7 @@ export function ClientGuidanceBanner({
           onClick={onRecordingStart}
         >
           <Mic className="h-4 w-4 mr-2" />
-          Start Recording
+          {t('mypraxis:clientGuidanceBanner.startRecording')}
         </Button>
       )}
     </div>

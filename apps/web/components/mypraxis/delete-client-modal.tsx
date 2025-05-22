@@ -4,6 +4,8 @@ import type React from "react"
 
 import { useEffect, useState } from "react"
 import { Button } from "@kit/ui/button"
+import { useTranslation } from "react-i18next"
+import { Trans } from "@kit/ui/trans"
 import {
   Dialog,
   DialogContent,
@@ -22,6 +24,7 @@ interface DeleteClientModalProps {
 }
 
 export function DeleteClientModal({ isOpen, onClose, onDelete, clientName }: DeleteClientModalProps) {
+  const { t } = useTranslation()
   const [inputName, setInputName] = useState("")
   const [error, setError] = useState(false)
 
@@ -62,17 +65,21 @@ export function DeleteClientModal({ isOpen, onClose, onDelete, clientName }: Del
     >
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Delete Client</DialogTitle>
+          <DialogTitle>{t('mypraxis:deleteClientModal.title')}</DialogTitle>
           <DialogDescription>
-            Please type <span className="font-medium">{clientName}</span> to confirm.
+            <Trans
+              i18nKey="mypraxis:deleteClientModal.confirmText"
+              values={{ clientName }}
+              components={[<span key="client-name" className="font-medium" />]}
+            />
           </DialogDescription>
           <DialogDescription className="text-destructive mt-2">
-            All client data will be perpetually deleted. This can&apos;t be undone.
+            {t('mypraxis:deleteClientModal.warningText')}
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <Input
-            placeholder="Enter client name"
+            placeholder={t('mypraxis:deleteClientModal.enterClientName')}
             value={inputName}
             onChange={handleInputChange}
             onKeyDown={(e) => {
@@ -83,14 +90,14 @@ export function DeleteClientModal({ isOpen, onClose, onDelete, clientName }: Del
             className={`focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)] ${error ? "border-red-500" : ""}`}
             autoComplete="off"
           />
-          {error && <p className="text-sm text-red-500">Please enter the exact client name to confirm deletion</p>}
+          {error && <p className="text-sm text-red-500">{t('mypraxis:deleteClientModal.errorMessage')}</p>}
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>
-            Cancel
+            {t('mypraxis:deleteClientModal.cancel')}
           </Button>
           <Button variant="destructive" onClick={handleDelete} data-test="confirm-delete-button">
-            Delete Client
+            {t('mypraxis:deleteClientModal.delete')}
           </Button>
         </DialogFooter>
       </DialogContent>

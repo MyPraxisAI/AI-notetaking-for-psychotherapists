@@ -5,6 +5,7 @@ import { Input } from "@kit/ui/input"
 import { Label } from "@kit/ui/label"
 import { Check, MoreVertical } from "lucide-react"
 import { Button } from "@kit/ui/button"
+import { useTranslation } from "react-i18next"
 import { DeleteClientModal } from "../mypraxis/delete-client-modal"
 import { useRouter } from "next/navigation"
 import type React from "react"
@@ -23,6 +24,7 @@ interface ProfileFormProps {
 }
 
 export function ProfileForm({ clientId, onNameChange, onClientDeleted, onNewSession, onRecordingStart }: ProfileFormProps) {
+  const { t } = useTranslation()
   const { data: client, isLoading } = useClient(clientId)
   const updateClient = useUpdateClient()
   
@@ -188,8 +190,8 @@ export function ProfileForm({ clientId, onNameChange, onClientDeleted, onNewSess
     }
   }
 
-  if (isLoading) return <div className="w-full px-6 pt-6 bg-white">Loading...</div>
-  if (!client) return <div className="w-full px-6 pt-6 bg-white">Client not found</div>
+  if (isLoading) return <div className="w-full px-6 pt-6 bg-white">{t('mypraxis:profileForm.loading')}</div>
+  if (!client) return <div className="w-full px-6 pt-6 bg-white">{t('mypraxis:profileForm.clientNotFound')}</div>
 
   return (
     <div className="w-full px-6 pt-6 border-r border-[#E5E7EB] bg-white">
@@ -201,7 +203,7 @@ export function ProfileForm({ clientId, onNameChange, onClientDeleted, onNewSess
         hasNoSessions={hasNoSessions}
       />
       <div className="flex items-center justify-between mb-5">
-        <h2 className="text-[24px] font-semibold text-[#111827] tracking-[-0.011em]">Client Profile</h2>
+        <h2 className="text-[24px] font-semibold text-[#111827] tracking-[-0.011em]">{t('mypraxis:profileForm.title')}</h2>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="h-8 w-8 -mr-2" data-test="client-more-options">
@@ -213,14 +215,14 @@ export function ProfileForm({ clientId, onNameChange, onClientDeleted, onNewSess
               onClick={() => onNewSession && onNewSession()}
               data-test="new-session-button"
             >
-              New session
+              {t('mypraxis:profileForm.actions.newSession')}
             </DropdownMenuItem>
             <DropdownMenuItem
               className="text-destructive focus:text-destructive"
               onClick={() => setIsDeleteModalOpen(true)}
               data-test="delete-client-button"
             >
-              Delete client
+              {t('mypraxis:profileForm.actions.deleteClient')}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -228,7 +230,7 @@ export function ProfileForm({ clientId, onNameChange, onClientDeleted, onNewSess
       <div className="mt-5 space-y-4" data-test="client-form">
         <div className="relative space-y-3">
           <div className="flex items-center">
-            <Label htmlFor="fullName">Full Name</Label>
+            <Label htmlFor="fullName">{t('mypraxis:profileForm.fullName')}</Label>
             <div className="w-5 h-5 ml-2">
               <Check 
                 className={`h-5 w-5 transition-opacity ${
@@ -247,7 +249,7 @@ export function ProfileForm({ clientId, onNameChange, onClientDeleted, onNewSess
             onChange={(e) => handleChange(e, "fullName")}
             onBlur={(e) => handleBlur(e, "fullName")}
             onKeyDown={(e) => handleKeyDown(e, "fullName")}
-            placeholder="Enter full name"
+            placeholder={t('mypraxis:profileForm.enterFullName')}
             className="focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)]"
             data-test="client-fullname-input"
           />
@@ -255,7 +257,7 @@ export function ProfileForm({ clientId, onNameChange, onClientDeleted, onNewSess
 
         <div className="relative space-y-3">
           <div className="flex items-center">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{t('mypraxis:profileForm.email')}</Label>
             <div className="w-5 h-5 ml-2">
               <Check 
                 className={`h-5 w-5 transition-opacity ${
@@ -275,7 +277,7 @@ export function ProfileForm({ clientId, onNameChange, onClientDeleted, onNewSess
             onChange={(e) => handleChange(e, "email")}
             onBlur={(e) => handleBlur(e, "email", false, true)}
             onKeyDown={(e) => handleKeyDown(e, "email")}
-            placeholder="Enter email address"
+            placeholder={t('mypraxis:profileForm.enterEmail')}
             data-test="client-email-input"
             className={
               !validation.email
@@ -283,12 +285,12 @@ export function ProfileForm({ clientId, onNameChange, onClientDeleted, onNewSess
                 : "focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)]"
             }
           />
-          {!validation.email && <p className="text-red-500 text-sm mt-1">Please enter a valid email address</p>}
+          {!validation.email && <p className="text-red-500 text-sm mt-1">{t('mypraxis:profileForm.validationErrors.email')}</p>}
         </div>
 
         <div className="relative space-y-3">
           <div className="flex items-center">
-            <Label htmlFor="phone">Phone</Label>
+            <Label htmlFor="phone">{t('mypraxis:profileForm.phone')}</Label>
             <div className="w-5 h-5 ml-2">
               <Check 
                 className={`h-5 w-5 transition-opacity ${
@@ -307,7 +309,7 @@ export function ProfileForm({ clientId, onNameChange, onClientDeleted, onNewSess
             onChange={(e) => handleChange(e, "phone")}
             onBlur={(e) => handleBlur(e, "phone", true)}
             onKeyDown={(e) => handleKeyDown(e, "phone")}
-            placeholder="Enter phone number"
+            placeholder={t('mypraxis:profileForm.enterPhone')}
             data-test="client-phone-input"
             className={
               !validation.phone
@@ -315,7 +317,7 @@ export function ProfileForm({ clientId, onNameChange, onClientDeleted, onNewSess
                 : "focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)]"
             }
           />
-          {!validation.phone && <p className="text-red-500 text-sm mt-1">Please enter numbers or + character only</p>}
+          {!validation.phone && <p className="text-red-500 text-sm mt-1">{t('mypraxis:profileForm.validationErrors.phone')}</p>}
         </div>
       </div>
 

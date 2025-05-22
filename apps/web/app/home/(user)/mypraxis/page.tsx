@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef, useTransition as _useTransition, useCallback } from "react"
+import { useTranslation } from "react-i18next"
 import { Avatar, AvatarFallback } from "@kit/ui/avatar"
 import { Badge } from "@kit/ui/badge"
 import { Button } from "@kit/ui/button"
@@ -29,7 +30,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react"
-import { PrepNote as _PrepNote } from "../../../../components/mypraxis/prep-note"
+
 import { ProfileForm } from "../../../../components/mypraxis/profile-form"
 import { SettingsForm } from "../../../../components/mypraxis/settings-form"
 import { SessionView } from "../../../../components/mypraxis/session-view"
@@ -43,25 +44,17 @@ import { useUserSettings } from "./_lib/hooks/use-user-settings"
 import { ClientCreationModal } from "../../../../components/mypraxis/client-creation-modal"
 
 // Menu item type
-
-
 type MenuItem = "clients" | "settings" | "billing" | "help" | "gift" | "logout"
 
 // Client types
-type DemoClientId = "mike" | "yossi" | "jacob"
 type ClientId = string
-
-// Client type guards
-const isDemoClient = (id: string): id is DemoClientId => {
-  return ["mike", "yossi", "jacob"].includes(id as DemoClientId)
-}
 
 // Function to ensure type safety when setting client ID
 const setClientId = (id: string): ClientId => {
   return id
 }
 
-type DetailItem = "profile" | "prep-note" | "overview" | "client-bio" | "2024-03-28" | "2024-02-15" | "2024-01-25" | string
+type DetailItem = "profile" | "prep-note" | "overview" | "client-bio" | string
 
 interface Session {
   id: string
@@ -70,19 +63,8 @@ interface Session {
   createdAt: string
 }
 
-const sessionTranscripts: {
-  mike: {
-    [key: string]: { title: string }
-  }
-} = {
-  mike: {
-    "2024-03-28": { title: "Setting Boundaries" },
-    "2024-02-15": { title: "Grandmother's Memory" },
-    "2024-01-25": { title: "Over-Responsibility" },
-  },
-}
-
 export default function Page() {
+  const { t } = useTranslation();
   const [selectedItem, setSelectedItem] = useState<MenuItem>("clients")
   const [selectedClient, setSelectedClient] = useState<ClientId>("")
   const [selectedDetailItem, setSelectedDetailItem] = useState<DetailItem>("prep-note")
@@ -209,10 +191,7 @@ export default function Page() {
       const { clientId: _clientId, sessionId, title } = event.detail
       setSessions((prev) => prev.map((s) => (s.id === sessionId ? { ...s, title } : s)))
 
-      // Update demo sessions if needed
-      if (sessionTranscripts.mike[sessionId]) {
-        sessionTranscripts.mike[sessionId].title = title
-      }
+      // No need to update demo sessions anymore as they've been removed
     }
 
     window.addEventListener("sessionTitleChanged", handleSessionTitleChange as EventListener)
@@ -491,7 +470,7 @@ export default function Page() {
     return `${baseClass} ${selectedDetailItem === tab ? selectedClass : unselectedClass}`
   }
 
-  const formatDisplayDate = (dateStr: string) => {
+  const _formatDisplayDate = (dateStr: string) => {
     const date = new Date(dateStr)
     return `${date.getDate().toString().padStart(2, "0")}/${(date.getMonth() + 1).toString().padStart(2, "0")}`
   }
@@ -605,7 +584,7 @@ export default function Page() {
           <ClientBio 
             key={`bio-${selectedClient}`}
             clientId={selectedClient}
-            clientName={localClientNames[selectedClient] || clients.find(c => c.id === selectedClient)?.fullName || ""} 
+            _clientName={localClientNames[selectedClient] || clients.find(c => c.id === selectedClient)?.fullName || ""} 
           />
         )}
         
@@ -752,7 +731,7 @@ export default function Page() {
           <div className="px-2 mb-[1px]">
             <Button variant="ghost" className={getButtonClass("clients")} onClick={() => handleMenuClick("clients")} data-test="clients-nav-button">
               <Users2 className="h-3.5 w-3.5" />
-              Clients
+              {t('mypraxis:page.navigation.clients')}
             </Button>
           </div>
 
@@ -791,7 +770,7 @@ export default function Page() {
                 disabled={true}
               >
                 <Wallet className="h-[18px] w-[18px]" />
-                Billing
+                {t('mypraxis:page.navigation.billing')}
               </Button>
             </div>
             <div className="px-2">
@@ -802,7 +781,7 @@ export default function Page() {
                 disabled={true}
               >
                 <Gift className="h-[18px] w-[18px]" />
-                Gift Praxis
+                {t('mypraxis:page.navigation.giftPraxis')}
               </Button>
             </div>
             
@@ -815,13 +794,13 @@ export default function Page() {
                 onClick={() => handleMenuClick("settings")}
               >
                 <Settings className="h-[18px] w-[18px]" />
-                Settings
+                {t('mypraxis:page.navigation.settings')}
               </Button>
             </div>
             <div className="px-2">
               <Button variant="ghost" className={getButtonClass("help")} onClick={() => handleMenuClick("help")}>
                 <HelpCircle className="h-[18px] w-[18px]" />
-                Get help
+                {t('mypraxis:page.navigation.help')}
               </Button>
             </div>
             <div className="px-2">
@@ -838,7 +817,7 @@ export default function Page() {
                 }}
               >
                 <LogOut className="h-5 w-5" />
-                Logout
+                {t('mypraxis:page.navigation.signOut')}
               </Button>
             </div>
           </div>
@@ -888,7 +867,7 @@ export default function Page() {
             data-test="new-client-button"
           >
             <Plus className="h-4 w-4 flex-shrink-0" />
-            <span className="whitespace-nowrap">New client</span>
+            <span className="whitespace-nowrap">{t('mypraxis:page.newClient')}</span>
           </Button>
         </div>
 
@@ -902,13 +881,18 @@ export default function Page() {
                 onClick={() => handleClientClick(client.id)}
                 data-test={`client-row-${client.id}`}
               >
-                <span data-test="client-name-cell">{localClientNames[client.id] || client.fullName}</span>
-                {client.id === "mike" && (
+                <span 
+                  data-test="client-name-cell" 
+                  className={`${client.id === selectedClient ? 'text-[16px] font-semibold' : 'text-[14px] font-medium'}`}
+                >
+                  {localClientNames[client.id] || client.fullName}
+                </span>
+                { client.id === "mike" && (
                   <Badge
                     variant="secondary"
                     className="ml-0.5 mr-6 text-xs font-medium bg-white text-[#6B7280] px-2.5 py-0.5 rounded-full border border-[#E5E7EB]"
                   >
-                    Demo
+                    {t('mypraxis:page.demo')}
                   </Badge>
                 )}
               </Button>
@@ -919,7 +903,7 @@ export default function Page() {
                   handleClientClick(client.id)
                   handleDetailItemClick("profile")
                 }}
-                title="View Profile"
+                title={t('mypraxis:page.viewProfile')}
               >
                 <Edit2 className="h-4 w-4 cursor-pointer" />
               </div>
@@ -942,7 +926,7 @@ export default function Page() {
                 onClick={() => setIsClientListVisible(true)}
               >
                 <ChevronLeft className="h-4 w-4" />
-                Clients
+                {t('mypraxis:page.controlLine.clients')}
               </Button>
             )}
             {(isClientListVisible || selectedItem === "settings") && (
@@ -955,7 +939,7 @@ export default function Page() {
                 className="h-8 px-3 flex items-center gap-0.5 text-[14px] font-medium mr-[3px]"
                 onClick={() => setIsDetailsColumnVisible(true)}
               >
-                Sessions
+                {t('mypraxis:page.controlLine.sessions')}
                 <ChevronRight className="h-4 w-4" />
               </Button>
             )}
@@ -990,7 +974,7 @@ export default function Page() {
               disabled={clients.length === 0}
             >
               <ClipboardEdit className="h-4 w-4 mr-2" />
-              Prep Note
+              {t('mypraxis:page.detailsColumn.prepNote')}
             </Button>
             <Button
               variant="ghost"
@@ -999,7 +983,7 @@ export default function Page() {
               disabled={clients.length === 0}
             >
               <ClipboardList className="h-4 w-4 mr-2" />
-              Conceptualization
+              {t('mypraxis:page.detailsColumn.conceptualization')}
             </Button>
             <Button
               variant="ghost"
@@ -1008,7 +992,7 @@ export default function Page() {
               disabled={clients.length === 0}
             >
               <User className="h-4 w-4 mr-2" />
-              Client Bio
+              {t('mypraxis:page.detailsColumn.clientBio')}
             </Button>
             <Button
               variant="ghost"
@@ -1016,7 +1000,7 @@ export default function Page() {
               disabled={true}
             >
               <Brain className="h-4 w-4 mr-2" />
-              AI Supervision
+              {t('mypraxis:page.detailsColumn.aiSupervision')}
             </Button>
           </div>
 
@@ -1031,10 +1015,10 @@ export default function Page() {
               data-test="start-recording-button"
             >
               <Mic className="h-4 w-4 mr-2" />
-              Start recording
+              {t('mypraxis:page.startRecording')}
             </Button>
             <p className="text-[12px] text-muted-foreground text-center mt-2">
-              {isMobileView ? "Available on desktop" : "transcript, notes, recap"}
+              {isMobileView ? t('mypraxis:page.recordingDesktopOnly') : t('mypraxis:page.recordingFeatures')}
             </p>
           </div>
 
@@ -1068,37 +1052,12 @@ export default function Page() {
                   ))}
                 </div>
 
-                {/* Sample sessions for Mike */}
-                {isDemoClient(selectedClient) && selectedClient === "mike" && (
-                  <div className="mt-4 space-y-0.5">
-                    {Object.entries(sessionTranscripts.mike).map(([date, { title }]) => (
-                      <div
-                        key={date}
-                        className={`w-full px-4 py-2 rounded cursor-pointer transition-colors ${
-                          selectedDetailItem === date
-                            ? "bg-[#F3F4F6] font-semibold text-[#111827]"
-                            : "font-medium text-[#374151] hover:bg-[#F3F4F6]"
-                        }`}
-                        onClick={() => handleDetailItemClick(date)}
-                        data-test="session-item"
-                      >
-                        <div className="flex flex-col items-start w-full">
-                          <div className="text-[14px] font-medium text-[#111827] w-full break-words" data-test="session-list-title">
-                            {title}
-                          </div>
-                          <div className="text-[12px] text-[#6B7280]" data-test="sessions-list-date">
-                            {formatDisplayDate(date)}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+
               </>
             )}
           </div>
+          </div>
         </div>
-      </div>
 
       {/* Recording Modal */}
       <RecordingModal
@@ -1123,5 +1082,5 @@ export default function Page() {
         onSave={handleCreateClient}
       />
     </div>
-  )
+  );
 }

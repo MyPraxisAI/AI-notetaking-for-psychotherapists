@@ -2,6 +2,7 @@ import { useMutation } from '@tanstack/react-query';
 import { z } from 'zod';
 import { toast } from 'sonner';
 import { useSupabase } from '@kit/supabase/hooks/use-supabase';
+import { useTranslation } from 'react-i18next';
 
 // Password validation schema
 export const PasswordSchema = z
@@ -20,6 +21,23 @@ export const PasswordSchema = z
     path: ['passwordConfirmation'],
   });
 
+// Create a function to get a schema with translations
+export const getPasswordSchema = (t: (key: string) => string) => z
+  .object({
+    password: z
+      .string()
+      .min(8, t('hooks.userProfile.passwordMinLength'))
+      .regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\da-zA-Z]).{8,}$/,
+        t('hooks.userProfile.passwordRequirements'),
+      ),
+    passwordConfirmation: z.string(),
+  })
+  .refine((data) => data.password === data.passwordConfirmation, {
+    message: t('hooks.userProfile.passwordsDoNotMatch'),
+    path: ['passwordConfirmation'],
+  });
+
 export type PasswordFormValues = z.infer<typeof PasswordSchema>;
 
 /**
@@ -27,6 +45,7 @@ export type PasswordFormValues = z.infer<typeof PasswordSchema>;
  */
 export function useUpdatePassword() {
   const client = useSupabase();
+  const { t } = useTranslation('mypraxis');
 
   return useMutation({
     mutationFn: async (password: string) => {
@@ -41,11 +60,11 @@ export function useUpdatePassword() {
       return { success: true };
     },
     onSuccess: () => {
-      toast.success('Password updated successfully');
+      toast.success(t('hooks.userProfile.passwordUpdatedSuccess'));
     },
     onError: (error) => {
       console.error('Error updating password:', error);
-      toast.error('Failed to update password. Please try again.');
+      toast.error(t('hooks.userProfile.passwordUpdatedError'));
     },
   });
 }

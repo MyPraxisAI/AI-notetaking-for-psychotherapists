@@ -57,7 +57,7 @@ export function OnboardingModal({
   const [error, setError] = useState<string | null>(null)
   
   // Translation hook
-  const { t: _t } = useTranslation()
+  const { t } = useTranslation(['mypraxis'])
   
   // Get therapist field update hook
   const { updateField, isLoading: _isUpdating } = useUpdateTherapistField()
@@ -104,7 +104,7 @@ export function OnboardingModal({
   // Handle next button click - memoized with dependencies
   const handleNext = useCallback(async () => {
     if (!selectedApproach) {
-      setError("Please select a therapeutic approach")
+      setError(t('mypraxis:onboarding.errorSelectApproach'))
       return
     }
     
@@ -122,7 +122,7 @@ export function OnboardingModal({
     } finally {
       setIsProcessing(false)
     }
-  }, [selectedApproach, updateField])
+  }, [selectedApproach, updateField, t])
   
   // Handle close - memoized with dependencies
   const handleClose = useCallback(() => {
@@ -167,8 +167,8 @@ export function OnboardingModal({
             <div className="p-6 border-b border-gray-200">
               <h2 className="text-xl font-semibold text-gray-900">
                 {modalState === "selection" 
-                  ? "Welcome to MyPraxis" 
-                  : "Setup Complete"}
+                  ? t('mypraxis:onboarding.welcomeTitle') 
+                  : t('mypraxis:onboarding.setupCompleteTitle')}
               </h2>
             </div>
             
@@ -177,17 +177,17 @@ export function OnboardingModal({
               {modalState === "selection" && (
                 <>
                   <p className="text-gray-600 mb-4">
-                    Select your therapy style and we shall use it to analyze the sessions you will record.
+                    {t('mypraxis:onboarding.selectTherapyStyleText')}
                   </p>
                   
                   <div className="mb-3">
                     <label className="block text-sm font-medium text-gray-700 mb-2.5">
-                      Primary Therapeutic Approach
+                      {t('mypraxis:onboarding.primaryApproachLabel')}
                     </label>
                     <TherapeuticApproachesSelect
                       value={selectedApproach}
                       onValueChange={handleApproachChange}
-                      placeholder="Choose approach"
+                      placeholder={t('mypraxis:onboarding.chooseApproachPlaceholder')}
                       className="w-full"
                       testId="onboarding-therapeutic-approach-select"
                       disabled={isProcessing}
@@ -202,10 +202,10 @@ export function OnboardingModal({
               {modalState === "success" && (
                 <div className="text-center py-4">
                   <p className="text-gray-600 mb-5">
-                    Thanks, you are good to go! You can always change your Therapeutic Approach in the Settings on the left.
+                    {t('mypraxis:onboarding.thanksText')}
                   </p>
                   <p className="text-gray-600 mb-5">
-                    Now check out the demo client or add a new client to start recording your first session.
+                    {t('mypraxis:onboarding.checkoutDemoText')}
                   </p>
                 </div>
               )}
@@ -222,10 +222,10 @@ export function OnboardingModal({
                   {isProcessing ? (
                     <>
                       <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                      Saving...
+                      {t('mypraxis:onboarding.savingButton')}
                     </>
                   ) : (
-                    "Next"
+                    t('mypraxis:onboarding.nextButton')
                   )}
                 </Button>
               )}
@@ -239,10 +239,10 @@ export function OnboardingModal({
                   {isProcessing ? (
                     <>
                       <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                      Finishing...
+                      {t('mypraxis:onboarding.finishingButton')}
                     </>
                   ) : (
-                    "Finish"
+                    t('mypraxis:onboarding.finishButton')
                   )}
                 </Button>
               )}

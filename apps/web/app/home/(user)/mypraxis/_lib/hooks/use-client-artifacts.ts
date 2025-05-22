@@ -3,6 +3,7 @@
 import { useQuery, useQueryClient, QueryClient } from '@tanstack/react-query';
 import { useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 interface ClientArtifactResponse {
   content: string;
@@ -111,6 +112,8 @@ export function useClientArtifact(
     }
   }, [isStale, queryClient, queryKey, type, enabled]);
   
+  const { t } = useTranslation('mypraxis');
+  
   return useQuery<ClientArtifactResponse>({
     queryKey,
     queryFn: async () => {
@@ -132,7 +135,7 @@ export function useClientArtifact(
         return response.json();
       } catch (error) {
         console.error(`[useClientArtifact] ERROR fetching ${type}:`, error);
-        toast.error(`Failed to load ${type.replace('_', ' ')}`);
+        toast.error(t('hooks.clientArtifacts.failedToLoad', { type: type.replace('_', ' ') }));
         throw error;
       }
     },
