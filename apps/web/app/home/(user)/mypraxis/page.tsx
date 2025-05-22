@@ -969,7 +969,7 @@ export default function Page() {
               disabled={clients.length === 0}
             >
               <ClipboardEdit className="h-4 w-4 mr-2" />
-              Prep Note
+              {t('mypraxis:page.detailsColumn.prepNote')}
             </Button>
             <Button
               variant="ghost"
@@ -978,7 +978,7 @@ export default function Page() {
               disabled={clients.length === 0}
             >
               <ClipboardList className="h-4 w-4 mr-2" />
-              Conceptualization
+              {t('mypraxis:page.detailsColumn.conceptualization')}
             </Button>
             <Button
               variant="ghost"
@@ -987,7 +987,7 @@ export default function Page() {
               disabled={clients.length === 0}
             >
               <User className="h-4 w-4 mr-2" />
-              Client Bio
+              {t('mypraxis:page.detailsColumn.clientBio')}
             </Button>
             <Button
               variant="ghost"
@@ -995,7 +995,7 @@ export default function Page() {
               disabled={true}
             >
               <Brain className="h-4 w-4 mr-2" />
-              AI Supervision
+              {t('mypraxis:page.detailsColumn.aiSupervision')}
             </Button>
           </div>
 

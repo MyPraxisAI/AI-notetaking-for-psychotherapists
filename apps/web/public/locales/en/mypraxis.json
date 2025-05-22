@@ -125,6 +125,12 @@
     "controlLine": {
       "clients": "Clients",
       "sessions": "Sessions"
+    },
+    "detailsColumn": {
+      "prepNote": "Prep Note",
+      "conceptualization": "Conceptualization",
+      "clientBio": "Client Bio",
+      "aiSupervision": "AI Supervision"
     }
   },
   "profileForm": {
