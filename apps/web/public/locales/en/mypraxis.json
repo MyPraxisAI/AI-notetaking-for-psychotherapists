@@ -224,7 +224,9 @@
       "select": "Select microphone",
       "builtin": "MacBook Air Microphone (Built-in)",
       "allow": "Allow Microphone Access",
-      "checking": "Checking Microphone..."
+      "checking": "Checking Microphone...",
+      "accessError": "Could not access microphone. Please check permissions.",
+      "failedAccess": "Failed to access microphone"
     },
     "transcription": {
       "label": "Transcription",
@@ -245,7 +247,23 @@
       "button": "Import Audio File",
       "importing": "Importing Audio File..."
     },
-    "close": "close"
+    "close": "close",
+    "confirmCloseTitle": "Confirm Close",
+    "confirmClose": "Recording won't be saved if you proceed. Are you sure you want to close?",
+    "cancel": "Cancel",
+    "confirm": "Yes, Close",
+    "errors": {
+      "startFailed": "Failed to start recording"
+    }
+  },
+  "recordingApi": {
+    "errors": {
+      "startFailed": "Failed to start recording",
+      "pauseFailed": "Failed to pause recording",
+      "resumeFailed": "Failed to resume recording",
+      "completeFailed": "Failed to complete recording",
+      "abortFailed": "Error aborting recording"
+    }
   },
   "hooks": {
     "clientArtifacts": {

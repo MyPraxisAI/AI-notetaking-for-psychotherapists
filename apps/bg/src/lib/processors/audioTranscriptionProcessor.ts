@@ -399,37 +399,8 @@ export class AudioTranscriptionProcessor {
     const { accountId, recordingId } = task;
     
     try {
-      // Delete all storage objects in the recordings bucket with the prefix {accountId}/{recordingId}
-      const storagePrefix = `${accountId}/${recordingId}`;
-      console.log(`Deleting storage objects with prefix: ${storagePrefix}`);
-      
-      // List all objects with the prefix
-      const { data: storageObjects, error: listError } = await supabase
-        .storage
-        .from('recordings')
-        .list(storagePrefix);
-        
-      if (listError) {
-        console.error('Error listing storage objects:', listError);
-      } else if (storageObjects && storageObjects.length > 0) {
-        // Delete each object found
-        const filesToDelete = storageObjects.map(obj => `${storagePrefix}/${obj.name}`);
-        const { error: deleteError } = await supabase
-          .storage
-          .from('recordings')
-          .remove(filesToDelete);
-          
-        if (deleteError) {
-          console.error('Error deleting storage objects:', deleteError);
-          throw new Error(`Failed to delete storage objects: ${deleteError.message}`);
-        } else {
-          console.log(`Successfully deleted ${filesToDelete.length} storage objects`);
-        }
-      } else {
-        console.log('No storage objects found to delete');
-      }
-      
       // Delete the recording from the database
+      // This will trigger deletion of the corresponding storage objects and recordings_chunks
       const { error: recordingDeleteError } = await supabase
         .from('recordings')
         .delete()
