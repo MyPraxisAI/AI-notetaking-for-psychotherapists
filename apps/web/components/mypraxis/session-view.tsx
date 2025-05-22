@@ -759,7 +759,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
         <TabsContent value="summary" className="mt-5">
           <div className="space-y-5">
             <div className="relative space-y-3">
-              <Label>My Note</Label>
+              <Label>{t('mypraxis:sessionView.notes.myNote')}</Label>
               {isEditing ? (
                 <div className="relative">
                   <Textarea
