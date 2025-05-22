@@ -126,5 +126,33 @@
       "clients": "Clients",
       "sessions": "Sessions"
     }
+  },
+  "profileForm": {
+    "title": "Client Profile",
+    "loading": "Loading...",
+    "clientNotFound": "Client not found",
+    "fullName": "Full Name",
+    "email": "Email",
+    "phone": "Phone",
+    "enterFullName": "Enter full name",
+    "enterEmail": "Enter email address",
+    "enterPhone": "Enter phone number",
+    "actions": {
+      "newSession": "New session",
+      "deleteClient": "Delete client"
+    },
+    "validationErrors": {
+      "email": "Please enter a valid email address",
+      "phone": "Please enter numbers or + character only"
+    }
+  },
+  "deleteClientModal": {
+    "title": "Delete Client",
+    "confirmText": "Please type <1>{{clientName}}</1> to confirm.",
+    "warningText": "All client data will be perpetually deleted. This can not be undone.",
+    "enterClientName": "Enter client name",
+    "errorMessage": "Please enter the exact client name to confirm deletion",
+    "cancel": "Cancel",
+    "delete": "Delete Client"
   }
 }
