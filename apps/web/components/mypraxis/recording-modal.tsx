@@ -4,14 +4,11 @@ import { useState, useEffect, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "@kit/ui/button"
 import { Mic, Pause, Play, Loader2, Upload } from "lucide-react"
+import { AudioChunk, uploadAudioChunks, uploadAudioChunkWithId, processAudioFile } from "./utils/audio-upload"
+import * as RecordingAPI from "./utils/recording-api"
+import * as MediaRecorderUtils from "./utils/media-recorder"
 
-// Define the interface for audio chunks
-interface AudioChunk {
-  blob: Blob;
-  number: number;
-  startTime: number;
-  endTime: number;
-}
+// AudioChunk interface is now imported from ./utils/audio-upload
 
 import { toast } from "sonner"
 import {
@@ -126,7 +123,7 @@ export function RecordingModal({
   // We're intentionally omitting sendHeartbeat from the deps array
   // because it's defined later in the file
   
-  // API functions for recording
+  // API functions for recording - now using the extracted API module
   const startRecording = async (options: { standaloneChunks?: boolean } = {}) => {
     try {
       setIsProcessing(true)
@@ -135,26 +132,18 @@ export function RecordingModal({
       // Reset audio chunks
       audioChunks.current = []
       
-      const response = await fetch('/api/recordings/start', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ 
-          clientId: selectedClient,
-          transcriptionEngine: selectedTranscriptionEngine,
-          standaloneChunks: options.standaloneChunks
-        })
+      const recordingId = await RecordingAPI.startRecording({
+        clientId: selectedClient,
+        transcriptionEngine: selectedTranscriptionEngine,
+        standaloneChunks: options.standaloneChunks
       })
       
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to start recording')
+      if (recordingId) {
+        setRecordingId(recordingId)
+        return recordingId
+      } else {
+        throw new Error('Failed to start recording')
       }
-      
-      const data = await response.json()
-      setRecordingId(data.recording.id)
-      return data.recording.id
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to start recording')
       toast.error(err instanceof Error ? err.message : 'Failed to start recording')
@@ -171,16 +160,13 @@ export function RecordingModal({
       setIsProcessing(true)
       setError(null)
       
-      const response = await fetch(`/api/recordings/${recordingId}/pause`, {
-        method: 'POST'
-      })
+      const result = await RecordingAPI.pauseRecording(recordingId)
       
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to pause recording')
+      if (!result) {
+        throw new Error('Failed to pause recording')
       }
       
-      return await response.json()
+      return result
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to pause recording')
       toast.error(err instanceof Error ? err.message : 'Failed to pause recording')
@@ -197,16 +183,13 @@ export function RecordingModal({
       setIsProcessing(true)
       setError(null)
       
-      const response = await fetch(`/api/recordings/${recordingId}/resume`, {
-        method: 'POST'
-      })
+      const result = await RecordingAPI.resumeRecording(recordingId)
       
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to resume recording')
+      if (!result) {
+        throw new Error('Failed to resume recording')
       }
       
-      return await response.json()
+      return result
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to resume recording')
       toast.error(err instanceof Error ? err.message : 'Failed to resume recording')
@@ -223,27 +206,13 @@ export function RecordingModal({
       setIsProcessing(true)
       setError(null)
       
-      const response = await fetch(`/api/recordings/${recordingId}/complete`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ createSession: true })
-      })
+      const result = await RecordingAPI.completeRecording(recordingId)
       
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to complete recording')
+      if (!result) {
+        throw new Error('Failed to complete recording')
       }
       
-      const data = await response.json()
-      
-      // The API returns { recording: {...}, sessionId: "..." }
-      return {
-        ...data,
-        // Ensure we have a consistent property name for the session ID
-        sessionId: data.sessionId
-      }
+      return result
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to complete recording')
       toast.error(err instanceof Error ? err.message : 'Failed to complete recording')
@@ -257,13 +226,7 @@ export function RecordingModal({
     if (!recordingId) return
     
     try {
-      const response = await fetch(`/api/recordings/${recordingId}/heartbeat`, {
-        method: 'POST'
-      })
-      
-      if (!response.ok) {
-        console.error('Failed to send heartbeat')
-      }
+      await RecordingAPI.sendHeartbeat(recordingId)
     } catch (err) {
       console.error('Heartbeat error:', err)
     }
@@ -292,46 +255,41 @@ export function RecordingModal({
     }
   }, [isOpen, clientId, clientName])
   
-  // Setup MediaRecorder and audio handling
+  // Setup MediaRecorder and audio handling - now using the extracted utility functions
   const setupMediaRecorder = async () => {
     try {
-      // Request audio with specific constraints for better quality
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
+      // Setup the MediaRecorder with optimal settings
+      const recorder = await MediaRecorderUtils.setupMediaRecorder(
+        {
           echoCancellation: true,
           noiseSuppression: true,
           autoGainControl: true,
           sampleRate: 48000,
-          channelCount: 1 // Mono for voice clarity
+          channelCount: 1, // Mono for voice clarity
+          audioBitsPerSecond: 128000 // 128 kbps for good quality voice
+        },
+        {
+          onError: (error) => {
+            console.error('MediaRecorder error:', error);
+            toast.error('Error during recording. Please try again.');
+            setError(error.message || 'Recording error occurred. Please try again.');
+          },
+          onDataAvailable: () => {} // This will be configured later in handleStartRecording
         }
-      })
+      );
       
-      // Find the best supported mime type
-      const mimeTypes = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus', 'audio/ogg']
-      const selectedMimeType = mimeTypes.find(type => MediaRecorder.isTypeSupported(type)) || 'audio/webm'
-      
-      console.log(`Using MIME type: ${selectedMimeType} for recording`)
-      
-      // Create the MediaRecorder with optimal settings
-      mediaRecorder.current = new MediaRecorder(stream, { 
-        mimeType: selectedMimeType,
-        audioBitsPerSecond: 128000 // 128 kbps for good quality voice
-      })
-      
-      // Add error handler
-      mediaRecorder.current.onerror = (event) => {
-        console.error('MediaRecorder error:', event)
-        toast.error('Error during recording. Please try again.')
-        setError('Recording error occurred. Please try again.')
+      if (recorder) {
+        mediaRecorder.current = recorder;
+        console.log('MediaRecorder initialized successfully');
+        return true;
+      } else {
+        throw new Error('Failed to initialize MediaRecorder');
       }
-      
-      console.log('MediaRecorder initialized successfully')
-      return true
     } catch (err) {
-      console.error('Error accessing microphone:', err)
-      toast.error('Could not access microphone. Please check permissions.')
-      setError(err instanceof Error ? err.message : 'Failed to access microphone')
-      return false
+      console.error('Error accessing microphone:', err);
+      toast.error('Could not access microphone. Please check permissions.');
+      setError(err instanceof Error ? err.message : 'Failed to access microphone');
+      return false;
     }
   }
   
@@ -348,18 +306,13 @@ export function RecordingModal({
   }
   
   const cleanupRecording = () => {
-    // Stop media recorder if active
-    if (mediaRecorder.current && mediaRecorder.current.state !== "inactive") {
-      mediaRecorder.current.stop()
+    // Clean up the MediaRecorder using the utility function
+    if (mediaRecorder.current) {
+      MediaRecorderUtils.cleanupMediaRecorder(mediaRecorder.current);
+      mediaRecorder.current = null;
     }
     
-    // Stop all tracks in the stream
-    if (mediaRecorder.current && mediaRecorder.current.stream) {
-      mediaRecorder.current.stream.getTracks().forEach(track => track.stop())
-    }
-    
-    // Clear media recorder and audio chunks
-    mediaRecorder.current = null
+    // Clear audio chunks
     audioChunks.current = []
     
     // Reset recording state
@@ -409,76 +362,45 @@ export function RecordingModal({
       // Store the recordingId in a ref to ensure it's available in the closure
       const currentRecordingId = newRecordingId
       
-      // Start the MediaRecorder
+      // Start the MediaRecorder using the utility functions
       if (mediaRecorder.current) {
-        console.log('Starting MediaRecorder with 5-second chunks')
+        console.log('Configuring MediaRecorder for chunks')
         
-        // Initialize chunk tracking variables
-        let chunkNumber = 1;
-        
-        // Use performance.now() for precise timing
-        const recordingStartTime = performance.now();
-        let chunkStartTimeMs = recordingStartTime;
-        
-        // Update the ondataavailable handler to use the current recordingId
-        mediaRecorder.current.ondataavailable = async (event) => {
-          // Get precise current time using performance.now()
-          const currentTimeMs = performance.now();
-          
-          // Calculate seconds since recording started (as floating point for precision)
-          const chunkStartTimeSec = (chunkStartTimeMs - recordingStartTime) / 1000;
-          const chunkEndTimeSec = (currentTimeMs - recordingStartTime) / 1000;
-          
-          console.log('ondataavailable event triggered', {
-            dataSize: event.data.size,
-            stateRecordingId: recordingId,
-            currentRecordingId,
-            timerState: timer,
-            chunkNumber,
-            chunkStartTimeSec,
-            chunkEndTimeSec
-          })
-          
-          if (event.data.size > 0) {
-            // Add to audio chunks array with metadata
-            const chunkData = {
-              blob: event.data,
-              number: chunkNumber,
-              startTime: chunkStartTimeSec,
-              endTime: chunkEndTimeSec
-            };
-            audioChunks.current.push(chunkData);
-            
-            // Calculate duration in seconds (floating point)
-            const durationSec = chunkEndTimeSec - chunkStartTimeSec;
-            
-            // Use the current recordingId directly instead of relying on state
-            console.log(`Processing chunk ${chunkNumber}: ${chunkStartTimeSec.toFixed(3)}s to ${chunkEndTimeSec.toFixed(3)}s (duration: ${durationSec.toFixed(3)}s) with recordingId: ${currentRecordingId}`);
-            
-            // Prepare for next chunk - do this immediately, not after upload
-            chunkNumber++;
-            chunkStartTimeMs = currentTimeMs;
-            console.log(`Next chunk will start at ${(chunkStartTimeMs - recordingStartTime) / 1000}s`);
-            
-            // Trigger upload of all pending chunks in the background
-            uploadAudioChunks(currentRecordingId).catch(err => {
-              console.error('Error uploading audio chunks:', err);
-            });
+        // Configure the MediaRecorder to handle audio chunks
+        const recordingStartTime = MediaRecorderUtils.configureMediaRecorderForChunks(
+          mediaRecorder.current,
+          currentRecordingId,
+          audioChunks,
+          {
+            onError: (error) => {
+              console.error('MediaRecorder error:', error);
+              toast.error('Error during recording. Please try again.');
+              setError(error.message || 'Recording error occurred. Please try again.');
+            },
+            onDataAvailable: (event, metadata) => {
+              if (event.data.size > 0) {
+                // Log the chunk details
+                console.log('ondataavailable event triggered', {
+                  dataSize: event.data.size,
+                  stateRecordingId: recordingId,
+                  currentRecordingId,
+                  timerState: timer,
+                  chunkNumber: metadata.chunkNumber,
+                  chunkStartTimeSec: metadata.startTime,
+                  chunkEndTimeSec: metadata.endTime
+                });
+                
+                // Trigger upload of all pending chunks in the background
+                handleUploadAudioChunks(currentRecordingId).catch(err => {
+                  console.error('Error uploading audio chunks:', err);
+                });
+              }
+            }
           }
-        }
+        );
         
-        // Start the MediaRecorder with 4 minute chunks, experimentally this works out to 3.7Mb
-        // TODO: A better implementation might be to use a smaller period here, aggregate chunks in an in-memory array,
-        // but attempt to upload them only when the total size of the chunks in memory reaches 4Mb
-        mediaRecorder.current.start(4 * 60 * 1000);
-        
-        // Request data immediately to test the ondataavailable handler
-        setTimeout(() => {
-          if (mediaRecorder.current && mediaRecorder.current.state === 'recording') {
-            console.log('Requesting initial data from MediaRecorder');
-            mediaRecorder.current.requestData();
-          }
-        }, 1000)
+        // Start the MediaRecorder with 4 minute chunks
+        MediaRecorderUtils.startMediaRecorder(mediaRecorder.current, 4 * 60 * 1000);
         
         setIsRecording(true)
         setModalState("recording")
@@ -499,161 +421,12 @@ export function RecordingModal({
     }
   }
   
-  // Helper function to upload all pending audio chunks
-  const uploadAudioChunks = async (explicitRecordingId: string) => {
-    // Check if another upload process is already running
-    if (isUploading.current) {
-      console.log('Upload already in progress, skipping this request');
-      return false;
-    }
-    
-    try {
-      // Set the lock to prevent concurrent executions
-      isUploading.current = true;
-      
-      let successCount = 0;
-      let failCount = 0;
-      let _totalProcessed = 0;
-      
-      // Process chunks in a loop until the array is empty or we hit a maximum number of attempts
-      // This ensures we catch new chunks added during the upload process
-      const MAX_ITERATIONS = 100; // Safety limit to prevent infinite loops
-      let iterations = 0;
-      
-      console.log(`Starting upload loop for recording: ${explicitRecordingId}`);
-      
-      while (audioChunks.current.length > 0 && iterations < MAX_ITERATIONS) {
-        iterations++;
-        
-        // Get the first chunk in the array
-        const chunk = audioChunks.current[0];
-        
-        // Safety check - this shouldn't happen but TypeScript needs it
-        if (!chunk) {
-          console.warn('Found undefined chunk at index 0, skipping');
-          audioChunks.current.shift(); // Remove the invalid entry
-          continue;
-        }
-        
-        console.log(`Processing chunk ${chunk.number} (iteration ${iterations})`);
-        _totalProcessed++;
-        
-        try {
-          // Attempt to upload the chunk
-          const result = await uploadAudioChunkWithId(
-            chunk.blob,
-            chunk.number,
-            chunk.startTime,
-            chunk.endTime,
-            explicitRecordingId
-          );
-          
-          // If successful, remove the chunk from the array
-          if (result) {
-            successCount++;
-            audioChunks.current.shift(); // Remove the first element
-            console.log(`Chunk ${chunk.number} uploaded successfully and removed from queue`);
-          } else {
-            failCount++;
-            console.log(`Chunk ${chunk.number} upload failed, waiting before retry...`);
-            // Wait a bit before retrying the same chunk
-            await new Promise(resolve => setTimeout(resolve, 1000));
-          }
-        } catch (error) {
-          failCount++;
-          console.error(`Error uploading chunk ${chunk.number}:`, error);
-          // Wait a bit before retrying the same chunk
-          await new Promise(resolve => setTimeout(resolve, 1000));
-        }
-      }
-      
-      if (iterations >= MAX_ITERATIONS) {
-        console.warn(`Reached maximum iterations (${MAX_ITERATIONS}) while uploading chunks`);
-      }
-      
-      console.log(`Upload results: ${successCount} succeeded, ${failCount} failed. Remaining chunks: ${audioChunks.current.length}`);
-      return failCount === 0 && audioChunks.current.length === 0;
-    } finally {
-      // Release the lock when done, regardless of success or failure
-      isUploading.current = false;
-    }
+  // Helper function to upload all pending audio chunks - now using the extracted function
+  const handleUploadAudioChunks = async (explicitRecordingId: string) => {
+    return await uploadAudioChunks(explicitRecordingId, audioChunks, isUploading);
   };
   
-  // Helper function to upload a single chunk with explicit recordingId
-  const uploadAudioChunkWithId = async (
-    blob: Blob, 
-    chunkNumber: number, 
-    startTime: number, // Now a floating-point value in seconds
-    endTime: number,   // Now a floating-point value in seconds
-    explicitRecordingId: string
-  ) => {
-    console.log(`Uploading chunk ${chunkNumber} with explicit recordingId: ${explicitRecordingId}`, {
-      startTime: startTime.toFixed(3),
-      endTime: endTime.toFixed(3),
-      duration: (endTime - startTime).toFixed(3)
-    })
-    
-    try {
-      // Create a FormData object to send the audio chunk
-      const formData = new FormData()
-      
-      // Determine file extension based on MIME type
-      const fileExtension = blob.type.includes('webm') ? 'webm' : 
-                            blob.type.includes('ogg') ? 'ogg' : 
-                            'webm'; // Default to webm if unknown
-      
-      // Add the audio blob with a properly formatted filename and correct extension
-      formData.append('audio', blob, `chunk-${chunkNumber.toString().padStart(3, '0')}.${fileExtension}`)
-      
-      // Add metadata - ensure these are properly set
-      formData.append('chunkNumber', chunkNumber.toString())
-      formData.append('startTime', startTime.toString())
-      formData.append('endTime', endTime.toString())
-      formData.append('mimeType', blob.type)
-      formData.append('size', blob.size.toString())
-      
-      // Double-check the FormData values
-      console.log('FormData values:', {
-        chunkNumber: formData.get('chunkNumber'),
-        startTime: formData.get('startTime'),
-        endTime: formData.get('endTime'),
-        mimeType: formData.get('mimeType'),
-        size: formData.get('size')
-      })
-      
-      // Log the request details
-      const url = `/api/recordings/${explicitRecordingId}/chunk`
-      console.log(`Sending chunk to ${url}`, {
-        chunkNumber,
-        size: blob.size,
-        startTime,
-        endTime,
-        mimeType: blob.type
-      })
-      
-      // Send the chunk to the server
-      const response = await fetch(url, {
-        method: 'POST',
-        body: formData
-      })
-      
-      console.log(`Server response for chunk ${chunkNumber}:`, {
-        status: response.status,
-        statusText: response.statusText
-      })
-      
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to upload audio chunk')
-      }
-      
-      console.log(`Chunk ${chunkNumber} uploaded successfully`)
-      return true
-    } catch (err) {
-      console.error(`Chunk ${chunkNumber} upload error:`, err)
-      return false
-    }
-  }
+  // We're now using the imported uploadAudioChunkWithId function from utils/audio-upload.ts
   
   const handlePauseRecording = async () => {
     try {
@@ -667,15 +440,14 @@ export function RecordingModal({
       const result = await pauseRecording()
       
       if (result) {
-        // Pause the MediaRecorder
-        if (mediaRecorder.current && mediaRecorder.current.state === 'recording') {
-          mediaRecorder.current.requestData() // Get any remaining data
-          mediaRecorder.current.pause()
+        // Pause the MediaRecorder using the utility function
+        if (mediaRecorder.current) {
+          MediaRecorderUtils.pauseMediaRecorder(mediaRecorder.current);
         }
         
         // Make sure all chunks are uploaded when pausing
         if (recordingId) {
-          await uploadAudioChunks(recordingId).catch(err => {
+          await handleUploadAudioChunks(recordingId).catch(err => {
             console.error('Error uploading chunks during pause:', err);
           });
         }
@@ -698,9 +470,9 @@ export function RecordingModal({
       const result = await resumeRecording()
       
       if (result) {
-        // Resume the MediaRecorder
-        if (mediaRecorder.current && mediaRecorder.current.state === 'paused') {
-          mediaRecorder.current.resume()
+        // Resume the MediaRecorder using the utility function
+        if (mediaRecorder.current) {
+          MediaRecorderUtils.resumeMediaRecorder(mediaRecorder.current);
         }
         
         setIsRecording(true)
@@ -728,7 +500,7 @@ export function RecordingModal({
   };
 
 
-  // Handle file selection
+  // Handle file selection - now using the extracted utility function
   const handleFileSelected = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -743,68 +515,23 @@ export function RecordingModal({
         throw new Error('Failed to create recording');
       }
       
-      // 2. Calculate chunks needed without creating them all at once
-      const MAX_CHUNK_SIZE = 4.2 * 1024 * 1024; // 4.5mb is the Vercel upload limit, above that get errors
-      const totalChunks = Math.ceil(file.size / MAX_CHUNK_SIZE);
-      console.log(`Will process file in ${totalChunks} chunks`);
-      
-      // Estimate total duration based on file size (rough estimate)
-      // For MP3, ~1MB ≈ 1 minute of audio at 128kbps
-      const estimatedTotalDuration = (file.size / (128 * 1024)) * 8;
-      const durationPerChunk = estimatedTotalDuration / totalChunks;
-      
-      // 3. Process and upload one chunk at a time to reduce memory usage
-      for (let i = 0; i < totalChunks; i++) {
-        const start = i * MAX_CHUNK_SIZE;
-        const end = Math.min(start + MAX_CHUNK_SIZE, file.size);
-        const chunk = file.slice(start, end, file.type);
-        
-        const chunkNumber = i + 1;
-        const startTime = i * durationPerChunk;
-        const endTime = (i + 1) * durationPerChunk;
-        
-        const formData = new FormData();
-        formData.append('audio', chunk, `chunk-${chunkNumber}.${file.name.split('.').pop()}`);
-        formData.append('chunkNumber', chunkNumber.toString());
-        formData.append('startTime', startTime.toString());
-        formData.append('endTime', endTime.toString());
-        formData.append('mimeType', file.type);
-        
-        console.log(`Uploading chunk ${chunkNumber}/${totalChunks}, size: ${(chunk.size / (1024 * 1024)).toFixed(2)}MB`);
-        
-        const response = await fetch(`/api/recordings/${newRecordingId}/chunk`, {
-          method: 'POST',
-          body: formData
-        });
-        
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || `Failed to upload chunk ${chunkNumber}`);
-        }
-      }
-      
-      // 4. Complete the recording
-      const result = await fetch(`/api/recordings/${newRecordingId}/complete`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
+      // 2. Process the file using our utility function
+      const result = await processAudioFile(file, {
+        recordingId: newRecordingId,
+        onProgress: (current: number, total: number) => {
+          // Could add progress indicator here if needed
+          console.log(`Processing chunk ${current}/${total}`);
         },
-        body: JSON.stringify({ createSession: true })
+        onError: (error: Error) => {
+          setError(error.message);
+          toast.error(error.message);
+        }
       });
       
-      if (!result.ok) {
-        const errorData = await result.json();
-        throw new Error(errorData.error || 'Failed to complete recording');
-      }
-      
-      const data = await result.json();
-      
-      // 5. Navigate to the session
+      // 3. Navigate to the session
       toast.success('Audio file imported successfully');
-      if (data.sessionId) {
-        await onSave(data.sessionId);
-      } else if (data.session_id) {
-        await onSave(data.session_id);
+      if (result.sessionId) {
+        await onSave(result.sessionId);
       } else {
         await onSave();
       }
@@ -824,15 +551,14 @@ export function RecordingModal({
     try {
       setModalState("saving")
       
-      // Stop the MediaRecorder and get final data
-      if (mediaRecorder.current && mediaRecorder.current.state !== 'inactive') {
-        mediaRecorder.current.requestData() // Get any remaining data
-        mediaRecorder.current.stop()
+      // Stop the MediaRecorder using the utility function
+      if (mediaRecorder.current) {
+        MediaRecorderUtils.stopMediaRecorder(mediaRecorder.current);
       }
       
       // Make sure all chunks are uploaded before completing the recording
       if (recordingId) {
-        await uploadAudioChunks(recordingId).catch(err => {
+        await handleUploadAudioChunks(recordingId).catch(err => {
           console.error('Error uploading final chunks:', err);
         });
       }
@@ -849,12 +575,8 @@ export function RecordingModal({
         
         // Pass the session ID to the onSave callback for navigation
         if (result.sessionId) {
-          console.log('Found session ID in result:', result.sessionId)
+          console.log('Found sessionId in result:', result.sessionId)
           await onSave(result.sessionId)
-        } else if (result.session_id) {
-          // Try snake_case version as well
-          console.log('Found session_id in result:', result.session_id)
-          await onSave(result.session_id)
         } else {
           console.log('No session ID found in result:', result)
           await onSave()
@@ -975,43 +697,12 @@ export function RecordingModal({
                     </div>
                   </div>
                 </div>
-                
-                {/* Intake session toggle - temporarily hidden, can be re-enabled in the future
-                <div className="p-4 bg-white rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="text-lg font-medium">Intake session</h3>
-                      <p className="text-sm text-gray-500">Processing differs for intake and follow-ups</p>
-                    </div>
-                    <Switch
-                      checked={isIntakeSession}
-                      onCheckedChange={setIsIntakeSession}
-                    />
-                  </div>
-                </div>
-                */}
               </div>
             )}
             
             {(modalState === "recording" || modalState === "paused" || modalState === "saving") && (
               <div className="p-6 pb-4 bg-gray-50 border-b border-gray-200">
                 <h2 className="text-lg font-medium text-center">Session with <span className="underline">{selectedClientName}</span></h2>
-                
-                {/* Intake session toggle - temporarily hidden, can be re-enabled in the future
-                <div className="p-4 bg-white rounded-lg mt-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="text-lg font-medium">Intake session</h3>
-                      <p className="text-sm text-gray-500">Processing differs for intake and follow-ups</p>
-                    </div>
-                    <Switch
-                      checked={isIntakeSession}
-                      onCheckedChange={setIsIntakeSession}
-                      disabled={modalState === "recording" || modalState === "saving"}
-                    />
-                  </div>
-                </div>
-                */}
               </div>
             )}
             
