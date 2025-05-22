@@ -167,7 +167,7 @@
     "startRecording": "Start Recording"
   },
   "clientBio": {
-    "title": "Client Bio - {{clientName}}",
+    "title": "Client Bio",
     "loading": "Loading client bio...",
     "error": "Error loading client bio",
     "tryAgain": "Please try again later",

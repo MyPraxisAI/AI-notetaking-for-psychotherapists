@@ -881,7 +881,12 @@ export default function Page() {
                 onClick={() => handleClientClick(client.id)}
                 data-test={`client-row-${client.id}`}
               >
-                <span data-test="client-name-cell">{localClientNames[client.id] || client.fullName}</span>
+                <span 
+                  data-test="client-name-cell" 
+                  className={`${client.id === selectedClient ? 'text-[16px] font-semibold' : 'text-[14px] font-medium'}`}
+                >
+                  {localClientNames[client.id] || client.fullName}
+                </span>
                 { client.id === "mike" && (
                   <Badge
                     variant="secondary"
