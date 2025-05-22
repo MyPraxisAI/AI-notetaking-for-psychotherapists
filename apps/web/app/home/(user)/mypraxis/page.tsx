@@ -731,7 +731,7 @@ export default function Page() {
           <div className="px-2 mb-[1px]">
             <Button variant="ghost" className={getButtonClass("clients")} onClick={() => handleMenuClick("clients")} data-test="clients-nav-button">
               <Users2 className="h-3.5 w-3.5" />
-              Clients
+              {t('mypraxis:page.navigation.clients')}
             </Button>
           </div>
 
@@ -770,7 +770,7 @@ export default function Page() {
                 disabled={true}
               >
                 <Wallet className="h-[18px] w-[18px]" />
-                Billing
+                {t('mypraxis:page.navigation.billing')}
               </Button>
             </div>
             <div className="px-2">
@@ -781,7 +781,7 @@ export default function Page() {
                 disabled={true}
               >
                 <Gift className="h-[18px] w-[18px]" />
-                Gift Praxis
+                {t('mypraxis:page.navigation.giftPraxis')}
               </Button>
             </div>
             
@@ -794,13 +794,13 @@ export default function Page() {
                 onClick={() => handleMenuClick("settings")}
               >
                 <Settings className="h-[18px] w-[18px]" />
-                Settings
+                {t('mypraxis:page.navigation.settings')}
               </Button>
             </div>
             <div className="px-2">
               <Button variant="ghost" className={getButtonClass("help")} onClick={() => handleMenuClick("help")}>
                 <HelpCircle className="h-[18px] w-[18px]" />
-                Get help
+                {t('mypraxis:page.navigation.help')}
               </Button>
             </div>
             <div className="px-2">
@@ -817,7 +817,7 @@ export default function Page() {
                 }}
               >
                 <LogOut className="h-5 w-5" />
-                Logout
+                {t('mypraxis:page.navigation.signOut')}
               </Button>
             </div>
           </div>
@@ -867,7 +867,7 @@ export default function Page() {
             data-test="new-client-button"
           >
             <Plus className="h-4 w-4 flex-shrink-0" />
-            <span className="whitespace-nowrap">New client</span>
+            <span className="whitespace-nowrap">{t('mypraxis:page.newClient')}</span>
           </Button>
         </div>
 
@@ -887,7 +887,7 @@ export default function Page() {
                     variant="secondary"
                     className="ml-0.5 mr-6 text-xs font-medium bg-white text-[#6B7280] px-2.5 py-0.5 rounded-full border border-[#E5E7EB]"
                   >
-                    Demo
+                    {t('mypraxis:page.demo')}
                   </Badge>
                 )}
               </Button>
@@ -898,7 +898,7 @@ export default function Page() {
                   handleClientClick(client.id)
                   handleDetailItemClick("profile")
                 }}
-                title="View Profile"
+                title={t('mypraxis:page.viewProfile')}
               >
                 <Edit2 className="h-4 w-4 cursor-pointer" />
               </div>
@@ -921,7 +921,7 @@ export default function Page() {
                 onClick={() => setIsClientListVisible(true)}
               >
                 <ChevronLeft className="h-4 w-4" />
-                Clients
+                {t('mypraxis:page.controlLine.clients')}
               </Button>
             )}
             {(isClientListVisible || selectedItem === "settings") && (
@@ -934,7 +934,7 @@ export default function Page() {
                 className="h-8 px-3 flex items-center gap-0.5 text-[14px] font-medium mr-[3px]"
                 onClick={() => setIsDetailsColumnVisible(true)}
               >
-                Sessions
+                {t('mypraxis:page.controlLine.sessions')}
                 <ChevronRight className="h-4 w-4" />
               </Button>
             )}
@@ -1010,10 +1010,10 @@ export default function Page() {
               data-test="start-recording-button"
             >
               <Mic className="h-4 w-4 mr-2" />
-              Start recording
+              {t('mypraxis:page.startRecording')}
             </Button>
             <p className="text-[12px] text-muted-foreground text-center mt-2">
-              {isMobileView ? "Available on desktop" : "transcript, notes, recap"}
+              {isMobileView ? t('mypraxis:page.recordingDesktopOnly') : t('mypraxis:page.recordingFeatures')}
             </p>
           </div>
 

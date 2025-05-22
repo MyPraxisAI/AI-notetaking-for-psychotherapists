@@ -106,5 +106,25 @@
     "updating": "Updating...",
     "invalidPassword": "Invalid password",
     "invalidPasswordFormat": "Invalid password format"
+  },
+  "page": {
+    "newClient": "New client",
+    "demo": "Demo",
+    "viewProfile": "View Profile",
+    "startRecording": "Start recording",
+    "recordingDesktopOnly": "Available on desktop",
+    "recordingFeatures": "transcript, notes, recap",
+    "navigation": {
+      "clients": "Clients",
+      "settings": "Settings",
+      "billing": "Billing",
+      "giftPraxis": "Gift Praxis",
+      "help": "Get help",
+      "signOut": "Sign Out"
+    },
+    "controlLine": {
+      "clients": "Clients",
+      "sessions": "Sessions"
+    }
   }
 }

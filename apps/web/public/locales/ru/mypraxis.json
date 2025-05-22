@@ -106,5 +106,25 @@
     "updating": "Обновление...",
     "invalidPassword": "Недействительный пароль",
     "invalidPasswordFormat": "Недействительный формат пароля"
+  },
+  "page": {
+    "newClient": "Новый клиент",
+    "demo": "Демо",
+    "viewProfile": "Просмотр профиля",
+    "startRecording": "Начать запись",
+    "recordingDesktopOnly": "Доступно только на компьютере",
+    "recordingFeatures": "транскрипт, заметки, резюме",
+    "navigation": {
+      "clients": "Клиенты",
+      "settings": "Настройки",
+      "billing": "Оплата",
+      "giftPraxis": "Подарить",
+      "help": "Помощь",
+      "signOut": "Выход"
+    },
+    "controlLine": {
+      "clients": "Клиенты",
+      "sessions": "Сессии"
+    }
   }
 }
