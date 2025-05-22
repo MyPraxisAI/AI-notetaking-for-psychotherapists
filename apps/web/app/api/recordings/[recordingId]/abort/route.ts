@@ -36,7 +36,7 @@ export const POST = enhanceRouteHandler(
       }
       
       // Verify the recording belongs to this account
-      const { data: recording, error: fetchError } = await client
+      const { data: _recording, error: fetchError } = await client
         .from('recordings')
         .select('*')
         .eq('id', recordingId)

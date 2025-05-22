@@ -3,7 +3,6 @@
  * This file contains functions for interacting with the recording API endpoints
  */
 
-import { i18n } from 'i18next';
 import { getI18n } from 'react-i18next';
 
 export interface StartRecordingOptions {
