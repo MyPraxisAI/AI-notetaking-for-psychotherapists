@@ -286,7 +286,7 @@
   },
   "sessionView": {
     "tabs": {
-      "summary": "Summary",
+      "summary": "Summaries & Notes",
       "transcript": "Transcript"
     },
     "summaryTabs": {
@@ -300,6 +300,7 @@
       "placeholder": "Enter transcript..."
     },
     "notes": {
+      "myNote": "My Note",
       "addNote": "Click to add a note",
       "placeholder": "Enter notes...",
       "saving": "Saving..."
