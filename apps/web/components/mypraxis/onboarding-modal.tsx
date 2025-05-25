@@ -7,6 +7,8 @@ import { useUpdateTherapistField, useMyPraxisTherapistProfile } from "../../app/
 import { useUserSettings } from "../../app/home/(user)/mypraxis/_lib/hooks/use-user-settings"
 import { useTranslation } from 'react-i18next'
 import { TherapeuticApproachesSelect } from "./therapeutic-approaches-select"
+import { useMyPraxisUserPreferences, useUpdatePreferenceField } from "../../app/home/(user)/mypraxis/_lib/hooks/use-user-preferences"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@kit/ui/select"
 
 // Define overlay styles similar to recording modal
 const overlayStyles = `
@@ -47,8 +49,14 @@ export function OnboardingModal({
   // Fetch the current therapist profile
   const { data: therapistProfile, isLoading: _isLoadingProfile } = useMyPraxisTherapistProfile()
   
+  // Fetch user preferences
+  const { data: userPreferences } = useMyPraxisUserPreferences()
+  
   // Selected approach state - initialize with the existing value (if any)
   const [selectedApproach, setSelectedApproach] = useState<string>("")
+  
+  // Selected language state
+  const [selectedLanguage, setSelectedLanguage] = useState<string>("en")
   
   // Loading state
   const [isProcessing, setIsProcessing] = useState(false)
@@ -57,10 +65,13 @@ export function OnboardingModal({
   const [error, setError] = useState<string | null>(null)
   
   // Translation hook
-  const { t } = useTranslation(['mypraxis'])
+  const { t, i18n } = useTranslation(['mypraxis'])
   
   // Get therapist field update hook
   const { updateField, isLoading: _isUpdating } = useUpdateTherapistField()
+  
+  // Get user preference update hook
+  const { updatePreference } = useUpdatePreferenceField()
   
   // Get user settings hook
   const { completeOnboarding } = useUserSettings()
@@ -95,11 +106,26 @@ export function OnboardingModal({
     }
   }, [isOpen, therapistProfile]);
   
+  // Set initial language from current i18n language or preferences when opened
+  useEffect(() => {
+    if (isOpen) {
+      // Prioritize the current i18n language as it reflects what the user is seeing
+      setSelectedLanguage(i18n.language || (userPreferences?.language || "en"))
+    }
+  }, [isOpen, userPreferences, i18n.language]);
+  
   // Handle approach selection - memoized to prevent unnecessary re-renders
   const handleApproachChange = useCallback((value: string) => {
     setSelectedApproach(value)
     setError(null)
   }, [])
+  
+  // Handle language selection
+  const handleLanguageChange = useCallback((value: string) => {
+    setSelectedLanguage(value)
+    // Change language immediately for better UX
+    i18n.changeLanguage(value)
+  }, [i18n])
   
   // Handle next button click - memoized with dependencies
   const handleNext = useCallback(async () => {
@@ -115,14 +141,17 @@ export function OnboardingModal({
       // Update therapist profile with selected approach
       await updateField('primaryTherapeuticApproach', selectedApproach)
       
+      // Update language preference
+      await updatePreference('language', selectedLanguage)
+      
       // Show success state - onboarding is NOT marked complete here
       setModalState("success")
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to update therapeutic approach")
+      setError(err instanceof Error ? err.message : "Failed to update settings")
     } finally {
       setIsProcessing(false)
     }
-  }, [selectedApproach, updateField, t])
+  }, [selectedApproach, selectedLanguage, updateField, updatePreference, t])
   
   // Handle close - memoized with dependencies
   const handleClose = useCallback(() => {
@@ -176,9 +205,28 @@ export function OnboardingModal({
             <div className="p-6">
               {modalState === "selection" && (
                 <>
-                  <p className="text-gray-600 mb-4">
-                    {t('mypraxis:onboarding.selectTherapyStyleText')}
-                  </p>
+                  
+                  <div className="mb-5">
+                    <label className="block text-sm font-medium text-gray-700 mb-2.5">
+                      {t('mypraxis:onboarding.languageLabel', 'Language')}
+                    </label>
+                    <Select
+                      value={selectedLanguage}
+                      onValueChange={handleLanguageChange}
+                    >
+                      <SelectTrigger 
+                        id="language"
+                        className="w-full focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)]"
+                        data-test="onboarding-language-select"
+                      >
+                        <SelectValue placeholder={t('mypraxis:onboarding.selectLanguage', 'Select language')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="en">{t('mypraxis:settings.languageOptions.en', 'English')}</SelectItem>
+                        <SelectItem value="ru">{t('mypraxis:settings.languageOptions.ru', 'Russian')}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                   
                   <div className="mb-3">
                     <label className="block text-sm font-medium text-gray-700 mb-2.5">
@@ -237,10 +285,7 @@ export function OnboardingModal({
                   disabled={isProcessing} // Disable while processing
                 >
                   {isProcessing ? (
-                    <>
-                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                      {t('mypraxis:onboarding.finishingButton')}
-                    </>
+                    <Loader2 className="h-5 w-5 animate-spin" />
                   ) : (
                     t('mypraxis:onboarding.finishButton')
                   )}
