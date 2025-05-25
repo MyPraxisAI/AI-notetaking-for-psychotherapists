@@ -1,4 +1,6 @@
 import { SupabaseClient } from '@supabase/supabase-js';
+import { LanguageType } from '../types';
+import { formatTimestampMs } from '../utils/time';
 
 /**
  * Interface for session metadata
@@ -6,6 +8,24 @@ import { SupabaseClient } from '@supabase/supabase-js';
 interface SessionMetadata {
   title_initialized?: boolean;
   [key: string]: unknown;
+}
+
+/**
+ * Interface for transcript segment
+ */
+interface TranscriptSegment {
+  start_ms: number;
+  end_ms: number;
+  speaker: string;
+  content: string;
+}
+
+/**
+ * Interface for transcript content
+ */
+interface TranscriptContent {
+  segments: TranscriptSegment[];
+  classified?: boolean;
 }
 
 /**
@@ -43,6 +63,74 @@ export async function getSessionContent(
  * @param client Supabase client
  * @returns Session API methods
  */
+// Using formatTimestampMs from utils/time.ts
+
+/**
+ * Render transcript content as formatted text
+ * @param client Supabase client
+ * @param sessionId Session ID
+ * @param language Optional language code (default: 'en')
+ * @returns Formatted transcript text or error message
+ */
+export async function renderTranscriptContent(
+  client: SupabaseClient,
+  sessionId: string,
+  language: LanguageType = 'en'
+): Promise<string> {
+  // Fetch the transcript for the session
+  const { data: transcript, error } = await client
+    .from('transcripts')
+    .select('content, content_json')
+    .eq('session_id', sessionId)
+    .maybeSingle();
+  
+  if (error) {
+    console.error(`Error fetching transcript for session ${sessionId}:`, error);
+    return 'Error fetching transcript data.';
+  }
+  
+  if (!transcript) {
+    return 'No transcript available for this session.';
+  }
+  
+  // If content_json exists, render it to text
+  if (transcript.content_json) {
+    try {
+      const contentJson = transcript.content_json as TranscriptContent;
+      
+      // Define speaker labels based on language
+      const speakerLabels = {
+        therapist: language === 'ru' ? 'Терапевт' : 'Therapist',
+        client: language === 'ru' ? 'Клиент' : 'Client'
+      };
+      
+      // If no segments or empty segments array, return appropriate message
+      if (!contentJson.segments || contentJson.segments.length === 0) {
+        return 'Transcript has no content.';
+      }
+      
+      // Format each segment with timestamp and proper speaker label
+      return contentJson.segments
+        .filter(segment => segment.content.trim().length > 0)
+        .map(segment => {
+          const startTimeFormatted = formatTimestampMs(segment.start_ms);
+          const endTimeFormatted = formatTimestampMs(segment.end_ms);
+          const speakerLabel = speakerLabels[segment.speaker as keyof typeof speakerLabels] || segment.speaker;
+          
+          return `[${startTimeFormatted}-${endTimeFormatted}] ${speakerLabel}: ${segment.content}`;
+        })
+        .join('\n');
+    } catch (e) {
+      console.error(`Error parsing content_json for transcript of session ${sessionId}:`, e);
+      // Fall back to plain content if JSON parsing fails
+      return transcript.content || 'Error parsing transcript content.';
+    }
+  }
+  
+  // If no content_json, return the plain content
+  return transcript.content || 'Transcript has no content.';
+}
+
 export function createSessionApi(client: SupabaseClient) {
   /**
    * Update session metadata
@@ -82,6 +170,8 @@ export function createSessionApi(client: SupabaseClient) {
   // Return the API methods
   return {
     updateMetadata,
-    markTitleAsInitialized
+    markTitleAsInitialized,
+    renderTranscriptContent: (sessionId: string, language?: LanguageType) => 
+      renderTranscriptContent(client, sessionId, language)
   };
 }

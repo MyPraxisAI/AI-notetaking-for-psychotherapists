@@ -7,18 +7,6 @@ import { useUserWorkspace } from '@kit/accounts/hooks/use-user-workspace';
 import { SessionData, SessionWithId } from '../schemas/session';
 import { useTranslation } from 'react-i18next';
 
-// Define the database record structure
-// This interface is kept for reference but no longer directly used after transcript column removal
-interface _SessionDatabaseRecord {
-  id: string;
-  account_id: string;
-  client_id: string;
-  title?: string | null;
-  note: string | null;
-  created_at: string;
-  updated_at: string;
-}
-
 /**
  * Hook to fetch all sessions for a specific client
  */
