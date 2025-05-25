@@ -322,8 +322,8 @@ export function RecordingModal({
     setShowConfirmDialog(false)
     setIsProcessing(true)
     
-    // For confirmed close during recording, show processing state
-    cleanupRecording().then(() => {
+    // For confirmed close during recording, show processing state and abort the recording
+    abortRecording().then(() => {
       setIsProcessing(false)
       onClose()
     }).catch(() => {
@@ -336,6 +336,9 @@ export function RecordingModal({
     setShowConfirmDialog(false)
   }
   
+  /**
+   * Clean up recording resources without aborting the recording in the API
+   */
   const cleanupRecording = async () => {
     // Clean up the MediaRecorder using the utility function
     if (mediaRecorder.current) {
@@ -343,21 +346,9 @@ export function RecordingModal({
       mediaRecorder.current = null;
     }
     
-    // Set the aborted flag to prevent further uploads
-    isAborted.current = true;
     
-    // Clear audio chunks before aborting to prevent any pending uploads
+    // Clear audio chunks to prevent any pending uploads
     audioChunks.current = [];
-    
-    // If there's an active recording, delete it from the database
-    if (recordingId && (isRecording || modalState === "paused")) {
-      try {
-        await RecordingAPI.abortRecording(recordingId);
-        console.log('Recording deleted successfully:', recordingId);
-      } catch (err) {
-        console.error('Failed to delete recording:', err);
-      }
-    }
     
     // Reset recording state
     setIsRecording(false)
@@ -373,6 +364,27 @@ export function RecordingModal({
     }
     
     // Note: Heartbeat interval is managed by the useEffect
+  }
+  
+  /**
+   * Abort the recording in the API and then clean up resources
+   */
+  const abortRecording = async () => {
+    // Set the aborted flag to prevent further uploads
+    isAborted.current = true;
+
+    // If there's an active recording, delete it from the database
+    if (recordingId && (isRecording || modalState === "paused")) {
+      try {
+        await RecordingAPI.abortRecording(recordingId);
+        console.log('Recording deleted successfully:', recordingId);
+      } catch (err) {
+        console.error('Failed to delete recording:', err);
+      }
+    }
+    
+    // Clean up resources after aborting
+    await cleanupRecording();
   }
   
   const handleMicrophoneAccess = async () => {
@@ -619,6 +631,7 @@ export function RecordingModal({
       console.log('Recording complete result:', result)
       
       if (result) {
+        // Just clean up resources without aborting the recording since it was successfully completed
         cleanupRecording()
         toast.success('Recording saved successfully')
         

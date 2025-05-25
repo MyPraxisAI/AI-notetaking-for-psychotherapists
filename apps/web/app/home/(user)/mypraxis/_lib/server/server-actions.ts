@@ -194,13 +194,13 @@ export const generateSessionTitleAction = enhanceAction(
  * Server action to update a session and delete related artifacts if content changed
  */
 export const updateSessionAction = enhanceAction(
-  async function updateSessionAction(data: UpdateSessionData, user: User) {
+  async (data: UpdateSessionData, user: User) => {
     const client = getSupabaseServerClient();
     const logger = await getLogger();
     const ctx = {
       name: 'update-session',
       sessionId: data.id,
-      userId: user?.id
+      userId: user.id
     };
 
     try {
@@ -212,43 +212,16 @@ export const updateSessionAction = enhanceAction(
         .single();
         
       if (fetchError) {
-        logger.error({ ...ctx, error: fetchError }, 'Failed to fetch current session data');
+        await logger.error({ ...ctx, error: fetchError }, 'Failed to fetch current session data');
         throw new Error('Failed to fetch current session data');
       }
-      
-      // Get the current transcript data from the transcripts table
-      const { data: currentTranscript, error: fetchTranscriptError } = await client
-        .from('transcripts')
-        .select('id, content')
-        .eq('session_id', data.id)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
-        
-      if (fetchTranscriptError && fetchTranscriptError.code !== 'PGRST116') { // PGRST116 is 'no rows returned' which is fine
-        console.error('Failed to fetch transcript data', fetchTranscriptError);
-        // Don't throw here, as there might not be a transcript yet
-      }
-
-
 
       // 2. Check if content has actually changed
-      // Normalize transcript content for comparison (trim and handle empty strings)
-      const normalizeContent = (content: string | null | undefined): string | null => {
-        if (content === null || content === undefined) return null;
-        const trimmed = content.trim();
-        return trimmed === '' ? null : trimmed;
-      };
-      
-      const currentTranscriptContent = normalizeContent(currentTranscript?.content);
-      const newTranscriptContent = normalizeContent(data.transcript);
-      const transcriptChanged = currentTranscriptContent !== newTranscriptContent;
-      
       const noteChanged = data.note !== currentSession.note;
       const titleChanged = data.title !== currentSession.title;
-      const contentChanged = transcriptChanged || noteChanged;
+      const contentChanged = noteChanged;
 
-      // 3. Update the session data (without transcript)
+      // 3. Update the session data
       const { error: updateError } = await client
         .from('sessions')
         .update({
@@ -283,62 +256,27 @@ export const updateSessionAction = enhanceAction(
         console.error('Failed to update session', updateError);
         throw new Error('Failed to update session');
       }
-      
-      // 4. Update or insert transcript if it has changed
-      if (transcriptChanged && newTranscriptContent) {
-        // Check if a transcript already exists
-        if (currentTranscript) {
-          // Update existing transcript
-          const { error: updateTranscriptError } = await client
-            .from('transcripts')
-            .update({
-              content: newTranscriptContent
-            })
-            .eq('id', currentTranscript.id);
-            
-          if (updateTranscriptError) {
-            logger.error({ ...ctx, error: updateTranscriptError }, 'Failed to update transcript');
-            throw new Error('Failed to update transcript');
-          }
-        } else {
-          // Insert new transcript
-          const { error: insertTranscriptError } = await client
-            .from('transcripts')
-            .insert({
-              session_id: data.id,
-              account_id: currentSession.account_id,
-              transcription_model: 'manual',
-              content: newTranscriptContent
-            });
-            
-          if (insertTranscriptError) {
-            logger.error({ ...ctx, error: insertTranscriptError }, 'Failed to insert transcript');
-            throw new Error('Failed to insert transcript');
-          }
-        }
-      }
 
-      // 5. If content changed, handle artifacts and potentially generate title
+      // 4. If content changed, handle artifacts and potentially generate title
       if (contentChanged) {
         console.log('Content changed, marking artifacts as stale', {
-          transcriptChanged,
           noteChanged
         });
 
-        // 5a. Try to generate a title if needed
-        await generateSessionTitle(client, data.id, data.transcript || null, data.note || null);
+        // 4a. Try to generate a title if needed
+        await generateSessionTitle(client, data.id, null, data.note || null);
         // Note: We don't need to handle errors here as the function handles them internally
 
-        // 5b. Mark session and client artifacts as stale and queue regeneration
+        // 4b. Mark session and client artifacts as stale and queue regeneration
         try {
           await regenerateArtifactsForSession(
             client, 
             data.id, 
             currentSession.account_id
           );
-          logger.info({ ...ctx }, 'Invalidated artifacts and queued regeneration');
+          await logger.info({ ...ctx }, 'Invalidated artifacts and queued regeneration');
         } catch (invalidateError) {
-          logger.error({ ...ctx, error: invalidateError }, 'Failed to invalidate artifacts and queue regeneration');
+          await logger.error({ ...ctx, error: invalidateError }, 'Failed to invalidate artifacts and queue regeneration');
         }
         
       } else {
@@ -346,7 +284,6 @@ export const updateSessionAction = enhanceAction(
       }
 
       // Fetch the latest session data to return to the client
-      // Fetch the latest session data
       const { data: updatedSession, error: fetchUpdatedError } = await client
         .from('sessions')
         .select('id, title, note, metadata')

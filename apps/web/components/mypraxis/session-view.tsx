@@ -26,7 +26,6 @@ interface TranscriptContentProps {
   clientId: string
   sessionId: string
   session: Session | null
-  onEditTranscript: (content: string) => void
   handleSessionUpdate: (result: { 
     success: boolean, 
     session?: { 
@@ -40,11 +39,11 @@ interface TranscriptContentProps {
 
 /**
  * Component to handle all transcript states:
- * 1. Transcript exists - show the transcript with edit button
+ * 1. Transcript exists - show the transcript
  * 2. Recording is processing - show "Transcription in progress..."
- * 3. No transcript or recording - show "Add transcript" button
+ * 3. No transcript or recording - show empty state
  */
-function TranscriptContent({ clientId, sessionId, session, onEditTranscript, handleSessionUpdate }: TranscriptContentProps) {
+function TranscriptContent({ clientId, sessionId, session, handleSessionUpdate }: TranscriptContentProps) {
   const { t } = useTranslation();
   console.log(`[TranscriptContent] Rendering for sessionId: ${sessionId}, has transcript: ${!!session?.transcript}`);
   
@@ -59,9 +58,6 @@ function TranscriptContent({ clientId, sessionId, session, onEditTranscript, han
   
   const queryClient = useQueryClient()
   
-  // This ref is no longer used since we're using React Query's built-in polling
-  const _recordingStatusIntervalIdRef = useRef<NodeJS.Timeout | null>(null);
-  
   // Handle transcript title generation when recording is complete
   useEffect(() => {
     console.log(`[TranscriptContent] useEffect running, recordingStatus:`, recordingStatus);
@@ -71,7 +67,6 @@ function TranscriptContent({ clientId, sessionId, session, onEditTranscript, han
       // Invalidate session data to ensure we have the latest transcript
       console.log(`[TranscriptContent] Recording completed, invalidating session data for sessionId: ${sessionId}`);
       queryClient.invalidateQueries({ queryKey: ['session', sessionId] });
-      
       
       // Check if we have a transcript
       if (session?.transcript) {
@@ -90,12 +85,8 @@ function TranscriptContent({ clientId, sessionId, session, onEditTranscript, han
             
               // Update the parent session component
               if (session) {
-              // This will update the parent SessionView component
                 handleSessionUpdate(result, session);
               }
-            
-              // The parent component will be updated via handleSessionUpdate
-              // No need to maintain local state as it will be passed down as props
             }
           } catch (error) {
             console.error("[TranscriptContent] Error generating title:", error);
@@ -104,7 +95,6 @@ function TranscriptContent({ clientId, sessionId, session, onEditTranscript, han
       }
     }
 
-    // No cleanup needed as we're using React Query's built-in refetchInterval
     return () => {};
   }, [recordingStatus, sessionId, queryClient, session, clientId, handleSessionUpdate]);
   
@@ -146,19 +136,13 @@ function TranscriptContent({ clientId, sessionId, session, onEditTranscript, han
     )
   }
   
-  // Otherwise, show the "Add transcript" button
+  // Otherwise, show empty state
   return (
-    <Button
-      variant="ghost"
-      className="w-full h-[100px] border border-dashed border-input hover:border-input hover:bg-accent"
-      onClick={() => onEditTranscript("")}
-      data-test="session-add-transcript-button"
-    >
-      <span className="flex items-center gap-2">
-        <Plus className="h-4 w-4" />
-        {t('mypraxis:sessionView.transcript.addTranscript')}
-      </span>
-    </Button>
+    <div className="w-full h-[100px] border border-dashed border-input bg-muted/20 rounded-md flex items-center justify-center">
+      <p className="text-sm text-muted-foreground">
+        {t('mypraxis:sessionView.transcript.noTranscript')}
+      </p>
+    </div>
   )
 }
 
@@ -183,16 +167,14 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
   const [isTherapistSummaryStale, setIsTherapistSummaryStale] = useState(false)
   const [isClientSummaryStale, setIsClientSummaryStale] = useState(false)
   const [session, setSession] = useState<Session | null>(null)
-  const [isEditingTitle, setIsEditingTitle] = useState(false) // Added state for title editing
+  const [isEditingTitle, setIsEditingTitle] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
-  const [isEditingTranscript, setIsEditingTranscript] = useState(false)
-  const [editedTranscript, setEditedTranscript] = useState<string>("")
-  const [activeTab, setActiveTab] = useState<"summary" | "transcript">("summary") // Added state for active tab
-  const [isTitleSaved, setIsTitleSaved] = useState(false) // Added state for title save indicator
+  const [activeTab, setActiveTab] = useState<"summary" | "transcript">("summary")
+  const [isTitleSaved, setIsTitleSaved] = useState(false)
   const _saveTimeout = useRef<NodeJS.Timeout | undefined>(undefined)
   const copyTimeout = useRef<NodeJS.Timeout | undefined>(undefined)
   const clientCopyTimeout = useRef<NodeJS.Timeout | undefined>(undefined)
-  const titleSaveTimeout = useRef<NodeJS.Timeout | undefined>(undefined) // Added timeout ref for title save indicator
+  const titleSaveTimeout = useRef<NodeJS.Timeout | undefined>(undefined)
 
   // Use the session hook from Supabase to load session data
   const { data: sessionData, isLoading: _isLoadingSession } = useSession(sessionId)
@@ -419,7 +401,6 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
             id: sessionId,
             clientId,
             title: title,
-            transcript: session.transcript?.content || '',
             note: session.notes?.userNote || ''
           });
           
@@ -478,7 +459,6 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
             id: sessionId,
             clientId,
             title: session.title,
-            transcript: session.transcript?.content || '',
             note: note
           });
           
@@ -510,71 +490,6 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
           setSession(previousSession);
           toast.error("Failed to save note");
           console.error("Error saving note:", error);
-        }
-      });
-    }
-  }
-
-  const handleSaveTranscript = () => {
-    if (!session) return;
-    
-    // Get the current transcript content (if any)
-    const currentContent = session.transcript?.content || "";
-    
-    // Only proceed with saving if the content has actually changed
-    if (editedTranscript !== currentContent) {
-      // Optimistically update the UI
-      const previousSession = { ...session };
-      
-      // Update the session with the new transcript
-      const updatedSession = {
-        ...session,
-        transcript: { content: editedTranscript }
-      };
-      
-      setSession(updatedSession);
-      setIsEditingTranscript(false);
-      
-      // Use startTransition to indicate pending state
-      startTransition(async () => {
-        try {
-          // Call the server action directly
-          const result = await updateSessionAction({
-            id: sessionId,
-            clientId,
-            title: session.title,
-            transcript: editedTranscript,
-            note: session.notes?.userNote || ''
-          });
-          
-          // Update the session with the returned data
-          handleSessionUpdate(result, session)
-          
-          // Reset summaries first to show loading state
-          resetAndRefetchSummaries()
-          
-          // Invalidate session artifacts in the cache
-          queryClient.invalidateQueries({ queryKey: ['session', sessionId, 'artifact'] })
-          
-          // Force refresh all client artifacts
-          refreshClientArtifacts()
-          
-          // Force refetch of summaries
-          setTimeout(() => {
-            if (summaryView === 'therapist') {
-              refetchTherapistSummary()
-            } else {
-              refetchClientSummary()
-            }
-          }, 500) // Small delay to ensure the invalidation has completed
-          
-          toast.success("Transcript saved");
-        } catch (error) {
-          // Error handling - revert to previous state
-          setSession(previousSession);
-          setIsEditingTranscript(true);
-          toast.error("Failed to save transcript");
-          console.error("Error saving transcript:", error);
         }
       });
     }
@@ -926,41 +841,12 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
         </TabsContent>
 
         <TabsContent value="transcript" className="relative" data-tab="transcript">
-          {isEditingTranscript ? (
-            <div className="relative">
-              <Textarea
-                value={editedTranscript}
-                onChange={(e) => setEditedTranscript(e.target.value)}
-                onBlur={() => {
-                  // Always exit edit mode
-                  setIsEditingTranscript(false)
-                  // Only try to save if there are changes
-                  handleSaveTranscript()
-                }}
-                className="min-h-[300px] resize-vertical focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)] [&::-webkit-resizer]:appearance-none after:content-[''] after:absolute after:bottom-1 after:right-1 after:w-3 after:h-3 after:border-b-2 after:border-r-2 after:border-[#6B7280] after:cursor-se-resize relative font-mono text-sm"
-                placeholder={t('mypraxis:sessionView.transcript.placeholder')}
-                autoFocus
-                data-test="session-transcript-editor"
-              />
-              {isPending && (
-                <div className="absolute right-3 bottom-3 flex items-center gap-2 text-sm text-muted-foreground">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  {t('mypraxis:sessionView.notes.saving')}
-                </div>
-              )}
-            </div>
-          ) : (
-            <TranscriptContent
-              clientId={clientId}
-              sessionId={sessionId}
-              session={session}
-              handleSessionUpdate={handleSessionUpdate}
-              onEditTranscript={(content) => {
-                setIsEditingTranscript(true)
-                setEditedTranscript(content)
-              }}
-            />
-          )}
+          <TranscriptContent
+            clientId={clientId}
+            sessionId={sessionId}
+            session={session}
+            handleSessionUpdate={handleSessionUpdate}
+          />
         </TabsContent>
       </Tabs>
 

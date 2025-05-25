@@ -316,7 +316,8 @@
       "inProgress": "Transcription in progress...",
       "processingMessage": "We're processing your recording. This may take a few minutes depending on the length of the session. The transcript will appear here automatically when it's ready.",
       "addTranscript": "Click to add a transcript",
-      "placeholder": "Enter transcript..."
+      "placeholder": "Enter transcript...",
+      "noTranscript": "No transcript available"
     },
     "notes": {
       "myNote": "My Note",
