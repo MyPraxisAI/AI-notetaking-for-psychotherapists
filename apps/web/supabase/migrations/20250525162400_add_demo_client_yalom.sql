@@ -30,7 +30,7 @@ BEGIN
     demo_therapist_id,
     'Irvin D. Yalom',
     'irvin.yalom@example.com',
-    '+1 (650) 555-7890',
+    '+16505557890',
     true
   );
   
@@ -352,7 +352,7 @@ As you continue to reflect this week, you might notice how these themes – the 
     demo_therapist_id,
     'Ирвин Д. Ялом',
     'irvin.yalom@example.com',
-    '+1 (650) 555-7890',
+    '+16505557890',
     true
   );
   

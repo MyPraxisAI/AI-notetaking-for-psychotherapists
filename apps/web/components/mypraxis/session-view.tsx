@@ -143,9 +143,10 @@ interface SessionViewProps {
   clientId: string
   sessionId: string
   onDelete?: () => void
+  isDemo?: boolean
 }
 
-export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps) {
+export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: SessionViewProps) {
   const { t } = useTranslation();
   const [userNote, setUserNote] = useState("")
   const [isEditing, setIsEditing] = useState(false)
@@ -724,7 +725,13 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                   <div
                     ref={noteRef}
                     className="rounded-lg bg-[#FFF9E8] p-6 text-[14px] leading-[1.6] min-h-[100px] cursor-pointer whitespace-pre-wrap"
-                    onClick={() => setIsEditing(true)}
+                    onClick={() => {
+                      if (isDemo) {
+                        toast.error(t('mypraxis:sessionView.notes.demoClientNotEditable'))
+                        return
+                      }
+                      setIsEditing(true)
+                    }}
                     data-test="session-note-value"
                   >
                     {userNote}
@@ -733,7 +740,13 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                     variant="ghost"
                     size="icon"
                     className="absolute right-2 top-2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                    onClick={() => setIsEditing(true)}
+                    onClick={() => {
+                      if (isDemo) {
+                        toast.error(t('mypraxis:sessionView.notes.demoClientNotEditable'))
+                        return
+                      }
+                      setIsEditing(true)
+                    }}
                   >
                     <Edit2 className="h-4 w-4" />
                   </Button>
@@ -743,7 +756,13 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                   ref={placeholderRef}
                   variant="ghost"
                   className="w-full h-[100px] border border-dashed border-input hover:border-input hover:bg-accent"
-                  onClick={() => setIsEditing(true)}
+                  onClick={() => {
+                    if (isDemo) {
+                      toast.error(t('mypraxis:sessionView.notes.demoClientNotEditable'))
+                      return
+                    }
+                    setIsEditing(true)
+                  }}
                   data-test="session-add-note-button"
                 >
                 <span className="flex items-center gap-2">
