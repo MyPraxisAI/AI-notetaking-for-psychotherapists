@@ -6,7 +6,7 @@ DECLARE
   -- English client
   en_yalom_id UUID := 'e0000000-e000-4000-a000-000000000002'::UUID; -- Irvin D. Yalom
   -- Russian client
-  ru_yalom_id UUID := 'r0000000-r000-4000-a000-000000000002'::UUID; -- Ирвин Д. Ялом
+  ru_yalom_id UUID := 'f0000000-f000-4000-a000-000000000002'::UUID; -- Ирвин Д. Ялом
   session_id UUID;
 BEGIN
   -- Get the account ID and therapist ID for the demo user
@@ -48,148 +48,6 @@ BEGIN
     en_yalom_id,
     'client_bio',
     'Irvin is a 93-year-old retired psychiatrist and author who recently lost his wife of 65 years. He has sought therapy to process his grief and confront his own mortality. As a pioneering existential psychotherapist himself, he brings unique insight to the therapeutic process but acknowledges that his professional knowledge doesn''t shield him from the emotional impact of loss. He reports difficulty sleeping, intrusive memories, and periods of profound sadness. While he maintains close relationships with his four children and grandchildren, he expresses a deep sense of loneliness and questions about his remaining life purpose. Despite his extensive knowledge of psychological processes, he seeks a space to explore his emotions as a human being rather than as a clinician.',
-    'en'
-  );
-  
-  -- Create Yalom client goals artifact
-  INSERT INTO public.artifacts (
-    account_id,
-    reference_type,
-    reference_id,
-    type,
-    content,
-    language
-  ) VALUES (
-    demo_account_id,
-    'client',
-    en_yalom_id,
-    'client_goals',
-    'Primary Goals:
-1. Process and integrate the grief of losing Marilyn after 65 years of marriage
-2. Address existential concerns about mortality and meaning in this stage of life
-3. Explore and resolve feelings of guilt related to work-life balance
-4. Develop new ways of relating to family members, particularly children
-5. Find meaning and purpose in this new chapter of life
-
-Secondary Goals:
-1. Improve sleep quality and address sleep disturbances
-2. Develop strategies for managing intrusive memories
-3. Process unresolved grief from father''s death at age 15
-4. Balance professional identity with personal vulnerability
-5. Create new routines and structures for daily life
-
-Progress Indicators:
-- Reduced frequency of sleep disturbances
-- Ability to discuss Marilyn without overwhelming distress
-- Increased engagement with family members
-- Development of new meaningful activities
-- Integration of professional knowledge with emotional experience',
-    'en'
-  );
-
-  -- Create Yalom client progress artifact
-  INSERT INTO public.artifacts (
-    account_id,
-    reference_type,
-    reference_id,
-    type,
-    content,
-    language
-  ) VALUES (
-    demo_account_id,
-    'client',
-    en_yalom_id,
-    'client_progress',
-    'Initial Assessment (Session 1):
-- Presenting with complicated grief following loss of wife
-- Experiencing sleep disturbances and intrusive memories
-- Demonstrating high insight but intellectualizing emotions
-- Expressing existential concerns about mortality
-- Showing willingness to engage in therapeutic process
-
-Progress After Session 2:
-- Increased emotional awareness and expression
-- Beginning to explore family relationships more deeply
-- Developing insight into work-life balance concerns
-- Actively seeking new meaning through family connections
-- Demonstrating ability to be vulnerable in therapy
-
-Areas of Growth:
-- Continued work on balancing intellectual understanding with emotional experience
-- Ongoing exploration of family relationships
-- Development of new daily routines
-- Processing of early life experiences
-- Integration of professional and personal identities
-
-Next Steps:
-- Continue dream work and exploration
-- Deepen family relationship work
-- Address sleep disturbances
-- Explore new sources of meaning
-- Process early life experiences',
-    'en'
-  );
-
-  -- Create Yalom client notes artifact
-  INSERT INTO public.artifacts (
-    account_id,
-    reference_type,
-    reference_id,
-    type,
-    content,
-    language
-  ) VALUES (
-    demo_account_id,
-    'client',
-    en_yalom_id,
-    'client_notes',
-    'Clinical Notes:
-
-Background:
-- 93-year-old retired psychiatrist and author
-- Lost wife of 65 years to cancer
-- Four children and multiple grandchildren
-- Russian Jewish immigrant background
-- Father died when client was 15
-- Mother emphasized emotional suppression
-
-Key Observations:
-- High level of psychological insight
-- Tendency to intellectualize emotions
-- Strong transference awareness
-- Complex relationship with professional identity
-- Deep capacity for self-reflection
-- Significant existential concerns
-
-Treatment Considerations:
-- Balance respect for client''s expertise with therapeutic needs
-- Monitor for intellectualization as defense
-- Use transference as therapeutic tool
-- Address both current grief and historical patterns
-- Support development of new meaning structures
-- Maintain focus on emotional experience
-
-Risk Factors:
-- Age-related health considerations
-- Potential for complicated grief
-- Existential distress
-- Sleep disturbances
-- Social isolation risk
-
-Strengths:
-- Strong support system (family)
-- High psychological mindedness
-- Previous experience with therapy
-- Continued professional engagement
-- Willingness to be vulnerable
-- Capacity for deep reflection
-
-Cultural Considerations:
-- Russian Jewish immigrant background
-- Professional identity as psychiatrist
-- Academic environment
-- Family dynamics and expectations
-- Cultural attitudes toward aging and death',
     'en'
   );
   
@@ -292,25 +150,25 @@ Special Considerations:
     demo_account_id,
     session_id,
     'demo',
-    'Therapist: Dr. Yalom, thank you for coming in today. How would you like me to address you during our sessions?\nClient: Irvin is fine. I\'ve spent decades being called Dr. Yalom, but here... I\'m just a person trying to make sense of loss.\nTherapist: I appreciate that, Irvin. Perhaps we could start with what brings you here today?\nClient: It\'s been eight months since Marilyn died. My wife of 65 years. The pain hasn\'t diminished as everyone said it would. If anything, it\'s become more... existential. I find myself waking at 3 AM, staring at her empty side of the bed, and feeling this overwhelming sense of finitude.\nTherapist: The loss of a life partner after so many decades must create an enormous void.\nClient: Yes, enormous. You know, I\'ve written extensively about death anxiety in my work. I\'ve counseled countless patients through grief. But experiencing it myself... it\'s different. All my intellectual understanding doesn\'t seem to touch the raw experience.\nTherapist: So there\'s a gap between your professional knowledge of grief and your lived experience of it.\nClient: Exactly. And it makes me question how effective I\'ve been as a therapist all these years. Did I truly understand what my patients were going through? Or was I just theorizing from a safe distance?\nTherapist: I\'m struck by how you\'re questioning your professional identity in the wake of this personal loss. I wonder if there might be earlier experiences in your life where you felt this disconnect between understanding and feeling?\nClient: [Long pause] My parents were Russian Jewish immigrants. They worked constantly in their grocery business in Washington D.C. There wasn\'t much emotional expression in our home. When my father died when I was 15, I remember my mother telling me not to cry, that I needed to be strong. I became the man of the house overnight.\nTherapist: So you learned early on to set aside your emotional responses and take on responsibility.\nClient: Yes, I suppose I did. I\'ve never really connected that to my professional development before, but perhaps there\'s something there—this idea that understanding and analyzing might be more valuable than simply feeling.\nTherapist: And now with Marilyn\'s death, you\'re confronted with feelings that can\'t be analyzed away.\nClient: [Tears forming] Yes. I keep thinking about our last few months together. After her cancer diagnosis, we had this... this precious time. We knew it was ending. We said everything that needed to be said. It was beautiful in its way. But now... now I\'m left here, at 93, wondering what my purpose is without her.\nTherapist: It sounds like you\'re facing not only the grief of losing Marilyn but also existential questions about your own remaining time.\nClient: That\'s precisely it. I\'ve built my career around helping people confront their mortality meaningfully. Now I\'m confronting my own, without my life\'s companion. It feels... it feels like standing at the edge of an abyss.',
+    NULL,
     '{"segments": [
-      {"start_ms": 0, "end_ms": 8000, "speaker": "therapist", "content": "Dr. Yalom, thank you for coming in today. How would you like me to address you during our sessions?"},
-      {"start_ms": 8500, "end_ms": 16000, "speaker": "client", "content": "Irvin is fine. I\'ve spent decades being called Dr. Yalom, but here... I\'m just a person trying to make sense of loss."},
-      {"start_ms": 16500, "end_ms": 21000, "speaker": "therapist", "content": "I appreciate that, Irvin. Perhaps we could start with what brings you here today?"},
-      {"start_ms": 21500, "end_ms": 40000, "speaker": "client", "content": "It\'s been eight months since Marilyn died. My wife of 65 years. The pain hasn\'t diminished as everyone said it would. If anything, it\'s become more... existential. I find myself waking at 3 AM, staring at her empty side of the bed, and feeling this overwhelming sense of finitude."},
-      {"start_ms": 40500, "end_ms": 45000, "speaker": "therapist", "content": "The loss of a life partner after so many decades must create an enormous void."},
-      {"start_ms": 45500, "end_ms": 60000, "speaker": "client", "content": "Yes, enormous. You know, I\'ve written extensively about death anxiety in my work. I\'ve counseled countless patients through grief. But experiencing it myself... it\'s different. All my intellectual understanding doesn\'t seem to touch the raw experience."},
-      {"start_ms": 60500, "end_ms": 67000, "speaker": "therapist", "content": "So there\'s a gap between your professional knowledge of grief and your lived experience of it."},
-      {"start_ms": 67500, "end_ms": 80000, "speaker": "client", "content": "Exactly. And it makes me question how effective I\'ve been as a therapist all these years. Did I truly understand what my patients were going through? Or was I just theorizing from a safe distance?"},
-      {"start_ms": 80500, "end_ms": 90000, "speaker": "therapist", "content": "I\'m struck by how you\'re questioning your professional identity in the wake of this personal loss. I wonder if there might be earlier experiences in your life where you felt this disconnect between understanding and feeling?"},
-      {"start_ms": 90500, "end_ms": 110000, "speaker": "client", "content": "[Long pause] My parents were Russian Jewish immigrants. They worked constantly in their grocery business in Washington D.C. There wasn\'t much emotional expression in our home. When my father died when I was 15, I remember my mother telling me not to cry, that I needed to be strong. I became the man of the house overnight."},
-      {"start_ms": 110500, "end_ms": 115000, "speaker": "therapist", "content": "So you learned early on to set aside your emotional responses and take on responsibility."},
-      {"start_ms": 115500, "end_ms": 130000, "speaker": "client", "content": "Yes, I suppose I did. I\'ve never really connected that to my professional development before, but perhaps there\'s something there—this idea that understanding and analyzing might be more valuable than simply feeling."},
-      {"start_ms": 130500, "end_ms": 135000, "speaker": "therapist", "content": "And now with Marilyn\'s death, you\'re confronted with feelings that can\'t be analyzed away."},
-      {"start_ms": 135500, "end_ms": 155000, "speaker": "client", "content": "[Tears forming] Yes. I keep thinking about our last few months together. After her cancer diagnosis, we had this... this precious time. We knew it was ending. We said everything that needed to be said. It was beautiful in its way. But now... now I\'m left here, at 93, wondering what my purpose is without her."},
-      {"start_ms": 155500, "end_ms": 162000, "speaker": "therapist", "content": "It sounds like you\'re facing not only the grief of losing Marilyn but also existential questions about your own remaining time."},
-      {"start_ms": 162500, "end_ms": 175000, "speaker": "client", "content": "That\'s precisely it. I\'ve built my career around helping people confront their mortality meaningfully. Now I\'m confronting my own, without my life\'s companion. It feels... it feels like standing at the edge of an abyss."}
-    ]}'
+        {"start_ms": 0, "end_ms": 8000, "speaker": "therapist", "content": "Dr. Yalom, thank you for coming in today. How would you like me to address you during our sessions?"},
+        {"start_ms": 8500, "end_ms": 16000, "speaker": "client", "content": "Irvin is fine. I''ve spent decades being called Dr. Yalom, but here... I''m just a person trying to make sense of loss."},
+        {"start_ms": 16500, "end_ms": 21000, "speaker": "therapist", "content": "I appreciate that, Irvin. Perhaps we could start with what brings you here today?"},
+        {"start_ms": 21500, "end_ms": 40000, "speaker": "client", "content": "It''s been eight months since Marilyn died. My wife of 65 years. The pain hasn''t diminished as everyone said it would. If anything, it''s become more... existential. I find myself waking at 3 AM, staring at her empty side of the bed, and feeling this overwhelming sense of finitude."},
+        {"start_ms": 40500, "end_ms": 45000, "speaker": "therapist", "content": "The loss of a life partner after so many decades must create an enormous void."},
+        {"start_ms": 45500, "end_ms": 60000, "speaker": "client", "content": "Yes, enormous. You know, I''ve written extensively about death anxiety in my work. I''ve counseled countless patients through grief. But experiencing it myself... it''s different. All my intellectual understanding doesn''t seem to touch the raw experience."},
+        {"start_ms": 60500, "end_ms": 67000, "speaker": "therapist", "content": "So there''s a gap between your professional knowledge of grief and your lived experience of it."},
+        {"start_ms": 67500, "end_ms": 80000, "speaker": "client", "content": "Exactly. And it makes me question how effective I''ve been as a therapist all these years. Did I truly understand what my patients were going through? Or was I just theorizing from a safe distance?"},
+        {"start_ms": 80500, "end_ms": 90000, "speaker": "therapist", "content": "I''m struck by how you''re questioning your professional identity in the wake of this personal loss. I wonder if there might be earlier experiences in your life where you felt this disconnect between understanding and feeling?"},
+        {"start_ms": 90500, "end_ms": 110000, "speaker": "client", "content": "[Long pause] My parents were Russian Jewish immigrants. They worked constantly in their grocery business in Washington D.C. There wasn''t much emotional expression in our home. When my father died when I was 15, I remember my mother telling me not to cry, that I needed to be strong. I became the man of the house overnight."},
+        {"start_ms": 110500, "end_ms": 115000, "speaker": "therapist", "content": "So you learned early on to set aside your emotional responses and take on responsibility."},
+        {"start_ms": 115500, "end_ms": 130000, "speaker": "client", "content": "Yes, I suppose I did. I''ve never really connected that to my professional development before, but perhaps there''s something there—this idea that understanding and analyzing might be more valuable than simply feeling."},
+        {"start_ms": 130500, "end_ms": 135000, "speaker": "therapist", "content": "And now with Marilyn''s death, you''re confronted with feelings that can''t be analyzed away."},
+        {"start_ms": 135500, "end_ms": 155000, "speaker": "client", "content": "[Tears forming] Yes. I keep thinking about our last few months together. After her cancer diagnosis, we had this... this precious time. We knew it was ending. We said everything that needed to be said. It was beautiful in its way. But now... now I''m left here, at 93, wondering what my purpose is without her."},
+        {"start_ms": 155500, "end_ms": 162000, "speaker": "therapist", "content": "It sounds like you''re facing not only the grief of losing Marilyn but also existential questions about your own remaining time."},
+        {"start_ms": 162500, "end_ms": 175000, "speaker": "client", "content": "That''s precisely it. I''ve built my career around helping people confront their mortality meaningfully. Now I''m confronting my own, without my life''s companion. It feels... it feels like standing at the edge of an abyss."}
+      ]}'::jsonb
   );
   
   -- Create session artifacts for Yalom's first session
@@ -391,31 +249,31 @@ For our next session, you might want to pay attention to your dreams, as they of
     demo_account_id,
     session_id,
     'demo',
-    'Therapist: Welcome back, Irvin. How have you been since our last session?\nClient: I\'ve been reflecting a lot. And I\'ve had this recurring dream about Marilyn that I\'d like to discuss.\nTherapist: I\'d be interested to hear about the dream.\nClient: I\'m in our home in Palo Alto, the one we shared for decades. I hear Marilyn\'s voice calling me from another room. I follow the sound, but when I enter the room, she\'s not there. Her voice comes from yet another room. This continues throughout the house. I never find her, but I keep searching. I wake up with this profound sense of... incompleteness.\nTherapist: What feelings come up for you as you describe this dream?\nClient: [Sighs] Longing. Frustration. But also... guilt, which surprises me.\nTherapist: Tell me more about the guilt.\nClient: I think it relates to something I\'ve been contemplating about my life. I devoted so much of myself to my work—my patients, my writing, my teaching at Stanford. I\'m proud of that work, but I wonder if my children experienced me as... emotionally unavailable in some ways. Marilyn was the heart of our family. She made our home while I was building my career.\nTherapist: So the dream might connect to feelings about not being fully present, not just with Marilyn now that she\'s gone, but perhaps earlier in your relationship as well?\nClient: Yes, that resonates. In the dream, I can hear her, but I can\'t reach her. Maybe that symbolizes something about our relationship. Not that we weren\'t close—we were extraordinarily close—but there were parts of myself I kept focused on my work.\nTherapist: I\'m struck by how you\'re questioning aspects of your life choices now. It seems like you\'re reevaluating the balance between your professional accomplishments and your personal relationships.\nClient: Exactly. At 93, looking back, the books and papers seem less important. What feels most significant are the connections—with Marilyn, with my children and grandchildren. Yet my professional identity has been so central to my sense of self.\nTherapist: There\'s a reckoning happening between different parts of your identity.\nClient: [Thoughtful pause] You know, this reminds me of how I would work with patients. I\'d help them sit with uncomfortable realizations without rushing to reassurance. But being on this side of the conversation is quite different. I find myself wanting you to tell me I was a good husband and father, that my work mattered.\nTherapist: You\'re noticing the transference in our relationship—how you\'re experiencing me in a way that reflects other significant relationships and needs.\nClient: Yes, and I\'m simultaneously analyzing it! [Laughs] Old habits die hard. But there\'s something powerful about being vulnerable in this way. It\'s different from writing about these concepts.\nTherapist: You\'re allowing yourself to experience what you\'ve asked of your patients for decades.\nClient: [Emotional] Yes. And it\'s terrifying and liberating at once. I\'ve written that the two most powerful therapeutic experiences are the acceptance of one\'s mortality and the realization that we must ultimately face our existential isolation alone. I\'m living those truths now, without Marilyn.\nTherapist: How are you finding meaning in this new chapter?\nClient: I\'m still writing. I still connect with colleagues and former students. But I\'m also spending more time with my children, really listening to them. I\'ve been asking them about their experience of me as a father, which I\'ve never done before. It\'s opened up remarkable conversations.\nTherapist: So even in this profound grief, you\'re discovering new ways of relating and understanding.\nClient: Yes. Marilyn\'s death has broken me open in ways I couldn\'t have anticipated. There\'s pain in that breaking, but also... possibility.',
+    NULL,
     '{"segments": [
-      {"start_ms": 0, "end_ms": 5000, "speaker": "therapist", "content": "Welcome back, Irvin. How have you been since our last session?"},
-      {"start_ms": 5500, "end_ms": 12000, "speaker": "client", "content": "I\'ve been reflecting a lot. And I\'ve had this recurring dream about Marilyn that I\'d like to discuss."},
-      {"start_ms": 12500, "end_ms": 16000, "speaker": "therapist", "content": "I\'d be interested to hear about the dream."},
-      {"start_ms": 16500, "end_ms": 35000, "speaker": "client", "content": "I\'m in our home in Palo Alto, the one we shared for decades. I hear Marilyn\'s voice calling me from another room. I follow the sound, but when I enter the room, she\'s not there. Her voice comes from yet another room. This continues throughout the house. I never find her, but I keep searching. I wake up with this profound sense of... incompleteness."},
-      {"start_ms": 35500, "end_ms": 40000, "speaker": "therapist", "content": "What feelings come up for you as you describe this dream?"},
-      {"start_ms": 40500, "end_ms": 48000, "speaker": "client", "content": "[Sighs] Longing. Frustration. But also... guilt, which surprises me."},
-      {"start_ms": 48500, "end_ms": 52000, "speaker": "therapist", "content": "Tell me more about the guilt."},
-      {"start_ms": 52500, "end_ms": 70000, "speaker": "client", "content": "I think it relates to something I\'ve been contemplating about my life. I devoted so much of myself to my work—my patients, my writing, my teaching at Stanford. I\'m proud of that work, but I wonder if my children experienced me as... emotionally unavailable in some ways. Marilyn was the heart of our family. She made our home while I was building my career."},
-      {"start_ms": 70500, "end_ms": 78000, "speaker": "therapist", "content": "So the dream might connect to feelings about not being fully present, not just with Marilyn now that she\'s gone, but perhaps earlier in your relationship as well?"},
-      {"start_ms": 78500, "end_ms": 90000, "speaker": "client", "content": "Yes, that resonates. In the dream, I can hear her, but I can\'t reach her. Maybe that symbolizes something about our relationship. Not that we weren\'t close—we were extraordinarily close—but there were parts of myself I kept focused on my work."},
-      {"start_ms": 90500, "end_ms": 98000, "speaker": "therapist", "content": "I\'m struck by how you\'re questioning aspects of your life choices now. It seems like you\'re reevaluating the balance between your professional accomplishments and your personal relationships."},
-      {"start_ms": 98500, "end_ms": 110000, "speaker": "client", "content": "Exactly. At 93, looking back, the books and papers seem less important. What feels most significant are the connections—with Marilyn, with my children and grandchildren. Yet my professional identity has been so central to my sense of self."},
-      {"start_ms": 110500, "end_ms": 115000, "speaker": "therapist", "content": "There\'s a reckoning happening between different parts of your identity."},
-      {"start_ms": 115500, "end_ms": 135000, "speaker": "client", "content": "[Thoughtful pause] You know, this reminds me of how I would work with patients. I\'d help them sit with uncomfortable realizations without rushing to reassurance. But being on this side of the conversation is quite different. I find myself wanting you to tell me I was a good husband and father, that my work mattered."},
-      {"start_ms": 135500, "end_ms": 142000, "speaker": "therapist", "content": "You\'re noticing the transference in our relationship—how you\'re experiencing me in a way that reflects other significant relationships and needs."},
-      {"start_ms": 142500, "end_ms": 155000, "speaker": "client", "content": "Yes, and I\'m simultaneously analyzing it! [Laughs] Old habits die hard. But there\'s something powerful about being vulnerable in this way. It\'s different from writing about these concepts."},
-      {"start_ms": 155500, "end_ms": 160000, "speaker": "therapist", "content": "You\'re allowing yourself to experience what you\'ve asked of your patients for decades."},
-      {"start_ms": 160500, "end_ms": 175000, "speaker": "client", "content": "[Emotional] Yes. And it\'s terrifying and liberating at once. I\'ve written that the two most powerful therapeutic experiences are the acceptance of one\'s mortality and the realization that we must ultimately face our existential isolation alone. I\'m living those truths now, without Marilyn."},
-      {"start_ms": 175500, "end_ms": 180000, "speaker": "therapist", "content": "How are you finding meaning in this new chapter?"},
-      {"start_ms": 180500, "end_ms": 195000, "speaker": "client", "content": "I\'m still writing. I still connect with colleagues and former students. But I\'m also spending more time with my children, really listening to them. I\'ve been asking them about their experience of me as a father, which I\'ve never done before. It\'s opened up remarkable conversations."},
-      {"start_ms": 195500, "end_ms": 200000, "speaker": "therapist", "content": "So even in this profound grief, you\'re discovering new ways of relating and understanding."},
-      {"start_ms": 200500, "end_ms": 210000, "speaker": "client", "content": "Yes. Marilyn\'s death has broken me open in ways I couldn\'t have anticipated. There\'s pain in that breaking, but also... possibility."}
-    ]}'
+        {"start_ms": 0, "end_ms": 5000, "speaker": "therapist", "content": "Welcome back, Irvin. How have you been since our last session?"},
+        {"start_ms": 5500, "end_ms": 12000, "speaker": "client", "content": "I''ve been reflecting a lot. And I''ve had this recurring dream about Marilyn that I''d like to discuss."},
+        {"start_ms": 12500, "end_ms": 16000, "speaker": "therapist", "content": "I''d be interested to hear about the dream."},
+        {"start_ms": 16500, "end_ms": 40000, "speaker": "client", "content": "I''m in our home in Palo Alto, the one we shared for decades. I hear Marilyn''s voice calling me from another room. I follow the sound, but when I enter the room, she''s not there. Her voice comes from yet another room. This continues throughout the house. I never find her, but I keep searching. I wake up with this profound sense of... incompleteness."},
+        {"start_ms": 40500, "end_ms": 45000, "speaker": "therapist", "content": "What feelings come up for you as you describe this dream?"},
+        {"start_ms": 45500, "end_ms": 50000, "speaker": "client", "content": "[Sighs] Longing. Frustration. But also... guilt, which surprises me."},
+        {"start_ms": 50500, "end_ms": 53000, "speaker": "therapist", "content": "Tell me more about the guilt."},
+        {"start_ms": 53500, "end_ms": 70000, "speaker": "client", "content": "I think it relates to something I''ve been contemplating about my life. I devoted so much of myself to my work—my patients, my writing, my teaching at Stanford. I''m proud of that work, but I wonder if my children experienced me as... emotionally unavailable in some ways. Marilyn was the heart of our family. She made our home while I was building my career."},
+        {"start_ms": 70500, "end_ms": 80000, "speaker": "therapist", "content": "So the dream might connect to feelings about not being fully present, not just with Marilyn now that she''s gone, but perhaps earlier in your relationship as well?"},
+        {"start_ms": 80500, "end_ms": 95000, "speaker": "client", "content": "Yes, that resonates. In the dream, I can hear her, but I can''t reach her. Maybe that symbolizes something about our relationship. Not that we weren''t close—we were extraordinarily close—but there were parts of myself I kept focused on my work."},
+        {"start_ms": 95500, "end_ms": 105000, "speaker": "therapist", "content": "I''m struck by how you''re questioning aspects of your life choices now. It seems like you''re reevaluating the balance between your professional accomplishments and your personal relationships."},
+        {"start_ms": 105500, "end_ms": 120000, "speaker": "client", "content": "Exactly. At 93, looking back, the books and papers seem less important. What feels most significant are the connections—with Marilyn, with my children and grandchildren. Yet my professional identity has been so central to my sense of self."},
+        {"start_ms": 120500, "end_ms": 125000, "speaker": "therapist", "content": "There''s a reckoning happening between different parts of your identity."},
+        {"start_ms": 125500, "end_ms": 140000, "speaker": "client", "content": "[Thoughtful pause] You know, this reminds me of how I would work with patients. I''d help them sit with uncomfortable realizations without rushing to reassurance. But being on this side of the conversation is quite different. I find myself wanting you to tell me I was a good husband and father, that my work mattered."},
+        {"start_ms": 140500, "end_ms": 147000, "speaker": "therapist", "content": "You''re noticing the transference in our relationship—how you''re experiencing me in a way that reflects other significant relationships and needs."},
+        {"start_ms": 147500, "end_ms": 155000, "speaker": "client", "content": "Yes, and I''m simultaneously analyzing it! [Laughs] Old habits die hard. But there''s something powerful about being vulnerable in this way. It''s different from writing about these concepts."},
+        {"start_ms": 155500, "end_ms": 160000, "speaker": "therapist", "content": "You''re allowing yourself to experience what you''ve asked of your patients for decades."},
+        {"start_ms": 160500, "end_ms": 175000, "speaker": "client", "content": "[Emotional] Yes. And it''s terrifying and liberating at once. I''ve written that the two most powerful therapeutic experiences are the acceptance of one''s mortality and the realization that we must ultimately face our existential isolation alone. I''m living those truths now, without Marilyn."},
+        {"start_ms": 175500, "end_ms": 180000, "speaker": "therapist", "content": "How are you finding meaning in this new chapter?"},
+        {"start_ms": 180500, "end_ms": 195000, "speaker": "client", "content": "I''m still writing. I still connect with colleagues and former students. But I''m also spending more time with my children, really listening to them. I''ve been asking them about their experience of me as a father, which I''ve never done before. It''s opened up remarkable conversations."},
+        {"start_ms": 195500, "end_ms": 200000, "speaker": "therapist", "content": "So even in this profound grief, you''re discovering new ways of relating and understanding."},
+        {"start_ms": 200500, "end_ms": 210000, "speaker": "client", "content": "Yes. Marilyn''s death has broken me open in ways I couldn''t have anticipated. There''s pain in that breaking, but also... possibility."}
+      ]}'::jsonb
   );
   
   -- Create session artifacts for Yalom's second session
@@ -614,7 +472,7 @@ As you continue to reflect this week, you might notice how these themes – the 
     demo_account_id,
     session_id,
     'demo',
-    'Терапевт: Доктор Ялом, спасибо, что пришли сегодня. Как бы вы хотели, чтобы я обращался к вам во время наших сессий?\nКлиент: Ирвин подойдет. Я провел десятилетия, будучи доктором Яломом, но здесь... я просто человек, пытающийся осмыслить потерю.\nТерапевт: Я ценю это, Ирвин. Может быть, мы могли бы начать с того, что привело вас сюда сегодня?\nКлиент: Прошло восемь месяцев с тех пор, как умерла Мэрилин. Моя жена, с которой я прожил 65 лет. Боль не уменьшилась, как все говорили. Если что, она стала более... экзистенциальной. Я просыпаюсь в 3 часа ночи, смотрю на ее пустую сторону кровати и чувствую это подавляющее чувство конечности.\nТерапевт: Потеря партнера по жизни после стольких десятилетий должна создавать огромную пустоту.\nКлиент: Да, огромную. Знаете, я много писал о тревоге смерти в своей работе. Я консультировал бесчисленное количество пациентов через горе. Но переживать это самому... это другое. Все мое интеллектуальное понимание, кажется, не затрагивает сырой опыт.\nТерапевт: Значит, есть разрыв между вашим профессиональным знанием горя и вашим пережитым опытом.\nКлиент: Именно так. И это заставляет меня сомневаться в том, насколько эффективным я был как терапевт все эти годы. Действительно ли я понимал, через что проходят мои пациенты? Или я просто теоретизировал с безопасного расстояния?\nТерапевт: Меня поражает, как вы ставите под сомнение свою профессиональную идентичность в свете этой личной потери. Интересно, могли ли быть более ранние переживания в вашей жизни, где вы чувствовали этот разрыв между пониманием и чувствованием?\nКлиент: [Долгая пауза] Мои родители были русскими еврейскими иммигрантами. Они постоянно работали в своем продуктовом бизнесе в Вашингтоне. В нашем доме не было много эмоционального выражения. Когда мой отец умер, когда мне было 15, я помню, как мама говорила мне не плакать, что мне нужно быть сильным. Я стал главой семьи в одночасье.\nТерапевт: Значит, вы рано научились откладывать свои эмоциональные реакции и брать на себя ответственность.\nКлиент: Да, полагаю, так и было. Я никогда раньше не связывал это с моим профессиональным развитием, но, возможно, здесь что-то есть — эта идея, что понимание и анализ могут быть более ценными, чем просто чувствование.\nТерапевт: И теперь, со смертью Мэрилин, вы сталкиваетесь с чувствами, которые нельзя проанализировать.\nКлиент: [Слезы] Да. Я все время думаю о наших последних месяцах вместе. После ее диагноза рака у нас было это... это драгоценное время. Мы знали, что это заканчивается. Мы сказали все, что нужно было сказать. Это было прекрасно по-своему. Но теперь... теперь я остался здесь, в 93 года, задаваясь вопросом, какая моя цель без нее.\nТерапевт: Похоже, вы сталкиваетесь не только с горем потери Мэрилин, но и с экзистенциальными вопросами о своем оставшемся времени.\nКлиент: Именно так. Я построил свою карьеру на том, чтобы помогать людям осмысленно встречаться со своей смертностью. Теперь я встречаюсь со своей, без спутника жизни. Это чувствуется... это чувствуется как стояние на краю пропасти.',
+    NULL, 
     '{"segments": [
       {"start_ms": 0, "end_ms": 8000, "speaker": "therapist", "content": "Доктор Ялом, спасибо, что пришли сегодня. Как бы вы хотели, чтобы я обращался к вам во время наших сессий?"},
       {"start_ms": 8500, "end_ms": 16000, "speaker": "client", "content": "Ирвин подойдет. Я провел десятилетия, будучи доктором Яломом, но здесь... я просто человек, пытающийся осмыслить потерю."},
@@ -632,7 +490,7 @@ As you continue to reflect this week, you might notice how these themes – the 
       {"start_ms": 135500, "end_ms": 155000, "speaker": "client", "content": "[Слезы] Да. Я все время думаю о наших последних месяцах вместе. После ее диагноза рака у нас было это... это драгоценное время. Мы знали, что это заканчивается. Мы сказали все, что нужно было сказать. Это было прекрасно по-своему. Но теперь... теперь я остался здесь, в 93 года, задаваясь вопросом, какая моя цель без нее."},
       {"start_ms": 155500, "end_ms": 162000, "speaker": "therapist", "content": "Похоже, вы сталкиваетесь не только с горем потери Мэрилин, но и с экзистенциальными вопросами о своем оставшемся времени."},
       {"start_ms": 162500, "end_ms": 175000, "speaker": "client", "content": "Именно так. Я построил свою карьеру на том, чтобы помогать людям осмысленно встречаться со своей смертностью. Теперь я встречаюсь со своей, без спутника жизни. Это чувствуется... это чувствуется как стояние на краю пропасти."}
-    ]}'
+    ]}'::jsonb
   );
 
   -- Create session artifacts for Yalom's first session (Russian)
@@ -713,7 +571,7 @@ As you continue to reflect this week, you might notice how these themes – the 
     demo_account_id,
     session_id,
     'demo',
-    'Терапевт: Добро пожаловать обратно, Ирвин. Как вы себя чувствовали с нашей последней сессии?\nКлиент: Я много размышлял. И у меня был этот повторяющийся сон о Мэрилин, который я хотел бы обсудить.\nТерапевт: Мне было бы интересно услышать о сне.\nКлиент: Я в нашем доме в Пало-Альто, том, который мы делили десятилетиями. Я слышу голос Мэрилин, зовущий меня из другой комнаты. Я следую за звуком, но когда вхожу в комнату, ее там нет. Ее голос доносится из еще одной комнаты. Это продолжается по всему дому. Я никогда не нахожу ее, но продолжаю искать. Я просыпаюсь с этим глубоким чувством... незавершенности.\nТерапевт: Какие чувства возникают у вас, когда вы описываете этот сон?\nКлиент: [Вздыхает] Тоска. Разочарование. Но также... вина, что меня удивляет.\nТерапевт: Расскажите больше о вине.\nКлиент: Я думаю, это связано с чем-то, о чем я размышлял в своей жизни. Я посвятил так много себя своей работе — моим пациентам, моему писательству, моему преподаванию в Стэнфорде. Я горжусь этой работой, но я задаюсь вопросом, не воспринимали ли меня мои дети как... эмоционально недоступного в некоторых отношениях. Мэрилин была сердцем нашей семьи. Она создавала наш дом, пока я строил свою карьеру.\nТерапевт: Значит, сон может быть связан с чувствами о том, что вы не были полностью присутствующим, не только с Мэрилин сейчас, когда она ушла, но, возможно, и раньше в ваших отношениях?\nКлиент: Да, это находит отклик. Во сне я слышу ее, но не могу до нее добраться. Может быть, это символизирует что-то о наших отношениях. Не то чтобы мы не были близки — мы были необычайно близки — но были части меня, которые я держал сосредоточенными на моей работе.\nТерапевт: Меня поражает, как вы пересматриваете аспекты своих жизненных выборов сейчас. Похоже, вы переоцениваете баланс между вашими профессиональными достижениями и вашими личными отношениями.\nКлиент: Именно так. В 93 года, оглядываясь назад, книги и статьи кажутся менее важными. Что чувствуется наиболее значимым — это связи — с Мэрилин, с моими детьми и внуками. И все же моя профессиональная идентичность была так центральна для моего чувства себя.\nТерапевт: Происходит переоценка между разными частями вашей идентичности.\nКлиент: [Задумчивая пауза] Знаете, это напоминает мне о том, как я работал с пациентами. Я помогал им сидеть с неудобными осознаниями, не спеша с успокоением. Но быть на этой стороне разговора совсем другое. Я ловлю себя на том, что хочу, чтобы вы сказали мне, что я был хорошим мужем и отцом, что моя работа имела значение.\nТерапевт: Вы замечаете перенос в наших отношениях — как вы переживаете меня способом, который отражает другие значимые отношения и потребности.\nКлиент: Да, и я одновременно анализирую это! [Смеется] Старые привычки умирают с трудом. Но есть что-то мощное в том, чтобы быть уязвимым таким образом. Это отличается от написания об этих концепциях.\nТерапевт: Вы позволяете себе пережить то, о чем вы просили своих пациентов десятилетиями.\nКлиент: [Эмоционально] Да. И это одновременно ужасающе и освобождающе. Я писал, что два самых мощных терапевтических переживания — это принятие своей смертности и осознание, что мы в конечном итоге должны встретиться с нашей экзистенциальной изоляцией в одиночестве. Я живу этими истинами сейчас, без Мэрилин.\nТерапевт: Как вы находите смысл в этой новой главе?\nКлиент: Я все еще пишу. Я все еще общаюсь с коллегами и бывшими студентами. Но я также провожу больше времени с моими детьми, действительно слушая их. Я спрашивал их об их опыте меня как отца, чего я никогда не делал раньше. Это открыло замечательные разговоры.\nТерапевт: Значит, даже в этом глубоком горе вы открываете новые способы отношений и понимания.\nКлиент: Да. Смерть Мэрилин разбила меня открытым способами, которых я не мог предвидеть. В этом разбивании есть боль, но также... возможность.',
+    NULL,
     '{"segments": [
       {"start_ms": 0, "end_ms": 5000, "speaker": "therapist", "content": "Добро пожаловать обратно, Ирвин. Как вы себя чувствовали с нашей последней сессии?"},
       {"start_ms": 5500, "end_ms": 12000, "speaker": "client", "content": "Я много размышлял. И у меня был этот повторяющийся сон о Мэрилин, который я хотел бы обсудить."},
@@ -737,7 +595,7 @@ As you continue to reflect this week, you might notice how these themes – the 
       {"start_ms": 180500, "end_ms": 195000, "speaker": "client", "content": "Я все еще пишу. Я все еще общаюсь с коллегами и бывшими студентами. Но я также провожу больше времени с моими детьми, действительно слушая их. Я спрашивал их об их опыте меня как отца, чего я никогда не делал раньше. Это открыло замечательные разговоры."},
       {"start_ms": 195500, "end_ms": 200000, "speaker": "therapist", "content": "Значит, даже в этом глубоком горе вы открываете новые способы отношений и понимания."},
       {"start_ms": 200500, "end_ms": 210000, "speaker": "client", "content": "Да. Смерть Мэрилин разбила меня открытым способами, которых я не мог предвидеть. В этом разбивании есть боль, но также... возможность."}
-    ]}'
+    ]}'::jsonb
   );
 
   -- Create session artifacts for Yalom's second session (Russian)
@@ -789,11 +647,11 @@ As you continue to reflect this week, you might notice how these themes – the 
 
 1. Ваш сон: Сон о поиске Мэрилин, кажется, вызывает сильные чувства, такие как тоска, разочарование и даже вина. Он также кажется связанным с вашими размышлениями о вашей жизни и отношениях.
 
-2. Life's Balance: Вы вдумчиво рассматриваете баланс между вашей влиятельной карьерой и вашей личной жизнью, особенно вашей ролью как отца. Естественно размышлять об этих аспектах.
+2. Жизненный Баланс: Вы вдумчиво рассматриваете баланс между вашей влиятельной карьерой и вашей личной жизнью, особенно вашей ролью как отца. Естественно размышлять об этих аспектах.
 
 3. Наше терапевтическое пространство: Вы проницательно заметили, как наши взаимодействия могут отражать другие важные отношения и потребности, что является ценной частью терапевтического процесса.
 
-4. Embracing Vulnerability: Вы говорили о двойственной природе уязвимости – как она может быть одновременно пугающей и освобождающей. Это мужественный путь.
+4. Принятие Уязвимости: Вы говорили о двойственной природе уязвимости – как она может быть одновременно пугающей и освобождающей. Это мужественный путь.
 
 5. Новые связи: Вдохновляюще слышать о новых видах разговоров, которые вы ведете с вашими детьми, и вашем продолжающемся поиске смысла.
 

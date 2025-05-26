@@ -365,7 +365,7 @@ VALUES ('f5b930c9-0a76-412e-a836-4bc4849a3271', 'e4b930c9-0a76-412e-a836-4bc4849
 
 -- Add transcript for the session in the transcripts table
 INSERT INTO "public"."transcripts" ("id", "session_id", "account_id", "transcription_model", "content", "created_at", "updated_at")
-VALUES ('f6b930c9-0a76-412e-a836-4bc4849a3271', 'f5b930c9-0a76-412e-a836-4bc4849a3271', 'e5b930c9-0a76-412e-a836-4bc4849a3271', 'whisper-1', 'Therapist: How have you been feeling since our last session, John?
+VALUES ('f6b930c9-0a76-412e-a836-4bc4849a3271', 'f5b930c9-0a76-412e-a836-4bc4849a3271', 'e5b930c9-0a76-412e-a836-4bc4849a3271', 'demo', 'Therapist: How have you been feeling since our last session, John?
 
 Client: It''s been a mixed week. The project deadline at work is getting closer, and I can feel my anxiety creeping back up. I''ve been having trouble sleeping again.
 
