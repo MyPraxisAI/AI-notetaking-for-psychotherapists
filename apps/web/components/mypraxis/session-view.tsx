@@ -173,7 +173,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
   const titleSaveTimeout = useRef<NodeJS.Timeout | undefined>(undefined)
 
   // Use the session hook from Supabase to load session data
-  const { data: sessionData, isLoading: _isLoadingSession } = useSession(sessionId)
+  const { data: sessionData, isLoading: isLoadingSession } = useSession(sessionId)
   
   // Always fetch both summaries regardless of active tab
   const { 
@@ -696,7 +696,14 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
           <div className="space-y-5">
             <div className="relative space-y-3">
               <Label>{t('mypraxis:sessionView.notes.myNote')}</Label>
-              {isEditing ? (
+              {isLoadingSession ? (
+                <div className="w-full h-[100px] flex items-center justify-center">
+                  <div className="flex flex-col items-center gap-2">
+                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                    <p className="text-sm text-muted-foreground">{t('mypraxis:sessionView.loading')}</p>
+                  </div>
+                </div>
+              ) : isEditing ? (
                 <div className="relative">
                   <Textarea
                     value={userNote}

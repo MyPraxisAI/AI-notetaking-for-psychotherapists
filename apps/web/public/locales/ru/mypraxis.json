@@ -306,8 +306,9 @@
     }
   },
   "sessionView": {
+    "loading": "Загрузка...",
     "tabs": {
-      "summary": "Сводки & Заметки",
+      "summary": "Сводки и заметки",
       "transcript": "Транскрипт"
     },
     "summaryTabs": {

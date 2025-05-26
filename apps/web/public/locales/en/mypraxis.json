@@ -306,6 +306,7 @@
     }
   },
   "sessionView": {
+    "loading": "Loading...",
     "tabs": {
       "summary": "Summaries & Notes",
       "transcript": "Transcript"

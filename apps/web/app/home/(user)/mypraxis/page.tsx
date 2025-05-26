@@ -1017,9 +1017,9 @@ export default function Page() {
               <Mic className="h-4 w-4 mr-2" />
               {t('mypraxis:page.startRecording')}
             </Button>
-            <p className="text-[12px] text-muted-foreground text-center mt-2">
+            {/* <p className="text-[12px] text-muted-foreground text-center mt-2">
               {isMobileView ? t('mypraxis:page.recordingDesktopOnly') : t('mypraxis:page.recordingFeatures')}
-            </p>
+            </p> */}
           </div>
 
           {/* Date List */}
