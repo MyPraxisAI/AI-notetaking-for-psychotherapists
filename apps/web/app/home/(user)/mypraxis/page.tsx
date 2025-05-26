@@ -887,7 +887,7 @@ export default function Page() {
                 >
                   {localClientNames[client.id] || client.fullName}
                 </span>
-                { client.id === "mike" && (
+                { client.demo && (
                   <Badge
                     variant="secondary"
                     className="ml-0.5 mr-6 text-xs font-medium bg-white text-[#6B7280] px-2.5 py-0.5 rounded-full border border-[#E5E7EB]"

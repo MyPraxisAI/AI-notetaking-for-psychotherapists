@@ -133,8 +133,8 @@ async function renderTranscriptContent(
       
       // Define speaker labels using i18n
       const speakerLabels = {
-        therapist: t('mypraxis:sessionView.transcript.speakerLabels.therapist'),
-        client: t('mypraxis:sessionView.transcript.speakerLabels.client')
+        therapist: `**${t('mypraxis:sessionView.transcript.speakerLabels.therapist')}**`,
+        client: `**${t('mypraxis:sessionView.transcript.speakerLabels.client')}**`
       };
       
       // If no segments or empty segments array, return appropriate message
@@ -150,7 +150,8 @@ async function renderTranscriptContent(
           const endTimeFormatted = formatTimestampMs(segment.end_ms);
           const speakerLabel = speakerLabels[segment.speaker as keyof typeof speakerLabels] || segment.speaker;
           
-          return `[${startTimeFormatted}-${endTimeFormatted}] ${speakerLabel}: ${segment.content}`;
+          // Add two spaces at the end of each line for Markdown line breaks
+          return `[${startTimeFormatted}-${endTimeFormatted}] ${speakerLabel}: ${segment.content}  `;
         })
         .join('\n');
     } catch (e) {

@@ -94,10 +94,12 @@ function TranscriptContent({ clientId, sessionId, session, handleSessionUpdate }
     return (
       <div className="relative">
         <div 
-          className="rounded-lg bg-[#FFF9E8] px-6 pb-6 pt-7 text-[14px] leading-[1.6] whitespace-pre-wrap" 
+          className="rounded-lg bg-[#FFF9E8] px-6 pb-6 pt-7 text-[14px] leading-[1.6]" 
           data-test="session-transcript-value"
         >
-          {session.transcript.content}
+          <ReactMarkdown>
+            {session.transcript.content}
+          </ReactMarkdown>
         </div>
       </div>
     )
