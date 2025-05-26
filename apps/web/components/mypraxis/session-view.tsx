@@ -94,7 +94,7 @@ function TranscriptContent({ clientId, sessionId, session, handleSessionUpdate }
     return (
       <div className="relative">
         <div 
-          className="rounded-lg bg-[#FFF9E8] px-6 pb-6 pt-7 text-[14px] leading-[1.6]" 
+          className="rounded-lg bg-[#FFF9E8] px-6 pb-3 pt-3.5 text-[14px] leading-[1.6]" 
           data-test="session-transcript-value"
         >
           <ReactMarkdown>
@@ -149,6 +149,9 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
   const { t } = useTranslation();
   const [userNote, setUserNote] = useState("")
   const [isEditing, setIsEditing] = useState(false)
+  const [noteHeight, setNoteHeight] = useState<number>(150)
+  const noteRef = useRef<HTMLDivElement>(null)
+  const placeholderRef = useRef<HTMLButtonElement>(null)
 
   const [isCopied, setIsCopied] = useState(false)
   const [isClientSummaryCopied, setIsClientSummaryCopied] = useState(false)
@@ -245,6 +248,23 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
       window.removeEventListener('sessionTabChange', handleTabChange as EventListener);
     };
   }, [sessionId])
+  
+  // Effect to measure the displayed note's height when switching to edit mode
+  useEffect(() => {
+    if (!isEditing) {
+      if (noteRef.current) {
+        // Get the height of the displayed note
+        const height = noteRef.current.clientHeight;
+        // Set the height state for the textarea
+        setNoteHeight(height);
+      } else if (placeholderRef.current) {
+        // If there's no note yet, get the height of the placeholder button
+        const height = placeholderRef.current.clientHeight;
+        // Set the height state for the textarea
+        setNoteHeight(height);
+      }
+    }
+  }, [isEditing, userNote]);
   
   // Update local summary state when query data changes
   useEffect(() => {
@@ -433,6 +453,14 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
 
   const handleSaveNote = (note: string) => {
     if (session) {
+      // Check if the note content has actually changed
+      const currentNote = session.notes?.userNote || "";
+      if (note === currentNote) {
+        // If the note hasn't changed, just exit edit mode without any updates
+        setIsEditing(false);
+        return;
+      }
+      
       // Optimistically update the UI
       const previousSession = { ...session };
       
@@ -678,7 +706,8 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                       handleSaveNote(userNote)
                     }}
                     placeholder={t('mypraxis:sessionView.notes.placeholder')}
-                    className="min-h-[72px] resize-vertical focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)] [&::-webkit-resizer]:appearance-none after:content-[''] after:absolute after:bottom-1 after:right-1 after:w-3 after:h-3 after:border-b-2 after:border-r-2 after:border-[#6B7280] after:cursor-se-resize relative"
+                    style={{ height: `${noteHeight}px` }}
+                    className="min-h-[50px] p-6 resize-vertical focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)] [&::-webkit-resizer]:appearance-none after:content-[''] after:absolute after:bottom-1 after:right-1 after:w-3 after:h-3 after:border-b-2 after:border-r-2 after:border-[#6B7280] after:cursor-se-resize relative text-[14px] leading-[1.6]"
                     autoFocus
                     data-test="session-note-input"
                   />
@@ -686,7 +715,8 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
               ) : userNote && userNote.trim() ? (
                 <div className="relative group">
                   <div
-                    className="rounded-lg bg-[#FFF9E8] p-6 text-[14px] leading-[1.6] min-h-[100px] cursor-pointer"
+                    ref={noteRef}
+                    className="rounded-lg bg-[#FFF9E8] p-6 text-[14px] leading-[1.6] min-h-[100px] cursor-pointer whitespace-pre-wrap"
                     onClick={() => setIsEditing(true)}
                     data-test="session-note-value"
                   >
@@ -703,6 +733,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                 </div>
               ) : (
                 <Button
+                  ref={placeholderRef}
                   variant="ghost"
                   className="w-full h-[100px] border border-dashed border-input hover:border-input hover:bg-accent"
                   onClick={() => setIsEditing(true)}
@@ -749,7 +780,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                       </div>
                     ) : therapistSummary ? (
                       <div className="relative">
-                        <div className="rounded-lg bg-[#FFF9E8] px-6 pb-6 pt-7 text-[14px] leading-[1.6]">
+                        <div className="rounded-lg bg-[#FFF9E8] px-6 pb-3 pt-3.5 text-[14px] leading-[1.6]">
                           {isTherapistSummaryStale && (
                             <div className="absolute right-2 top-2">
                               <Badge variant="outline" className="flex items-center gap-1 bg-white">
@@ -794,7 +825,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                       </div>
                     ) : clientSummary ? (
                       <div className="relative">
-                        <div className="rounded-lg bg-[#FFF9E8] px-6 pb-6 pt-7 text-[14px] leading-[1.6]">
+                        <div className="rounded-lg bg-[#FFF9E8] px-6 pb-3 pt-3.5 text-[14px] leading-[1.6]">
                           {isClientSummaryStale && (
                             <div className="absolute right-2 top-2">
                               <Badge variant="outline" className="flex items-center gap-1 bg-white">

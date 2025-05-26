@@ -68,18 +68,18 @@ export function ClientPrepNote({ clientId }: ClientPrepNoteProps) {
           </div>
         </div>
       ) : error ? (
-        <div className="mt-5 rounded-lg bg-destructive/10 p-6 text-destructive" data-test="client-prep-note-error">
+        <div className="mt-5 rounded-lg bg-destructive/10 p-3 text-destructive" data-test="client-prep-note-error">
           <p className="font-medium">{t('mypraxis:clientPrepNote.error')}</p>
           <p className="text-sm mt-1">{t('mypraxis:clientPrepNote.tryAgain')}</p>
         </div>
       ) : !prepNoteData ? (
-        <div className="mt-5 rounded-lg bg-[#FFF9E8] p-6" data-test="client-prep-note-empty">
+        <div className="mt-5 rounded-lg bg-[#FFF9E8] p-3" data-test="client-prep-note-empty">
           <p className="text-[#374151] text-[14px] leading-[1.6]">
             {t('mypraxis:clientPrepNote.notAvailable')}
           </p>
         </div>
       ) : (
-        <div className="mt-5 rounded-lg bg-[#FFF9E8] p-6 relative group" data-test="client-prep-note-content">
+        <div className="mt-5 rounded-lg bg-[#FFF9E8] pb-10 pt-3 p-6 relative group" data-test="client-prep-note-content">
           {isPrepNoteStale && (
             <div className="absolute right-2 top-2">
               <Badge variant="outline" className="flex items-center gap-1 bg-white">
