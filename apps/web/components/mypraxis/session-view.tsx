@@ -45,13 +45,11 @@ interface TranscriptContentProps {
  */
 function TranscriptContent({ clientId, sessionId, session, handleSessionUpdate }: TranscriptContentProps) {
   const { t } = useTranslation();
-  console.log(`[TranscriptContent] Rendering for sessionId: ${sessionId}, has transcript: ${!!session?.transcript}`);
   
   // Disable polling if we already have a transcript
   const { data: recordingStatus, isLoading: isLoadingRecording } = useRecordingStatus(sessionId, {
     disablePolling: !!session?.transcript
   })
-  console.log(`[TranscriptContent] Recording status:`, recordingStatus);
   
   // Add useTransition hook for async operations
   const [_isPending, startTransition] = useTransition()
@@ -59,19 +57,14 @@ function TranscriptContent({ clientId, sessionId, session, handleSessionUpdate }
   const queryClient = useQueryClient()
   
   // Handle transcript title generation when recording is complete
-  useEffect(() => {
-    console.log(`[TranscriptContent] useEffect running, recordingStatus:`, recordingStatus);
-    
+  useEffect(() => {    
     // If recording status is defined and not processing
     if (recordingStatus !== undefined && !recordingStatus.isProcessing) {
       // Invalidate session data to ensure we have the latest transcript
-      console.log(`[TranscriptContent] Recording completed, invalidating session data for sessionId: ${sessionId}`);
       queryClient.invalidateQueries({ queryKey: ['session', sessionId] });
       
       // Check if we have a transcript
-      if (session?.transcript) {
-        console.log(`[TranscriptContent] Transcript available, generating title for sessionId: ${sessionId}`);
-        
+      if (session?.transcript) {        
         // Generate a title for the session now that the transcript is available
         startTransition(async () => {
           try {
@@ -80,9 +73,7 @@ function TranscriptContent({ clientId, sessionId, session, handleSessionUpdate }
               clientId: clientId
             });
           
-            if (result.success && result.session) {
-              console.log(`[TranscriptContent] Title generation successful: ${result.session.title}`);
-            
+            if (result.success && result.session) {            
               // Update the parent session component
               if (session) {
                 handleSessionUpdate(result, session);
@@ -112,8 +103,8 @@ function TranscriptContent({ clientId, sessionId, session, handleSessionUpdate }
     )
   }
   
-  // Show loading state while we check for recording status
-  if (isLoadingRecording) {    
+  // Show loading state while we check for recording status or if session is being fetched
+  if (isLoadingRecording || !session) {    
     return (
       <div className="w-full h-[100px] flex items-center justify-center">
         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />

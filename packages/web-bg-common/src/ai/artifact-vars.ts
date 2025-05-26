@@ -3,6 +3,7 @@ import { getArtifact, getArtifacts } from '../db/artifact-api';
 import { getUserLanguage, getOrCreateArtifact, getFullLanguageName, createTherapistApi } from '..';
 import type { ArtifactType, LanguageType, VariableContext } from '../types';
 import { getLogger } from '../logger';
+import { getTranscriptsAsText, getTranscriptAsText } from './artifact-utils';
 
 /**
  * Generate the full language name based on user preferences
@@ -199,23 +200,19 @@ export async function generateFullSessionContents(client: SupabaseClient, variab
   }
 
   // Create a map to store transcripts by session ID
-  const transcriptsMap: Record<string, string> = {};
+  let transcriptsMap: Record<string, string> = {};
   
-  // If we have sessions, fetch all related transcripts
+  // If we have sessions, fetch all related transcripts using the utility function
   if (sessions && sessions.length > 0) {
     const sessionIds = sessions.map(session => session.id);
-    const { data: transcripts, error: transcriptsError } = await client
-      .from('transcripts')
-      .select('session_id, content')
-      .in('session_id', sessionIds);
+    logger.info(ctx, `Fetching transcripts for ${sessionIds.length} sessions`);
     
-    if (transcriptsError) {
-      logger.error(ctx, 'Error fetching transcripts:', transcriptsError);
-    } else if (transcripts) {
-      // Create a map of session_id to transcript content
-      transcripts.forEach(transcript => {
-        transcriptsMap[transcript.session_id] = transcript.content;
-      });
+    try {
+      transcriptsMap = await getTranscriptsAsText(client, sessionIds);
+      logger.info(ctx, `Successfully fetched transcripts for ${Object.keys(transcriptsMap).length} sessions`);
+    } catch (error) {
+      logger.error(ctx, 'Error fetching transcripts:', error);
+      // Continue with empty transcripts map
     }
   }
 
@@ -281,19 +278,13 @@ export async function generateLastSessionContent(client: SupabaseClient, variabl
     return 'No previous session data available.';
   }
   
-  // Fetch transcript from the transcripts table
+  // Fetch transcript using the utility function
   let transcriptContent = null;
   if (lastSession.id) {
-    const { data: transcriptData, error: transcriptError } = await client
-      .from('transcripts')
-      .select('content')
-      .eq('session_id', lastSession.id)
-      .maybeSingle();
-      
-    if (transcriptError) {
-      logger.error(ctx, 'Error fetching transcript:', transcriptError);
-    } else if (transcriptData) {
-      transcriptContent = transcriptData.content;
+    try {
+      transcriptContent = await getTranscriptAsText(client, lastSession.id);
+    } catch (error) {
+      logger.error(ctx, 'Error fetching transcript:', error);
     }
   }
   
@@ -473,26 +464,17 @@ export async function generateSessionTranscript(client: SupabaseClient, variable
   
   const sessionId = variableContext.contextId;
   
-  // Fetch transcript from the transcripts table
+  // Fetch transcript using the utility function
   logger.info(ctx, `Fetching transcript for session ${sessionId}`);
-  const { data: transcriptData, error: transcriptError } = await client
-    .from('transcripts')
-    .select('content')
-    .eq('session_id', sessionId)
-    .maybeSingle();
-    
-  if (transcriptError) {
-    logger.error(ctx, 'Error fetching transcript:', transcriptError);
+  
+  try {
+    const transcriptContent = await getTranscriptAsText(client, sessionId);
+    logger.info(ctx, `Successfully retrieved transcript for session ${sessionId}`);
+    return transcriptContent;
+  } catch (error) {
+    logger.error(ctx, 'Error fetching transcript:', error);
     return 'Error fetching transcript data.';
   }
-  
-  if (!transcriptData || !transcriptData.content) {
-    logger.warn(ctx, `No transcript found for session ${sessionId}`);
-    return 'No transcript available for this session.';
-  }
-  
-  logger.info(ctx, `Successfully retrieved transcript for session ${sessionId}`);
-  return transcriptData.content;
 }
 
 /**

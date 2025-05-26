@@ -1,11 +1,13 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
 import { useSupabase } from '@kit/supabase/hooks/use-supabase';
+import { Session } from '@supabase/supabase-js';
 import { useUserWorkspace } from '@kit/accounts/hooks/use-user-workspace';
 import { SessionData, SessionWithId } from '../schemas/session';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
+import { getTranscriptContent } from '../actions';
 
 /**
  * Hook to fetch all sessions for a specific client
@@ -14,6 +16,7 @@ export function useSessions(clientId: string | null) {
   const { workspace } = useUserWorkspace();
   const accountId = workspace?.id;
   const client = useSupabase();
+  const { t } = useTranslation('mypraxis');
 
   const queryKey = ['sessions', clientId, accountId];
 
@@ -35,7 +38,7 @@ export function useSessions(clientId: string | null) {
         }
 
         // Transform the data from database format to our schema format
-        return (sessionsData || []).map((record) => ({
+        return (sessionsData || []).map((record: any) => ({
           id: record.id,
           clientId: record.client_id,
           title: record.title || '',
@@ -60,6 +63,7 @@ export function useSession(sessionId: string | null) {
   const { workspace } = useUserWorkspace();
   const accountId = workspace?.id;
   const client = useSupabase();
+  const { t, i18n } = useTranslation('mypraxis');
 
   const queryKey = ['session', sessionId, accountId];
 
@@ -85,20 +89,17 @@ export function useSession(sessionId: string | null) {
           return null;
         }
         
-        // Fetch transcript data from the transcripts table
-        const { data: transcriptData, error: transcriptError } = await client
-          .from('transcripts')
-          .select('id, content')
-          .eq('session_id', sessionId)
-          .order('created_at', { ascending: false })
-          .limit(1);
-          
-        if (transcriptError) {
-          console.error('Error fetching transcript:', transcriptError);
+        // Fetch transcript content using the server action
+        let transcript = null;
+        try {
+          const { success, content } = await getTranscriptContent(sessionId, i18n.language as 'en' | 'ru');
+          if (success && content) {
+            transcript = content;
+          }
+        } catch (error) {
+          console.error('Error fetching transcript content:', error);
           // Don't throw here, as we can still return the session without transcript
         }
-        
-        const transcript = transcriptData && transcriptData.length > 0 && transcriptData[0]?.content ? transcriptData[0]?.content : null;
 
         // Transform the data using the same interface we defined earlier
         return {

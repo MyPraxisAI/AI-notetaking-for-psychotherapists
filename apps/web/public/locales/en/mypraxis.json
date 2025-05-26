@@ -317,7 +317,17 @@
       "processingMessage": "We're processing your recording. This may take a few minutes depending on the length of the session. The transcript will appear here automatically when it's ready.",
       "addTranscript": "Click to add a transcript",
       "placeholder": "Enter transcript...",
-      "noTranscript": "No transcript available"
+      "noTranscript": "No transcript available",
+      "speakerLabels": {
+        "therapist": "Therapist",
+        "client": "Client"
+      },
+      "errors": {
+        "noContent": "Transcript has no content.",
+        "parsingError": "Error parsing transcript content.",
+        "fetchError": "Error fetching transcript data.",
+        "notAvailable": "No transcript available for this session."
+      }
     },
     "notes": {
       "myNote": "My Note",
