@@ -249,6 +249,7 @@ export type Database = {
         Row: {
           account_id: string
           created_at: string
+          demo: boolean
           email: string | null
           full_name: string
           id: string
@@ -259,6 +260,7 @@ export type Database = {
         Insert: {
           account_id: string
           created_at?: string
+          demo?: boolean
           email?: string | null
           full_name: string
           id?: string
@@ -269,6 +271,7 @@ export type Database = {
         Update: {
           account_id?: string
           created_at?: string
+          demo?: boolean
           email?: string | null
           full_name?: string
           id?: string
@@ -1421,6 +1424,13 @@ export type Database = {
           target_user_id: string
         }
         Returns: boolean
+      }
+      create_demo_client: {
+        Args: {
+          p_target_account_id: string
+          p_source_client_id: string
+        }
+        Returns: undefined
       }
       create_invitation: {
         Args: {

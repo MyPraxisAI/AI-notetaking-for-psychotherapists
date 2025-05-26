@@ -9,6 +9,10 @@ import { useTranslation } from 'react-i18next'
 import { TherapeuticApproachesSelect } from "./therapeutic-approaches-select"
 import { useMyPraxisUserPreferences, useUpdatePreferenceField } from "../../app/home/(user)/mypraxis/_lib/hooks/use-user-preferences"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@kit/ui/select"
+import { completeOnboardingAction, setupDemoClientsAction } from "../../app/home/(user)/mypraxis/_lib/server/onboarding-actions"
+import { toast } from "sonner"
+import { useQueryClient } from "@tanstack/react-query"
+import { useUserWorkspace } from "@kit/accounts/hooks/use-user-workspace"
 
 // Define overlay styles similar to recording modal
 const overlayStyles = `
@@ -75,6 +79,13 @@ export function OnboardingModal({
   
   // Get user settings hook
   const { completeOnboarding } = useUserSettings()
+  
+  // Get React Query client for invalidating queries
+  const queryClient = useQueryClient()
+  
+  // Get user workspace for account ID
+  const { workspace } = useUserWorkspace()
+  const accountId = workspace?.id
   
   // Add styles to document
   useEffect(() => {
@@ -144,6 +155,32 @@ export function OnboardingModal({
       // Update language preference
       await updatePreference('language', selectedLanguage)
       
+      // Call the server action to set up demo clients based on language preference
+      try {
+        const result = await setupDemoClientsAction({})
+        
+        if (result.success) {
+          // Invalidate clients query to refresh the list in Column 2
+          if (accountId) {
+            queryClient.invalidateQueries({
+              queryKey: ['clients', accountId],
+            })
+          }
+        } else {
+          // Show warning toast but continue with onboarding
+          toast.warning(t('mypraxis:onboarding.demoClientWarning'), {
+            description: t('mypraxis:onboarding.demoClientWarningDesc')
+          })
+        }
+      } catch (err) {
+        // Show warning toast but continue with onboarding
+        toast.warning(t('mypraxis:onboarding.demoClientWarning'), {
+          description: t('mypraxis:onboarding.demoClientWarningDesc')
+        })
+        // Log the error for debugging
+        console.error('Error setting up demo clients:', err)
+      }
+      
       // Show success state - onboarding is NOT marked complete here
       setModalState("success")
     } catch (err) {
@@ -151,7 +188,7 @@ export function OnboardingModal({
     } finally {
       setIsProcessing(false)
     }
-  }, [selectedApproach, selectedLanguage, updateField, updatePreference, t])
+  }, [selectedApproach, selectedLanguage, updateField, updatePreference, t, queryClient, accountId])
   
   // Handle close - memoized with dependencies
   const handleClose = useCallback(() => {
@@ -168,15 +205,29 @@ export function OnboardingModal({
   const handleFinishOnboarding = useCallback(async () => {
     try {
       setIsProcessing(true) // Indicate processing
-      await completeOnboarding() // Mark onboarding as complete
-      onClose() // Close the modal
+      
+      // Call the server action to mark onboarding as completed in the database
+      const result = await completeOnboardingAction({})
+      
+      if (!result.success) {
+        throw new Error("Failed to complete onboarding")
+      }
+      
+      // Invalidate the user-settings query to refresh the settings data
+      // This will update the showMandatoryOnboarding state in the page component
+      if (accountId) {
+        queryClient.invalidateQueries({ queryKey: ['user-settings', accountId] })
+      }
+      
+      // Also call the provided onClose function
+      onClose()
     } catch (err) {
-      // Handle any errors during completeOnboarding, though it's less common for this specific action
+      // Handle any errors during completeOnboarding
       setError(err instanceof Error ? err.message : "Failed to complete onboarding")
     } finally {
       setIsProcessing(false)
     }
-  }, [completeOnboarding, onClose])
+  }, [onClose, queryClient, accountId])
     
   if (!isOpen) return null
   

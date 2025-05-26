@@ -355,53 +355,53 @@ SET
   "updated_at" = '2025-03-27 17:55:11.181332+00'
 WHERE "account_id" = 'e5b930c9-0a76-412e-a836-4bc4849a3271';
 
--- Add a client for the therapist
-INSERT INTO "public"."clients" ("id", "therapist_id", "full_name", "email", "phone", "created_at", "updated_at")
-VALUES ('e4b930c9-0a76-412e-a836-4bc4849a3271', 'e1b930c9-0a76-412e-a836-4bc4849a3271', 'John Smith', 'john.smith@example.com', '+972541234567', '2025-03-27 17:55:11.181332+00', '2025-03-27 17:55:11.181332+00');
+-- -- Add a client for the therapist
+-- INSERT INTO "public"."clients" ("id", "therapist_id", "full_name", "email", "phone", "created_at", "updated_at")
+-- VALUES ('e4b930c9-0a76-412e-a836-4bc4849a3271', 'e1b930c9-0a76-412e-a836-4bc4849a3271', 'John Smith', 'john.smith@example.com', '+972541234567', '2025-03-27 17:55:11.181332+00', '2025-03-27 17:55:11.181332+00');
 
--- Add a therapy session for the client
-INSERT INTO "public"."sessions" ("id", "client_id", "title", "note", "created_at", "updated_at")
-VALUES ('f5b930c9-0a76-412e-a836-4bc4849a3271', 'e4b930c9-0a76-412e-a836-4bc4849a3271', 'Breathing Exercises', 'Client showing improvement with stress management techniques. Mindfulness exercises are helping, and client is gaining insight through thought journaling. Continue working on cognitive restructuring for work-related anxiety.', '2025-03-27 17:55:11.181332+00', '2025-03-27 17:55:11.181332+00');
+-- -- Add a therapy session for the client
+-- INSERT INTO "public"."sessions" ("id", "client_id", "title", "note", "created_at", "updated_at")
+-- VALUES ('f5b930c9-0a76-412e-a836-4bc4849a3271', 'e4b930c9-0a76-412e-a836-4bc4849a3271', 'Breathing Exercises', 'Client showing improvement with stress management techniques. Mindfulness exercises are helping, and client is gaining insight through thought journaling. Continue working on cognitive restructuring for work-related anxiety.', '2025-03-27 17:55:11.181332+00', '2025-03-27 17:55:11.181332+00');
 
--- Add transcript for the session in the transcripts table
-INSERT INTO "public"."transcripts" ("id", "session_id", "account_id", "transcription_model", "content", "created_at", "updated_at")
-VALUES ('f6b930c9-0a76-412e-a836-4bc4849a3271', 'f5b930c9-0a76-412e-a836-4bc4849a3271', 'e5b930c9-0a76-412e-a836-4bc4849a3271', 'demo', 'Therapist: How have you been feeling since our last session, John?
+-- -- Add transcript for the session in the transcripts table
+-- INSERT INTO "public"."transcripts" ("id", "session_id", "account_id", "transcription_model", "content", "created_at", "updated_at")
+-- VALUES ('f6b930c9-0a76-412e-a836-4bc4849a3271', 'f5b930c9-0a76-412e-a836-4bc4849a3271', 'e5b930c9-0a76-412e-a836-4bc4849a3271', 'demo', 'Therapist: How have you been feeling since our last session, John?
 
-Client: It''s been a mixed week. The project deadline at work is getting closer, and I can feel my anxiety creeping back up. I''ve been having trouble sleeping again.
+-- Client: It''s been a mixed week. The project deadline at work is getting closer, and I can feel my anxiety creeping back up. I''ve been having trouble sleeping again.
 
-Therapist: I''m sorry to hear that. Have you been able to use any of the mindfulness techniques we discussed?
+-- Therapist: I''m sorry to hear that. Have you been able to use any of the mindfulness techniques we discussed?
 
-Client: Actually, yes. I''ve been doing the breathing exercises during my lunch break, and they''ve helped a bit. I can feel when I''m getting overwhelmed and at least have a tool to use now.
+-- Client: Actually, yes. I''ve been doing the breathing exercises during my lunch break, and they''ve helped a bit. I can feel when I''m getting overwhelmed and at least have a tool to use now.
 
-Therapist: That''s excellent progress. How about the thought journaling?
+-- Therapist: That''s excellent progress. How about the thought journaling?
 
-Client: I''ve done it a couple of times. It''s interesting to see my thoughts written down - some of the catastrophic thinking becomes more obvious when I see it on paper.
+-- Client: I''ve done it a couple of times. It''s interesting to see my thoughts written down - some of the catastrophic thinking becomes more obvious when I see it on paper.
 
-Therapist: That''s exactly what we''re looking for. Let''s build on that awareness today and discuss some additional cognitive techniques you might find helpful for managing those work stressors.', '2025-03-27 17:55:11.181332+00', '2025-03-27 17:55:11.181332+00');
+-- Therapist: That''s exactly what we''re looking for. Let''s build on that awareness today and discuss some additional cognitive techniques you might find helpful for managing those work stressors.', '2025-03-27 17:55:11.181332+00', '2025-03-27 17:55:11.181332+00');
 
--- Add artifacts for the client and session
-INSERT INTO "public"."artifacts" ("id", "reference_type", "reference_id", "type", "content", "created_at", "updated_at", "language")
-VALUES 
-('e6b930c9-0a76-412e-a836-4bc4849a3271', 'client', 'e4b930c9-0a76-412e-a836-4bc4849a3271', 'client_bio', 'John is a 35-year-old software developer experiencing work-related stress and anxiety.', '2025-03-27 17:55:11.181332+00', '2025-03-27 17:55:11.181332+00', 'en'),
-('e7b930c9-0a76-412e-a836-4bc4849a3271', 'session', 'f5b930c9-0a76-412e-a836-4bc4849a3271', 'session_therapist_summary', E'## Session Analysis
+-- -- Add artifacts for the client and session
+-- INSERT INTO "public"."artifacts" ("id", "reference_type", "reference_id", "type", "content", "created_at", "updated_at", "language")
+-- VALUES 
+-- ('e6b930c9-0a76-412e-a836-4bc4849a3271', 'client', 'e4b930c9-0a76-412e-a836-4bc4849a3271', 'client_bio', 'John is a 35-year-old software developer experiencing work-related stress and anxiety.', '2025-03-27 17:55:11.181332+00', '2025-03-27 17:55:11.181332+00', 'en'),
+-- ('e7b930c9-0a76-412e-a836-4bc4849a3271', 'session', 'f5b930c9-0a76-412e-a836-4bc4849a3271', 'session_therapist_summary', E'## Session Analysis
       
-The client demonstrated significant progress in addressing their anxiety triggers. Key observations:
+-- The client demonstrated significant progress in addressing their anxiety triggers. Key observations:
 
-1. **Cognitive patterns**: Client is now able to identify catastrophic thinking before it escalates
-2. **Behavioral responses**: Successfully applied breathing techniques in two real-world situations
-3. **Emotional regulation**: Reported decreased intensity of panic symptoms
+-- 1. **Cognitive patterns**: Client is now able to identify catastrophic thinking before it escalates
+-- 2. **Behavioral responses**: Successfully applied breathing techniques in two real-world situations
+-- 3. **Emotional regulation**: Reported decreased intensity of panic symptoms
 
-**Recommendations for next session:**
-- Continue exposure hierarchy work
-- Introduce thought records for documenting cognitive distortions
-- Consider mindfulness practice to complement existing techniques', '2025-03-27 17:55:11.181332+00', '2025-03-27 17:55:11.181332+00', 'en'),
-('e8b930c9-0a76-412e-a836-4bc4849a3271', 'session', 'f5b930c9-0a76-412e-a836-4bc4849a3271', 'session_client_summary', E'# Session Summary
+-- **Recommendations for next session:**
+-- - Continue exposure hierarchy work
+-- - Introduce thought records for documenting cognitive distortions
+-- - Consider mindfulness practice to complement existing techniques', '2025-03-27 17:55:11.181332+00', '2025-03-27 17:55:11.181332+00', 'en'),
+-- ('e8b930c9-0a76-412e-a836-4bc4849a3271', 'session', 'f5b930c9-0a76-412e-a836-4bc4849a3271', 'session_client_summary', E'# Session Summary
 
-We worked on understanding your anxiety triggers and practiced some techniques to help manage them. Here\'s what we covered:
+-- We worked on understanding your anxiety triggers and practiced some techniques to help manage them. Here\'s what we covered:
 
-- Identified specific situations that tend to trigger your anxiety
-- Practiced the 4-7-8 breathing technique that you can use anytime
-- Discussed how to recognize when your thoughts are becoming catastrophic
-- Created a simple plan for gradually facing situations that make you anxious
+-- - Identified specific situations that tend to trigger your anxiety
+-- - Practiced the 4-7-8 breathing technique that you can use anytime
+-- - Discussed how to recognize when your thoughts are becoming catastrophic
+-- - Created a simple plan for gradually facing situations that make you anxious
 
-**For next time:** Try using the breathing technique when you notice anxiety starting, and we\'ll discuss how it went.', '2025-03-27 17:55:11.181332+00', '2025-03-27 17:55:11.181332+00', 'en');
+-- **For next time:** Try using the breathing technique when you notice anxiety starting, and we\'ll discuss how it went.', '2025-03-27 17:55:11.181332+00', '2025-03-27 17:55:11.181332+00', 'en');
