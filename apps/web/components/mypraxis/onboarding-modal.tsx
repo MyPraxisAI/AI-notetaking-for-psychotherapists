@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from "react"
 import { Button } from "@kit/ui/button"
 import { Loader2 } from "lucide-react"
 import { useUpdateTherapistField, useMyPraxisTherapistProfile } from "../../app/home/(user)/mypraxis/_lib/hooks/use-therapist-profile"
-import { useUserSettings } from "../../app/home/(user)/mypraxis/_lib/hooks/use-user-settings"
 import { useTranslation } from 'react-i18next'
 import { TherapeuticApproachesSelect } from "./therapeutic-approaches-select"
 import { useMyPraxisUserPreferences, useUpdatePreferenceField } from "../../app/home/(user)/mypraxis/_lib/hooks/use-user-preferences"
@@ -77,8 +76,6 @@ export function OnboardingModal({
   // Get user preference update hook
   const { updatePreference } = useUpdatePreferenceField()
   
-  // Get user settings hook
-  const { completeOnboarding } = useUserSettings()
   
   // Get React Query client for invalidating queries
   const queryClient = useQueryClient()

@@ -14,7 +14,6 @@ const GetTranscriptContentSchema = z.object({
 });
 
 type GetTranscriptContentData = z.infer<typeof GetTranscriptContentSchema>;
-type LanguageType = 'en' | 'ru';
 
 /**
  * Interface for transcript segment
@@ -71,8 +70,7 @@ export const getTranscriptContentAction = enhanceAction(
       // Use the local renderTranscriptContent function
       const content = await renderTranscriptContent(
         client,
-        data.sessionId,
-        data.language
+        data.sessionId
       );
       
       logger.info(ctx, 'Successfully fetched transcript content');
@@ -101,8 +99,7 @@ export const getTranscriptContentAction = enhanceAction(
  */
 async function renderTranscriptContent(
   client: SupabaseClient,
-  sessionId: string,
-  language: LanguageType = 'en'
+  sessionId: string
 ): Promise<string | null> {
   // Get i18n instance for translations
   const { t } = await createI18nServerInstance();

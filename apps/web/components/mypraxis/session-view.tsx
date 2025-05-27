@@ -332,7 +332,7 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
   }
 
   // Use React's useTransition for pending state
-  const [isPending, startTransition] = useTransition()
+  const [_isPending, startTransition] = useTransition()
   
   // Get the query client for invalidating queries
   const queryClient = useQueryClient()

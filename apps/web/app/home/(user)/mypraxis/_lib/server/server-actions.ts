@@ -4,7 +4,6 @@ import { z } from 'zod';
 import { enhanceAction } from '@kit/next/actions';
 import { getSupabaseServerClient } from '@kit/supabase/server-client';
 import { SessionSchema, SessionMetadata } from '../schemas/session';
-import { CompleteOnboardingSchema } from '../schemas/user-settings';
 import { getLogger } from '@kit/web-bg-common/logger';
 import { generateContent, createSessionApi, regenerateArtifactsForSession } from '@kit/web-bg-common';
 import type { User, SupabaseClient } from '@supabase/supabase-js';

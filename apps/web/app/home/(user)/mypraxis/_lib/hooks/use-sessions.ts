@@ -2,7 +2,6 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSupabase } from '@kit/supabase/hooks/use-supabase';
-import { Session } from '@supabase/supabase-js';
 import { useUserWorkspace } from '@kit/accounts/hooks/use-user-workspace';
 import { SessionData, SessionWithId } from '../schemas/session';
 import { useTranslation } from 'react-i18next';
@@ -16,7 +15,6 @@ export function useSessions(clientId: string | null) {
   const { workspace } = useUserWorkspace();
   const accountId = workspace?.id;
   const client = useSupabase();
-  const { t } = useTranslation('mypraxis');
 
   const queryKey = ['sessions', clientId, accountId];
 
@@ -38,7 +36,13 @@ export function useSessions(clientId: string | null) {
         }
 
         // Transform the data from database format to our schema format
-        return (sessionsData || []).map((record: any) => ({
+        return (sessionsData || []).map((record: {
+          id: string;
+          client_id: string;
+          title: string | null;
+          note: string | null;
+          created_at: string;
+        }) => ({
           id: record.id,
           clientId: record.client_id,
           title: record.title || '',
@@ -63,7 +67,7 @@ export function useSession(sessionId: string | null) {
   const { workspace } = useUserWorkspace();
   const accountId = workspace?.id;
   const client = useSupabase();
-  const { t, i18n } = useTranslation('mypraxis');
+  const { i18n } = useTranslation('mypraxis'); // t removed - not used in this function
 
   const queryKey = ['session', sessionId, accountId];
 

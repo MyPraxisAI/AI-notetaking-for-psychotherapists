@@ -67,7 +67,7 @@ async function setupDemoClients(
     // Call the create_demo_client function directly with a type assertion
     // to avoid TypeScript errors since this RPC isn't in the type definitions
     const { error: copyError } = await client.rpc(
-      'create_demo_client' as any,
+      'create_demo_client' as unknown as string,
       {
         p_target_account_id: accountId,
         p_source_client_id: clientId

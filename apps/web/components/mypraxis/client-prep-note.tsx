@@ -6,7 +6,6 @@ import ReactMarkdown from 'react-markdown';
 import { Button } from '@kit/ui/button';
 import { Badge } from '@kit/ui/badge';
 import { useState, useEffect, useRef } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 
 interface ClientPrepNoteProps {
@@ -15,14 +14,11 @@ interface ClientPrepNoteProps {
 
 export function ClientPrepNote({ clientId }: ClientPrepNoteProps) {
   const { t } = useTranslation();
-  const queryClient = useQueryClient();
   // Fetch the prep note for the client
   const { 
     data: prepNoteData, 
     isLoading: isLoadingPrepNote,
-    isFetching,
-    error,
-    refetch: _refetch // Renamed to indicate it's unused
+    error
   } = useClientArtifact(clientId, 'client_prep_note', !!clientId);
 
   // Track if the prep note is stale (being updated)

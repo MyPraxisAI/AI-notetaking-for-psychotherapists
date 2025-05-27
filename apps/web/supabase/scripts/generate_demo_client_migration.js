@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+/* eslint-disable @typescript-eslint/no-require-imports */
+// Keep using CommonJS require for Node.js script compatibility
 const fs = require('fs');
 const path = require('path');
 const yaml = require('js-yaml');
@@ -44,7 +46,8 @@ function fileExistsAndNotEmpty(filePath) {
     }
     const stats = fs.statSync(filePath);
     return stats.isFile() && stats.size > 0;
-  } catch (error) {
+  } catch {
+    // Error parameter removed - just return false for any file system error
     return false;
   }
 }
@@ -211,7 +214,7 @@ BEGIN
     const session = yamlData[sessionKey];
     if (session && session.title && session.notes && session.therapist_summary && session.client_summary) {
       const sessionNum = index + 1;
-      const sessionId = generateUuid(`session_${clientName}_${sessionNum}`);
+      // sessionId variable removed - not used in this function
       
       // Load transcript JSON if specified
       let transcriptJson = 'NULL';
