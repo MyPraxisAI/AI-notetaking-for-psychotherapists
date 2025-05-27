@@ -30,6 +30,7 @@ import {
   Brain,
   ChevronLeft,
   ChevronRight,
+  Hammer,
 } from "lucide-react"
 
 import { ProfileForm } from "../../../../components/mypraxis/profile-form"
@@ -679,14 +680,25 @@ export default function Page() {
   // Get user settings to check if onboarding has been completed
   const { settings, isLoading: isLoadingSettings } = useUserSettings()
   
+  // State for manually opening the onboarding modal (for testing)
+  const [isTestOnboardingOpen, setIsTestOnboardingOpen] = useState(false)
+  
   // Determine if mandatory onboarding should be shown
   const showMandatoryOnboarding = !isLoadingSettings && settings ? !settings.onboarding_completed : false
 
+  // Handle test onboarding button click
+  const handleTestOnboardingClick = useCallback(() => {
+    setIsTestOnboardingOpen(true)
+  }, [])
+  
   // Handler for closing the onboarding modal - memoized to prevent unnecessary re-renders
   const handleCloseOnboardingModal = useCallback(() => {
-    // This handler is kept for the mandatory onboarding modal
-    // No state to update since we're using settings directly
-  }, [])
+    // For test mode, we need to explicitly close the modal
+    if (isTestOnboardingOpen) {
+      setIsTestOnboardingOpen(false)
+    }
+    // For mandatory mode, no state to update since we're using settings directly
+  }, [isTestOnboardingOpen])
 
   return (
     <div className="flex h-screen w-full relative">
@@ -829,6 +841,17 @@ export default function Page() {
               <Button variant="ghost" className={getButtonClass("help")} onClick={() => handleMenuClick("help")}>
                 <HelpCircle className="h-[18px] w-[18px]" />
                 {t('mypraxis:page.navigation.help')}
+              </Button>
+            </div>
+            <div className="px-2 mt-2">
+              <Button
+                variant="ghost"
+                className={getButtonClass("settings")}
+                onClick={handleTestOnboardingClick}
+                data-test="test-onboarding-button"
+              >
+                <Hammer className="h-[18px] w-[18px]" />
+                {t('mypraxis:page.testOnboarding')}
               </Button>
             </div>
             <div className="px-2">
@@ -1032,8 +1055,10 @@ export default function Page() {
             </Button>
           </div>
 
+
+
           {/* Start Recording Button */}
-          <div className="mt-3 mb-3">
+          <div className="mt-2 mb-3">
             <Button
               className={`w-full bg-[#22C55E] hover:bg-[#22C55E]/90 text-white text-[14px] font-medium h-auto py-2.5 transition-colors duration-150 border border-[#E5E7EB] ${
                 clients.length === 0 ? "opacity-50 cursor-not-allowed" : ""
@@ -1098,9 +1123,9 @@ export default function Page() {
 
       {/* Mandatory onboarding modal - shown when onboarding_completed is false */}
       <OnboardingModal
-        isOpen={showMandatoryOnboarding}
+        isOpen={showMandatoryOnboarding || isTestOnboardingOpen}
         onClose={handleCloseOnboardingModal}
-        isMandatory={true}
+        isMandatory={showMandatoryOnboarding}
       />
 
       {/* Client Creation Modal */}
