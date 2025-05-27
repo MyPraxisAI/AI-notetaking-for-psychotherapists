@@ -115,6 +115,7 @@
     "demo": "Демо",
     "viewProfile": "Просмотр профиля",
     "startRecording": "Начать запись",
+    "testOnboarding": "Онбординг",
     "recordingDesktopOnly": "Доступно на компьютере",
     "recordingFeatures": "транскрипт, заметки, сводка",
     "demoRecordingDisabled": "Для демо-клиентов запись отключена. Пожалуйста, выберите настоящего клиента.",
