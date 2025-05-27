@@ -622,12 +622,18 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
             ) : (
               <>
                 <div className="relative group">
-                  <div className="absolute -left-7 opacity-0 group-hover:opacity-100 transition-opacity flex items-center h-full">
-                    <Edit2 className="h-4 w-4 text-gray-500" />
-                  </div>
+                  {!isDemo && (
+                    <div className="absolute -left-7 opacity-0 group-hover:opacity-100 transition-opacity flex items-center h-full">
+                      <Edit2 className="h-4 w-4 text-gray-500" />
+                    </div>
+                  )}
                   <h2
-                    className="text-[24px] font-semibold text-[#111827] tracking-[-0.011em] truncate cursor-pointer hover:text-[#374151] transition-colors"
-                    onClick={() => setIsEditingTitle(true)}
+                    className={`text-[24px] font-semibold text-[#111827] tracking-[-0.011em] truncate ${!isDemo ? 'cursor-pointer hover:text-[#374151] transition-colors' : ''}`}
+                    onClick={() => {
+                      if (!isDemo) {
+                        setIsEditingTitle(true);
+                      }
+                    }}
                     data-test="session-title"
                   >
                     {session?.title || "New Session"}
@@ -724,52 +730,43 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
                 <div className="relative group">
                   <div
                     ref={noteRef}
-                    className="rounded-lg bg-[#FFF9E8] p-6 text-[14px] leading-[1.6] min-h-[100px] cursor-pointer whitespace-pre-wrap"
+                    className={`rounded-lg bg-[#FFF9E8] p-6 text-[14px] leading-[1.6] min-h-[100px] whitespace-pre-wrap ${!isDemo ? 'cursor-pointer' : ''}`}
                     onClick={() => {
-                      if (isDemo) {
-                        toast.error(t('mypraxis:sessionView.notes.demoClientNotEditable'))
-                        return
+                      if (!isDemo) {
+                        setIsEditing(true);
                       }
-                      setIsEditing(true)
                     }}
                     data-test="session-note-value"
                   >
                     {userNote}
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-2 top-2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                    onClick={() => {
-                      if (isDemo) {
-                        toast.error(t('mypraxis:sessionView.notes.demoClientNotEditable'))
-                        return
-                      }
-                      setIsEditing(true)
-                    }}
-                  >
-                    <Edit2 className="h-4 w-4" />
-                  </Button>
+                  {!isDemo && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="absolute right-2 top-2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={() => setIsEditing(true)}
+                    >
+                      <Edit2 className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
               ) : (
-                <Button
+                <div
                   ref={placeholderRef}
-                  variant="ghost"
-                  className="w-full h-[100px] border border-dashed border-input hover:border-input hover:bg-accent"
+                  className={`w-full h-[100px] border border-dashed border-input flex items-center justify-center ${!isDemo ? 'hover:border-input hover:bg-accent cursor-pointer' : ''}`}
                   onClick={() => {
-                    if (isDemo) {
-                      toast.error(t('mypraxis:sessionView.notes.demoClientNotEditable'))
-                      return
+                    if (!isDemo) {
+                      setIsEditing(true);
                     }
-                    setIsEditing(true)
                   }}
                   data-test="session-add-note-button"
                 >
-                <span className="flex items-center gap-2">
-                  <Plus className="h-4 w-4" />
-                  {t('mypraxis:sessionView.notes.addNote')}
-                </span>
-                </Button>
+                  <span className="flex items-center gap-2">
+                    {!isDemo && <Plus className="h-4 w-4" />}
+                    {isDemo ? t('mypraxis:sessionView.notes.myNote') : t('mypraxis:sessionView.notes.addNote')}
+                  </span>
+                </div>
               )}
             </div>
 

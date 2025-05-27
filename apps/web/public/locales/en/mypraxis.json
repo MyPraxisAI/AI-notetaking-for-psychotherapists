@@ -338,8 +338,7 @@
       "myNote": "My Note",
       "addNote": "Click to add a note",
       "placeholder": "Enter notes...",
-      "saving": "Saving...",
-      "demoClientNotEditable": "Notes are not editable for demo clients."
+      "saving": "Saving..."
     },
     "summary": {
       "loadingTherapist": "Loading my summary...",
