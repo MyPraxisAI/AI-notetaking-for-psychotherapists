@@ -156,6 +156,7 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
 
   const [isCopied, setIsCopied] = useState(false)
   const [isClientSummaryCopied, setIsClientSummaryCopied] = useState(false)
+  const [isNoteCopied, setIsNoteCopied] = useState(false)
   const [summaryView, setSummaryView] = useState<"therapist" | "client">("therapist")
   const [therapistSummary, setTherapistSummary] = useState<string | null>(null)
   const [clientSummary, setClientSummary] = useState<string | null>(null)
@@ -517,17 +518,26 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
     }
   }
 
-  const handleCopyText = (text: string | undefined, isClientSummary = false) => {
+  const handleCopyText = (text: string | undefined, type: 'therapist' | 'client' | 'note' = 'therapist') => {
     if (!text) return;
     
     navigator.clipboard.writeText(text)
-    if (isClientSummary) {
+    
+    if (type === 'client') {
       setIsClientSummaryCopied(true)
       if (clientCopyTimeout.current) {
         clearTimeout(clientCopyTimeout.current)
       }
       clientCopyTimeout.current = setTimeout(() => {
         setIsClientSummaryCopied(false)
+      }, 2000)
+    } else if (type === 'note') {
+      setIsNoteCopied(true)
+      if (titleSaveTimeout.current) {
+        clearTimeout(titleSaveTimeout.current)
+      }
+      titleSaveTimeout.current = setTimeout(() => {
+        setIsNoteCopied(false)
       }, 2000)
     } else {
       setIsCopied(true)
@@ -740,16 +750,27 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
                   >
                     {userNote}
                   </div>
-                  {!isDemo && (
+                  <div className="absolute right-2 top-2 flex gap-1">
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="absolute right-2 top-2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                      onClick={() => setIsEditing(true)}
+                      className="h-6 w-6 hover:bg-transparent"
+                      onClick={() => handleCopyText(userNote, 'note')}
+                      data-test="copy-note-button"
                     >
-                      <Edit2 className="h-4 w-4" />
+                      {isNoteCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                     </Button>
-                  )}
+                    {!isDemo && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => setIsEditing(true)}
+                      >
+                        <Edit2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
                 </div>
               ) : (
                 <div
@@ -821,7 +842,7 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
                             variant="ghost"
                             size="icon"
                             className="h-6 w-6 hover:bg-transparent"
-                            onClick={() => handleCopyText(therapistSummary || '')}
+                            onClick={() => handleCopyText(therapistSummary || '', 'therapist')}
                             data-test="copy-therapist-summary-button"
                           >
                             {isCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
@@ -866,7 +887,7 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
                             variant="ghost"
                             size="icon"
                             className="h-6 w-6 hover:bg-transparent"
-                            onClick={() => handleCopyText(clientSummaryData?.content || '', true)}
+                            onClick={() => handleCopyText(clientSummaryData?.content || '', 'client')}
                             data-test="copy-client-summary-button"
                           >
                             {isClientSummaryCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
