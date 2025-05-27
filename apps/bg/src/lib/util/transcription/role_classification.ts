@@ -2,7 +2,7 @@
  * Speaker role classification for therapy session transcripts
  */
 import { SupabaseClient } from '@supabase/supabase-js';
-import { generateArtifact } from '@kit/web-bg-common';
+import { generateArtifact, formatTimestampWithMs } from '@kit/web-bg-common';
 import { TranscriptionResult } from '../transcription';
 
 /**
@@ -25,8 +25,8 @@ export async function classifySpeakerRoles(
   // Format the transcript for classification
   const transcript = transcription.content_json.segments
     .map(segment => {
-      const startTimeFormatted = formatTimestamp(segment.start_ms / 1000);
-      const endTimeFormatted = formatTimestamp(segment.end_ms / 1000);
+      const startTimeFormatted = formatTimestampWithMs(segment.start_ms / 1000);
+      const endTimeFormatted = formatTimestampWithMs(segment.end_ms / 1000);
       return `[${startTimeFormatted}-${endTimeFormatted}] ${segment.speaker}: ${segment.content}`;
     })
     .join('\n');
@@ -112,14 +112,3 @@ function validateClassificationResult(result: any): boolean {
   return true;
 }
 
-/**
- * Format a timestamp in seconds to a human-readable format (MM:SS.mmm)
- * 
- * @param seconds - Timestamp in seconds
- * @returns Formatted timestamp string
- */
-function formatTimestamp(seconds: number): string {
-  const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = seconds % 60;
-  return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toFixed(3).padStart(6, '0')}`;
-}

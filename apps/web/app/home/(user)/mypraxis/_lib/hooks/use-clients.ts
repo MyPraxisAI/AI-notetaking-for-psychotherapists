@@ -57,7 +57,8 @@ export function useClients() {
           fullName: record.full_name,
           email: record.email || '',
           phone: record.phone || '',
-          createdAt: record.created_at
+          createdAt: record.created_at,
+          demo: record.demo || false
         }));
       } catch (error) {
         console.error('Error fetching clients:', error);
@@ -107,7 +108,8 @@ export function useClient(clientId: string | null) {
           fullName: record.full_name,
           email: record.email || '',
           phone: record.phone || '',
-          createdAt: record.created_at
+          createdAt: record.created_at,
+          demo: record.demo || false
         };
       } catch (error) {
         console.error('Error fetching client:', error);
@@ -177,7 +179,8 @@ export function useCreateClient() {
           fullName: record.full_name,
           email: record.email || '',
           phone: record.phone || '',
-          createdAt: record.created_at
+          createdAt: record.created_at,
+          demo: record.demo || false
         };
       } catch (error) {
         console.error('Error creating client:', error);
@@ -241,7 +244,8 @@ export function useUpdateClient() {
           fullName: record.full_name,
           email: record.email || '',
           phone: record.phone || '',
-          createdAt: record.created_at
+          createdAt: record.created_at,
+          demo: record.demo || false
         };
       } catch (error) {
         console.error('Error updating client:', error);

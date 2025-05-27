@@ -49,3 +49,6 @@ export * from './types';
 
 // Re-export AWS utilities
 export * as aws from './aws';
+
+// Re-export time utilities
+export * from './utils/time';

@@ -7,6 +7,7 @@ import { Badge } from "@kit/ui/badge"
 import { Button } from "@kit/ui/button"
 import { useSignOut } from '@kit/supabase/hooks/use-sign-out'
 import { useUserData } from './_lib/hooks/use-user-data'
+import { toast } from "sonner"
 import { useCreateSession, useSessions } from "./_lib/hooks/use-sessions"
 import { usePrefetchSessionArtifacts } from './_lib/hooks/use-session-artifacts'
 import { usePrefetchClientArtifacts } from "./_lib/hooks/use-client-artifacts"
@@ -380,6 +381,25 @@ export default function Page() {
   // Temporary function for the recording workflow - will be refactored in future
   const handleRecordingSession = () => {
     if (!selectedClient) return
+    
+    // Find the selected client in the clients array
+    const client = clients.find(c => c.id === selectedClient)
+    
+    // Check if the client is a demo client
+    if (client?.demo) {
+      // Check if any non-demo clients exist
+      const hasRealClients = clients.some(c => !c.demo)
+      
+      // Show appropriate toast notification based on whether real clients exist
+      if (hasRealClients) {
+        toast.error(t('mypraxis:page.demoRecordingDisabled'))
+      } else {
+        toast.error(t('mypraxis:page.demoRecordingDisabledNoRealClients'))
+      }
+      return
+    }
+    
+    // If not a demo client, proceed with recording
     setIsRecordingModalOpen(true)
   }
   
@@ -540,6 +560,8 @@ export default function Page() {
 
     // Profile tab
     if (selectedDetailItem === "profile") {
+      // Find the client to check if it's a demo client
+      const client = clients.find(c => c.id === selectedClient)
       return (
         <ProfileForm 
           clientId={selectedClient} 
@@ -547,6 +569,7 @@ export default function Page() {
           onClientDeleted={handleClientDeleted} 
           onNewSession={handleNewSession}
           onRecordingStart={handleRecordingSession}
+          isDemo={client?.demo || false}
         />
       )
     }
@@ -554,18 +577,23 @@ export default function Page() {
     // Check if the selected detail item is a session ID
     const selectedSession = sessions.find((s) => s.id === selectedDetailItem)
     if (selectedSession) {
+      // Find the client to check if it's a demo client
+      const client = clients.find(c => c.id === selectedClient)
       return (
         <SessionView
           clientId={selectedClient}
           sessionId={selectedDetailItem}
           onDelete={() => handleDeleteSession(selectedDetailItem)}
+          isDemo={client?.demo || false}
         />
       )
     }
 
     // Check if the selected detail item is a demo date
     if (selectedDetailItem.match(/^\d{4}-\d{2}-\d{2}$/)) {
-      return <SessionView clientId={selectedClient} sessionId={selectedDetailItem} />
+      // Find the client to check if it's a demo client
+      const client = clients.find(c => c.id === selectedClient)
+      return <SessionView clientId={selectedClient} sessionId={selectedDetailItem} isDemo={client?.demo || false} />
     }
 
 
@@ -887,7 +915,7 @@ export default function Page() {
                 >
                   {localClientNames[client.id] || client.fullName}
                 </span>
-                { client.id === "mike" && (
+                { client.demo && (
                   <Badge
                     variant="secondary"
                     className="ml-0.5 mr-6 text-xs font-medium bg-white text-[#6B7280] px-2.5 py-0.5 rounded-full border border-[#E5E7EB]"
@@ -1004,7 +1032,7 @@ export default function Page() {
             </Button>
           </div>
 
-          {/* Add Session Button */}
+          {/* Start Recording Button */}
           <div className="mt-3 mb-3">
             <Button
               className={`w-full bg-[#22C55E] hover:bg-[#22C55E]/90 text-white text-[14px] font-medium h-auto py-2.5 transition-colors duration-150 border border-[#E5E7EB] ${
@@ -1017,9 +1045,9 @@ export default function Page() {
               <Mic className="h-4 w-4 mr-2" />
               {t('mypraxis:page.startRecording')}
             </Button>
-            <p className="text-[12px] text-muted-foreground text-center mt-2">
+            {/* <p className="text-[12px] text-muted-foreground text-center mt-2">
               {isMobileView ? t('mypraxis:page.recordingDesktopOnly') : t('mypraxis:page.recordingFeatures')}
-            </p>
+            </p> */}
           </div>
 
           {/* Date List */}

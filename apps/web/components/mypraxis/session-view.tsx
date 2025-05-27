@@ -26,7 +26,6 @@ interface TranscriptContentProps {
   clientId: string
   sessionId: string
   session: Session | null
-  onEditTranscript: (content: string) => void
   handleSessionUpdate: (result: { 
     success: boolean, 
     session?: { 
@@ -40,43 +39,32 @@ interface TranscriptContentProps {
 
 /**
  * Component to handle all transcript states:
- * 1. Transcript exists - show the transcript with edit button
+ * 1. Transcript exists - show the transcript
  * 2. Recording is processing - show "Transcription in progress..."
- * 3. No transcript or recording - show "Add transcript" button
+ * 3. No transcript or recording - show empty state
  */
-function TranscriptContent({ clientId, sessionId, session, onEditTranscript, handleSessionUpdate }: TranscriptContentProps) {
+function TranscriptContent({ clientId, sessionId, session, handleSessionUpdate }: TranscriptContentProps) {
   const { t } = useTranslation();
-  console.log(`[TranscriptContent] Rendering for sessionId: ${sessionId}, has transcript: ${!!session?.transcript}`);
   
   // Disable polling if we already have a transcript
   const { data: recordingStatus, isLoading: isLoadingRecording } = useRecordingStatus(sessionId, {
     disablePolling: !!session?.transcript
   })
-  console.log(`[TranscriptContent] Recording status:`, recordingStatus);
   
   // Add useTransition hook for async operations
   const [_isPending, startTransition] = useTransition()
   
   const queryClient = useQueryClient()
   
-  // This ref is no longer used since we're using React Query's built-in polling
-  const _recordingStatusIntervalIdRef = useRef<NodeJS.Timeout | null>(null);
-  
   // Handle transcript title generation when recording is complete
-  useEffect(() => {
-    console.log(`[TranscriptContent] useEffect running, recordingStatus:`, recordingStatus);
-    
+  useEffect(() => {    
     // If recording status is defined and not processing
     if (recordingStatus !== undefined && !recordingStatus.isProcessing) {
       // Invalidate session data to ensure we have the latest transcript
-      console.log(`[TranscriptContent] Recording completed, invalidating session data for sessionId: ${sessionId}`);
       queryClient.invalidateQueries({ queryKey: ['session', sessionId] });
       
-      
       // Check if we have a transcript
-      if (session?.transcript) {
-        console.log(`[TranscriptContent] Transcript available, generating title for sessionId: ${sessionId}`);
-        
+      if (session?.transcript) {        
         // Generate a title for the session now that the transcript is available
         startTransition(async () => {
           try {
@@ -85,17 +73,11 @@ function TranscriptContent({ clientId, sessionId, session, onEditTranscript, han
               clientId: clientId
             });
           
-            if (result.success && result.session) {
-              console.log(`[TranscriptContent] Title generation successful: ${result.session.title}`);
-            
+            if (result.success && result.session) {            
               // Update the parent session component
               if (session) {
-              // This will update the parent SessionView component
                 handleSessionUpdate(result, session);
               }
-            
-              // The parent component will be updated via handleSessionUpdate
-              // No need to maintain local state as it will be passed down as props
             }
           } catch (error) {
             console.error("[TranscriptContent] Error generating title:", error);
@@ -104,7 +86,6 @@ function TranscriptContent({ clientId, sessionId, session, onEditTranscript, han
       }
     }
 
-    // No cleanup needed as we're using React Query's built-in refetchInterval
     return () => {};
   }, [recordingStatus, sessionId, queryClient, session, clientId, handleSessionUpdate]);
   
@@ -113,17 +94,19 @@ function TranscriptContent({ clientId, sessionId, session, onEditTranscript, han
     return (
       <div className="relative">
         <div 
-          className="rounded-lg bg-[#FFF9E8] px-6 pb-6 pt-7 text-[14px] leading-[1.6] whitespace-pre-wrap" 
+          className="rounded-lg bg-[#FFF9E8] px-6 pb-3 pt-3.5 text-[14px] leading-[1.6]" 
           data-test="session-transcript-value"
         >
-          {session.transcript.content}
+          <ReactMarkdown>
+            {session.transcript.content}
+          </ReactMarkdown>
         </div>
       </div>
     )
   }
   
-  // Show loading state while we check for recording status
-  if (isLoadingRecording) {    
+  // Show loading state while we check for recording status or if session is being fetched
+  if (isLoadingRecording || !session) {    
     return (
       <div className="w-full h-[100px] flex items-center justify-center">
         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -146,19 +129,13 @@ function TranscriptContent({ clientId, sessionId, session, onEditTranscript, han
     )
   }
   
-  // Otherwise, show the "Add transcript" button
+  // Otherwise, show empty state
   return (
-    <Button
-      variant="ghost"
-      className="w-full h-[100px] border border-dashed border-input hover:border-input hover:bg-accent"
-      onClick={() => onEditTranscript("")}
-      data-test="session-add-transcript-button"
-    >
-      <span className="flex items-center gap-2">
-        <Plus className="h-4 w-4" />
-        {t('mypraxis:sessionView.transcript.addTranscript')}
-      </span>
-    </Button>
+    <div className="w-full h-[100px] border border-dashed border-input bg-muted/20 rounded-md flex items-center justify-center">
+      <p className="text-sm text-muted-foreground">
+        {t('mypraxis:sessionView.transcript.noTranscript')}
+      </p>
+    </div>
   )
 }
 
@@ -166,15 +143,20 @@ interface SessionViewProps {
   clientId: string
   sessionId: string
   onDelete?: () => void
+  isDemo?: boolean
 }
 
-export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps) {
+export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: SessionViewProps) {
   const { t } = useTranslation();
   const [userNote, setUserNote] = useState("")
   const [isEditing, setIsEditing] = useState(false)
+  const [noteHeight, setNoteHeight] = useState<number>(150)
+  const noteRef = useRef<HTMLDivElement>(null)
+  const placeholderRef = useRef<HTMLDivElement>(null)
 
   const [isCopied, setIsCopied] = useState(false)
   const [isClientSummaryCopied, setIsClientSummaryCopied] = useState(false)
+  const [isNoteCopied, setIsNoteCopied] = useState(false)
   const [summaryView, setSummaryView] = useState<"therapist" | "client">("therapist")
   const [therapistSummary, setTherapistSummary] = useState<string | null>(null)
   const [clientSummary, setClientSummary] = useState<string | null>(null)
@@ -183,19 +165,17 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
   const [isTherapistSummaryStale, setIsTherapistSummaryStale] = useState(false)
   const [isClientSummaryStale, setIsClientSummaryStale] = useState(false)
   const [session, setSession] = useState<Session | null>(null)
-  const [isEditingTitle, setIsEditingTitle] = useState(false) // Added state for title editing
+  const [isEditingTitle, setIsEditingTitle] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
-  const [isEditingTranscript, setIsEditingTranscript] = useState(false)
-  const [editedTranscript, setEditedTranscript] = useState<string>("")
-  const [activeTab, setActiveTab] = useState<"summary" | "transcript">("summary") // Added state for active tab
-  const [isTitleSaved, setIsTitleSaved] = useState(false) // Added state for title save indicator
+  const [activeTab, setActiveTab] = useState<"summary" | "transcript">("summary")
+  const [isTitleSaved, setIsTitleSaved] = useState(false)
   const _saveTimeout = useRef<NodeJS.Timeout | undefined>(undefined)
   const copyTimeout = useRef<NodeJS.Timeout | undefined>(undefined)
   const clientCopyTimeout = useRef<NodeJS.Timeout | undefined>(undefined)
-  const titleSaveTimeout = useRef<NodeJS.Timeout | undefined>(undefined) // Added timeout ref for title save indicator
+  const titleSaveTimeout = useRef<NodeJS.Timeout | undefined>(undefined)
 
   // Use the session hook from Supabase to load session data
-  const { data: sessionData, isLoading: _isLoadingSession } = useSession(sessionId)
+  const { data: sessionData, isLoading: isLoadingSession } = useSession(sessionId)
   
   // Always fetch both summaries regardless of active tab
   const { 
@@ -271,6 +251,23 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
     };
   }, [sessionId])
   
+  // Effect to measure the displayed note's height when switching to edit mode
+  useEffect(() => {
+    if (!isEditing) {
+      if (noteRef.current) {
+        // Get the height of the displayed note
+        const height = noteRef.current.clientHeight;
+        // Set the height state for the textarea
+        setNoteHeight(height);
+      } else if (placeholderRef.current) {
+        // If there's no note yet, get the height of the placeholder button
+        const height = placeholderRef.current.clientHeight;
+        // Set the height state for the textarea
+        setNoteHeight(height);
+      }
+    }
+  }, [isEditing, userNote]);
+  
   // Update local summary state when query data changes
   useEffect(() => {
     if (therapistSummaryData) {
@@ -335,7 +332,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
   }
 
   // Use React's useTransition for pending state
-  const [isPending, startTransition] = useTransition()
+  const [_isPending, startTransition] = useTransition()
   
   // Get the query client for invalidating queries
   const queryClient = useQueryClient()
@@ -419,7 +416,6 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
             id: sessionId,
             clientId,
             title: title,
-            transcript: session.transcript?.content || '',
             note: session.notes?.userNote || ''
           });
           
@@ -459,6 +455,14 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
 
   const handleSaveNote = (note: string) => {
     if (session) {
+      // Check if the note content has actually changed
+      const currentNote = session.notes?.userNote || "";
+      if (note === currentNote) {
+        // If the note hasn't changed, just exit edit mode without any updates
+        setIsEditing(false);
+        return;
+      }
+      
       // Optimistically update the UI
       const previousSession = { ...session };
       
@@ -478,7 +482,6 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
             id: sessionId,
             clientId,
             title: session.title,
-            transcript: session.transcript?.content || '',
             note: note
           });
           
@@ -515,82 +518,26 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
     }
   }
 
-  const handleSaveTranscript = () => {
-    if (!session) return;
-    
-    // Get the current transcript content (if any)
-    const currentContent = session.transcript?.content || "";
-    
-    // Only proceed with saving if the content has actually changed
-    if (editedTranscript !== currentContent) {
-      // Optimistically update the UI
-      const previousSession = { ...session };
-      
-      // Update the session with the new transcript
-      const updatedSession = {
-        ...session,
-        transcript: { content: editedTranscript }
-      };
-      
-      setSession(updatedSession);
-      setIsEditingTranscript(false);
-      
-      // Use startTransition to indicate pending state
-      startTransition(async () => {
-        try {
-          // Call the server action directly
-          const result = await updateSessionAction({
-            id: sessionId,
-            clientId,
-            title: session.title,
-            transcript: editedTranscript,
-            note: session.notes?.userNote || ''
-          });
-          
-          // Update the session with the returned data
-          handleSessionUpdate(result, session)
-          
-          // Reset summaries first to show loading state
-          resetAndRefetchSummaries()
-          
-          // Invalidate session artifacts in the cache
-          queryClient.invalidateQueries({ queryKey: ['session', sessionId, 'artifact'] })
-          
-          // Force refresh all client artifacts
-          refreshClientArtifacts()
-          
-          // Force refetch of summaries
-          setTimeout(() => {
-            if (summaryView === 'therapist') {
-              refetchTherapistSummary()
-            } else {
-              refetchClientSummary()
-            }
-          }, 500) // Small delay to ensure the invalidation has completed
-          
-          toast.success("Transcript saved");
-        } catch (error) {
-          // Error handling - revert to previous state
-          setSession(previousSession);
-          setIsEditingTranscript(true);
-          toast.error("Failed to save transcript");
-          console.error("Error saving transcript:", error);
-        }
-      });
-    }
-  }
-
-  const handleCopyText = (text: string | undefined, isClientSummary = false) => {
+  const handleCopyText = (text: string | undefined, type: 'therapist' | 'client' | 'note' = 'therapist') => {
     if (!text) return;
     
     navigator.clipboard.writeText(text)
-    if (isClientSummary) {
+    
+    if (type === 'client') {
       setIsClientSummaryCopied(true)
       if (clientCopyTimeout.current) {
         clearTimeout(clientCopyTimeout.current)
       }
       clientCopyTimeout.current = setTimeout(() => {
         setIsClientSummaryCopied(false)
+      }, 2000)
+    } else if (type === 'note') {
+      setIsNoteCopied(true)
+      if (titleSaveTimeout.current) {
+        clearTimeout(titleSaveTimeout.current)
+      }
+      titleSaveTimeout.current = setTimeout(() => {
+        setIsNoteCopied(false)
       }, 2000)
     } else {
       setIsCopied(true)
@@ -685,12 +632,18 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
             ) : (
               <>
                 <div className="relative group">
-                  <div className="absolute -left-7 opacity-0 group-hover:opacity-100 transition-opacity flex items-center h-full">
-                    <Edit2 className="h-4 w-4 text-gray-500" />
-                  </div>
+                  {!isDemo && (
+                    <div className="absolute -left-7 opacity-0 group-hover:opacity-100 transition-opacity flex items-center h-full">
+                      <Edit2 className="h-4 w-4 text-gray-500" />
+                    </div>
+                  )}
                   <h2
-                    className="text-[24px] font-semibold text-[#111827] tracking-[-0.011em] truncate cursor-pointer hover:text-[#374151] transition-colors"
-                    onClick={() => setIsEditingTitle(true)}
+                    className={`text-[24px] font-semibold text-[#111827] tracking-[-0.011em] truncate ${!isDemo ? 'cursor-pointer hover:text-[#374151] transition-colors' : ''}`}
+                    onClick={() => {
+                      if (!isDemo) {
+                        setIsEditingTitle(true);
+                      }
+                    }}
                     data-test="session-title"
                   >
                     {session?.title || "New Session"}
@@ -760,7 +713,14 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
           <div className="space-y-5">
             <div className="relative space-y-3">
               <Label>{t('mypraxis:sessionView.notes.myNote')}</Label>
-              {isEditing ? (
+              {isLoadingSession ? (
+                <div className="w-full h-[100px] flex items-center justify-center">
+                  <div className="flex flex-col items-center gap-2">
+                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                    <p className="text-sm text-muted-foreground">{t('mypraxis:sessionView.loading')}</p>
+                  </div>
+                </div>
+              ) : isEditing ? (
                 <div className="relative">
                   <Textarea
                     value={userNote}
@@ -770,7 +730,8 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                       handleSaveNote(userNote)
                     }}
                     placeholder={t('mypraxis:sessionView.notes.placeholder')}
-                    className="min-h-[72px] resize-vertical focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)] [&::-webkit-resizer]:appearance-none after:content-[''] after:absolute after:bottom-1 after:right-1 after:w-3 after:h-3 after:border-b-2 after:border-r-2 after:border-[#6B7280] after:cursor-se-resize relative"
+                    style={{ height: `${noteHeight}px` }}
+                    className="min-h-[50px] p-6 resize-vertical focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)] [&::-webkit-resizer]:appearance-none after:content-[''] after:absolute after:bottom-1 after:right-1 after:w-3 after:h-3 after:border-b-2 after:border-r-2 after:border-[#6B7280] after:cursor-se-resize relative text-[14px] leading-[1.6]"
                     autoFocus
                     data-test="session-note-input"
                   />
@@ -778,33 +739,55 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
               ) : userNote && userNote.trim() ? (
                 <div className="relative group">
                   <div
-                    className="rounded-lg bg-[#FFF9E8] p-6 text-[14px] leading-[1.6] min-h-[100px] cursor-pointer"
-                    onClick={() => setIsEditing(true)}
+                    ref={noteRef}
+                    className={`rounded-lg bg-[#FFF9E8] p-6 text-[14px] leading-[1.6] min-h-[100px] whitespace-pre-wrap ${!isDemo ? 'cursor-pointer' : ''}`}
+                    onClick={() => {
+                      if (!isDemo) {
+                        setIsEditing(true);
+                      }
+                    }}
                     data-test="session-note-value"
                   >
                     {userNote}
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-2 top-2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                    onClick={() => setIsEditing(true)}
-                  >
-                    <Edit2 className="h-4 w-4" />
-                  </Button>
+                  <div className="absolute right-2 top-2 flex gap-1">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 hover:bg-transparent"
+                      onClick={() => handleCopyText(userNote, 'note')}
+                      data-test="copy-note-button"
+                    >
+                      {isNoteCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                    </Button>
+                    {!isDemo && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => setIsEditing(true)}
+                      >
+                        <Edit2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
                 </div>
               ) : (
-                <Button
-                  variant="ghost"
-                  className="w-full h-[100px] border border-dashed border-input hover:border-input hover:bg-accent"
-                  onClick={() => setIsEditing(true)}
+                <div
+                  ref={placeholderRef}
+                  className={`w-full h-[100px] border border-dashed border-input flex items-center justify-center ${!isDemo ? 'hover:border-input hover:bg-accent cursor-pointer' : ''}`}
+                  onClick={() => {
+                    if (!isDemo) {
+                      setIsEditing(true);
+                    }
+                  }}
                   data-test="session-add-note-button"
                 >
-                <span className="flex items-center gap-2">
-                  <Plus className="h-4 w-4" />
-                  {t('mypraxis:sessionView.notes.addNote')}
-                </span>
-                </Button>
+                  <span className="flex items-center gap-2">
+                    {!isDemo && <Plus className="h-4 w-4" />}
+                    {isDemo ? t('mypraxis:sessionView.notes.myNote') : t('mypraxis:sessionView.notes.addNote')}
+                  </span>
+                </div>
               )}
             </div>
 
@@ -841,7 +824,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                       </div>
                     ) : therapistSummary ? (
                       <div className="relative">
-                        <div className="rounded-lg bg-[#FFF9E8] px-6 pb-6 pt-7 text-[14px] leading-[1.6]">
+                        <div className="rounded-lg bg-[#FFF9E8] px-6 pb-3 pt-3.5 text-[14px] leading-[1.6]">
                           {isTherapistSummaryStale && (
                             <div className="absolute right-2 top-2">
                               <Badge variant="outline" className="flex items-center gap-1 bg-white">
@@ -859,7 +842,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                             variant="ghost"
                             size="icon"
                             className="h-6 w-6 hover:bg-transparent"
-                            onClick={() => handleCopyText(therapistSummary || '')}
+                            onClick={() => handleCopyText(therapistSummary || '', 'therapist')}
                             data-test="copy-therapist-summary-button"
                           >
                             {isCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
@@ -886,7 +869,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                       </div>
                     ) : clientSummary ? (
                       <div className="relative">
-                        <div className="rounded-lg bg-[#FFF9E8] px-6 pb-6 pt-7 text-[14px] leading-[1.6]">
+                        <div className="rounded-lg bg-[#FFF9E8] px-6 pb-3 pt-3.5 text-[14px] leading-[1.6]">
                           {isClientSummaryStale && (
                             <div className="absolute right-2 top-2">
                               <Badge variant="outline" className="flex items-center gap-1 bg-white">
@@ -904,7 +887,7 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
                             variant="ghost"
                             size="icon"
                             className="h-6 w-6 hover:bg-transparent"
-                            onClick={() => handleCopyText(clientSummaryData?.content || '', true)}
+                            onClick={() => handleCopyText(clientSummaryData?.content || '', 'client')}
                             data-test="copy-client-summary-button"
                           >
                             {isClientSummaryCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
@@ -926,41 +909,12 @@ export function SessionView({ clientId, sessionId, onDelete }: SessionViewProps)
         </TabsContent>
 
         <TabsContent value="transcript" className="relative" data-tab="transcript">
-          {isEditingTranscript ? (
-            <div className="relative">
-              <Textarea
-                value={editedTranscript}
-                onChange={(e) => setEditedTranscript(e.target.value)}
-                onBlur={() => {
-                  // Always exit edit mode
-                  setIsEditingTranscript(false)
-                  // Only try to save if there are changes
-                  handleSaveTranscript()
-                }}
-                className="min-h-[300px] resize-vertical focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:shadow-[0_2px_8px_rgba(0,0,0,0.1)] [&::-webkit-resizer]:appearance-none after:content-[''] after:absolute after:bottom-1 after:right-1 after:w-3 after:h-3 after:border-b-2 after:border-r-2 after:border-[#6B7280] after:cursor-se-resize relative font-mono text-sm"
-                placeholder={t('mypraxis:sessionView.transcript.placeholder')}
-                autoFocus
-                data-test="session-transcript-editor"
-              />
-              {isPending && (
-                <div className="absolute right-3 bottom-3 flex items-center gap-2 text-sm text-muted-foreground">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  {t('mypraxis:sessionView.notes.saving')}
-                </div>
-              )}
-            </div>
-          ) : (
-            <TranscriptContent
-              clientId={clientId}
-              sessionId={sessionId}
-              session={session}
-              handleSessionUpdate={handleSessionUpdate}
-              onEditTranscript={(content) => {
-                setIsEditingTranscript(true)
-                setEditedTranscript(content)
-              }}
-            />
-          )}
+          <TranscriptContent
+            clientId={clientId}
+            sessionId={sessionId}
+            session={session}
+            handleSessionUpdate={handleSessionUpdate}
+          />
         </TabsContent>
       </Tabs>
 
