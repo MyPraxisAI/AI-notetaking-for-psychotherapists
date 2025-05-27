@@ -152,7 +152,7 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
   const [isEditing, setIsEditing] = useState(false)
   const [noteHeight, setNoteHeight] = useState<number>(150)
   const noteRef = useRef<HTMLDivElement>(null)
-  const placeholderRef = useRef<HTMLButtonElement>(null)
+  const placeholderRef = useRef<HTMLDivElement>(null)
 
   const [isCopied, setIsCopied] = useState(false)
   const [isClientSummaryCopied, setIsClientSummaryCopied] = useState(false)
