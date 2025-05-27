@@ -1,2 +1,0 @@
--- Migration to add Yevgeniya as a demo client
--- This will be used for demonstration purposes

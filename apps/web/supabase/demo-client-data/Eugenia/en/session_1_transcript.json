@@ -1,0 +1,1498 @@
+{
+  "segments": [
+    {
+      "start_ms": 0,
+      "end_ms": 2500,
+      "speaker": "therapist",
+      "content": "Good. Tell me what's happened recently for you."
+    },
+    {
+      "start_ms": 6000,
+      "end_ms": 21000,
+      "speaker": "client",
+      "content": "Yeah, so recently-- I honestly-- I've been trying so hard to pinpoint where it all started. It's only been about two and a half months, two months of this. So it doesn't sound long, but every day is kind of long for me."
+    },
+    {
+      "start_ms": 23500,
+      "end_ms": 28500,
+      "speaker": "therapist",
+      "content": "So in other words, you were doing perfectly well until roughly 10 weeks ago."
+    },
+    {
+      "start_ms": 31000,
+      "end_ms": 31500,
+      "speaker": "client",
+      "content": "Yes."
+    },
+    {
+      "start_ms": 33500,
+      "end_ms": 34000,
+      "speaker": "therapist",
+      "content": "OK."
+    },
+    {
+      "start_ms": 35000,
+      "end_ms": 35500,
+      "speaker": "client",
+      "content": "Yes."
+    },
+    {
+      "start_ms": 38000,
+      "end_ms": 41500,
+      "speaker": "therapist",
+      "content": "So you've been living up here. You've been in a fairly new job?"
+    },
+    {
+      "start_ms": 44000,
+      "end_ms": 62000,
+      "speaker": "client",
+      "content": "No, I've had the job for a while. I've always wanted to live in San Francisco my whole life. I'm healthy. I have great friends. I have a great family. I have a boyfriend. Like, there's absolutely nothing wrong in life right now."
+    },
+    {
+      "start_ms": 64500,
+      "end_ms": 67000,
+      "speaker": "therapist",
+      "content": "The relationship with your boyfriend is working well?"
+    },
+    {
+      "start_ms": 68500,
+      "end_ms": 69000,
+      "speaker": "client",
+      "content": "Yeah."
+    },
+    {
+      "start_ms": 70500,
+      "end_ms": 71000,
+      "speaker": "therapist",
+      "content": "OK."
+    },
+    {
+      "start_ms": 72000,
+      "end_ms": 72500,
+      "speaker": "client",
+      "content": "Yeah."
+    },
+    {
+      "start_ms": 75000,
+      "end_ms": 77000,
+      "speaker": "therapist",
+      "content": "How long have you been involved with him?"
+    },
+    {
+      "start_ms": 79500,
+      "end_ms": 82000,
+      "speaker": "client",
+      "content": "Only about a year and a few months."
+    },
+    {
+      "start_ms": 83500,
+      "end_ms": 84000,
+      "speaker": "therapist",
+      "content": "OK."
+    },
+    {
+      "start_ms": 87000,
+      "end_ms": 116000,
+      "speaker": "client",
+      "content": "Yeah, and my family is really supportive. I have great roommates, friends. I feel like I should be-- I am very thankful to be living this kind of great life. So I think, as I was saying, I was trying to pinpoint where this all started for me. And I went recently, right before it started, to New York. It was like my first time there. Or not my first time, but first time in a long time."
+    },
+    {
+      "start_ms": 118500,
+      "end_ms": 119500,
+      "speaker": "therapist",
+      "content": "When was that?"
+    },
+    {
+      "start_ms": 122000,
+      "end_ms": 125000,
+      "speaker": "client",
+      "content": "This was about like two and a half months ago."
+    },
+    {
+      "start_ms": 126500,
+      "end_ms": 127000,
+      "speaker": "therapist",
+      "content": "OK."
+    },
+    {
+      "start_ms": 131000,
+      "end_ms": 165000,
+      "speaker": "client",
+      "content": "And I was really excited for this big trip, and I got to visit my friend, who's starting grad school at NYU. And for some reason, once we were walking down the street, and out of nowhere, I got like this feeling of anxiety in my stomach. And I was like, oh, this is really weird. I haven't felt anxiety in years. I wonder what it's coming from. I hope it doesn't come-- like all the typical thoughts that come with anxiety. So that was pretty--"
+    },
+    {
+      "start_ms": 167500,
+      "end_ms": 171500,
+      "speaker": "therapist",
+      "content": "Out of nowhere, you just suddenly were stormed with anxiety."
+    },
+    {
+      "start_ms": 175000,
+      "end_ms": 190000,
+      "speaker": "client",
+      "content": "Yeah, and then I tried to dive into it later, when I got home. And I was thinking about it, and then that's when-- so basically I'm going to talk to you how everything unfolded until today."
+    },
+    {
+      "start_ms": 192000,
+      "end_ms": 193000,
+      "speaker": "therapist",
+      "content": "Sure, OK."
+    },
+    {
+      "start_ms": 198000,
+      "end_ms": 228000,
+      "speaker": "client",
+      "content": "So I was in New York. And then I came here, and I was like, whoa, what was that all about? And then I started thinking about how many people there are in the world. Because in New York, it was just like crazy madness. So I just started to think about how many people are in the world. And I looked up-- I was just reading, and I found this definition for this fake word. I think it's a fake word, and it's called \"sonder.\""
+    },
+    {
+      "start_ms": 230000,
+      "end_ms": 231000,
+      "speaker": "therapist",
+      "content": "\"Sonder\"?"
+    },
+    {
+      "start_ms": 235000,
+      "end_ms": 285000,
+      "speaker": "client",
+      "content": "Yeah. And it's from this thing called the Dictionary of Obscure Sorrows. And this word-- I should have brought the definition. But it says, like, about how many people there are that you'll never see that will never see you. And it's like a huge anthill, that your paths may cross for a second. You could just be a blur on the freeway to them, kind of thing. And that was very interesting to me. And for some reason, it made me feel very anxious and insignificant. And just, like, wow, there's so many-- like why does it matter if I sit on this bench or if I don't sit on this bench? Or why does it matter if I wear these shoes or other shoes? Or if I say this thing or not this thing?"
+    },
+    {
+      "start_ms": 292000,
+      "end_ms": 324000,
+      "speaker": "client",
+      "content": "So that's kind of where it started growling. And then it started growing more into like more existential thoughts of like, who am I, even? Or like, why are we even here? Or like, what's the point of anything? And those were really hard questions for me to answer. Because I know from the reading I've done thus far, I know that there is no real one answer, and everyone makes their own answer."
+    },
+    {
+      "start_ms": 330000,
+      "end_ms": 375000,
+      "speaker": "client",
+      "content": "So that happened. And then I kept reading, I just kept trying to read. And I was reading a lot of Camus, and I read The Myth of Sisyphus. And it was just all about-- have you read that book?"
+    },
+    {
+      "start_ms": 376500,
+      "end_ms": 377500,
+      "speaker": "therapist",
+      "content": "Mm-hm."
+    },
+    {
+      "start_ms": 381000,
+      "end_ms": 392000,
+      "speaker": "client",
+      "content": "Yeah. So-- yeah, I'm sure you have. So that was interesting to me. And then I kept reading and kept-- I just like felt like I wasn't at the root of the problem quite yet."
+    },
+    {
+      "start_ms": 399000,
+      "end_ms": 443000,
+      "speaker": "client",
+      "content": "And then interestingly enough, I picked up your book, Staring at the Sun, and I started reading it. And I was like, oh, wait. I think this all makes sense. I think the root of all of this is the whole fear that life is going to be over one day. And I think that I always knew that-- of course I knew that that was going to happen, my whole life. Like I've been-- I've known many people that died. It's not like I've never experienced it."
+    },
+    {
+      "start_ms": 450000,
+      "end_ms": 478000,
+      "speaker": "client",
+      "content": "But up until this moment, or these two months, I've never put that much thought into it, ever. Like I've always just pushed it aside. And now that I've been thinking so much about it, I just cannot-- I feel like I've realized something that cannot be unrealized, to the depths. And I just see no point--"
+    },
+    {
+      "start_ms": 481000,
+      "end_ms": 483000,
+      "speaker": "therapist",
+      "content": "Cannot be unrealized, huh?"
+    },
+    {
+      "start_ms": 485000,
+      "end_ms": 485500,
+      "speaker": "client",
+      "content": "Yeah."
+    },
+    {
+      "start_ms": 488000,
+      "end_ms": 490000,
+      "speaker": "therapist",
+      "content": "You can't repress it back."
+    },
+    {
+      "start_ms": 495000,
+      "end_ms": 523000,
+      "speaker": "client",
+      "content": "I can't unknow what is known, because I know it now and it's a fact. And I don't want to repress it, because I feel as though there's no point. And I know I'm only 23, but it's just like, I see no reason to do-- I have no motivation to do anything. Because it all comes down to, like, there is no point."
+    },
+    {
+      "start_ms": 528000,
+      "end_ms": 537000,
+      "speaker": "therapist",
+      "content": "Tell me a little bit about how uncomfortable you are for these last 10 weeks now. You know, yesterday, last week-- how much discomfort are you feeling in your life?"
+    },
+    {
+      "start_ms": 540000,
+      "end_ms": 541500,
+      "speaker": "client",
+      "content": "Yeah, it's a lot."
+    },
+    {
+      "start_ms": 543000,
+      "end_ms": 544000,
+      "speaker": "therapist",
+      "content": "It's still there."
+    },
+    {
+      "start_ms": 548000,
+      "end_ms": 579000,
+      "speaker": "client",
+      "content": "Oh yeah, it's a lot of discomfort. It's definitely feeling lonely in the sense that-- I know other people have these thoughts. But I feel like when I look around at my loved ones or just the world, I feel like all these people don't get it, kind of thing. Or like, how are they doing? Like, why does this person care about getting their master's degree? Like anything they learn will be gone, kind of thing. And then so lonely is the first thing. And then stuck."
+    },
+    {
+      "start_ms": 584000,
+      "end_ms": 591000,
+      "speaker": "therapist",
+      "content": "In these last few weeks, you're going about your daily routine. You're going to work every day and functioning there. But your feelings are bad. How about your dreaming?"
+    },
+    {
+      "start_ms": 596000,
+      "end_ms": 616000,
+      "speaker": "client",
+      "content": "Yeah, it's interesting. I've had-- I have normal dreams. And it's really interesting. Because when I was reading your book, I realized a lot of people had dreams that had to do with death. And then I finished reading one chapter, and that night, I had a horrible nightmare. And it was like the first time I had a nightmare in so long."
+    },
+    {
+      "start_ms": 618000,
+      "end_ms": 619000,
+      "speaker": "therapist",
+      "content": "Really?"
+    },
+    {
+      "start_ms": 623000,
+      "end_ms": 631000,
+      "speaker": "client",
+      "content": "And I think it might have been because I was reading, and other people having nightmares, so then I ended up having one."
+    },
+    {
+      "start_ms": 633500,
+      "end_ms": 636000,
+      "speaker": "therapist",
+      "content": "Do you remember the content of the nightmare?"
+    },
+    {
+      "start_ms": 640000,
+      "end_ms": 646000,
+      "speaker": "client",
+      "content": "Yeah, it was-- I was at work and I was looking out the window. And then someone came in the room."
+    },
+    {
+      "start_ms": 648000,
+      "end_ms": 650000,
+      "speaker": "therapist",
+      "content": "This was how long ago?"
+    },
+    {
+      "start_ms": 652500,
+      "end_ms": 654500,
+      "speaker": "client",
+      "content": "This was like three weeks ago?"
+    },
+    {
+      "start_ms": 656500,
+      "end_ms": 660000,
+      "speaker": "therapist",
+      "content": "Three weeks, and it's still very fresh in your mind?"
+    },
+    {
+      "start_ms": 663000,
+      "end_ms": 669000,
+      "speaker": "client",
+      "content": "Yeah, because I was really scared when I woke up. Because I hadn't had a nightmare in forever."
+    },
+    {
+      "start_ms": 671500,
+      "end_ms": 676000,
+      "speaker": "therapist",
+      "content": "Well, tell me-- you still see it in your mind's eye, the dream."
+    },
+    {
+      "start_ms": 677500,
+      "end_ms": 678000,
+      "speaker": "client",
+      "content": "Yeah."
+    },
+    {
+      "start_ms": 680000,
+      "end_ms": 684000,
+      "speaker": "therapist",
+      "content": "Just describe it, if you can, just in the present tense."
+    },
+    {
+      "start_ms": 685500,
+      "end_ms": 686500,
+      "speaker": "client",
+      "content": "Definitely."
+    },
+    {
+      "start_ms": 688000,
+      "end_ms": 690500,
+      "speaker": "therapist",
+      "content": "That I am at work, Put it that way."
+    },
+    {
+      "start_ms": 694000,
+      "end_ms": 743000,
+      "speaker": "client",
+      "content": "I am at work and I'm looking out the window where my desk is. And someone runs into the room and they're like, oh, there was just a shooting outside. And then we look outside and there are acrobats on the top of the lamp post. And they're like just posing and looking, like showing off that they just killed someone, kind of thing. And then we're like, oh, OK, we've got to go. We've got to get out of here. And so we go to the back and try to get out the fire escape. But now we're-- the fire escape is at my house."
+    },
+    {
+      "start_ms": 746000,
+      "end_ms": 792000,
+      "speaker": "client",
+      "content": "So we're going down the fire escape and we're trying to rush. And then we get to the bottom of the fire escape on the floor, which is not at my house anymore. It's just some sketchy alleyway. And we're hiding behind a trash can, and the acrobats roll-- or drive by with their car windows open. And they're blasting music, which is Russian. And--"
+    },
+    {
+      "start_ms": 794000,
+      "end_ms": 795500,
+      "speaker": "therapist",
+      "content": "Russian music?"
+    },
+    {
+      "start_ms": 798000,
+      "end_ms": 803000,
+      "speaker": "client",
+      "content": "Yeah. That's my first language. So I think that somehow came in that way."
+    },
+    {
+      "start_ms": 805000,
+      "end_ms": 806000,
+      "speaker": "therapist",
+      "content": "I see."
+    },
+    {
+      "start_ms": 811000,
+      "end_ms": 841000,
+      "speaker": "client",
+      "content": "And we're really scared, trying to be quiet. Like, they're just driving by, like we're trying to go unnoticed. And then we run into a store and do the same thing. And they drive by. And then I woke up. So I think that signified like me just hiding, or like just learning about death and seeing it posing itself."
+    },
+    {
+      "start_ms": 843500,
+      "end_ms": 844000,
+      "speaker": "therapist",
+      "content": "Yeah."
+    },
+    {
+      "start_ms": 847000,
+      "end_ms": 851000,
+      "speaker": "client",
+      "content": "And then trying to hide from it constantly. And I think the acrobats, I know where those came in."
+    },
+    {
+      "start_ms": 853000,
+      "end_ms": 854500,
+      "speaker": "therapist",
+      "content": "Tell me what that means."
+    },
+    {
+      "start_ms": 858000,
+      "end_ms": 873000,
+      "speaker": "client",
+      "content": "That is just-- that was-- I work in graphic design. And one of the projects we just did, we were illustrating acrobats, and talking about how their bodies go. So that's where the acrobats came from."
+    },
+    {
+      "start_ms": 876000,
+      "end_ms": 882000,
+      "speaker": "therapist",
+      "content": "So they were-- the acrobats were killers. They were lethal. And you were afraid they'd see you, but they didn't see you."
+    },
+    {
+      "start_ms": 884000,
+      "end_ms": 885000,
+      "speaker": "client",
+      "content": "Mm-hm."
+    },
+    {
+      "start_ms": 887500,
+      "end_ms": 890000,
+      "speaker": "therapist",
+      "content": "And the Russian music. Tell me about that."
+    },
+    {
+      "start_ms": 895000,
+      "end_ms": 902000,
+      "speaker": "client",
+      "content": "I have no idea why they were listening to Russian music in their car. I think it might have-- I don't remember what was going on that day."
+    },
+    {
+      "start_ms": 904500,
+      "end_ms": 907000,
+      "speaker": "therapist",
+      "content": "But you say Russian was your first language."
+    },
+    {
+      "start_ms": 908000,
+      "end_ms": 908500,
+      "speaker": "client",
+      "content": "Yeah."
+    },
+    {
+      "start_ms": 911000,
+      "end_ms": 912500,
+      "speaker": "therapist",
+      "content": "Yeah. Were you born there?"
+    },
+    {
+      "start_ms": 916000,
+      "end_ms": 923000,
+      "speaker": "client",
+      "content": "No, I was born here. I was the first one born here in my family. And they're from Azerbaijan."
+    },
+    {
+      "start_ms": 925000,
+      "end_ms": 927000,
+      "speaker": "therapist",
+      "content": "So you spoke Russian at home."
+    },
+    {
+      "start_ms": 930000,
+      "end_ms": 938000,
+      "speaker": "client",
+      "content": "Yeah, kind of a mixture of both. Like with my grandma, only Russian. But yeah, Russian at home."
+    },
+    {
+      "start_ms": 941000,
+      "end_ms": 944500,
+      "speaker": "therapist",
+      "content": "So what do you make of that, that the music was Russian?"
+    },
+    {
+      "start_ms": 950000,
+      "end_ms": 963000,
+      "speaker": "client",
+      "content": "I really-- I don't know. I honestly hadn't read that much into the Russian part. Because there are many times where I just dream in Russian."
+    },
+    {
+      "start_ms": 965000,
+      "end_ms": 966500,
+      "speaker": "therapist",
+      "content": "You dreaming in Russian."
+    },
+    {
+      "start_ms": 970000,
+      "end_ms": 980000,
+      "speaker": "client",
+      "content": "Like it's just music to me. I don't know if it's specific. Because it was just they were listening to music in their car to me. I don't know if--"
+    },
+    {
+      "start_ms": 982000,
+      "end_ms": 985000,
+      "speaker": "therapist",
+      "content": "Do you listen to Russian music now very often?"
+    },
+    {
+      "start_ms": 987500,
+      "end_ms": 989000,
+      "speaker": "client",
+      "content": "Not very often."
+    },
+    {
+      "start_ms": 992000,
+      "end_ms": 995000,
+      "speaker": "therapist",
+      "content": "So it sounds like it's from an earlier stage of life."
+    },
+    {
+      "start_ms": 997500,
+      "end_ms": 998500,
+      "speaker": "client",
+      "content": "Maybe."
+    },
+    {
+      "start_ms": 1000000,
+      "end_ms": 1000500,
+      "speaker": "therapist",
+      "content": "The music?"
+    },
+    {
+      "start_ms": 1005000,
+      "end_ms": 1014000,
+      "speaker": "client",
+      "content": "I don't listen to it often, but my family does all the time. So maybe. I don't know. Maybe. Maybe there is something in there."
+    },
+    {
+      "start_ms": 1019000,
+      "end_ms": 1039000,
+      "speaker": "client",
+      "content": "It was just, like, people, and heat, and just, like, subways. And I was just very overwhelmed, and I was just thinking about if I just stopped and walked another way, no one would know ever."
+    },
+    {
+      "start_ms": 1044000,
+      "end_ms": 1052000,
+      "speaker": "therapist",
+      "content": "I've got a feeling that somehow-- I'm just guessing, really. But I've got a feeling somehow the thoughts you were thinking about were somehow percolating under the surface."
+    },
+    {
+      "start_ms": 1055000,
+      "end_ms": 1057000,
+      "speaker": "client",
+      "content": "Probably. Yeah."
+    },
+    {
+      "start_ms": 1059000,
+      "end_ms": 1063000,
+      "speaker": "therapist",
+      "content": "Something happening in New York that just opened it all up."
+    },
+    {
+      "start_ms": 1065500,
+      "end_ms": 1066500,
+      "speaker": "client",
+      "content": "Probably."
+    },
+    {
+      "start_ms": 1070000,
+      "end_ms": 1075000,
+      "speaker": "therapist",
+      "content": "Any idea of anything percolating under the surface before then with any of these thoughts?"
+    },
+    {
+      "start_ms": 1078000,
+      "end_ms": 1080000,
+      "speaker": "client",
+      "content": "With any of these thoughts?"
+    },
+    {
+      "start_ms": 1081500,
+      "end_ms": 1083500,
+      "speaker": "therapist",
+      "content": "Any of the thoughts that you're having."
+    },
+    {
+      "start_ms": 1090000,
+      "end_ms": 1151000,
+      "speaker": "client",
+      "content": "No, I really can't. Like, I used to-- when I used to see a bunch of people I would just think, wow, look at all these people. They all have a favorite color, and they all have a worry today, and they all love something. And that's so interesting that we all have our own thing. Or I would look at a plane in the sky and I would think, wonder where those people are going or where the person in the third row, what he's thinking. He or she is thinking about right now. And it would interest me. And now it's like, wow. Look at all the planes. There's so many people everywhere and we're all going to die."
+    },
+    {
+      "start_ms": 1155000,
+      "end_ms": 1161000,
+      "speaker": "therapist",
+      "content": "It sounds like you have a kind of a tendency, ability to kind of reflect on what other people feel."
+    },
+    {
+      "start_ms": 1163000,
+      "end_ms": 1163500,
+      "speaker": "client",
+      "content": "Yeah."
+    },
+    {
+      "start_ms": 1165000,
+      "end_ms": 1167500,
+      "speaker": "therapist",
+      "content": "Look at those people. What's that guy thinking?"
+    },
+    {
+      "start_ms": 1170000,
+      "end_ms": 1174000,
+      "speaker": "client",
+      "content": "I definitely have, but it was always very positive and exciting."
+    },
+    {
+      "start_ms": 1175500,
+      "end_ms": 1176500,
+      "speaker": "therapist",
+      "content": "Oh, right."
+    },
+    {
+      "start_ms": 1177500,
+      "end_ms": 1178000,
+      "speaker": "client",
+      "content": "Yeah."
+    },
+    {
+      "start_ms": 1179500,
+      "end_ms": 1180500,
+      "speaker": "therapist",
+      "content": "I see that."
+    },
+    {
+      "start_ms": 1182000,
+      "end_ms": 1185000,
+      "speaker": "client",
+      "content": "So yeah, I definitely have always noticed other people."
+    },
+    {
+      "start_ms": 1187000,
+      "end_ms": 1189500,
+      "speaker": "therapist",
+      "content": "What things look like from a standpoint of other people--"
+    },
+    {
+      "start_ms": 1190500,
+      "end_ms": 1191000,
+      "speaker": "client",
+      "content": "Yeah."
+    },
+    {
+      "start_ms": 1192500,
+      "end_ms": 1194000,
+      "speaker": "therapist",
+      "content": "--and get outside of yourself."
+    },
+    {
+      "start_ms": 1197000,
+      "end_ms": 1211000,
+      "speaker": "client",
+      "content": "Or just like on the bus seeing someone walk down the street. I'd be like, oh, I hope they're having a good day. Or I wonder what they're going to go do and what made them laugh today kind of thing."
+    },
+    {
+      "start_ms": 1216000,
+      "end_ms": 1228000,
+      "speaker": "therapist",
+      "content": "Can you trace that back a little bit in your life? Any ideas when that began? I mean, it's a great trait to be able to think of other people. I guess we call it empathy. What other people are thinking. So any childhood experiences that come to mind as you think about that?"
+    },
+    {
+      "start_ms": 1235000,
+      "end_ms": 1244000,
+      "speaker": "client",
+      "content": "I honestly can't think of any, but I think it's always been kind of how I am. How I've been. Just interested in other people."
+    },
+    {
+      "start_ms": 1246500,
+      "end_ms": 1249500,
+      "speaker": "therapist",
+      "content": "How about back in your family? Any models for that?"
+    },
+    {
+      "start_ms": 1255000,
+      "end_ms": 1262000,
+      "speaker": "client",
+      "content": "Another thing that I was thinking about actually the other day was I've always never wanted my grandma to die."
+    },
+    {
+      "start_ms": 1264000,
+      "end_ms": 1265500,
+      "speaker": "therapist",
+      "content": "How old is she?"
+    },
+    {
+      "start_ms": 1267500,
+      "end_ms": 1269000,
+      "speaker": "client",
+      "content": "She's in her 80s."
+    },
+    {
+      "start_ms": 1271000,
+      "end_ms": 1273000,
+      "speaker": "therapist",
+      "content": "In her 80s. Is she in good health?"
+    },
+    {
+      "start_ms": 1277000,
+      "end_ms": 1290000,
+      "speaker": "client",
+      "content": "Yeah. I mean, she's in good health, but I think she's got things here and there. Like she needs to be careful when she walks and she takes medicine for certain things. But other than that."
+    },
+    {
+      "start_ms": 1292000,
+      "end_ms": 1294000,
+      "speaker": "therapist",
+      "content": "When did you have that thought?"
+    },
+    {
+      "start_ms": 1296000,
+      "end_ms": 1296500,
+      "speaker": "client",
+      "content": "Always."
+    },
+    {
+      "start_ms": 1299000,
+      "end_ms": 1302000,
+      "speaker": "therapist",
+      "content": "Always. You don't want-- you're very close to her?"
+    },
+    {
+      "start_ms": 1307000,
+      "end_ms": 1323000,
+      "speaker": "client",
+      "content": "Yeah. She kind of-- I grew up with her. And even when I was little, I was like-- even when I didn't even know, I always didn't want her to die, but I never really thought how deep it was, how deep death was until now. It was always just a thing I thought."
+    },
+    {
+      "start_ms": 1327000,
+      "end_ms": 1331500,
+      "speaker": "therapist",
+      "content": "Grandmother. So your grandmother is a really central figure to you."
+    },
+    {
+      "start_ms": 1333000,
+      "end_ms": 1333500,
+      "speaker": "client",
+      "content": "Yeah."
+    },
+    {
+      "start_ms": 1335000,
+      "end_ms": 1335500,
+      "speaker": "therapist",
+      "content": "Yeah."
+    },
+    {
+      "start_ms": 1340000,
+      "end_ms": 1357000,
+      "speaker": "client",
+      "content": "So as I was growing up, I definitely spent a lot of time with her. And yeah, I'd always just been like worried to let her go kind of thing. Or like I've always wanted-- I was scared of her dying kind of thing. But I didn't even know what dying meant I felt like until now."
+    },
+    {
+      "start_ms": 1362000,
+      "end_ms": 1368000,
+      "speaker": "therapist",
+      "content": "When you say I was scared of her dying, can you describe that idea in any other way? Elaborate on being scared of her dying."
+    },
+    {
+      "start_ms": 1374000,
+      "end_ms": 1379000,
+      "speaker": "client",
+      "content": "Yeah, I just didn't want to lose her. I didn't want her to no longer be there."
+    },
+    {
+      "start_ms": 1380500,
+      "end_ms": 1381000,
+      "speaker": "therapist",
+      "content": "Yeah."
+    },
+    {
+      "start_ms": 1385000,
+      "end_ms": 1389000,
+      "speaker": "client",
+      "content": "I didn't really think what would happen to her, so maybe it was more selfish."
+    },
+    {
+      "start_ms": 1394000,
+      "end_ms": 1407000,
+      "speaker": "therapist",
+      "content": "Tell me, what do you remember? If we kind of go back and let's do a history of your early experiences and awareness of death. What do you remember about death? When did you first ever think about this or see anything that died? Get the idea that things, that people would die?"
+    },
+    {
+      "start_ms": 1413000,
+      "end_ms": 1418000,
+      "speaker": "client",
+      "content": "I don't remember when it first started. Like, I just always, I feel like I knew things died."
+    },
+    {
+      "start_ms": 1419500,
+      "end_ms": 1420000,
+      "speaker": "therapist",
+      "content": "Yeah."
+    },
+    {
+      "start_ms": 1425000,
+      "end_ms": 1437000,
+      "speaker": "client",
+      "content": "And, like, yeah, there would be family members that I didn't know that would die. Oh, you know what? There was one time where someone died, and I was the first one that heard about it. That was really sad."
+    },
+    {
+      "start_ms": 1439000,
+      "end_ms": 1441000,
+      "speaker": "therapist",
+      "content": "What was that? Tell me about it."
+    },
+    {
+      "start_ms": 1445000,
+      "end_ms": 1447500,
+      "speaker": "client",
+      "content": "It was my brother's bar mitzvah photographer."
+    },
+    {
+      "start_ms": 1449000,
+      "end_ms": 1450500,
+      "speaker": "therapist",
+      "content": "Your brother's bar mitzvah?"
+    },
+    {
+      "start_ms": 1451500,
+      "end_ms": 1452000,
+      "speaker": "client",
+      "content": "Photographer."
+    },
+    {
+      "start_ms": 1453000,
+      "end_ms": 1454000,
+      "speaker": "therapist",
+      "content": "The photographer? OK."
+    },
+    {
+      "start_ms": 1456000,
+      "end_ms": 1458000,
+      "speaker": "client",
+      "content": "Yeah, he was a really cool guy."
+    },
+    {
+      "start_ms": 1459000,
+      "end_ms": 1459500,
+      "speaker": "therapist",
+      "content": "Yeah?"
+    },
+    {
+      "start_ms": 1462000,
+      "end_ms": 1468000,
+      "speaker": "client",
+      "content": "And we all knew him well because he was doing our photos, or he did our photos."
+    },
+    {
+      "start_ms": 1469500,
+      "end_ms": 1470000,
+      "speaker": "therapist",
+      "content": "Right."
+    },
+    {
+      "start_ms": 1474000,
+      "end_ms": 1493000,
+      "speaker": "client",
+      "content": "And then the lady that worked for him called and was like, hi, can I please speak to the Mordecais? I was like oh, that's me. And she was like, oh, hey, just to let you know, Art died of a heart attack and we're trying to figure out what to do with his photos."
+    },
+    {
+      "start_ms": 1495000,
+      "end_ms": 1496000,
+      "speaker": "therapist",
+      "content": "I see."
+    },
+    {
+      "start_ms": 1499000,
+      "end_ms": 1505000,
+      "speaker": "client",
+      "content": "And I was like 12. So I was like, oh, OK. I'll let my mom know."
+    },
+    {
+      "start_ms": 1508000,
+      "end_ms": 1511000,
+      "speaker": "therapist",
+      "content": "Oh, so you got a call. You got a phone call."
+    },
+    {
+      "start_ms": 1512000,
+      "end_ms": 1512500,
+      "speaker": "client",
+      "content": "Yeah."
+    },
+    {
+      "start_ms": 1514000,
+      "end_ms": 1514500,
+      "speaker": "therapist",
+      "content": "I see."
+    },
+    {
+      "start_ms": 1516500,
+      "end_ms": 1517500,
+      "speaker": "client",
+      "content": "So that was one."
+    },
+    {
+      "start_ms": 1520000,
+      "end_ms": 1522000,
+      "speaker": "therapist",
+      "content": "So that's your first personal experience."
+    },
+    {
+      "start_ms": 1525000,
+      "end_ms": 1532000,
+      "speaker": "client",
+      "content": "Yeah, that was my first personal. And the second one was definitely when my grandmother passed away. My other grandmother."
+    },
+    {
+      "start_ms": 1534000,
+      "end_ms": 1535500,
+      "speaker": "therapist",
+      "content": "Your father's mother?"
+    },
+    {
+      "start_ms": 1536500,
+      "end_ms": 1537000,
+      "speaker": "client",
+      "content": "Yeah."
+    },
+    {
+      "start_ms": 1539000,
+      "end_ms": 1540000,
+      "speaker": "therapist",
+      "content": "Yeah. When was that?"
+    },
+    {
+      "start_ms": 1543000,
+      "end_ms": 1546000,
+      "speaker": "client",
+      "content": "That was when I was in high school."
+    },
+    {
+      "start_ms": 1547500,
+      "end_ms": 1548500,
+      "speaker": "therapist",
+      "content": "She was here?"
+    },
+    {
+      "start_ms": 1550000,
+      "end_ms": 1552500,
+      "speaker": "client",
+      "content": "Yes, she was in Los Angeles. I lived there."
+    },
+    {
+      "start_ms": 1554000,
+      "end_ms": 1556000,
+      "speaker": "therapist",
+      "content": "So you spent time with her as well?"
+    },
+    {
+      "start_ms": 1559000,
+      "end_ms": 1565000,
+      "speaker": "client",
+      "content": "Oh, yeah. Definitely. But I was closer with my other grandma. But I always loved her so much, too."
+    },
+    {
+      "start_ms": 1566500,
+      "end_ms": 1567000,
+      "speaker": "therapist",
+      "content": "Yeah."
+    },
+    {
+      "start_ms": 1571000,
+      "end_ms": 1575000,
+      "speaker": "client",
+      "content": "And I was actually in the room holding her hand when she died."
+    },
+    {
+      "start_ms": 1578000,
+      "end_ms": 1579000,
+      "speaker": "therapist",
+      "content": "You were 12?"
+    },
+    {
+      "start_ms": 1581000,
+      "end_ms": 1585000,
+      "speaker": "client",
+      "content": "No, that was when I was in high school. I had just taken the SATs."
+    },
+    {
+      "start_ms": 1589000,
+      "end_ms": 1592000,
+      "speaker": "therapist",
+      "content": "What do you remember about that scene?"
+    },
+    {
+      "start_ms": 1597000,
+      "end_ms": 1600500,
+      "speaker": "client",
+      "content": "That was really bad, and hard, and sad."
+    },
+    {
+      "start_ms": 1603000,
+      "end_ms": 1606000,
+      "speaker": "therapist",
+      "content": "Tell me what happened. Can you reconstruct it for me?"
+    },
+    {
+      "start_ms": 1612000,
+      "end_ms": 1617000,
+      "speaker": "client",
+      "content": "Yeah. I remember the last time I saw her, she had cancer."
+    },
+    {
+      "start_ms": 1619000,
+      "end_ms": 1620000,
+      "speaker": "therapist",
+      "content": "Cancer?"
+    },
+    {
+      "start_ms": 1621000,
+      "end_ms": 1621500,
+      "speaker": "client",
+      "content": "Yeah."
+    },
+    {
+      "start_ms": 1623500,
+      "end_ms": 1625000,
+      "speaker": "therapist",
+      "content": "Do you remember what kind?"
+    },
+    {
+      "start_ms": 1628000,
+      "end_ms": 1630000,
+      "speaker": "client",
+      "content": "Yes, it was the blood kind."
+    },
+    {
+      "start_ms": 1631500,
+      "end_ms": 1632000,
+      "speaker": "therapist",
+      "content": "Leukemia?"
+    },
+    {
+      "start_ms": 1636000,
+      "end_ms": 1661000,
+      "speaker": "client",
+      "content": "Yes, she had leukemia. And so we were visiting her. I didn't really think she was going to die. And I was younger, and I was just visiting her to make her feel happy. And I wasn't worried about losing her I guess. And then that night she had an aneurysm so she was unconscious."
+    },
+    {
+      "start_ms": 1666000,
+      "end_ms": 1706000,
+      "speaker": "client",
+      "content": "And then the next day we were in the hospital and my parents finally called my brother and told him, and so he was driving back from Riverside where he was going to school. And it was really interesting. I thought it was interesting because the nurse came in to say, it's about to happen. So we all went into the room and we were whispering in her ear, and kissing her, and holding her hand. And then the elevator opened, my brother got in the room, kissed her, said something in her ear, and then, like, three seconds later, she died. Which was pretty crazy. I thought that was pretty crazy at the time. Like, whoa, she waited for him."
+    },
+    {
+      "start_ms": 1709000,
+      "end_ms": 1711000,
+      "speaker": "therapist",
+      "content": "She waited for him."
+    },
+    {
+      "start_ms": 1714000,
+      "end_ms": 1715000,
+      "speaker": "client",
+      "content": "I don't know."
+    },
+    {
+      "start_ms": 1717000,
+      "end_ms": 1719000,
+      "speaker": "therapist",
+      "content": "And you were holding her hand."
+    },
+    {
+      "start_ms": 1724000,
+      "end_ms": 1732000,
+      "speaker": "client",
+      "content": "Yeah. And I guess it was pretty crazy seeing someone you love, and hold them, go from alive to not alive."
+    },
+    {
+      "start_ms": 1734000,
+      "end_ms": 1734500,
+      "speaker": "therapist",
+      "content": "Yeah."
+    },
+    {
+      "start_ms": 1738000,
+      "end_ms": 1741000,
+      "speaker": "client",
+      "content": "I don't regret it, being in the room."
+    },
+    {
+      "start_ms": 1744000,
+      "end_ms": 1748000,
+      "speaker": "therapist",
+      "content": "That's a pretty powerful experience, though. Holding someone's hand as they're dying."
+    },
+    {
+      "start_ms": 1754000,
+      "end_ms": 1780000,
+      "speaker": "client",
+      "content": "Yeah. But you know, yeah, it was really sad for me. And of course I always relive that moment or if I see pictures of her I'll start crying, but even then, I never was like, I'm going to die."
+    },
+    {
+      "start_ms": 1781500,
+      "end_ms": 1782000,
+      "speaker": "therapist",
+      "content": "Yeah."
+    },
+    {
+      "start_ms": 1787000,
+      "end_ms": 1803000,
+      "speaker": "client",
+      "content": "Or like, yeah, I knew I was going to die. And we always talk about bucket list things or before I die I want to do this, but I feel like it's so lightly said. Like, I never really thought about actually me being gone forever and never coming back."
+    },
+    {
+      "start_ms": 1808000,
+      "end_ms": 1818000,
+      "speaker": "therapist",
+      "content": "But you knew by that time, this was when you were adolescent, that you held your grandmother's hand, you saw her die, but the thought hadn't really thundered down on you that, oh, I'm going to die, too."
+    },
+    {
+      "start_ms": 1821000,
+      "end_ms": 1822500,
+      "speaker": "client",
+      "content": "Definitely not."
+    },
+    {
+      "start_ms": 1824500,
+      "end_ms": 1826000,
+      "speaker": "therapist",
+      "content": "That had never occurred to you?"
+    },
+    {
+      "start_ms": 1831000,
+      "end_ms": 1842000,
+      "speaker": "client",
+      "content": "I mean, I knew I was going to die. Of course I knew that. But it never was, like, sit down and think about me going into oblivion forever."
+    },
+    {
+      "start_ms": 1845000,
+      "end_ms": 1850000,
+      "speaker": "therapist",
+      "content": "Right. You knew \"I'm going to die,\" but you didn't explore deeply."
+    },
+    {
+      "start_ms": 1854000,
+      "end_ms": 1861000,
+      "speaker": "client",
+      "content": "Definitely not. Because I was like, why should you explore deeply? You're not going to be conscious when you're dead. It doesn't matter."
+    },
+    {
+      "start_ms": 1866000,
+      "end_ms": 1876000,
+      "speaker": "therapist",
+      "content": "So I think what you're saying is you knew about death, you saw your grandmother die. I mean, you couldn't be any closer to death at that point. And then, of course, the photographer, he died too."
+    },
+    {
+      "start_ms": 1879000,
+      "end_ms": 1883000,
+      "speaker": "client",
+      "content": "Yeah, and then family members. My grandma's brother."
+    },
+    {
+      "start_ms": 1885500,
+      "end_ms": 1887500,
+      "speaker": "therapist",
+      "content": "Ever go to funerals before?"
+    },
+    {
+      "start_ms": 1889000,
+      "end_ms": 1889500,
+      "speaker": "client",
+      "content": "Yeah."
+    },
+    {
+      "start_ms": 1891500,
+      "end_ms": 1893500,
+      "speaker": "therapist",
+      "content": "Whose funerals did you attend?"
+    },
+    {
+      "start_ms": 1896000,
+      "end_ms": 1900000,
+      "speaker": "client",
+      "content": "I've been to my grandma's funeral, my grandpa's funeral."
+    },
+    {
+      "start_ms": 1902000,
+      "end_ms": 1905000,
+      "speaker": "therapist",
+      "content": "I mean, this was earlier. Your grandmother--"
+    },
+    {
+      "start_ms": 1906500,
+      "end_ms": 1909500,
+      "speaker": "client",
+      "content": "My grandpa died after my grandma."
+    },
+    {
+      "start_ms": 1911000,
+      "end_ms": 1913000,
+      "speaker": "therapist",
+      "content": "OK, how about earlier on?"
+    },
+    {
+      "start_ms": 1915000,
+      "end_ms": 1916000,
+      "speaker": "client",
+      "content": "Earlier on? No."
+    },
+    {
+      "start_ms": 1920000,
+      "end_ms": 1927000,
+      "speaker": "therapist",
+      "content": "What's The first experience in your life with death? Any ideas? When did it first come to your mind?"
+    },
+    {
+      "start_ms": 1933000,
+      "end_ms": 1949000,
+      "speaker": "client",
+      "content": "Probably a distant family member that I didn't know about that my parents told me. And maybe it would help to mention that my family has a very interesting way of mentioning when someone dies."
+    },
+    {
+      "start_ms": 1951000,
+      "end_ms": 1952000,
+      "speaker": "therapist",
+      "content": "How do they say it?"
+    },
+    {
+      "start_ms": 1957000,
+      "end_ms": 1972000,
+      "speaker": "client",
+      "content": "This is like the ultimate my mother. If someone dies, she'll call and she'll be like, hey, how's it going? Like have a normal conversation. And then she'll be like, oh, nothing. I just wanted to let you know that blah, blah, blah is very sick. That's the first stage."
+    },
+    {
+      "start_ms": 1975000,
+      "end_ms": 1978000,
+      "speaker": "therapist",
+      "content": "So very sick is a code word for they died."
+    },
+    {
+      "start_ms": 1982000,
+      "end_ms": 1999000,
+      "speaker": "client",
+      "content": "Well, now I've learned that. Well, sometimes they are actually very sick. But other times like, OK, what do you mean they're very sick? What's wrong with them? She's like, well, you know, they--"
+    },
+    {
+      "start_ms": 2001000,
+      "end_ms": 2003000,
+      "speaker": "therapist",
+      "content": "Breaking the news slowly."
+    },
+    {
+      "start_ms": 2006000,
+      "end_ms": 2019000,
+      "speaker": "client",
+      "content": "Yes, she's very-- and then what do you mean? How long have they been sick for? And then she'll be like, well, they actually died this morning. I was like, OK. And that's a very nice way of doing it definitely."
+    },
+    {
+      "start_ms": 2022000,
+      "end_ms": 2024000,
+      "speaker": "therapist",
+      "content": "It was a good way of doing it, you think."
+    },
+    {
+      "start_ms": 2029000,
+      "end_ms": 2043000,
+      "speaker": "client",
+      "content": "Well, I don't know. I'd actually rather-- I don't know. I told her though if my grandma ever is anywhere close to very sick that I should know right when she is a little sick."
+    },
+    {
+      "start_ms": 2045500,
+      "end_ms": 2047500,
+      "speaker": "therapist",
+      "content": "Right. Your grandmother is still living?"
+    },
+    {
+      "start_ms": 2048500,
+      "end_ms": 2049000,
+      "speaker": "client",
+      "content": "Yeah."
+    },
+    {
+      "start_ms": 2054000,
+      "end_ms": 2059000,
+      "speaker": "therapist",
+      "content": "That idea of your grandmother dying, I mean, there's a part of you that seems to know that she will be the next one."
+    },
+    {
+      "start_ms": 2065000,
+      "end_ms": 2097000,
+      "speaker": "client",
+      "content": "Yeah. That's something I always think about. I've even thought about what I would say at her funeral. Or every time I visit home, I wonder if this is the last time kind of thing. So definitely that's one thing with death that I guess goes. But again, I've never put it on myself until now. And now that I have, I don't see a point in living."
+    },
+    {
+      "start_ms": 2102000,
+      "end_ms": 2106000,
+      "speaker": "therapist",
+      "content": "How about in your classrooms? Any other people die, children die, or encounter any of that?"
+    },
+    {
+      "start_ms": 2108500,
+      "end_ms": 2110000,
+      "speaker": "client",
+      "content": "I mean, when I was younger?"
+    },
+    {
+      "start_ms": 2111000,
+      "end_ms": 2111500,
+      "speaker": "therapist",
+      "content": "Yeah."
+    },
+    {
+      "start_ms": 2116000,
+      "end_ms": 2135000,
+      "speaker": "client",
+      "content": "Not when I was younger, but I always hear about tragic deaths on the news. I've heard all the worst stories growing up. Like my friend's mom was walking to yoga and a car hit her. Swerved and hit her. And she was completely healthy, and the next moment she was gone."
+    },
+    {
+      "start_ms": 2140000,
+      "end_ms": 2147000,
+      "speaker": "therapist",
+      "content": "It sounds like even though you knew her, somehow you didn't let yourself really know that, or what it meant, or experience that as something personal--"
+    },
+    {
+      "start_ms": 2152000,
+      "end_ms": 2165000,
+      "speaker": "client",
+      "content": "Yeah. I think that's a good point. I think I've always disconnected myself, and right now I am disconnected with the world. I feel like I don't care about anything that's happening and I'm just watching because it doesn't matter."
+    },
+    {
+      "start_ms": 2169000,
+      "end_ms": 2175000,
+      "speaker": "therapist",
+      "content": "Well, but another way of putting that is you've always disconnected yourself, but now that's somehow disappeared. You really let it enter."
+    },
+    {
+      "start_ms": 2179000,
+      "end_ms": 2185000,
+      "speaker": "client",
+      "content": "Yeah. I'm connecting myself with a death, but in turn I feel as though I'm disconnecting from the world and life."
+    },
+    {
+      "start_ms": 2189000,
+      "end_ms": 2192000,
+      "speaker": "therapist",
+      "content": "Well, let me put it another way. That maybe you're connecting yourself with reality."
+    },
+    {
+      "start_ms": 2195000,
+      "end_ms": 2196500,
+      "speaker": "client",
+      "content": "Oh, maybe. Yeah."
+    },
+    {
+      "start_ms": 2198000,
+      "end_ms": 2200000,
+      "speaker": "therapist",
+      "content": "This is reality. I mean, this is the--"
+    },
+    {
+      "start_ms": 2201000,
+      "end_ms": 2202000,
+      "speaker": "client",
+      "content": "Yeah, it is reality."
+    },
+    {
+      "start_ms": 2204500,
+      "end_ms": 2207000,
+      "speaker": "therapist",
+      "content": "This is the deal. Every living creature dies."
+    },
+    {
+      "start_ms": 2212000,
+      "end_ms": 2226000,
+      "speaker": "client",
+      "content": "Yeah, I think that's what I need to accept, but I can't. It's like I just learned this. Even though I knew it, I feel like I just learned it and I can accept it. I feel like I've been given this terminal illness of life."
+    },
+    {
+      "start_ms": 2231000,
+      "end_ms": 2240000,
+      "speaker": "therapist",
+      "content": "You've always had it, though. You've always had it. So, you know, I just want to put it to you that this is a positive thing, not a negative thing. You know, you're grasping something really fully, but it's something that one has to grasp."
+    },
+    {
+      "start_ms": 2247000,
+      "end_ms": 2278000,
+      "speaker": "client",
+      "content": "I hope. Yeah. I guess the reason I'm taking it so negatively is because I'm feeling so negative, and depressed, and don't want to do anything. And I'm trying to see it and I can't right now. And then I look back to when I wasn't grasping it and I was happy. So that's why I'm looking at it negatively, but I know that there's no going back. And once I grasp it, if I can, then I can live my life, but I can't get there yet."
+    },
+    {
+      "start_ms": 2283000,
+      "end_ms": 2313000,
+      "speaker": "client",
+      "content": "It was this one quote that I felt like what I'm doing right now. And it was like, something ends-- it ended with a debt of death. Like you don't accept the gift of life because you know you'll be in the debt of death."
+    },
+    {
+      "start_ms": 2316000,
+      "end_ms": 2319000,
+      "speaker": "therapist",
+      "content": "Oh, yes. Yeah. That was an interesting quote. I think it was a colleague of Freud's."
+    },
+    {
+      "start_ms": 2321000,
+      "end_ms": 2322500,
+      "speaker": "client",
+      "content": "Oh, yeah. I think it was."
+    },
+    {
+      "start_ms": 2324500,
+      "end_ms": 2326500,
+      "speaker": "therapist",
+      "content": "I think it was a man named Otto Rank."
+    },
+    {
+      "start_ms": 2328000,
+      "end_ms": 2330000,
+      "speaker": "client",
+      "content": "Yeah. Yeah, exactly. That's the part that I--"
+    },
+    {
+      "start_ms": 2332000,
+      "end_ms": 2336000,
+      "speaker": "therapist",
+      "content": "Some people refuse to accept the gift of life because they don't want the debt of death. Something like that."
+    },
+    {
+      "start_ms": 2338000,
+      "end_ms": 2340000,
+      "speaker": "client",
+      "content": "And that's one thing I highlighted."
+    },
+    {
+      "start_ms": 2342000,
+      "end_ms": 2343500,
+      "speaker": "therapist",
+      "content": "He wrote that for you."
+    },
+    {
+      "start_ms": 2344500,
+      "end_ms": 2345000,
+      "speaker": "client",
+      "content": "Seriously."
+    },
+    {
+      "start_ms": 2347000,
+      "end_ms": 2351000,
+      "speaker": "therapist",
+      "content": "Absolutely. It's hard for you to accept the gift of life because your fear of the debt of death."
+    },
+    {
+      "start_ms": 2355000,
+      "end_ms": 2361000,
+      "speaker": "client",
+      "content": "Yeah. It's like, why live? Why go down the street? Why learn or read a new book when you're just going to die?"
+    },
+    {
+      "start_ms": 2366000,
+      "end_ms": 2375000,
+      "speaker": "therapist",
+      "content": "You know, I had a conversation with another patient just very recently. Oh dear, we're going to have to stop in a couple of minutes, but we'll pick this up next week."
+    },
+    {
+      "start_ms": 2377000,
+      "end_ms": 2379000,
+      "speaker": "client",
+      "content": "Oh, yeah. That's fine. OK."
+    },
+    {
+      "start_ms": 2383000,
+      "end_ms": 2398000,
+      "speaker": "therapist",
+      "content": "But I had a conversation with a patient recently and we were talking about this. And the issue of summer camp came up. You know, I guess I brought it up. Some things you said maybe think of going to summer camp, and I used to go to camp every summer for a month."
+    },
+    {
+      "start_ms": 2401000,
+      "end_ms": 2419000,
+      "speaker": "therapist",
+      "content": "It was in the East coast, and it was hot, crowded, and dangerous there, so my parents sent me to summer camp. But the idea that, well, you go to summer camp and you've got this whole month or even two months ahead of you. But suppose you got really upset that it was going to end, so you couldn't possibly enjoy the camp."
+    },
+    {
+      "start_ms": 2421000,
+      "end_ms": 2421500,
+      "speaker": "client",
+      "content": "Yeah."
+    },
+    {
+      "start_ms": 2423000,
+      "end_ms": 2424500,
+      "speaker": "therapist",
+      "content": "I mean, it's a--"
+    },
+    {
+      "start_ms": 2429000,
+      "end_ms": 2446000,
+      "speaker": "client",
+      "content": "Yeah, I get that. It's like we're watching a movie, how can-- you wrote that in the book. Like, oh, so certain things, why would you watch a movie if you know it's going to end? But I feel like I can do those things because I'll still be alive when they end."
+    },
+    {
+      "start_ms": 2447500,
+      "end_ms": 2448000,
+      "speaker": "therapist",
+      "content": "Right."
+    },
+    {
+      "start_ms": 2451000,
+      "end_ms": 2454000,
+      "speaker": "client",
+      "content": "This is like, the ending is the end."
+    },
+    {
+      "start_ms": 2458000,
+      "end_ms": 2463000,
+      "speaker": "therapist",
+      "content": "It is very, very hard to really grasp the fact that--"
+    },
+    {
+      "start_ms": 2467000,
+      "end_ms": 2477000,
+      "speaker": "client",
+      "content": "Yeah. Like I'm fine with walking through the park knowing the trail will end. I can enjoy the trees, but I for some reason can't enjoy life because it's like, wow, it's really going to be over. Everything is meaningless."
+    }
+  ]
+}

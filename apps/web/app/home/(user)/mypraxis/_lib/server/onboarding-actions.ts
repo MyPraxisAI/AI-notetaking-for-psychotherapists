@@ -25,17 +25,21 @@ async function setupDemoClients(
   
   // Add appropriate demo client based on user's language
   if (userLanguage === 'en') {
-    // English Yalom client ID
     const enYalomId = 'e0000000-e000-4000-a000-000000000002';
+    const enEugeniaId = 'e0000000-e000-4000-a000-000000000003';
     demoClientIds.push(enYalomId);
+    demoClientIds.push(enEugeniaId);
   } else if (userLanguage === 'ru') {
     // Russian Yalom client ID
     const ruYalomId = 'f0000000-f000-4000-a000-000000000002';
+    const ruEugeniaId = 'f0000000-e000-4000-a000-000000000003';
     demoClientIds.push(ruYalomId);
+    demoClientIds.push(ruEugeniaId);
   } else {
-    // Default to English for any other language
     const enYalomId = 'e0000000-e000-4000-a000-000000000002';
+    const enEugeniaId = 'e0000000-e000-4000-a000-000000000003';
     demoClientIds.push(enYalomId);
+    demoClientIds.push(enEugeniaId);
   }
   
   // First, delete any existing demo clients for this account

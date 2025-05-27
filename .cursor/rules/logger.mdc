@@ -1,5 +1,74 @@
 ---
-description:
-globs:
+description: 
+globs: 
 alwaysApply: false
 ---
+# Logger Implementation and Usage
+
+## Overview
+The application uses a structured logging system implemented in `packages/shared-common/src/logger`. The logger is based on Pino with a fallback to console logging.
+
+## Key Points
+
+### Async vs Sync
+- Getting the logger instance is async: `const logger = await getLogger();`
+- All logging methods (info, error, warn, debug, fatal) are sync and should NOT use await
+- Incorrect: `await logger.error('message')`
+- Correct: `logger.error('message')`
+
+### Usage Patterns
+
+```typescript
+// Correct usage
+const logger = await getLogger();
+
+// Simple message
+logger.info('Operation started');
+
+// With error object
+try {
+  // some code
+} catch (error) {
+  logger.error({ error }, 'Operation failed');  // No await needed
+}
+
+// With context object
+logger.info({ userId: 123, action: 'login' }, 'User logged in');
+
+// With multiple arguments
+logger.debug({ requestId: 'abc' }, 'Processing request', { status: 'pending' });
+```
+
+### Log Levels
+- `fatal`: Critical errors that require immediate attention
+- `error`: Error conditions that should be investigated
+- `warn`: Warning conditions that might need attention
+- `info`: General operational information
+- `debug`: Detailed information for debugging
+
+### Structured Logging
+- Use objects for structured logging: `logger.info({ key: value }, 'message')`
+- Error objects are automatically processed to include stack traces
+- Additional arguments are merged into the context object
+
+### Error Handling
+- Always include error objects in the first argument: `logger.error({ error }, 'message')`
+- This ensures proper stack trace and error property capture
+- Avoid: `logger.error('message', error)`
+
+## Implementation Details
+- Located in: `packages/shared-common/src/logger`
+- Uses Pino as primary logger with console fallback
+- Supports browser and server environments
+- Includes type definitions for type-safe logging
+- Uses registry pattern for potential future logger implementations
+
+## Best Practices
+1. Always await `getLogger()` when initializing
+2. Never await logging method calls
+3. Use structured logging with objects for better log analysis
+4. Include error objects in the first argument
+5. Use appropriate log levels
+6. Include relevant context in log messages
+7. Keep log messages clear and actionable
+
