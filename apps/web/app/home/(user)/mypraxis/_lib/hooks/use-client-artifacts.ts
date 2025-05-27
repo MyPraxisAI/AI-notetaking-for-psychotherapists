@@ -108,7 +108,6 @@ export function useClientArtifact(
   return useQuery<ClientArtifactResponse>({
     queryKey,
     queryFn: async () => {
-      console.log(`[useClientArtifact] QUERY FUNCTION EXECUTING for ${type} at ${new Date().toISOString()}`);
       try {
         const response = await fetch(`/api/clients/${clientId}/artifacts/${type}`);
         

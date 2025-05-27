@@ -117,6 +117,7 @@
     "startRecording": "Start recording",
     "recordingDesktopOnly": "Available on desktop",
     "recordingFeatures": "transcript, notes, recap",
+    "testOnboarding": "Onboard",
     "demoRecordingDisabled": "Recording is disabled for demo clients. Please select a real client.",
     "demoRecordingDisabledNoRealClients": "Recording is disabled for demo clients. Please create a real client first.",
     "navigation": {
