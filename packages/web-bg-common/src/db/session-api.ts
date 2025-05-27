@@ -8,6 +8,8 @@ interface SessionMetadata {
   [key: string]: unknown;
 }
 
+
+
 /**
  * Interface for session with content
  */
@@ -43,6 +45,7 @@ export async function getSessionContent(
  * @param client Supabase client
  * @returns Session API methods
  */
+
 export function createSessionApi(client: SupabaseClient) {
   /**
    * Update session metadata

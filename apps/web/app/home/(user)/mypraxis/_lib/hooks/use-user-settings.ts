@@ -18,9 +18,6 @@ export function useUserSettings() {
   const accountId = workspace?.id;
   const supabase = useSupabase();
   const queryClient = useQueryClient();
-  
-
-
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['user-settings', accountId],

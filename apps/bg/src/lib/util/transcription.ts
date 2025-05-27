@@ -174,6 +174,7 @@ export function getTranscriptionProvider(provider: TranscriptionProvider): BaseT
 import { YandexTranscriptionOptions } from './transcription/yandex/common';
 import { OpenAITranscriptionOptions } from './transcription/openai';
 import { SupabaseClient } from '@supabase/supabase-js';
+import { formatTimestamp } from '@kit/web-bg-common';
 
 /**
  * Union type for all supported transcription options
@@ -231,14 +232,4 @@ export async function transcribeAudio(
   return transcriptionResult;
 }
 
-/**
- * Format a timestamp in seconds to a human-readable format (MM:SS)
- * 
- * @param seconds - Time in seconds
- * @returns Formatted timestamp
- */
-function formatTimestamp(seconds: number): string {
-  const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = Math.floor(seconds % 60);
-  return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
-}
+

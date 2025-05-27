@@ -20,10 +20,12 @@ export interface ClientRecord {
   full_name: string;
   email: string | null;
   phone: string | null;
+  demo: boolean;
 }
 
 // Client with ID for frontend use
 export interface ClientWithId extends ClientData {
   id: string;
   createdAt: string;
+  demo: boolean;
 }

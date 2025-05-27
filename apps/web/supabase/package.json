@@ -1,0 +1,12 @@
+{
+  "name": "@kit/web-supabase",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "generate-demo-client-migration": "node scripts/generate_demo_client_migration.js"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "js-yaml": "^4.1.0"
+  }
+} 

@@ -127,14 +127,7 @@ export class SQSQueueManager {
   /**
    * Ensures the queue exists, creating it if necessary
    */
-  async ensureQueueExists(): Promise<void> {    
-    // If we already have a queue URL from the constructor (BACKGROUND_TASKS_QUEUE_URL), use it
-    if (this.queueUrl) {
-      console.log(`Using queue URL from environment: ${this.queueUrl}`);
-      return;
-    }
-    
-    // Otherwise, try to get the queue URL if it exists
+  async ensureQueueExists(): Promise<void> {
     try {
       console.log(`Checking if queue '${this.queueName}' exists...`);
       const getQueueUrlParams: AWS.SQS.GetQueueUrlRequest = {

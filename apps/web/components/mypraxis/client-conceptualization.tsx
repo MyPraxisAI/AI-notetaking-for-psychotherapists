@@ -90,18 +90,18 @@ export function ClientConceptualization({ clientId }: ClientConceptualizationPro
           </div>
         </div>
       ) : error ? (
-        <div className="mt-5 rounded-lg bg-destructive/10 p-6 text-destructive" data-test="client-conceptualization-error">
+        <div className="mt-5 rounded-lg bg-destructive/10 p-3 text-destructive" data-test="client-conceptualization-error">
           <p className="font-medium">{t('mypraxis:clientConceptualization.error')}</p>
           <p className="text-sm mt-1">{t('mypraxis:clientConceptualization.tryAgain')}</p>
         </div>
       ) : !conceptualizationData ? (
-        <div className="mt-5 rounded-lg bg-[#FFF9E8] p-6" data-test="client-conceptualization-empty">
+        <div className="mt-5 rounded-lg bg-[#FFF9E8] p-3" data-test="client-conceptualization-empty">
           <p className="text-[#374151] text-[14px] leading-[1.6]">
             {t('mypraxis:clientConceptualization.notAvailable')}
           </p>
         </div>
       ) : (
-        <div className="mt-5 rounded-lg bg-[#FFF9E8] p-6 relative group" data-test="client-conceptualization-content">
+        <div className="mt-5 rounded-lg bg-[#FFF9E8] pb-10 pt-3 p-6 relative group" data-test="client-conceptualization-content">
           {isConceptualizationStale && (
             <div className="absolute right-2 top-2">
               <Badge variant="outline" className="flex items-center gap-1 bg-white">

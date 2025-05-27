@@ -21,9 +21,10 @@ interface ProfileFormProps {
   onClientDeleted: (clientId: string) => void
   onNewSession?: () => void
   onRecordingStart?: () => void
+  isDemo?: boolean
 }
 
-export function ProfileForm({ clientId, onNameChange, onClientDeleted, onNewSession, onRecordingStart }: ProfileFormProps) {
+export function ProfileForm({ clientId, onNameChange, onClientDeleted, onNewSession, onRecordingStart, isDemo = false }: ProfileFormProps) {
   const { t } = useTranslation()
   const { data: client, isLoading } = useClient(clientId)
   const updateClient = useUpdateClient()
@@ -211,12 +212,14 @@ export function ProfileForm({ clientId, onNameChange, onClientDeleted, onNewSess
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem
-              onClick={() => onNewSession && onNewSession()}
-              data-test="new-session-button"
-            >
-              {t('mypraxis:profileForm.actions.newSession')}
-            </DropdownMenuItem>
+            {!isDemo && (
+              <DropdownMenuItem
+                onClick={() => onNewSession && onNewSession()}
+                data-test="new-session-button"
+              >
+                {t('mypraxis:profileForm.actions.newSession')}
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem
               className="text-destructive focus:text-destructive"
               onClick={() => setIsDeleteModalOpen(true)}

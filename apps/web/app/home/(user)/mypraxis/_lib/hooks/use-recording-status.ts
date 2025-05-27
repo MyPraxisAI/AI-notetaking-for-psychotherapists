@@ -20,12 +20,9 @@ export function useRecordingStatus(sessionId: string | null, options?: Recording
   const accountId = workspace?.id;
   const client = useSupabase();
 
-  console.log(`[useRecordingStatus] Initializing hook for sessionId: ${sessionId}`);
-
   return useQuery({
     queryKey: ['recording-status', sessionId, accountId],
     queryFn: async (): Promise<RecordingStatus> => {
-      console.log(`[useRecordingStatus] Fetching recording status for sessionId: ${sessionId}`);
       if (!accountId || !sessionId) {
         return { isProcessing: false };
       }
