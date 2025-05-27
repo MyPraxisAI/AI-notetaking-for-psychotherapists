@@ -1,7 +1,4 @@
 import { SupabaseClient } from '@supabase/supabase-js';
-import { LanguageType } from '../types';
-import { formatTimestampMs } from '../utils/time';
-import { getTranscriptAsText, getTranscriptsAsText } from '../ai/artifact-utils';
 
 /**
  * Interface for session metadata
@@ -11,23 +8,7 @@ interface SessionMetadata {
   [key: string]: unknown;
 }
 
-/**
- * Interface for transcript segment
- */
-interface TranscriptSegment {
-  start_ms: number;
-  end_ms: number;
-  speaker: string;
-  content: string;
-}
 
-/**
- * Interface for transcript content
- */
-interface TranscriptContent {
-  segments: TranscriptSegment[];
-  classified?: boolean;
-}
 
 /**
  * Interface for session with content
