@@ -47,8 +47,7 @@ export const startRecording = async (options: StartRecordingOptions): Promise<st
       const timeSinceHeartbeatMs = now.getTime() - lastHeartbeat.getTime();
       const timeSinceHeartbeatMinutes = timeSinceHeartbeatMs / (1000 * 60);
       
-      // Define stale threshold (could be moved to a constant or config)
-      const STALE_RECORDING_THRESHOLD_MINUTES = 5;
+      const STALE_RECORDING_THRESHOLD_MINUTES = 2;
       const isStale = timeSinceHeartbeatMinutes >= STALE_RECORDING_THRESHOLD_MINUTES;
       
       // Return the existing recording information with explicit flags
