@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { useTranslation } from "react-i18next"
+import { useQueryClient } from "@tanstack/react-query"
 import { Button } from "@kit/ui/button"
 import {
   Dialog,
@@ -62,6 +63,8 @@ export function RecordingModal({
   clientId,
   clientName
 }: RecordingModalProps) {
+  // Get the query client for cache invalidation
+  const queryClient = useQueryClient()
   const { t } = useTranslation("mypraxis")
   const [modalState, setModalState] = useState<
     "initial" | "soundCheck" | "recording" | "paused" | "saving"
@@ -95,6 +98,12 @@ export function RecordingModal({
   
   // Flag to track if recording has been aborted
   const isAborted = useRef<boolean>(false)
+  
+  // Constants for recording management
+  
+  // State for handling existing recordings
+  const [showExistingRecordingDialog, setShowExistingRecordingDialog] = useState(false)
+  const [showSavingStaleRecordingDialog, setShowSavingStaleRecordingDialog] = useState(false)
   
   useEffect(() => {
     if (!document.getElementById('recording-modal-styles')) {
@@ -136,32 +145,73 @@ export function RecordingModal({
   // We're intentionally omitting sendHeartbeat from the deps array
   // because it's defined later in the file
   
-  // API functions for recording - now using the extracted API module
-  const startRecording = async (options: { standaloneChunks?: boolean } = {}) => {
+  const startRecording = async (options: { standaloneChunks?: boolean } = {}): Promise<{ success: boolean; recordingId?: string }> => {
     try {
       setIsProcessing(true)
       setError(null)
       
-      // Reset audio chunks
-      audioChunks.current = []
-      
-      const recordingId = await RecordingAPI.startRecording({
+      const result = await RecordingAPI.startRecording({
         clientId: selectedClient,
         transcriptionEngine: selectedTranscriptionEngine,
         standaloneChunks: options.standaloneChunks
       })
       
-      if (recordingId) {
-        setRecordingId(recordingId)
-        return recordingId
-      } else {
-        throw new Error(t('mypraxis:recordingModal.errors.startFailed'))
+      if (!result) {
+        throw new Error('Failed to start recording')
       }
+      
+      // Check if result is an ExistingRecordingResponse (explicitly flagged)
+      if (typeof result === 'object' && result.isExistingRecording) {
+        // Handle existing recording case
+        console.log('Existing recording detected:', result)
+        
+        // Recording exists with ID: result.id
+        
+        // Check if the recording is stale based on the flag from the API
+        if (!result.isStale) {
+          // Recent recording - likely active in another tab
+          setShowExistingRecordingDialog(true)
+          setIsProcessing(false)
+          return { success: false } // Failed to start a new recording due to active recording in another tab
+        } else {
+          // Stale recording - complete it automatically
+          setShowSavingStaleRecordingDialog(true)
+          
+          try {
+            // Create a minimum timer and complete the stale recording in parallel
+            const minimumTimer = new Promise(resolve => setTimeout(resolve, 4000))
+            const completeRecordingPromise = RecordingAPI.completeRecording(result.id)
+            
+            // Wait for both the timer and the API call to complete
+            await Promise.all([minimumTimer, completeRecordingPromise])
+            console.log('Completed stale recording:', result.id)
+            
+            // Refresh the session list in column 4
+            queryClient.invalidateQueries({ queryKey: ['sessions', clientId] })
+            
+            // Hide the dialog after ensuring it's been shown for at least 3 seconds
+            setShowSavingStaleRecordingDialog(false)
+            
+            // Try starting a new recording
+            return await startRecording(options) // Return the result of the recursive call
+          } catch (err) {
+            console.error('Error completing stale recording:', err)
+            setShowSavingStaleRecordingDialog(false)
+            throw err
+          }
+        }
+      }
+      
+      // Normal case - new recording started
+      // At this point, result must be a string (the recording ID)
+      const newRecordingId = result as string
+      setRecordingId(newRecordingId)
+      return { success: true, recordingId: newRecordingId } // Successfully started a new recording
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : t('mypraxis:recordingModal.errors.startFailed')
       setError(errorMessage)
       toast.error(errorMessage)
-      return null
+      return { success: false } // Failed to start a new recording due to error
     } finally {
       setIsProcessing(false)
     }
@@ -407,73 +457,79 @@ export function RecordingModal({
     // Store the recording start time for precise timing
     const _recordingStartTime = performance.now()
     
-    const newRecordingId = await startRecording()
-    console.log('Recording ID received:', newRecordingId)
+    const result = await startRecording()
     
-    if (newRecordingId) {
-      // Explicitly log the recordingId state to verify it's set
-      console.log('Current recordingId state:', recordingId)
-      console.log('New recordingId to be used:', newRecordingId)
+    // If recording failed to start, exit early
+    if (!result.success) {
+      console.log('Previous recording exists, not recording')
+      return
+    }
+    
+    // Use the recording ID returned directly from the startRecording function
+    // This avoids any issues with React state update timing
+    if (!result.recordingId) {
+      console.error('Recording ID is missing despite successful startRecording')
+      return
+    }
+    
+    // Explicitly log the recording ID to verify it's set
+    console.log('Recording ID to be used:', result.recordingId)
+    
+    const currentRecordingId = result.recordingId
+    
+    // Start the MediaRecorder using the utility functions
+    if (mediaRecorder.current) {
+      console.log('Configuring MediaRecorder for chunks')
       
-      // Store the recordingId in a ref to ensure it's available in the closure
-      const currentRecordingId = newRecordingId
-      
-      // Start the MediaRecorder using the utility functions
-      if (mediaRecorder.current) {
-        console.log('Configuring MediaRecorder for chunks')
-        
-        // Configure the MediaRecorder to handle audio chunks
-        const _recordingStartTime = MediaRecorderUtils.configureMediaRecorderForChunks(
-          mediaRecorder.current,
-          currentRecordingId,
-          audioChunks,
-          {
-            onError: (error) => {
-              console.error('MediaRecorder error:', error);
-              toast.error('Error during recording. Please try again.');
-              setError(error.message || 'Recording error occurred. Please try again.');
-            },
-            onDataAvailable: (event, metadata) => {
-              if (event.data.size > 0) {
-                // Log the chunk details
-                console.log('ondataavailable event triggered', {
-                  dataSize: event.data.size,
-                  stateRecordingId: recordingId,
-                  currentRecordingId,
-                  timerState: timer,
-                  chunkNumber: metadata.chunkNumber,
-                  chunkStartTimeSec: metadata.startTime,
-                  chunkEndTimeSec: metadata.endTime
-                });
-                
-                // Trigger upload of all pending chunks in the background
-                handleUploadAudioChunks(currentRecordingId).catch(err => {
-                  console.error('Error uploading audio chunks:', err);
-                });
-              }
+      // Configure the MediaRecorder to handle audio chunks
+      const _recordingStartTime = MediaRecorderUtils.configureMediaRecorderForChunks(
+        mediaRecorder.current,
+        currentRecordingId,
+        audioChunks,
+        {
+          onError: (error) => {
+            console.error('MediaRecorder error:', error);
+            toast.error('Error during recording. Please try again.');
+            setError(error.message || 'Recording error occurred. Please try again.');
+          },
+          onDataAvailable: (event, metadata) => {
+            if (event.data.size > 0) {
+              // Log the chunk details
+              console.log('ondataavailable event triggered', {
+                dataSize: event.data.size,
+                stateRecordingId: recordingId,
+                currentRecordingId,
+                timerState: timer,
+                chunkNumber: metadata.chunkNumber,
+                chunkStartTimeSec: metadata.startTime,
+                chunkEndTimeSec: metadata.endTime
+              });
+              
+              // Trigger upload of all pending chunks in the background
+              handleUploadAudioChunks(currentRecordingId).catch(err => {
+                console.error('Error uploading audio chunks:', err);
+              });
             }
           }
-        );
-        
-        // Start the MediaRecorder with 4 minute chunks
-        MediaRecorderUtils.startMediaRecorder(mediaRecorder.current, 4 * 60 * 1000);
-        
-        setIsRecording(true)
-        setModalState("recording")
-        
-        // Start timer with synchronized ref
-        timerInterval.current = setInterval(() => {
-          const newTime = currentTimerRef.current + 1;
-          currentTimerRef.current = newTime;
-          setTimer(newTime);
-        }, 1000)
-        
-        console.log('Recording started successfully')
-      } else {
-        console.error('MediaRecorder is not initialized')
-      }
+        }
+      );
+      
+      // Start the MediaRecorder with 4 minute chunks
+      MediaRecorderUtils.startMediaRecorder(mediaRecorder.current, 4 * 60 * 1000);
+      
+      setIsRecording(true)
+      setModalState("recording")
+      
+      // Start timer with synchronized ref
+      timerInterval.current = setInterval(() => {
+        const newTime = currentTimerRef.current + 1;
+        currentTimerRef.current = newTime;
+        setTimer(newTime);
+      }, 1000)
+      
+      console.log('Recording started successfully')
     } else {
-      console.error('Failed to get recording ID')
+      console.error('MediaRecorder is not initialized')
     }
   }
   
@@ -571,14 +627,19 @@ export function RecordingModal({
       setError(null);
       
       // 1. Create a new recording
-      const newRecordingId = await startRecording({ standaloneChunks: false });
-      if (!newRecordingId) {
+      const startResult = await startRecording({ standaloneChunks: false });
+      if (!startResult.success) {
         throw new Error('Failed to create recording');
+      }
+      
+      // Use the recording ID returned directly from startRecording
+      if (!startResult.recordingId) {
+        throw new Error('Recording ID is missing despite successful start');
       }
       
       // 2. Process the file using our utility function
       const result = await processAudioFile(file, {
-        recordingId: newRecordingId,
+        recordingId: startResult.recordingId,
         onProgress: (current: number, total: number) => {
           // Could add progress indicator here if needed
           console.log(`Processing chunk ${current}/${total}`);
@@ -955,6 +1016,36 @@ export function RecordingModal({
               {t('mypraxis:recordingModal.confirm')}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Existing Active Recording Dialog */}
+      <Dialog open={showExistingRecordingDialog} onOpenChange={setShowExistingRecordingDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>{t('mypraxis:recordingModal.existingRecording.title')}</DialogTitle>
+            <DialogDescription>
+              {t('mypraxis:recordingModal.existingRecording.message')}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button onClick={() => setShowExistingRecordingDialog(false)}>
+              {t('mypraxis:recordingModal.ok')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Saving Stale Recording Dialog */}
+      <Dialog open={showSavingStaleRecordingDialog} onOpenChange={() => {}}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>{t('mypraxis:recordingModal.savingStaleRecording.title')}</DialogTitle>
+            <DialogDescription className="flex items-center">
+              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+              {t('mypraxis:recordingModal.savingStaleRecording.message')}
+            </DialogDescription>
+          </DialogHeader>
         </DialogContent>
       </Dialog>
     </>

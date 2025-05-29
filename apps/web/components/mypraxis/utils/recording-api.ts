@@ -16,7 +16,14 @@ export interface StartRecordingOptions {
  * @param options Options for starting the recording
  * @returns The recording ID if successful, null otherwise
  */
-export const startRecording = async (options: StartRecordingOptions): Promise<string | null> => {
+export interface ExistingRecordingResponse {
+  id: string;
+  last_heartbeat_at: string;
+  isExistingRecording: boolean;
+  isStale?: boolean;
+}
+
+export const startRecording = async (options: StartRecordingOptions): Promise<string | ExistingRecordingResponse | null> => {
   try {
     const response = await fetch('/api/recordings/start', {
       method: 'POST',
@@ -29,6 +36,28 @@ export const startRecording = async (options: StartRecordingOptions): Promise<st
         standaloneChunks: options.standaloneChunks
       })
     });
+    
+    // Special handling for 409 Conflict (existing recording)
+    if (response.status === 409) {
+      const data = await response.json();
+      
+      // Calculate if the recording is stale based on last heartbeat
+      const lastHeartbeat = new Date(data.existingRecording.last_heartbeat_at);
+      const now = new Date();
+      const timeSinceHeartbeatMs = now.getTime() - lastHeartbeat.getTime();
+      const timeSinceHeartbeatMinutes = timeSinceHeartbeatMs / (1000 * 60);
+      
+      // Define stale threshold (could be moved to a constant or config)
+      const STALE_RECORDING_THRESHOLD_MINUTES = 5;
+      const isStale = timeSinceHeartbeatMinutes >= STALE_RECORDING_THRESHOLD_MINUTES;
+      
+      // Return the existing recording information with explicit flags
+      return {
+        ...data.existingRecording,
+        isExistingRecording: true,
+        isStale: isStale
+      };
+    }
     
     if (!response.ok) {
       const errorData = await response.json();
@@ -222,6 +251,41 @@ export const abortRecording = async (recordingId: string): Promise<boolean> => {
     const t = getI18n().t;
     console.error(t('mypraxis:recordingApi.errors.abortFailed'), err);
     return false;
+  }
+};
+
+/**
+ * Get the current active recording (if any)
+ * @returns The recording data if an active recording exists, null otherwise
+ */
+export interface ActiveRecordingResponse {
+  id: string;
+  last_heartbeat_at: string;
+  status: string;
+  client_id: string;
+  session_id?: string;
+  created_at: string;
+  updated_at: string;
+  chunks?: Array<{ id: string; created_at: string; [key: string]: unknown }>;
+}
+
+export const getActiveRecording = async (): Promise<ActiveRecordingResponse | null> => {
+  try {
+    const response = await fetch('/api/recordings', {
+      method: 'GET'
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      const t = getI18n().t;
+      throw new Error(errorData.error || t('mypraxis:recordingApi.errors.fetchFailed'));
+    }
+    
+    const data = await response.json();
+    return data.recording;
+  } catch (err) {
+    console.error('Error fetching active recording:', err);
+    return null;
   }
 };
 
