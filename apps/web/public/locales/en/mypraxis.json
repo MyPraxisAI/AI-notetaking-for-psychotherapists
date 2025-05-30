@@ -265,7 +265,11 @@
       "startFailed": "Failed to start recording"
     },
     "existingRecording": {
-      "title": "Active Recording Detected",
+      "title": "Paused Recording Found",
+      "description": "You have a paused recording open in another tab. Would you like to continue that recording or start a new one?",
+      "continue": "Continue Existing",
+      "startNew": "Start New Recording",
+      "activeTitle": "Active Recording Detected",
       "message": "You have an existing active recording in progress in another tab. Please complete it first before starting a new recording."
     },
     "savingStaleRecording": {
