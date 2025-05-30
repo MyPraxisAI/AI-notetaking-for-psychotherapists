@@ -144,16 +144,11 @@ export function RecordingModal({
     }
   };
   
-  // Check for existing microphone permissions when modal opens
+  // Initialize microphone only when entering soundCheck state
   useEffect(() => {
-    if (isOpen) {
-      // Load available microphones
-      loadAvailableMicrophones();
-      
-      // Check microphone permissions in the soundCheck state
-      if (modalState === "soundCheck") {
-        checkMicrophonePermission();
-      }
+    if (isOpen && modalState === "soundCheck") {
+      // Only initialize microphone in soundCheck state
+      initializeMicrophone();
     }
   }, [isOpen, modalState]);
 
@@ -508,24 +503,21 @@ export function RecordingModal({
     await cleanupRecording();
   }
   
-  // Check if we already have microphone permission and skip to sound check if we do
-  const checkMicrophonePermission = async () => {
+  // Initialize microphone and MediaRecorder in the soundCheck state
+  const initializeMicrophone = async () => {
     try {
       setIsProcessing(true);
-      // Use our utility to check for microphone permission
-      const hasAudioPermission = await MicrophoneUtils.checkMicrophonePermission();
-      
-      if (hasAudioPermission) {
-        console.log('Microphone permission already granted');
-        await loadAvailableMicrophones(); // Ensure we have the microphone list
-        const success = await setupMediaRecorder();
-        if (success) {
-          setModalState("soundCheck");
-        }
+      // We're already in the soundCheck state, so directly set up the MediaRecorder
+      // This will prompt for permissions if needed
+      await loadAvailableMicrophones(); // Load microphone list (will prompt for permission)
+      const success = await setupMediaRecorder();
+      if (!success) {
+        // If setup fails, show an error but stay in soundCheck state
+        console.error('Failed to initialize microphone');
       }
     } catch (err) {
-      // Permission not granted or error occurred - stay in initial state
-      console.log('Microphone permission not previously granted:', err);
+      console.log('Error initializing microphone:', err);
+      setError(err instanceof Error ? err.message : t('mypraxis:recordingModal.microphone.failedAccess'));
     } finally {
       setIsProcessing(false);
     }
