@@ -230,12 +230,13 @@
     "title": "Session with",
     "microphone": {
       "select": "Select microphone",
-      "builtin": "Default Microphone",
-      "allow": "Allow Microphone Access",
-      "checking": "Checking Microphone...",
-      "accessError": "Could not access microphone. Please check permissions.",
+      "builtin": "Built-in microphone",
+      "accessError": "Microphone access error. Please grant permission and try again.",
       "failedAccess": "Failed to access microphone",
-      "unnamed": "Microphone ({{id}})"
+      "unnamed": "Unnamed microphone",
+      "loading": "Loading microphones...",
+      "label": "Microphone",
+      "record": "Record with microphone"
     },
     "transcription": {
       "label": "Transcription",
