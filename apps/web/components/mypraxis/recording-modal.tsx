@@ -17,6 +17,8 @@ import { AudioChunk, uploadAudioChunks, processAudioFile } from "./utils/audio-u
 import * as RecordingAPI from "./utils/recording-api"
 import * as MediaRecorderUtils from "./utils/media-recorder"
 import { HEARTBEAT_INTERVAL_MS, STALE_RECORDING_DIALOG_MIN_DISPLAY_MS } from "./utils/recording-constants"
+import * as MicrophoneUtils from "./utils/recording/microphone-selection"
+import type { MicrophoneDevice } from "./utils/recording/microphone-selection"
 
 // AudioChunk interface is now imported from ./utils/audio-upload
 
@@ -74,7 +76,8 @@ export function RecordingModal({
   const [_isIntakeSession, _setIsIntakeSession] = useState(false)
   const [selectedClient, setSelectedClient] = useState(clientId)
   const [selectedClientName, setSelectedClientName] = useState(clientName)
-  const [selectedDevice, setSelectedDevice] = useState("MacBook Air Microphone (Built-in)")
+  const [selectedDevice, setSelectedDevice] = useState("default")
+  const [availableMicrophones, setAvailableMicrophones] = useState<MicrophoneDevice[]>([])
   const [selectedTranscriptionEngine, setSelectedTranscriptionEngine] = useState("yandex-v3-ru")
   const [timer, setTimer] = useState(0)
   const [isRecording, setIsRecording] = useState(false)
@@ -122,6 +125,34 @@ export function RecordingModal({
     }
   }, []);
   
+  // Function to load available microphones
+  const loadAvailableMicrophones = async () => {
+    try {
+      const mics = await MicrophoneUtils.getAvailableMicrophones();
+      setAvailableMicrophones(mics);
+      
+      // If we have microphones and no device is selected, select the default one
+      if (mics.length > 0 && (!selectedDevice || selectedDevice === "default") && mics[0]?.deviceId) {
+        setSelectedDevice(mics[0].deviceId);
+      }
+    } catch (error) {
+      console.error('Error loading microphones:', error);
+    }
+  };
+  
+  // Check for existing microphone permissions when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      // Load available microphones
+      loadAvailableMicrophones();
+      
+      // Check if we already have microphone permissions
+      if (modalState === "initial") {
+        checkMicrophonePermission();
+      }
+    }
+  }, [isOpen, modalState]);
+
   // Manage heartbeats whenever recordingId exists and modal is open
   useEffect(() => {
     // Only start heartbeat if we have a recording ID and the modal is open
@@ -320,12 +351,16 @@ export function RecordingModal({
     }
   }, [isOpen, clientId, clientName])
   
-  // Setup MediaRecorder and audio handling - now using the extracted utility functions
+
+  // Setup MediaRecorder with the selected microphone device
   const setupMediaRecorder = async () => {
     try {
-      // Setup the MediaRecorder with optimal settings
+      // Set up the MediaRecorder directly with the device ID
+      // The MediaRecorderUtils.setupMediaRecorder will internally handle the audio constraints
       const recorder = await MediaRecorderUtils.setupMediaRecorder(
         {
+          // Pass the selected device ID through the audio constraints
+          deviceId: selectedDevice !== "default" ? selectedDevice : undefined,
           echoCancellation: true,
           noiseSuppression: true,
           autoGainControl: true,
@@ -345,7 +380,7 @@ export function RecordingModal({
       
       if (recorder) {
         mediaRecorder.current = recorder;
-        console.log('MediaRecorder initialized successfully');
+        console.log('MediaRecorder initialized successfully with selected device:', selectedDevice);
         return true;
       } else {
         throw new Error('Failed to initialize MediaRecorder');
@@ -438,10 +473,33 @@ export function RecordingModal({
     await cleanupRecording();
   }
   
+  // Check if we already have microphone permission and skip to sound check if we do
+  const checkMicrophonePermission = async () => {
+    try {
+      setIsProcessing(true);
+      // Use our utility to check for microphone permission
+      const hasAudioPermission = await MicrophoneUtils.checkMicrophonePermission();
+      
+      if (hasAudioPermission) {
+        console.log('Microphone permission already granted');
+        await loadAvailableMicrophones(); // Ensure we have the microphone list
+        const success = await setupMediaRecorder();
+        if (success) {
+          setModalState("soundCheck");
+        }
+      }
+    } catch (err) {
+      // Permission not granted or error occurred - stay in initial state
+      console.log('Microphone permission not previously granted:', err);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   const handleMicrophoneAccess = async () => {
-    const success = await setupMediaRecorder()
+    const success = await setupMediaRecorder();
     if (success) {
-      setModalState("soundCheck")
+      setModalState("soundCheck");
     }
   }
   
@@ -779,14 +837,29 @@ export function RecordingModal({
                 
                 {/* Device selection */}
                 <div className="mt-4">
-                  <Select value={selectedDevice} onValueChange={setSelectedDevice}>
-                    <SelectTrigger className="w-full">
+                  <Select value={selectedDevice} onValueChange={setSelectedDevice} data-test="microphone-select">
+                    <SelectTrigger className="w-full" data-test="microphone-select-trigger">
                       <SelectValue placeholder={t("recordingModal.microphone.select")} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="MacBook Air Microphone (Built-in)">
-                        {t("recordingModal.microphone.builtin")}
-                      </SelectItem>
+                      {availableMicrophones.length > 0 ? (
+                        availableMicrophones.map((mic) => (
+                          <SelectItem 
+                            key={mic.deviceId} 
+                            value={mic.deviceId}
+                            data-test={`microphone-option-${mic.deviceId}`}
+                          >
+                            {mic.label}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem 
+                          value="default"
+                          data-test="microphone-option-default"
+                        >
+                          {t("recordingModal.microphone.builtin")}
+                        </SelectItem>
+                      )}
                     </SelectContent>
                   </Select>
                 </div>

@@ -1,0 +1,121 @@
+/**
+ * Microphone selection utilities for the recording modal
+ * This file contains functions for detecting and managing microphone devices
+ */
+import i18next from "i18next";
+
+export interface MicrophoneDevice {
+  deviceId: string;
+  label: string;
+  groupId: string;
+  isDefault?: boolean;
+}
+
+/**
+ * Get all available microphone devices
+ * @returns Promise resolving to an array of microphone devices
+ */
+export const getAvailableMicrophones = async (): Promise<MicrophoneDevice[]> => {
+  try {
+    // Request permission if not already granted
+    // This will trigger the permission prompt if needed
+    await navigator.mediaDevices.getUserMedia({ audio: true });
+    
+    // Get all devices
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    
+    // Filter for audio input devices
+    const microphones = devices
+      .filter(device => device.kind === 'audioinput')
+      .map(device => ({
+        deviceId: device.deviceId,
+        label: device.label || i18next.t('mypraxis:recordingModal.microphone.unnamed', { id: device.deviceId.substr(0, 8) }),
+        groupId: device.groupId,
+        isDefault: device.deviceId === 'default'
+      }));
+    
+    // If we have no labeled devices, it likely means we don't have permission
+    if (microphones.length === 0) {
+      return [{
+        deviceId: 'default',
+        label: i18next.t('mypraxis:recordingModal.microphone.builtin'),
+        groupId: '',
+        isDefault: true
+      }];
+    }
+    
+    // Ensure the default device is first in the list
+    const sortedMicrophones = [...microphones].sort((a, b) => {
+      if (a.isDefault) return -1;
+      if (b.isDefault) return 1;
+      return a.label.localeCompare(b.label);
+    });
+    
+    return sortedMicrophones;
+  } catch (error) {
+    console.error('Error getting microphone devices:', error);
+    // Return a default device if there's an error
+    return [{
+      deviceId: 'default',
+      label: i18next.t('mypraxis:recordingModal.microphone.builtin'),
+      groupId: '',
+      isDefault: true
+    }];
+  }
+};
+
+/**
+ * Check if microphone permission has been granted
+ * @returns Promise resolving to a boolean indicating if permission is granted
+ */
+export const checkMicrophonePermission = async (): Promise<boolean> => {
+  try {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    // If we have any audio input devices with a non-empty deviceId, we have permission
+    return devices.some(device => device.kind === 'audioinput' && device.deviceId !== '');
+  } catch (error) {
+    console.error('Error checking microphone permission:', error);
+    return false;
+  }
+};
+
+/**
+ * Request microphone permission
+ * @returns Promise resolving to a boolean indicating if permission was granted
+ */
+export const requestMicrophonePermission = async (): Promise<boolean> => {
+  try {
+    await navigator.mediaDevices.getUserMedia({ audio: true });
+    return true;
+  } catch (error) {
+    console.error('Error requesting microphone permission:', error);
+    return false;
+  }
+};
+
+/**
+ * Get a MediaStream for the specified microphone device
+ * @param deviceId The ID of the microphone device to use
+ * @param options Additional audio constraints
+ * @returns Promise resolving to a MediaStream
+ */
+export const getMicrophoneStream = async (
+  deviceId: string = 'default',
+  options: MediaTrackConstraints = {}
+): Promise<MediaStream> => {
+  try {
+    return await navigator.mediaDevices.getUserMedia({
+      audio: {
+        deviceId: deviceId ? { exact: deviceId } : undefined,
+        echoCancellation: options.echoCancellation ?? true,
+        noiseSuppression: options.noiseSuppression ?? true,
+        autoGainControl: options.autoGainControl ?? true,
+        sampleRate: options.sampleRate ?? 48000,
+        channelCount: options.channelCount ?? 1
+      }
+    });
+  } catch (error) {
+    console.error('Error getting microphone stream:', error);
+    throw error;
+  }
+};

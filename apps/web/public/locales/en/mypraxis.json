@@ -230,11 +230,12 @@
     "title": "Session with",
     "microphone": {
       "select": "Select microphone",
-      "builtin": "MacBook Air Microphone (Built-in)",
+      "builtin": "Default Microphone",
       "allow": "Allow Microphone Access",
       "checking": "Checking Microphone...",
       "accessError": "Could not access microphone. Please check permissions.",
-      "failedAccess": "Failed to access microphone"
+      "failedAccess": "Failed to access microphone",
+      "unnamed": "Microphone ({{id}})"
     },
     "transcription": {
       "label": "Transcription",
