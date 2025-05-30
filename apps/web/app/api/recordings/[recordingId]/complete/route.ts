@@ -56,7 +56,7 @@ export const POST = enhanceRouteHandler(
       // Check if the recording exists and belongs to the user
       const { data: recording, error: fetchError } = await client
         .from('recordings')
-        .select('id, status, client_id, standalone_chunks')
+        .select('id, status, client_id, standalone_chunks, session_id')
         .eq('id', recordingId)
         .eq('account_id', accountId)
         .single();
@@ -66,106 +66,124 @@ export const POST = enhanceRouteHandler(
         return Response.json({ error: 'Recording not found' }, { status: 404 });
       }
       
-      if (!['recording', 'paused'].includes(recording.status)) {
-        logger.warn({ ...ctx, currentStatus: recording.status }, 'Attempted to complete recording that is not active');
+      // Allow completing recordings that are in recording, paused, or processing states
+      // This makes the endpoint reentrant in case of failures
+      if (!['recording', 'paused', 'processing'].includes(recording.status)) {
+        logger.warn({ ...ctx, currentStatus: recording.status }, 'Attempted to complete recording that is not in a valid state');
         return Response.json(
-          { error: 'Recording is not in an active state' },
+          { 
+            error: 'Recording is not in a valid state for completion',
+            recordingStatus: recording.status 
+          },
           { status: 400 }
         );
       }
       
-      // Log recording details before creating session
+      // Log recording details before processing
       logger.info({ 
         ...ctx, 
         accountId, 
         clientId: recording.client_id, 
-        recordingStatus: recording.status 
-      }, 'Recording details before creating session');
-      
-      // Prepare session data
-      const sessionData = {
-        account_id: accountId,
-        client_id: recording.client_id, // This is guaranteed to be non-null by the database schema
-        title: `Session ${new Date().toLocaleDateString()}`
-      };
+        recordingStatus: recording.status,
+        existingSessionId: recording.session_id
+      }, 'Recording details before processing');
       
       try {
-        // Create a session
-        const { data: session, error: sessionError } = await client
-          .from('sessions')
-          .insert(sessionData)
-          .select()
-          .single();
+        // Step 1: Check if there's already a session associated with the recording
+        let sessionId = recording.session_id;
         
-        if (sessionError) {
-          logger.error({ ...ctx, error: sessionError }, 'Error creating session for recording');
-          return Response.json({ error: 'Failed to create session' }, { status: 500 });
+        // If no session exists, create one
+        if (!sessionId) {
+          // Prepare session data
+          const sessionData = {
+            account_id: accountId,
+            client_id: recording.client_id, // This is guaranteed to be non-null by the database schema
+            title: `Session ${new Date().toLocaleDateString()}`
+          };
+          
+          // Create a session
+          const { data: session, error: sessionError } = await client
+            .from('sessions')
+            .insert(sessionData)
+            .select()
+            .single();
+          
+          if (sessionError) {
+            logger.error({ ...ctx, error: sessionError }, 'Error creating session for recording');
+            return Response.json({ error: 'Failed to create session' }, { status: 500 });
+          }
+          
+          // Store the new session ID
+          sessionId = session.id;
+          logger.info({ ...ctx, sessionId }, 'Successfully created new session');
+          
+          // Step 2: Update the recording with the session ID and last heartbeat
+          const linkSessionData = {
+            session_id: sessionId,
+            last_heartbeat_at: new Date().toISOString(),
+            status: 'processing' // Mark as processing while we queue transcription
+          };
+          
+          const { error: linkError } = await client
+            .from('recordings')
+            .update(linkSessionData)
+            .eq('id', recordingId)
+            .select()
+            .single();
+          
+          if (linkError) {
+            logger.error({ ...ctx, error: linkError }, 'Error linking session to recording');
+            return Response.json({ error: 'Failed to link session to recording' }, { status: 500 });
+          }
+          
+          logger.info({ ...ctx, sessionId }, 'Successfully linked session to recording');
+        } else {
+          logger.info({ ...ctx, sessionId }, 'Using existing session for recording');
         }
         
-        // Include sessionId as part of the context object
-        const sessionCtx = { ...ctx, sessionId: session.id };
-        logger.info(sessionCtx, 'Successfully created session');
+        // Step 3: Queue audio transcription - let errors propagate to UI
+        await aws.queueAudioTranscribe({
+          recordingId,
+          accountId,
+        });
         
-        // Store session ID for use outside the try block
-        const sessionId = session.id;
-        
-        // Update recording status to completed and link to session
-        const updateData = {
+        logger.info({ 
+          ...ctx, 
+          sessionId, 
+          standaloneChunks: recording.standalone_chunks ?? false 
+        }, 'Audio transcription task queued successfully');
+
+        // Step 4: Update recording status to completed
+        const completeData = {
           status: 'completed',
-          last_heartbeat_at: new Date().toISOString(),
-          session_id: sessionId
+          last_heartbeat_at: new Date().toISOString()
         };
         
         const { data: updatedRecording, error: updateError } = await client
           .from('recordings')
-          .update(updateData)
+          .update(completeData)
           .eq('id', recordingId)
           .select()
           .single();
         
         if (updateError) {
-          logger.error({ ...ctx, error: updateError }, 'Error completing recording');
-          return Response.json({ error: 'Failed to complete recording' }, { status: 500 });
+          logger.error({ ...ctx, error: updateError }, 'Error marking recording as completed');
+          return Response.json({ error: 'Failed to mark recording as completed' }, { status: 500 });
         }
         
-        // Include sessionId as part of the context object
         logger.info({ ...ctx, sessionId }, 'Recording completed successfully');
-        
-        try {
-          await aws.queueAudioTranscribe({
-            recordingId,
-            accountId,
-          });
-          
-          logger.info({ 
-            ...ctx, 
-            sessionId, 
-            standaloneChunks: recording.standalone_chunks ?? false 
-          }, 'Audio transcription task queued successfully');
-        } catch (queueError) {
-          // Log the error but don't fail the request
-          logger.error({ 
-            ...ctx, 
-            error: queueError,
-            errorMessage: queueError instanceof Error ? queueError.message : String(queueError) 
-          }, 'Error queuing audio processing tasks');
-          
-          // We'll still return success since the recording was completed
-          // The audio processing can be retried later if needed
-        }
-        
+                
         return Response.json({ 
           recording: updatedRecording,
           sessionId
         });
-      } catch (insertError) {
+      } catch (error) {
         logger.error({ 
           ...ctx, 
-          error: insertError,
-          errorMessage: insertError instanceof Error ? insertError.message : String(insertError),
-          sessionData
-        }, 'Unexpected error during session creation');
-        return Response.json({ error: 'Failed to create session due to unexpected error' }, { status: 500 });
+          error,
+          errorMessage: error instanceof Error ? error.message : String(error)
+        }, 'Unexpected error during recording completion');
+        return Response.json({ error: 'Failed to complete recording due to unexpected error' }, { status: 500 });
       }
       
       // This code is now inside the try block

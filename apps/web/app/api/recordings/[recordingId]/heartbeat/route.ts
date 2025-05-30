@@ -52,7 +52,10 @@ export const POST = enhanceRouteHandler(
       if (!['recording', 'paused'].includes(recording.status)) {
         logger.warn({ ...ctx, currentStatus: recording.status }, 'Heartbeat received for recording in invalid state');
         return Response.json(
-          { error: 'Recording is not in an active state' },
+          { 
+            error: 'Recording is not in an active state',
+            recordingStatus: recording.status 
+          },
           { status: 400 }
         );
       }
