@@ -351,47 +351,78 @@ export function RecordingModal({
     }
   }, [isOpen, clientId, clientName])
   
-
-  // Setup MediaRecorder with the selected microphone device
-  const setupMediaRecorder = async () => {
-    try {
-      // Set up the MediaRecorder directly with the device ID
-      // The MediaRecorderUtils.setupMediaRecorder will internally handle the audio constraints
-      const recorder = await MediaRecorderUtils.setupMediaRecorder(
-        {
-          // Pass the selected device ID through the audio constraints
-          deviceId: selectedDevice !== "default" ? selectedDevice : undefined,
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
-          sampleRate: 48000,
-          channelCount: 1, // Mono for voice clarity
-          audioBitsPerSecond: 128000 // 128 kbps for good quality voice
-        },
-        {
-          onError: (error) => {
-            console.error('MediaRecorder error:', error);
-            toast.error('Error during recording. Please try again.');
-            setError(error.message || 'Recording error occurred. Please try again.');
+    // Setup MediaRecorder with the selected microphone device
+    const setupMediaRecorder = async () => {
+      try {
+        // Set up the MediaRecorder directly with the device ID
+        // The MediaRecorderUtils.setupMediaRecorder will internally handle the audio constraints
+        const recorder = await MediaRecorderUtils.setupMediaRecorder(
+          {
+            // Pass the selected device ID through the audio constraints
+            deviceId: selectedDevice !== "default" ? selectedDevice : undefined,
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true,
+            sampleRate: 48000,
+            channelCount: 1, // Mono for voice clarity
+            audioBitsPerSecond: 128000 // 128 kbps for good quality voice
           },
-          onDataAvailable: () => {} // This will be configured later in handleStartRecording
+          {
+            onError: (error) => {
+              console.error('MediaRecorder error:', error);
+              toast.error('Error during recording. Please try again.');
+              setError(error.message || 'Recording error occurred. Please try again.');
+            },
+            onDataAvailable: () => {} // This will be configured later in handleStartRecording
+          }
+        );
+        
+        if (recorder) {
+          mediaRecorder.current = recorder;
+          console.log('MediaRecorder initialized successfully with selected device:', selectedDevice);
+          return true;
+        } else {
+          throw new Error('Failed to initialize MediaRecorder');
         }
-      );
-      
-      if (recorder) {
-        mediaRecorder.current = recorder;
-        console.log('MediaRecorder initialized successfully with selected device:', selectedDevice);
-        return true;
-      } else {
-        throw new Error('Failed to initialize MediaRecorder');
+      } catch (err) {
+        console.error('Error accessing microphone:', err);
+        toast.error(t('mypraxis:recordingModal.microphone.accessError'));
+        setError(err instanceof Error ? err.message : t('mypraxis:recordingModal.microphone.failedAccess'));
+        return false;
       }
-    } catch (err) {
-      console.error('Error accessing microphone:', err);
-      toast.error(t('mypraxis:recordingModal.microphone.accessError'));
-      setError(err instanceof Error ? err.message : t('mypraxis:recordingModal.microphone.failedAccess'));
-      return false;
     }
-  }
+  // Reinitialize MediaRecorder when selected device changes in sound check mode
+  useEffect(() => {
+    const updateMediaRecorder = async () => {
+      // Only reinitialize if we're in the sound check state and not recording
+      if (modalState === "soundCheck" && !isRecording) {
+        // Clean up existing MediaRecorder if any
+        if (mediaRecorder.current) {
+          try {
+            // Stop the existing MediaRecorder if it's active
+            if (mediaRecorder.current.state !== "inactive") {
+              mediaRecorder.current.stop();
+            }
+          } catch (err) {
+            console.warn('Error stopping previous MediaRecorder:', err);
+          }
+          mediaRecorder.current = null;
+        }
+        
+        // Set up new MediaRecorder with the selected device
+        try {
+          await setupMediaRecorder();
+          console.log(`MediaRecorder reinitialized with device: ${selectedDevice}`);
+        } catch (err) {
+          console.error('Failed to reinitialize MediaRecorder:', err);
+          toast.error(t('mypraxis:recordingModal.microphone.accessError'));
+        }
+      }
+    };
+    
+    updateMediaRecorder();
+  }, [selectedDevice, modalState, isRecording, t])
+  
   
   const handleClose = () => {
     if (isRecording || modalState === "paused") {
@@ -757,7 +788,6 @@ export function RecordingModal({
         
         // Pass the session ID to the onSave callback for navigation
         if (result.sessionId) {
-          console.log('Found sessionId in result:', result.sessionId)
           await onSave(result.sessionId)
         } else {
           console.log('No session ID found in result:', result)

@@ -45,7 +45,6 @@ export function useRecordingStatus(sessionId: string | null, options?: Recording
 
         // Recording exists, set isProcessing to true
         if (recordingData) {
-          console.log(`[useRecordingStatus] Recording found for sessionId: ${sessionId}, setting isProcessing: true`);
           return { isProcessing: true };
         }
 
