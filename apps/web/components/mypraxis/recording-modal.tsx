@@ -864,7 +864,7 @@ export function RecordingModal({
             </div>
 
             {modalState === "soundCheck" && (
-              <div className="bg-gray-50 p-4">
+              <div className="p-4 bg-white">
                 <h2 className="block text-sm font-medium text-gray-700 mb-2">
                   {t("recordingModal.microphone.soundCheck")}
                 </h2>
@@ -951,7 +951,7 @@ export function RecordingModal({
 
             
             {modalState !== "initial" && (
-              <div className="p-6 bg-gray-100">
+              <div className="p-6 bg-white">
                 <div className="flex items-center justify-center">
                   {(modalState === "recording") && (
                     <div 
