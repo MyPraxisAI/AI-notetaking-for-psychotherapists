@@ -916,34 +916,37 @@ export function RecordingModal({
               </div>
             )}
             
+            {/* Show the header in both initial and soundCheck states */}
             {(modalState === "initial" || modalState === "soundCheck") && (
               <div className="p-6 pb-4 bg-gray-50 border-b border-gray-200">
                 <h2 className="text-lg font-medium text-center">{t("recordingModal.title")} <span className="underline">{selectedClientName}</span></h2>
                 
-                {/* Transcription engine selection */}
-                <div className="p-4 bg-white rounded-lg mt-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="text-sm font-medium">{t("recordingModal.transcription.label")}</h3>
-                    </div>
-                    <div className="w-64">
-                      <Select 
-                        value={selectedTranscriptionEngine} 
-                        onValueChange={setSelectedTranscriptionEngine}
-                        data-test="transcription-engine-select"
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder={t("recordingModal.transcription.select")} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="yandex-v3-ru" data-test="transcription-engine-option-yandex-v3-ru">
-                            {t("recordingModal.transcription.yandex")}
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
+                {/* Transcription engine selection - only in initial state */}
+                {modalState === "initial" && (
+                  <div className="p-4 bg-white rounded-lg mt-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="text-sm font-medium">{t("recordingModal.transcription.label")}</h3>
+                      </div>
+                      <div className="w-64">
+                        <Select 
+                          value={selectedTranscriptionEngine} 
+                          onValueChange={setSelectedTranscriptionEngine}
+                          data-test="transcription-engine-select"
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder={t("recordingModal.transcription.select")} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="yandex-v3-ru" data-test="transcription-engine-option-yandex-v3-ru">
+                              {t("recordingModal.transcription.yandex")}
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
               </div>
             )}
             
