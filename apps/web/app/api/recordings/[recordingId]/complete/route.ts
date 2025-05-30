@@ -71,7 +71,10 @@ export const POST = enhanceRouteHandler(
       if (!['recording', 'paused', 'processing'].includes(recording.status)) {
         logger.warn({ ...ctx, currentStatus: recording.status }, 'Attempted to complete recording that is not in a valid state');
         return Response.json(
-          { error: 'Recording is not in a valid state for completion' },
+          { 
+            error: 'Recording is not in a valid state for completion',
+            recordingStatus: recording.status 
+          },
           { status: 400 }
         );
       }

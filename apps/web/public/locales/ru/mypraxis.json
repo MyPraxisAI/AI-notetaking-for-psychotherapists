@@ -227,7 +227,7 @@
     "noLocalitiesFound": "Местоположения не найдены"
   },
   "recordingModal": {
-    "title": "Запись сессии",
+    "title": "Запись сессии:",
     "close": "Закрыть",
     "cancel": "Отмена",
     "confirm": "Подтвердить",
@@ -256,7 +256,7 @@
       "yandex": "Yandex SpeechKit v3 (Русский)"
     },
     "recording": {
-      "start": "Записать",
+      "start": "Начать запись",
       "starting": "Начинаем запись...",
       "pause": "Пауза",
       "pausing": "Приостановка...",

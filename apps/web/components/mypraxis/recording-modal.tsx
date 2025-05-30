@@ -16,6 +16,7 @@ import { Mic, Pause, Play, Loader2, Upload } from "lucide-react"
 import { AudioChunk, uploadAudioChunks, processAudioFile } from "./utils/audio-upload"
 import * as RecordingAPI from "./utils/recording-api"
 import * as MediaRecorderUtils from "./utils/media-recorder"
+import { HEARTBEAT_INTERVAL_MS, STALE_RECORDING_DIALOG_MIN_DISPLAY_MS } from "./utils/recording-constants"
 
 // AudioChunk interface is now imported from ./utils/audio-upload
 
@@ -128,10 +129,10 @@ export function RecordingModal({
       // Send initial heartbeat immediately
       sendHeartbeat();
       
-      // Setup interval for heartbeats every 30 seconds
+      // Setup interval for heartbeats
       heartbeatInterval.current = setInterval(() => {
         sendHeartbeat();
-      }, 30000);
+      }, HEARTBEAT_INTERVAL_MS);
       
       // Cleanup function
       return () => {
@@ -179,7 +180,7 @@ export function RecordingModal({
           
           try {
             // Create a minimum timer and complete the stale recording in parallel
-            const minimumTimer = new Promise(resolve => setTimeout(resolve, 4000))
+            const minimumTimer = new Promise(resolve => setTimeout(resolve, STALE_RECORDING_DIALOG_MIN_DISPLAY_MS))
             const completeRecordingPromise = RecordingAPI.completeRecording(result.id)
             
             // Wait for both the timer and the API call to complete

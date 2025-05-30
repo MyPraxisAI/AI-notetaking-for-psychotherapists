@@ -4,6 +4,7 @@
  */
 
 import { getI18n } from 'react-i18next';
+import { STALE_RECORDING_THRESHOLD_MS } from './recording-constants';
 
 export interface StartRecordingOptions {
   clientId: string;
@@ -45,10 +46,9 @@ export const startRecording = async (options: StartRecordingOptions): Promise<st
       const lastHeartbeat = new Date(data.existingRecording.last_heartbeat_at);
       const now = new Date();
       const timeSinceHeartbeatMs = now.getTime() - lastHeartbeat.getTime();
-      const timeSinceHeartbeatMinutes = timeSinceHeartbeatMs / (1000 * 60);
       
-      const STALE_RECORDING_THRESHOLD_MINUTES = 2;
-      const isStale = timeSinceHeartbeatMinutes >= STALE_RECORDING_THRESHOLD_MINUTES;
+      // Compare directly with the millisecond threshold from constants
+      const isStale = timeSinceHeartbeatMs >= STALE_RECORDING_THRESHOLD_MS;
       
       // Return the existing recording information with explicit flags
       return {

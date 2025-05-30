@@ -35,10 +35,10 @@ export const POST = enhanceRouteHandler(
         return Response.json({ error: 'Personal account not found' }, { status: 404 });
       }
       
-      // Verify the recording belongs to this account
-      const { data: _recording, error: fetchError } = await client
+      // Verify the recording belongs to this account and is in an abortable state
+      const { data: recording, error: fetchError } = await client
         .from('recordings')
-        .select('*')
+        .select('id, status')
         .eq('id', recordingId)
         .eq('account_id', accountId)
         .single();
@@ -46,6 +46,16 @@ export const POST = enhanceRouteHandler(
       if (fetchError) {
         logger.error({ ...ctx, error: fetchError }, 'Error fetching recording');
         return Response.json({ error: 'Recording not found' }, { status: 404 });
+      }
+      
+      // Only allow aborting recordings that are in 'recording' or 'paused' status
+      if (!['recording', 'paused'].includes(recording.status)) {
+        logger.warn({ ...ctx, recordingStatus: recording.status }, 'Attempted to abort recording in invalid state');
+        return Response.json(
+          { error: 'Cannot abort recording in current state', 
+            recordingStatus: recording.status },
+          { status: 400 }
+        );
       }
       
       // Delete the recording (chunks will be cascade-deleted)
@@ -60,7 +70,7 @@ export const POST = enhanceRouteHandler(
       }
       
       logger.info(ctx, 'Recording deleted successfully');
-      return Response.json({ success: true });
+      return Response.json({ success: true, recordingStatus: recording.status });
     } catch (error) {
       logger.error({ ...ctx, error }, 'Failed to delete recording');
       return Response.json({ error: 'Internal server error' }, { status: 500 });
