@@ -236,7 +236,8 @@
       "unnamed": "Unnamed microphone",
       "loading": "Loading microphones...",
       "label": "Microphone",
-      "record": "Record with microphone"
+      "record": "Record with microphone",
+      "soundCheck": "Sound check"
     },
     "transcription": {
       "label": "Transcription",
