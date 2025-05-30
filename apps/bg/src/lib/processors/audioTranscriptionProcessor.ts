@@ -94,7 +94,17 @@ export class AudioTranscriptionProcessor {
       console.log(`Found ${chunks.length} audio chunks for recording ${recordingId}`);
       
       if (chunks.length === 0) {
-        throw new Error(`No audio chunks found for recording ${recordingId}`);
+        console.error(`No audio chunks found for recording ${recordingId}`);
+        // Return an empty transcription result instead of throwing an error
+        return {
+          text: '',
+          timestamp: new Date().toISOString(),
+          model: 'empty-transcript',
+          content_json: {
+            segments: [],
+            classified: false
+          }
+        };
       }
       
       // 3. Download each chunk from storage

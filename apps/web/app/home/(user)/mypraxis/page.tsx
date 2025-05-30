@@ -393,9 +393,9 @@ export default function Page() {
       
       // Show appropriate toast notification based on whether real clients exist
       if (hasRealClients) {
-        toast.error(t('mypraxis:page.demoRecordingDisabled'))
+        toast.error(t('mypraxis:page.recording.demoRecordingDisabled'))
       } else {
-        toast.error(t('mypraxis:page.demoRecordingDisabledNoRealClients'))
+        toast.error(t('mypraxis:page.recording.demoRecordingDisabledNoRealClients'))
       }
       return
     }
@@ -1068,10 +1068,10 @@ export default function Page() {
               data-test="start-recording-button"
             >
               <Mic className="h-4 w-4 mr-2" />
-              {t('mypraxis:page.startRecording')}
+              {t('mypraxis:page.recording.startRecording')}
             </Button>
             {/* <p className="text-[12px] text-muted-foreground text-center mt-2">
-              {isMobileView ? t('mypraxis:page.recordingDesktopOnly') : t('mypraxis:page.recordingFeatures')}
+              {isMobileView ? t('mypraxis:page.recording.recordingDesktopOnly') : t('mypraxis:page.recording.recordingFeatures')}
             </p> */}
           </div>
 

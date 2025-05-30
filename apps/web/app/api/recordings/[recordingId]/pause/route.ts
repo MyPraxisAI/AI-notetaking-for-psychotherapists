@@ -52,7 +52,10 @@ export const POST = enhanceRouteHandler(
       if (recording.status !== 'recording') {
         logger.warn({ ...ctx, currentStatus: recording.status }, 'Attempted to pause recording that is not in recording state');
         return Response.json(
-          { error: 'Recording is not in a state that can be paused' },
+          { 
+            error: 'Recording is not in a state that can be paused',
+            recordingStatus: recording.status 
+          },
           { status: 400 }
         );
       }

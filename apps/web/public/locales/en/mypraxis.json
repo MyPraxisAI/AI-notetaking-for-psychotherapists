@@ -114,12 +114,14 @@
     "newClient": "New client",
     "demo": "Demo",
     "viewProfile": "View Profile",
-    "startRecording": "Start recording",
-    "recordingDesktopOnly": "Available on desktop",
-    "recordingFeatures": "transcript, notes, recap",
     "testOnboarding": "Onboard",
-    "demoRecordingDisabled": "Recording is disabled for demo clients. Please select a real client.",
-    "demoRecordingDisabledNoRealClients": "Recording is disabled for demo clients. Please create a real client first.",
+    "recording": {
+      "startRecording": "Start recording",
+      "recordingDesktopOnly": "Available on desktop",
+      "recordingFeatures": "transcript, notes, recap",
+      "demoRecordingDisabled": "Recording is disabled for demo clients. Please select a real client.",
+      "demoRecordingDisabledNoRealClients": "Recording is disabled for demo clients. Please create a real client first."
+    },
     "navigation": {
       "clients": "Clients",
       "settings": "Settings",
@@ -258,8 +260,17 @@
     "confirmClose": "Recording won't be saved if you proceed. Are you sure you want to close?",
     "cancel": "Cancel",
     "confirm": "Yes, Close",
+    "ok": "OK",
     "errors": {
       "startFailed": "Failed to start recording"
+    },
+    "existingRecording": {
+      "title": "Active Recording Detected",
+      "message": "You have an existing active recording in progress in another tab. Please complete it first before starting a new recording."
+    },
+    "savingStaleRecording": {
+      "title": "Incomplete Recording Found",
+      "message": "Found a previous incomplete recording. Saving it before starting a new one..."
     }
   },
   "recordingApi": {

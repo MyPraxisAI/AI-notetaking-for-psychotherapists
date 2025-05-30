@@ -14,7 +14,7 @@ type CustomClient = SupabaseClient & {
   from: (table: string) => ReturnType<SupabaseClient['from']>;
 };
 
-// GET /api/recordings/status - Get current active recording (if any)
+// GET /api/recordings - Get current active recording (if any)
 export const GET = enhanceRouteHandler(
   async ({ request: _request, user }) => {
     const ctx = {
@@ -52,21 +52,9 @@ export const GET = enhanceRouteHandler(
         return Response.json({ recording: null });
       }
       
-      // Get chunks for this recording
-      const { data: chunks, error: chunksError } = await client
-        .from('recordings_chunks')
-        .select('*')
-        .eq('recording_id', recording.id)
-        .order('chunk_number', { ascending: true });
-      
-      if (chunksError) {
-        logger.error({ ...ctx, error: chunksError, recordingId: recording.id }, 'Error fetching recording chunks');
-      }
-      
       return Response.json({
         recording: {
-          ...recording,
-          chunks: chunks || []
+          ...recording
         }
       });
     } catch (error) {
