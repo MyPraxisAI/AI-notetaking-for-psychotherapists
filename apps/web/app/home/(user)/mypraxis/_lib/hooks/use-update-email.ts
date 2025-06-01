@@ -38,7 +38,6 @@ export function useUpdateEmail() {
       return data;
     },
     onSuccess: () => {
-      toast.success(t('hooks.userProfile.emailVerificationSent'));
     },
     onError: (error) => {
       console.error('Error updating email:', error);
