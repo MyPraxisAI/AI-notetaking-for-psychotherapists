@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useCallback, useState, useEffect, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { useQueryClient } from "@tanstack/react-query"
 import { Button } from "@kit/ui/button"
@@ -128,7 +128,7 @@ export function RecordingModal({
   }, []);
   
   // Function to load available microphones
-  const loadAvailableMicrophones = async () => {
+  const loadAvailableMicrophones = useCallback(async () => {
     try {
       setIsLoadingMicrophones(true);
       const mics = await MicrophoneUtils.getAvailableMicrophones();
@@ -143,15 +143,9 @@ export function RecordingModal({
     } finally {
       setIsLoadingMicrophones(false);
     }
-  };
+  }, [selectedDevice]);
   
-  // Initialize microphone only when entering soundCheck state
-  useEffect(() => {
-    if (isOpen && modalState === "soundCheck") {
-      // Only initialize microphone in soundCheck state
-      initializeMicrophone();
-    }
-  }, [isOpen, modalState]);
+  // This useEffect is moved after initializeMicrophone declaration
 
   // Manage heartbeats whenever recordingId exists and modal is open
   useEffect(() => {
@@ -352,7 +346,7 @@ export function RecordingModal({
   }, [isOpen, clientId, clientName])
   
     // Setup MediaRecorder with the selected microphone device
-    const setupMediaRecorder = async () => {
+  const setupMediaRecorder = useCallback(async () => {
       try {
         // Set up the MediaRecorder directly with the device ID
         // The MediaRecorderUtils.setupMediaRecorder will internally handle the audio constraints
@@ -395,7 +389,8 @@ export function RecordingModal({
         // Just return false to indicate failure - the initializeMicrophone function will handle the error
         return false;
       }
-    }
+    }, [selectedDevice]);
+
   // Reinitialize MediaRecorder when selected device changes in sound check mode
   useEffect(() => {
     const updateMediaRecorder = async () => {
@@ -433,7 +428,10 @@ export function RecordingModal({
     };
     
     updateMediaRecorder();
-  }, [selectedDevice, modalState, isRecording, t, isProcessing])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedDevice, modalState, isRecording, isProcessing, setupMediaRecorder]); 
+  // Deliberately omitting microphoneStream from dependencies to avoid circular reference
+  // We're properly cleaning it up inside the effect before setting a new one
   
   
   const handleClose = () => {
@@ -524,7 +522,7 @@ export function RecordingModal({
   const [microphoneStream, setMicrophoneStream] = useState<MediaStream | null>(null);
 
   // Initialize microphone and MediaRecorder in the soundCheck state
-  const initializeMicrophone = async () => {
+  const initializeMicrophone = useCallback(async () => {
     try {
       setIsProcessing(true);
       setError(null);
@@ -544,7 +542,15 @@ export function RecordingModal({
     } finally {
       setIsProcessing(false);
     }
-  };
+  }, [setupMediaRecorder, loadAvailableMicrophones]);
+  
+  // Initialize microphone only when entering soundCheck state
+  useEffect(() => {
+    if (isOpen && modalState === "soundCheck") {
+      // Only initialize microphone in soundCheck state
+      initializeMicrophone();
+    }
+  }, [isOpen, modalState, initializeMicrophone]);
   
   const handleStartRecordingFlow = () => {
     // Simply transition to the sound check state
