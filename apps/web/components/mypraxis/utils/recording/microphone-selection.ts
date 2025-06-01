@@ -36,12 +36,7 @@ export const getAvailableMicrophones = async (): Promise<MicrophoneDevice[]> => 
     
     // If we have no labeled devices, it likely means we don't have permission
     if (microphones.length === 0) {
-      return [{
-        deviceId: 'default',
-        label: i18next.t('mypraxis:recordingModal.microphone.builtin'),
-        groupId: '',
-        isDefault: true
-      }];
+      throw new Error('MICROPHONE_ACCESS_FAILED');
     }
     
     // More aggressive duplicate detection based on label similarity
@@ -92,13 +87,12 @@ export const getAvailableMicrophones = async (): Promise<MicrophoneDevice[]> => 
     return sortedMicrophones;
   } catch (error) {
     console.error('Error getting microphone devices:', error);
-    // Return a default device if there's an error
-    return [{
-      deviceId: 'default',
-      label: i18next.t('mypraxis:recordingModal.microphone.builtin'),
-      groupId: '',
-      isDefault: true
-    }];
+    // Throw the error instead of returning a default device
+    throw new Error(
+      error instanceof Error 
+        ? error.message 
+        : 'MICROPHONE_ACCESS_FAILED'
+    );
   }
 };
 

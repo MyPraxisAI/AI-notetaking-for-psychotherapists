@@ -12,7 +12,7 @@ import {
   DialogHeader,
   DialogFooter,
 } from "@kit/ui/dialog"
-import { Mic, Pause, Play, Loader2, Upload } from "lucide-react"
+import { Mic, Pause, Play, Loader2, Upload, AlertTriangle } from "lucide-react"
 import { AudioChunk, uploadAudioChunks, processAudioFile } from "./utils/audio-upload"
 import * as RecordingAPI from "./utils/recording-api"
 import * as MediaRecorderUtils from "./utils/media-recorder"
@@ -368,9 +368,13 @@ export function RecordingModal({
           },
           {
             onError: (error) => {
-              console.error('MediaRecorder error:', error);
-              toast.error('Error during recording. Please try again.');
-              setError(error.message || 'Recording error occurred. Please try again.');
+              console.error('setupMediaRecorder onError:', error);
+              // Only show toast and error message if it's not a permission error (that's displayed separately)
+              // The browser will throw a NotAllowedError for permission issues
+              if (error.name !== 'NotAllowedError') {
+                toast.error('Error during recording. Please try again.');
+                setError(error.message || 'Recording error occurred. Please try again.');
+              }
             },
             onDataAvailable: () => {} // This will be configured later in handleStartRecording
           }
@@ -384,9 +388,8 @@ export function RecordingModal({
           throw new Error('Failed to initialize MediaRecorder');
         }
       } catch (err) {
-        console.error('Error accessing microphone:', err);
-        toast.error(t('mypraxis:recordingModal.microphone.accessError'));
-        setError(err instanceof Error ? err.message : t('mypraxis:recordingModal.microphone.failedAccess'));
+        console.error('MediaRecorder creation error:', err);
+        // Just return false to indicate failure - the initializeMicrophone function will handle the error
         return false;
       }
     }
@@ -414,7 +417,6 @@ export function RecordingModal({
           console.log(`MediaRecorder reinitialized with device: ${selectedDevice}`);
         } catch (err) {
           console.error('Failed to reinitialize MediaRecorder:', err);
-          toast.error(t('mypraxis:recordingModal.microphone.accessError'));
         }
       }
     };
@@ -503,26 +505,33 @@ export function RecordingModal({
     await cleanupRecording();
   }
   
+  // State for microphone access error dialog
+  const [showMicrophoneAccessErrorDialog, setShowMicrophoneAccessErrorDialog] = useState(false);
+  // Removed microphoneErrorMessage state as we use consistent localized messages
+
   // Initialize microphone and MediaRecorder in the soundCheck state
   const initializeMicrophone = async () => {
     try {
       setIsProcessing(true);
-      // We're already in the soundCheck state, so directly set up the MediaRecorder
+      setError(null);
       // This will prompt for permissions if needed
       await loadAvailableMicrophones(); // Load microphone list (will prompt for permission)
       const success = await setupMediaRecorder();
       if (!success) {
-        // If setup fails, show an error but stay in soundCheck state
-        console.error('Failed to initialize microphone');
+        // If setup fails, go back to initial state and show error dialog
+        throw new Error('MICROPHONE_ACCESS_FAILED');
       }
     } catch (err) {
-      console.log('Error initializing microphone:', err);
-      setError(err instanceof Error ? err.message : t('mypraxis:recordingModal.microphone.failedAccess'));
+      console.error('Error initializing microphone:', err);
+      // Show the error dialog with the translated message
+      setShowMicrophoneAccessErrorDialog(true);
+      // Return to initial state
+      setModalState("initial");
     } finally {
       setIsProcessing(false);
     }
   };
-
+  
   const handleStartRecordingFlow = () => {
     // Simply transition to the sound check state
     // The microphone setup will happen in the useEffect that responds to the soundCheck state
@@ -1161,6 +1170,26 @@ export function RecordingModal({
               {t('mypraxis:recordingModal.savingStaleRecording.message')}
             </DialogDescription>
           </DialogHeader>
+        </DialogContent>
+      </Dialog>
+
+      {/* Microphone Access Error Dialog */}
+      <Dialog open={showMicrophoneAccessErrorDialog} onOpenChange={setShowMicrophoneAccessErrorDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <div className="flex items-center gap-2 mb-1">
+              <AlertTriangle className="h-5 w-5 text-amber-500" />
+              <DialogTitle>{t('mypraxis:recordingModal.microphone.errorDialog.title')}</DialogTitle>
+            </div>
+            <DialogDescription>
+              {t('mypraxis:recordingModal.microphone.errorDialog.message')}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button onClick={() => setShowMicrophoneAccessErrorDialog(false)}>
+              {t('mypraxis:recordingModal.microphone.errorDialog.button')}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </>

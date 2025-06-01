@@ -231,13 +231,16 @@
     "microphone": {
       "select": "Select microphone",
       "builtin": "Built-in microphone",
-      "accessError": "Microphone access error. Please grant permission and try again.",
-      "failedAccess": "Failed to access microphone",
       "unnamed": "Unnamed microphone",
       "loading": "Loading microphones...",
       "label": "Microphone",
       "record": "Record with microphone",
-      "soundCheck": "Sound check"
+      "soundCheck": "Sound check",
+      "errorDialog": {
+        "title": "Microphone Access Error",
+        "message": "Could not access your microphone. Please check browser permissions (icon to the left of the address bar) and try again.",
+        "button": "OK"
+      }
     },
     "transcription": {
       "label": "Transcription",
