@@ -13,6 +13,7 @@ import {
   DialogFooter,
 } from "@kit/ui/dialog"
 import { Mic, Pause, Play, Loader2, Upload, AlertTriangle } from "lucide-react"
+import { MicrophoneLevelIndicator } from "./utils/recording/microphone-level-indicator"
 import { AudioChunk, uploadAudioChunks, processAudioFile } from "./utils/audio-upload"
 import * as RecordingAPI from "./utils/recording-api"
 import * as MediaRecorderUtils from "./utils/media-recorder"
@@ -382,6 +383,8 @@ export function RecordingModal({
         
         if (recorder) {
           mediaRecorder.current = recorder;
+          // Store the stream for visualization
+          setMicrophoneStream(recorder.stream);
           console.log('MediaRecorder initialized successfully with selected device:', selectedDevice);
           return true;
         } else {
@@ -396,16 +399,24 @@ export function RecordingModal({
   // Reinitialize MediaRecorder when selected device changes in sound check mode
   useEffect(() => {
     const updateMediaRecorder = async () => {
-      // Only reinitialize if we're in the sound check state and not recording
-      if (modalState === "soundCheck" && !isRecording) {
-        // Clean up existing MediaRecorder if any
+      // Only update if we're in soundCheck state and not currently processing
+      if (modalState === "soundCheck" && !isProcessing) {
+        // First, stop all microphone tracks from the current stream
+        if (microphoneStream) {
+          microphoneStream.getTracks().forEach(track => track.stop());
+          setMicrophoneStream(null);
+        }
+        
+        // Then clean up the MediaRecorder (which won't have a valid stream after we stopped the tracks)
         if (mediaRecorder.current) {
           try {
-            // Stop the existing MediaRecorder if it's active
+            // We don't actually need to call stop() on the MediaRecorder after stopping the tracks,
+            // but we'll do it just to be thorough if it's active
             if (mediaRecorder.current.state !== "inactive") {
               mediaRecorder.current.stop();
             }
           } catch (err) {
+            // This might error if the stream was already stopped
             console.warn('Error stopping previous MediaRecorder:', err);
           }
           mediaRecorder.current = null;
@@ -422,7 +433,7 @@ export function RecordingModal({
     };
     
     updateMediaRecorder();
-  }, [selectedDevice, modalState, isRecording, t])
+  }, [selectedDevice, modalState, isRecording, t, isProcessing])
   
   
   const handleClose = () => {
@@ -508,6 +519,9 @@ export function RecordingModal({
   // State for microphone access error dialog
   const [showMicrophoneAccessErrorDialog, setShowMicrophoneAccessErrorDialog] = useState(false);
   // Removed microphoneErrorMessage state as we use consistent localized messages
+  
+  // Track the active microphone stream for visualization
+  const [microphoneStream, setMicrophoneStream] = useState<MediaStream | null>(null);
 
   // Initialize microphone and MediaRecorder in the soundCheck state
   const initializeMicrophone = async () => {
@@ -870,10 +884,8 @@ export function RecordingModal({
                   {t("recordingModal.microphone.soundCheck")}
                 </h2>
                 
-                {/* Sound level indicator (mock) */}
-                <div className="mt-2 h-8 bg-green-100 rounded-md overflow-hidden">
-                  <div className="h-full w-16 bg-green-500 rounded-l-md"></div>
-                </div>
+                {/* Sound level indicator */}
+                <MicrophoneLevelIndicator stream={microphoneStream} className="mt-2" />
                 
                 {/* Device selection */}
                 <div className="mt-4">
