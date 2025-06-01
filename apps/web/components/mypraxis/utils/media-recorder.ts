@@ -7,6 +7,7 @@ import { MutableRefObject } from "react";
 import { AudioChunk } from "./audio-upload";
 
 export interface MediaRecorderOptions {
+  deviceId?: string;
   echoCancellation?: boolean;
   noiseSuppression?: boolean;
   autoGainControl?: boolean;
@@ -40,6 +41,7 @@ export const setupMediaRecorder = async (
     // Request audio with specific constraints for better quality
     const stream = await navigator.mediaDevices.getUserMedia({
       audio: {
+        deviceId: options.deviceId ? { exact: options.deviceId } : undefined,
         echoCancellation: options.echoCancellation ?? true,
         noiseSuppression: options.noiseSuppression ?? true,
         autoGainControl: options.autoGainControl ?? true,
