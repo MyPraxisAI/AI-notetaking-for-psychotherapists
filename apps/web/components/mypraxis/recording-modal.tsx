@@ -1038,7 +1038,7 @@ export function RecordingModal({
                   {isProcessing ? (
                     <>
                       <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                      {t("recordingModal.recording.starting")}
+                      {/* {t("recordingModal.recording.starting")} */}
                     </>
                   ) : (
                     <>
