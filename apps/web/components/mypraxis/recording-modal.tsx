@@ -4,14 +4,7 @@ import { useCallback, useState, useEffect, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { useQueryClient } from "@tanstack/react-query"
 import { Button } from "@kit/ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogTitle,
-  DialogHeader,
-  DialogFooter,
-} from "@kit/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogHeader, DialogFooter } from "@kit/ui/dialog"
 import { Mic, Pause, Play, Loader2, Upload, AlertTriangle } from "lucide-react"
 import { MicrophoneLevelIndicator } from "./utils/recording/microphone-level-indicator"
 import { AudioChunk, uploadAudioChunks, processAudioFile } from "./utils/recording/audio-upload"
@@ -20,17 +13,8 @@ import * as MediaRecorderUtils from "./utils/recording/media-recorder"
 import { HEARTBEAT_INTERVAL_MS, STALE_RECORDING_DIALOG_MIN_DISPLAY_MS } from "./utils/recording/recording-constants"
 import * as MicrophoneUtils from "./utils/recording/microphone-selection"
 import type { MicrophoneDevice } from "./utils/recording/microphone-selection"
-
-// AudioChunk interface is now imported from ./utils/audio-upload
-
 import { toast } from "sonner"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@kit/ui/select"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@kit/ui/select"
 
 const overlayStyles = `
   .recording-modal-overlay {
