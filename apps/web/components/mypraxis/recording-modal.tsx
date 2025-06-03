@@ -1197,7 +1197,7 @@ export function RecordingModal({
             }}>
               {t('mypraxis:recordingModal.pausedRecording.abort')}
             </Button>
-            <Button onClick={async (e) => {
+            <Button onClick={async (_e) => {
               // Complete the existing recording and start a new one
               if (existingRecordingData?.id) {
                 setShowPausedRecordingDialog(false);
