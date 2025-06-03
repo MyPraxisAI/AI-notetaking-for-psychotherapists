@@ -230,11 +230,17 @@
     "title": "Session with",
     "microphone": {
       "select": "Select microphone",
-      "builtin": "MacBook Air Microphone (Built-in)",
-      "allow": "Allow Microphone Access",
-      "checking": "Checking Microphone...",
-      "accessError": "Could not access microphone. Please check permissions.",
-      "failedAccess": "Failed to access microphone"
+      "builtin": "Built-in microphone",
+      "unnamed": "Unnamed microphone",
+      "loading": "Loading microphones...",
+      "label": "Microphone",
+      "record": "Record with microphone",
+      "soundCheck": "Sound check",
+      "errorDialog": {
+        "title": "Microphone Access Error",
+        "message": "Could not access your microphone. Please check browser permissions (icon to the left of the address bar) and try again.",
+        "button": "OK"
+      }
     },
     "transcription": {
       "label": "Transcription",
@@ -314,7 +320,6 @@
       "nameUpdatedSuccess": "Name updated successfully",
       "nameUpdatedError": "Failed to update name. Please try again.",
       "emailInvalid": "Please enter a valid email",
-      "emailVerificationSent": "Verification email sent. Please check your inbox.",
       "emailUpdatedError": "Failed to update email. Please try again.",
       "passwordMinLength": "Password must be at least 8 characters",
       "passwordRequirements": "Password must include uppercase, lowercase, number and special character",

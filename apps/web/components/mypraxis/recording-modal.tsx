@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useCallback, useState, useEffect, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { useQueryClient } from "@tanstack/react-query"
 import { Button } from "@kit/ui/button"
@@ -12,11 +12,14 @@ import {
   DialogHeader,
   DialogFooter,
 } from "@kit/ui/dialog"
-import { Mic, Pause, Play, Loader2, Upload } from "lucide-react"
+import { Mic, Pause, Play, Loader2, Upload, AlertTriangle } from "lucide-react"
+import { MicrophoneLevelIndicator } from "./utils/recording/microphone-level-indicator"
 import { AudioChunk, uploadAudioChunks, processAudioFile } from "./utils/audio-upload"
 import * as RecordingAPI from "./utils/recording-api"
 import * as MediaRecorderUtils from "./utils/media-recorder"
 import { HEARTBEAT_INTERVAL_MS, STALE_RECORDING_DIALOG_MIN_DISPLAY_MS } from "./utils/recording-constants"
+import * as MicrophoneUtils from "./utils/recording/microphone-selection"
+import type { MicrophoneDevice } from "./utils/recording/microphone-selection"
 
 // AudioChunk interface is now imported from ./utils/audio-upload
 
@@ -74,7 +77,9 @@ export function RecordingModal({
   const [_isIntakeSession, _setIsIntakeSession] = useState(false)
   const [selectedClient, setSelectedClient] = useState(clientId)
   const [selectedClientName, setSelectedClientName] = useState(clientName)
-  const [selectedDevice, setSelectedDevice] = useState("MacBook Air Microphone (Built-in)")
+  const [selectedDevice, setSelectedDevice] = useState("default")
+  const [availableMicrophones, setAvailableMicrophones] = useState<MicrophoneDevice[]>([])
+  const [isLoadingMicrophones, setIsLoadingMicrophones] = useState(false)
   const [selectedTranscriptionEngine, setSelectedTranscriptionEngine] = useState("yandex-v3-ru")
   const [timer, setTimer] = useState(0)
   const [isRecording, setIsRecording] = useState(false)
@@ -123,6 +128,26 @@ export function RecordingModal({
     }
   }, []);
   
+  // Function to load available microphones
+  const loadAvailableMicrophones = useCallback(async () => {
+    try {
+      setIsLoadingMicrophones(true);
+      const mics = await MicrophoneUtils.getAvailableMicrophones();
+      setAvailableMicrophones(mics);
+      
+      // If we have microphones and no device is selected, select the default one
+      if (mics.length > 0 && (!selectedDevice || selectedDevice === "default") && mics[0]?.deviceId) {
+        setSelectedDevice(mics[0].deviceId);
+      }
+    } catch (error) {
+      console.error('Error loading microphones:', error);
+    } finally {
+      setIsLoadingMicrophones(false);
+    }
+  }, [selectedDevice]);
+  
+  // This useEffect is moved after initializeMicrophone declaration
+
   // Manage heartbeats whenever recordingId exists and modal is open
   useEffect(() => {
     // Only start heartbeat if we have a recording ID and the modal is open
@@ -331,43 +356,94 @@ export function RecordingModal({
     }
   }, [isOpen, clientId, clientName])
   
-  // Setup MediaRecorder and audio handling - now using the extracted utility functions
-  const setupMediaRecorder = async () => {
-    try {
-      // Setup the MediaRecorder with optimal settings
-      const recorder = await MediaRecorderUtils.setupMediaRecorder(
-        {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
-          sampleRate: 48000,
-          channelCount: 1, // Mono for voice clarity
-          audioBitsPerSecond: 128000 // 128 kbps for good quality voice
-        },
-        {
-          onError: (error) => {
-            console.error('MediaRecorder error:', error);
-            toast.error('Error during recording. Please try again.');
-            setError(error.message || 'Recording error occurred. Please try again.');
+    // Setup MediaRecorder with the selected microphone device
+  const setupMediaRecorder = useCallback(async () => {
+      try {
+        // Set up the MediaRecorder directly with the device ID
+        // The MediaRecorderUtils.setupMediaRecorder will internally handle the audio constraints
+        const recorder = await MediaRecorderUtils.setupMediaRecorder(
+          {
+            // Pass the selected device ID through the audio constraints
+            deviceId: selectedDevice !== "default" ? selectedDevice : undefined,
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true,
+            sampleRate: 48000,
+            channelCount: 1, // Mono for voice clarity
+            audioBitsPerSecond: 128000 // 128 kbps for good quality voice
           },
-          onDataAvailable: () => {} // This will be configured later in handleStartRecording
+          {
+            onError: (error) => {
+              console.error('setupMediaRecorder onError:', error);
+              // Only show toast and error message if it's not a permission error (that's displayed separately)
+              // The browser will throw a NotAllowedError for permission issues
+              if (error.name !== 'NotAllowedError') {
+                toast.error('Error during recording. Please try again.');
+                setError(error.message || 'Recording error occurred. Please try again.');
+              }
+            },
+            onDataAvailable: () => {} // This will be configured later in handleStartRecording
+          }
+        );
+        
+        if (recorder) {
+          mediaRecorder.current = recorder;
+          // Store the stream for visualization
+          setMicrophoneStream(recorder.stream);
+          console.log('MediaRecorder initialized successfully with selected device:', selectedDevice);
+          return true;
+        } else {
+          throw new Error('Failed to initialize MediaRecorder');
         }
-      );
-      
-      if (recorder) {
-        mediaRecorder.current = recorder;
-        console.log('MediaRecorder initialized successfully');
-        return true;
-      } else {
-        throw new Error('Failed to initialize MediaRecorder');
+      } catch (err) {
+        console.error('MediaRecorder creation error:', err);
+        // Just return false to indicate failure - the initializeMicrophone function will handle the error
+        return false;
       }
-    } catch (err) {
-      console.error('Error accessing microphone:', err);
-      toast.error(t('mypraxis:recordingModal.microphone.accessError'));
-      setError(err instanceof Error ? err.message : t('mypraxis:recordingModal.microphone.failedAccess'));
-      return false;
-    }
-  }
+    }, [selectedDevice]);
+
+  // Reinitialize MediaRecorder when selected device changes in sound check mode
+  useEffect(() => {
+    const updateMediaRecorder = async () => {
+      // Only update if we're in soundCheck state and not currently processing
+      if (modalState === "soundCheck" && !isProcessing) {
+        // First, stop all microphone tracks from the current stream
+        if (microphoneStream) {
+          microphoneStream.getTracks().forEach(track => track.stop());
+          setMicrophoneStream(null);
+        }
+        
+        // Then clean up the MediaRecorder (which won't have a valid stream after we stopped the tracks)
+        if (mediaRecorder.current) {
+          try {
+            // We don't actually need to call stop() on the MediaRecorder after stopping the tracks,
+            // but we'll do it just to be thorough if it's active
+            if (mediaRecorder.current.state !== "inactive") {
+              mediaRecorder.current.stop();
+            }
+          } catch (err) {
+            // This might error if the stream was already stopped
+            console.warn('Error stopping previous MediaRecorder:', err);
+          }
+          mediaRecorder.current = null;
+        }
+        
+        // Set up new MediaRecorder with the selected device
+        try {
+          await setupMediaRecorder();
+          console.log(`MediaRecorder reinitialized with device: ${selectedDevice}`);
+        } catch (err) {
+          console.error('Failed to reinitialize MediaRecorder:', err);
+        }
+      }
+    };
+    
+    updateMediaRecorder();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedDevice, modalState, isRecording, isProcessing, setupMediaRecorder]); 
+  // Deliberately omitting microphoneStream from dependencies to avoid circular reference
+  // We're properly cleaning it up inside the effect before setting a new one
+  
   
   const handleClose = () => {
     if (isRecording || modalState === "paused") {
@@ -449,11 +525,48 @@ export function RecordingModal({
     await cleanupRecording();
   }
   
-  const handleMicrophoneAccess = async () => {
-    const success = await setupMediaRecorder()
-    if (success) {
-      setModalState("soundCheck")
+  // State for microphone access error dialog
+  const [showMicrophoneAccessErrorDialog, setShowMicrophoneAccessErrorDialog] = useState(false);
+  // Removed microphoneErrorMessage state as we use consistent localized messages
+  
+  // Track the active microphone stream for visualization
+  const [microphoneStream, setMicrophoneStream] = useState<MediaStream | null>(null);
+
+  // Initialize microphone and MediaRecorder in the soundCheck state
+  const initializeMicrophone = useCallback(async () => {
+    try {
+      setIsProcessing(true);
+      setError(null);
+      // This will prompt for permissions if needed
+      await loadAvailableMicrophones(); // Load microphone list (will prompt for permission)
+      const success = await setupMediaRecorder();
+      if (!success) {
+        // If setup fails, go back to initial state and show error dialog
+        throw new Error('MICROPHONE_ACCESS_FAILED');
+      }
+    } catch (err) {
+      console.error('Error initializing microphone:', err);
+      // Show the error dialog with the translated message
+      setShowMicrophoneAccessErrorDialog(true);
+      // Return to initial state
+      setModalState("initial");
+    } finally {
+      setIsProcessing(false);
     }
+  }, [setupMediaRecorder, loadAvailableMicrophones]);
+  
+  // Initialize microphone only when entering soundCheck state
+  useEffect(() => {
+    if (isOpen && modalState === "soundCheck") {
+      // Only initialize microphone in soundCheck state
+      initializeMicrophone();
+    }
+  }, [isOpen, modalState, initializeMicrophone]);
+  
+  const handleStartRecordingFlow = () => {
+    // Simply transition to the sound check state
+    // The microphone setup will happen in the useEffect that responds to the soundCheck state
+    setModalState("soundCheck");
   }
   
   const handleStartRecording = async () => {
@@ -710,7 +823,6 @@ export function RecordingModal({
         
         // Pass the session ID to the onSave callback for navigation
         if (result.sessionId) {
-          console.log('Found sessionId in result:', result.sessionId)
           await onSave(result.sessionId)
         } else {
           console.log('No session ID found in result:', result)
@@ -779,80 +891,109 @@ export function RecordingModal({
         <div className="fixed inset-0 flex flex-col items-center justify-center z-50">
           <div className="relative bg-white rounded-lg w-full max-w-md mx-4 overflow-hidden">
             {/* Modal content starts here */}
+            <div className="p-6 pb-4 bg-gray-50 border-b border-gray-200">
+              <h2 className="text-lg font-medium text-center">{t("recordingModal.title")} <span className="underline">{selectedClientName}</span></h2>
+            </div>
+
             {modalState === "soundCheck" && (
-              <div className="bg-gray-50 p-4">
-                <h2 className="text-xl font-semibold text-gray-800">Sound Check</h2>
+              <div className="p-4 bg-white">
+                <h2 className="block text-sm font-medium text-gray-700 mb-2">
+                  {t("recordingModal.microphone.soundCheck")}
+                </h2>
                 
-                {/* Sound level indicator (mock) */}
-                <div className="mt-2 h-8 bg-green-100 rounded-md overflow-hidden">
-                  <div className="h-full w-16 bg-green-500 rounded-l-md"></div>
-                </div>
+                {/* Sound level indicator */}
+                <MicrophoneLevelIndicator stream={microphoneStream} className="mt-2" />
                 
                 {/* Device selection */}
                 <div className="mt-4">
-                  <Select value={selectedDevice} onValueChange={setSelectedDevice}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder={t("recordingModal.microphone.select")} />
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    {t("recordingModal.microphone.label")}
+                  </label>
+                  <Select value={selectedDevice} onValueChange={setSelectedDevice} data-test="microphone-select">
+                    <SelectTrigger 
+                      className="w-full" 
+                      data-test="microphone-select-trigger"
+                      disabled={isLoadingMicrophones}
+                    >
+                      {isLoadingMicrophones ? (
+                        <div className="flex items-center">
+                          <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          <span>{t("recordingModal.microphone.loading")}</span>
+                        </div>
+                      ) : (
+                        <SelectValue placeholder={t("recordingModal.microphone.select")} />
+                      )}
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="MacBook Air Microphone (Built-in)">
-                        {t("recordingModal.microphone.builtin")}
-                      </SelectItem>
+                      {availableMicrophones.length > 0 ? (
+                        availableMicrophones.map((mic) => (
+                          <SelectItem 
+                            key={mic.deviceId} 
+                            value={mic.deviceId}
+                            data-test={`microphone-option-${mic.deviceId}`}
+                          >
+                            {mic.label}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem 
+                          value="default"
+                          data-test="microphone-option-default"
+                        >
+                          {t("recordingModal.microphone.builtin")}
+                        </SelectItem>
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
               </div>
             )}
             
-            {(modalState === "initial" || modalState === "soundCheck") && (
-              <div className="p-6 pb-4 bg-gray-50 border-b border-gray-200">
-                <h2 className="text-lg font-medium text-center">{t("recordingModal.title")} <span className="underline">{selectedClientName}</span></h2>
-                
-                {/* Transcription engine selection */}
-                <div className="p-4 bg-white rounded-lg mt-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="text-sm font-medium">{t("recordingModal.transcription.label")}</h3>
-                    </div>
-                    <div className="w-64">
-                      <Select 
-                        value={selectedTranscriptionEngine} 
-                        onValueChange={setSelectedTranscriptionEngine}
-                        data-test="transcription-engine-select"
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder={t("recordingModal.transcription.select")} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="yandex-v3-ru" data-test="transcription-engine-option-yandex-v3-ru">
-                            {t("recordingModal.transcription.yandex")}
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+            {/* Transcription engine selection - only in initial state */}
+            {modalState === "initial" && (
+              <div className="p-4 bg-white rounded-lg mt-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-sm font-medium">{t("recordingModal.transcription.label")}</h3>
+                  </div>
+                  <div className="w-64">
+                    <Select 
+                      value={selectedTranscriptionEngine} 
+                      onValueChange={setSelectedTranscriptionEngine}
+                      data-test="transcription-engine-select"
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder={t("recordingModal.transcription.select")} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="yandex-v3-ru" data-test="transcription-engine-option-yandex-v3-ru">
+                          {t("recordingModal.transcription.yandex")}
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
               </div>
             )}
+
             
-            {(modalState === "recording" || modalState === "paused" || modalState === "saving") && (
-              <div className="p-6 pb-4 bg-gray-50 border-b border-gray-200">
-                <h2 className="text-lg font-medium text-center">{t("recordingModal.title")} <span className="underline">{selectedClientName}</span></h2>
-              </div>
-            )}
-            
-            <div className="p-6 bg-gray-100">
-              <div className="flex items-center justify-center">
-                {(modalState === "recording") && (
-                  <div 
-                    className={`w-3 h-3 rounded-full mr-3 bg-red-600 transition-opacity duration-700 ${isBlinking ? 'opacity-100' : 'opacity-30'}`}
-                  />
-                )}
-                <div className="text-5xl font-mono text-center text-gray-600">
-                  {formatTime(timer)}
+            {modalState !== "initial" && (
+              <div className="p-6 bg-white">
+                <div className="flex items-center justify-center">
+                  {(modalState === "recording") && (
+                    <div 
+                      className={`w-3 h-3 rounded-full mr-3 bg-red-600 transition-opacity duration-700 ${isBlinking ? 'opacity-100' : 'opacity-30'}`}
+                    />
+                  )}
+                  <div className="text-5xl font-mono text-center text-gray-600">
+                    {formatTime(timer)}
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
             
             <div className="p-6">
               {error && (
@@ -865,7 +1006,7 @@ export function RecordingModal({
                 <div className="space-y-4">
                   <Button 
                     className="w-full bg-green-500 hover:bg-green-600 text-white"
-                    onClick={handleMicrophoneAccess}
+                    onClick={handleStartRecordingFlow}
                     disabled={isProcessing || isImporting}
                   >
                     {isProcessing ? (
@@ -876,7 +1017,7 @@ export function RecordingModal({
                     ) : (
                       <>
                         <Mic className="mr-2 h-5 w-5" />
-                        {t("recordingModal.microphone.allow")}
+                        {t("recordingModal.microphone.record")}
                       </>
                     )}
                   </Button>
@@ -926,7 +1067,7 @@ export function RecordingModal({
                   {isProcessing ? (
                     <>
                       <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                      {t("recordingModal.recording.starting")}
+                      {/* {t("recordingModal.recording.starting")} */}
                     </>
                   ) : (
                     <>
@@ -1102,6 +1243,26 @@ export function RecordingModal({
               {t('mypraxis:recordingModal.savingStaleRecording.message')}
             </DialogDescription>
           </DialogHeader>
+        </DialogContent>
+      </Dialog>
+
+      {/* Microphone Access Error Dialog */}
+      <Dialog open={showMicrophoneAccessErrorDialog} onOpenChange={setShowMicrophoneAccessErrorDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <div className="flex items-center gap-2 mb-1">
+              <AlertTriangle className="h-5 w-5 text-amber-500" />
+              <DialogTitle>{t('mypraxis:recordingModal.microphone.errorDialog.title')}</DialogTitle>
+            </div>
+            <DialogDescription>
+              {t('mypraxis:recordingModal.microphone.errorDialog.message')}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button onClick={() => setShowMicrophoneAccessErrorDialog(false)}>
+              {t('mypraxis:recordingModal.microphone.errorDialog.button')}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </>
