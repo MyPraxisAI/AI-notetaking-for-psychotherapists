@@ -25,16 +25,13 @@ export function createMiddlewareClient<GenericSchema = Database>(
         return request.cookies.getAll();
       },
       setAll(cookiesToSet) {
-        try {
-          // Only set cookies on the response object, not on the request
-          // This fixes the "Cookies can only be modified in a Server Action or Route Handler" error
-          cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options),
-          );
-        } catch (error) {
-          // Log the error but continue execution
-          console.error('Error setting cookies in middleware:', error);
-        }
+        cookiesToSet.forEach(({ name, value }) =>
+          request.cookies.set(name, value),
+        );
+
+        cookiesToSet.forEach(({ name, value, options }) =>
+          response.cookies.set(name, value, options),
+        );
       },
     },
   });
