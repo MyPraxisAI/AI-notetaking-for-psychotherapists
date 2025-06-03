@@ -28,6 +28,7 @@ export function withBasicAuth(request: NextRequest): NextResponse | null {
 
   if (!authHeader || !authHeader.startsWith('Basic ')) {
     // No auth header or not Basic auth, return 401 Unauthorized
+    console.error(`[BasicAuth] Authentication failed: Missing or invalid auth header for ${request.url}`);
     return new NextResponse('Authentication required', {
       status: 401,
       headers: {
@@ -40,6 +41,7 @@ export function withBasicAuth(request: NextRequest): NextResponse | null {
   const credentials = authHeader.split(' ')[1];
   // Make sure credentials is not undefined before using Buffer.from
   if (!credentials) {
+    console.error(`[BasicAuth] Authentication failed: Empty credentials in auth header for ${request.url}`);
     return new NextResponse('Invalid authorization header', {
       status: 401,
       headers: {
@@ -54,6 +56,7 @@ export function withBasicAuth(request: NextRequest): NextResponse | null {
   // Check if the credentials match
   if (username !== requiredUsername || password !== requiredPassword) {
     // Invalid credentials, return 401 Unauthorized
+    console.error(`[BasicAuth] Authentication failed: Invalid credentials (username: ${username}) for ${request.url}`);
     return new NextResponse('Authentication failed', {
       status: 401,
       headers: {
