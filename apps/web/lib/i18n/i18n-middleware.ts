@@ -1,7 +1,8 @@
 import type { NextRequest, NextResponse } from 'next/server';
 import { parseAcceptLanguageHeader } from '@kit/i18n/server';
-import { getUserLanguageRaw } from '@kit/web-bg-common';
 import { createMiddlewareClient } from '@kit/supabase/middleware-client';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import { createAccountsApi } from '@kit/accounts/api';
 
 import featuresFlagConfig from '~/config/feature-flags.config';
 import { I18N_COOKIE_NAME, languages } from './i18n.settings';
@@ -13,6 +14,37 @@ const DEFAULT_LANGUAGE = languages[0] || 'en';
  * The language priority setting from the feature flag configuration.
  */
 const priority = featuresFlagConfig.languagePriority;
+
+/**
+ * Get the user's language preference directly from the database
+ * This is a simplified version that works in Edge Runtime
+ */
+async function getUserLanguageFromDatabase(client: SupabaseClient): Promise<string | null> {
+  try {
+    // Get the current user's session
+    const { data: { session } } = await client.auth.getSession();
+    if (!session?.user?.id) return null;
+    
+    // Use the AccountsApi to get the user's account ID
+    const accountsApi = createAccountsApi(client);
+    const workspace = await accountsApi.getAccountWorkspace();
+    
+    if (!workspace?.id) return null;
+    
+    // Get the user's preferences using the account ID
+    const { data: preferences } = await client
+      .from('user_preferences')
+      .select('language')
+      .eq('account_id', workspace.id)
+      .single();
+    
+    // Return the language preference if it exists
+    return preferences?.language || null;
+  } catch (error) {
+    console.error('Error getting user language from database in middleware:', error);
+    return null;
+  }
+}
 
 /**
  * Get the preferred language from the browser's Accept-Language header
@@ -65,25 +97,13 @@ export async function handleLanguageInMiddleware(
   let selectedLanguage: string | undefined = undefined;
   
   // If no cookie is set or it's invalid, check the user's database preference
-  try {
-    const supabase = createMiddlewareClient(request, response);
-    
-    // First check if user is authenticated
-    const { data } = await supabase.auth.getUser();
-    
-    if (data.user) {
-      // User is authenticated, try to get their language preference
-      const userLanguage = await getUserLanguageRaw(supabase);   
-
-      if (userLanguage) {
-        selectedLanguage = getLanguageOrFallback(userLanguage);
-      }
-    }
-  } catch (error) {
-    console.error('Error getting user language from database in middleware:', error);
-    // Continue with default language on error
-  }
+  const supabase = createMiddlewareClient(request, response);
+  const userLanguage = await getUserLanguageFromDatabase(supabase);
   
+  if (userLanguage) {
+    selectedLanguage = getLanguageOrFallback(userLanguage);
+  }
+
   // If browser detection is enabled, override with browser preference
   if (!selectedLanguage && priority === 'user') {
     const browserLanguage = getPreferredLanguageFromBrowser(request);
