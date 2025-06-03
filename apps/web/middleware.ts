@@ -10,6 +10,7 @@ import { createMiddlewareClient } from '@kit/supabase/middleware-client';
 import appConfig from '~/config/app.config';
 import pathsConfig from '~/config/paths.config';
 import { withBasicAuth } from '~/lib/basic-auth';
+import { handleLanguageInMiddleware } from '~/lib/i18n/i18n-middleware';
 
 const CSRF_SECRET_COOKIE = 'csrfSecret';
 const NEXT_ACTION_HEADER = 'next-action';
@@ -37,8 +38,12 @@ export async function middleware(request: NextRequest) {
     return basicAuthResponse;
   }
 
+  // Handle language detection and cookie setting
+  // This must be done early in the middleware pipeline
+  const languageResponse = await handleLanguageInMiddleware(request, response);
+
   // apply CSRF protection for mutating requests
-  const csrfResponse = await withCsrfMiddleware(request, response);
+  const csrfResponse = await withCsrfMiddleware(request, languageResponse);
 
   // handle patterns for specific routes
   const handlePattern = matchUrlPattern(request.url);

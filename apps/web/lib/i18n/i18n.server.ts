@@ -51,16 +51,6 @@ async function createInstance() {
       
       if (userLanguage) {
         selectedLanguage = getLanguageOrFallback(userLanguage);
-        
-        // Set the cookie for future requests
-        // This avoids unnecessary database lookups on subsequent requests
-        if (selectedLanguage) {
-          cookieStore.set(I18N_COOKIE_NAME, selectedLanguage, {
-            path: '/',
-            maxAge: 60 * 60 * 24 * 365, // 1 year
-            sameSite: 'lax'
-          });
-        }
       }
     } catch (error) {
       console.error('Error getting user language from database:', error);
@@ -71,16 +61,7 @@ async function createInstance() {
   // If still no language is selected, use browser preference
   if (!selectedLanguage && priority === 'user') {
     const userPreferredLanguage = await getPreferredLanguageFromBrowser();
-    selectedLanguage = getLanguageOrFallback(userPreferredLanguage);
-    
-    // Set the cookie for future requests to avoid re-detection
-    if (selectedLanguage) {
-      cookieStore.set(I18N_COOKIE_NAME, selectedLanguage, {
-        path: '/',
-        maxAge: 60 * 60 * 24 * 365, // 1 year
-        sameSite: 'lax'
-      });
-    }
+    selectedLanguage = getLanguageOrFallback(userPreferredLanguage); 
   }
 
   const settings = getI18nSettings(selectedLanguage);
