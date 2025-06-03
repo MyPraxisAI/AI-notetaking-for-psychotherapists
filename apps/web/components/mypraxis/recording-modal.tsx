@@ -14,10 +14,10 @@ import {
 } from "@kit/ui/dialog"
 import { Mic, Pause, Play, Loader2, Upload, AlertTriangle } from "lucide-react"
 import { MicrophoneLevelIndicator } from "./utils/recording/microphone-level-indicator"
-import { AudioChunk, uploadAudioChunks, processAudioFile } from "./utils/audio-upload"
-import * as RecordingAPI from "./utils/recording-api"
-import * as MediaRecorderUtils from "./utils/media-recorder"
-import { HEARTBEAT_INTERVAL_MS, STALE_RECORDING_DIALOG_MIN_DISPLAY_MS } from "./utils/recording-constants"
+import { AudioChunk, uploadAudioChunks, processAudioFile } from "./utils/recording/audio-upload"
+import * as RecordingAPI from "./utils/recording/recording-api"
+import * as MediaRecorderUtils from "./utils/recording/media-recorder"
+import { HEARTBEAT_INTERVAL_MS, STALE_RECORDING_DIALOG_MIN_DISPLAY_MS } from "./utils/recording/recording-constants"
 import * as MicrophoneUtils from "./utils/recording/microphone-selection"
 import type { MicrophoneDevice } from "./utils/recording/microphone-selection"
 
@@ -108,7 +108,8 @@ export function RecordingModal({
   // Constants for recording management
   
   // State for handling existing recordings
-  const [showExistingRecordingDialog, setShowExistingRecordingDialog] = useState(false)
+  const [showPausedRecordingDialog, setShowPausedRecordingDialog] = useState(false)
+  const [showActiveRecordingDialog, setShowActiveRecordingDialog] = useState(false)
   const [existingRecordingData, setExistingRecordingData] = useState<RecordingAPI.ExistingRecordingResponse | null>(null)
   const [showSavingStaleRecordingDialog, setShowSavingStaleRecordingDialog] = useState(false)
   
@@ -172,7 +173,41 @@ export function RecordingModal({
   // We're intentionally omitting sendHeartbeat from the deps array
   // because it's defined later in the file
   
-  const startRecording = async (options: { standaloneChunks?: boolean } = {}): Promise<{ success: boolean; recordingId?: string }> => {
+  /**
+   * Completes an existing recording and starts a new one
+   * @param recordingId The ID of the recording to complete
+   * @param options Options for starting a new recording
+   * @returns The result of starting a new recording
+   */
+  const completeRecordingAndStartNew = async (recordingId: string, options: { standaloneChunks?: boolean } = {}): Promise<{ success: boolean; recordingId?: string }> => {
+    // Show the saving stale recording dialog
+    setShowSavingStaleRecordingDialog(true)
+    
+    try {
+      // Create a minimum timer and complete the stale recording in parallel
+      const minimumTimer = new Promise(resolve => setTimeout(resolve, STALE_RECORDING_DIALOG_MIN_DISPLAY_MS))
+      const completeRecordingPromise = RecordingAPI.completeRecording(recordingId)
+      
+      // Wait for both the timer and the API call to complete
+      await Promise.all([minimumTimer, completeRecordingPromise])
+      console.log('Completed recording:', recordingId)
+      
+      // Refresh the session list in column 4
+      queryClient.invalidateQueries({ queryKey: ['sessions', clientId] })
+      
+      // Hide the dialog after ensuring it's been shown for at least a bit
+      setShowSavingStaleRecordingDialog(false)
+      
+      // Try starting a new recording
+      return await startRecording(options) // Return the result of the recursive call
+    } catch (err) {
+      console.error('Error completing recording:', err)
+      setShowSavingStaleRecordingDialog(false)
+      throw err
+    }
+  }
+
+  const startRecording = async (options: { standaloneChunks?: boolean; completePausedExistingRecording?: boolean } = {}): Promise<{ success: boolean; recordingId?: string }> => {
     try {
       setIsProcessing(true)
       setError(null)
@@ -198,44 +233,24 @@ export function RecordingModal({
         if (!result.isStale) {
           // Check if this is a paused recording
           if (result.status === 'paused') {
-            // Store the existing recording data and show modal with choice
+            // If completePausedExistingRecording is true, complete the paused recording and start a new one
+            if (options.completePausedExistingRecording) {
+              return await completeRecordingAndStartNew(result.id, options);
+            }
+            // Otherwise, show the paused recording dialog
             setExistingRecordingData(result)
-            setShowExistingRecordingDialog(true)
+            setShowPausedRecordingDialog(true)
             setIsProcessing(false)
-            return { success: false }
+            return { success: false } // Did not start a new recording
           } else {
             // Recent recording - likely active in another tab
-            setExistingRecordingData(result)
-            setShowExistingRecordingDialog(true)
+            // No need to store the recording data since the dialog doesn't use it
+            setShowActiveRecordingDialog(true)
             setIsProcessing(false)
-            return { success: false } // Failed to start a new recording due to active recording in another tab
+            return { success: false } // Did not start a new recording
           }
         } else {
-          // Stale recording - complete it automatically
-          setShowSavingStaleRecordingDialog(true)
-          
-          try {
-            // Create a minimum timer and complete the stale recording in parallel
-            const minimumTimer = new Promise(resolve => setTimeout(resolve, STALE_RECORDING_DIALOG_MIN_DISPLAY_MS))
-            const completeRecordingPromise = RecordingAPI.completeRecording(result.id)
-            
-            // Wait for both the timer and the API call to complete
-            await Promise.all([minimumTimer, completeRecordingPromise])
-            console.log('Completed stale recording:', result.id)
-            
-            // Refresh the session list in column 4
-            queryClient.invalidateQueries({ queryKey: ['sessions', clientId] })
-            
-            // Hide the dialog after ensuring it's been shown for at least 3 seconds
-            setShowSavingStaleRecordingDialog(false)
-            
-            // Try starting a new recording
-            return await startRecording(options) // Return the result of the recursive call
-          } catch (err) {
-            console.error('Error completing stale recording:', err)
-            setShowSavingStaleRecordingDialog(false)
-            throw err
-          }
+          return await completeRecordingAndStartNew(result.id, options)
         }
       }
       
@@ -569,7 +584,7 @@ export function RecordingModal({
     setModalState("soundCheck");
   }
   
-  const handleStartRecording = async () => {
+  const handleStartRecording = async (options: { completePausedExistingRecording?: boolean } = {}) => {
     console.log('Starting recording...')
     
     // Reset timer to 0 before starting
@@ -582,7 +597,7 @@ export function RecordingModal({
     // Store the recording start time for precise timing
     const _recordingStartTime = performance.now()
     
-    const result = await startRecording()
+    const result = await startRecording(options)
     
     // If recording failed to start, exit early
     if (!result.success) {
@@ -982,6 +997,12 @@ export function RecordingModal({
             
             {modalState !== "initial" && (
               <div className="p-6 bg-white">
+                {/* Show microphone level indicator in recording state */}
+                {modalState === "recording" && (
+                  <div className="mb-4">
+                    <MicrophoneLevelIndicator stream={microphoneStream} className="mb-2" />
+                  </div>
+                )}
                 <div className="flex items-center justify-center">
                   {(modalState === "recording") && (
                     <div 
@@ -1061,7 +1082,7 @@ export function RecordingModal({
               {modalState === "soundCheck" && (
                 <Button 
                   className="w-full bg-green-500 hover:bg-green-600 text-white"
-                  onClick={handleStartRecording}
+                  onClick={() => handleStartRecording()}
                   disabled={isProcessing}
                 >
                   {isProcessing ? (
@@ -1172,63 +1193,59 @@ export function RecordingModal({
         </DialogContent>
       </Dialog>
       
-      {/* Existing/Paused Recording Dialog */}
-      <Dialog open={showExistingRecordingDialog} onOpenChange={setShowExistingRecordingDialog}>
+      {/* Paused Recording Dialog */}
+      <Dialog open={showPausedRecordingDialog} onOpenChange={setShowPausedRecordingDialog}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>
-              {existingRecordingData?.status === 'paused' 
-                ? t('mypraxis:recordingModal.existingRecording.title')
-                : t('mypraxis:recordingModal.existingRecording.activeTitle')
-              }
+              {t('mypraxis:recordingModal.pausedRecording.title')}
             </DialogTitle>
             <DialogDescription>
-              {existingRecordingData?.status === 'paused'
-                ? t('mypraxis:recordingModal.existingRecording.description')
-                : t('mypraxis:recordingModal.existingRecording.message')
-              }
+              {t('mypraxis:recordingModal.pausedRecording.description')}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            {existingRecordingData?.status === 'paused' ? (
-              <>
-                <Button variant="outline" onClick={async () => {
-                  if (existingRecordingData.id) {
-                    await RecordingAPI.abortRecording(existingRecordingData.id);
-                  }
-                  setExistingRecordingData(null);
-                  setShowExistingRecordingDialog(false);
-                  // Retry starting recording
-                  const result = await startRecording();
-                  if (result.success) {
-                    setModalState("initial");
-                  }
-                }}>
-                  {t('mypraxis:recordingModal.existingRecording.startNew')}
-                </Button>
-                <Button onClick={async () => {
-                  // Logic to continue existing recording
-                  if (existingRecordingData.id) {
-                    setRecordingId(existingRecordingData.id);
-                    const result = await resumeRecording();
-                    if (result) {
-                      setModalState("recording");
-                    }
-                  }
-                  setExistingRecordingData(null);
-                  setShowExistingRecordingDialog(false);
-                }}>
-                  {t('mypraxis:recordingModal.existingRecording.continue')}
-                </Button>
-              </>
-            ) : (
-              <Button onClick={() => {
+            <Button variant="outline" onClick={() => {
+              // Just close the dialog without taking any action
+              setExistingRecordingData(null);
+              setShowPausedRecordingDialog(false);
+              setModalState("initial");
+            }}>
+              {t('mypraxis:recordingModal.pausedRecording.abort')}
+            </Button>
+            <Button onClick={async (e) => {
+              // Complete the existing recording and start a new one
+              if (existingRecordingData?.id) {
+                setShowPausedRecordingDialog(false);
                 setExistingRecordingData(null);
-                setShowExistingRecordingDialog(false);
-              }}>
-                {t('mypraxis:recordingModal.ok')}
-              </Button>
-            )}
+                
+                // Use handleStartRecording with completePausedExistingRecording option
+                await handleStartRecording({ completePausedExistingRecording: true });
+              }
+            }}>
+              {t('mypraxis:recordingModal.pausedRecording.completeRecording')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Active Recording Dialog */}
+      <Dialog open={showActiveRecordingDialog} onOpenChange={setShowActiveRecordingDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>
+              {t('mypraxis:recordingModal.activeRecording.title')}
+            </DialogTitle>
+            <DialogDescription>
+              {t('mypraxis:recordingModal.activeRecording.message')}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button onClick={() => {
+              setShowActiveRecordingDialog(false);
+            }}>
+              {t('mypraxis:recordingModal.ok')}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
