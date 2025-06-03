@@ -24,9 +24,10 @@ async function setupDemoClients(
   const demoClientIds = [];
   
   // Add appropriate demo client based on user's language
-  const enYalomId = 'e0000000-e000-4000-a000-000000000002';
+  // const enYalomId = 'e0000000-e000-4000-a000-000000000002';
+  // const ruYalomId = 'f0000000-f000-4000-a000-000000000002';
+
   const enEugeniaId = 'e0000000-e000-4000-a000-000000000003';
-  const ruYalomId = 'f0000000-f000-4000-a000-000000000002';
   const ruEugeniaId = 'f0000000-e000-4000-a000-000000000003';
   if (userLanguage === 'en') {
     demoClientIds.push(enEugeniaId);
