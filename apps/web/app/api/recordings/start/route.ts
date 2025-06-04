@@ -58,7 +58,7 @@ export const POST = enhanceRouteHandler(
       // Check if there's already an active recording
       const { data: existingRecording, error: checkError } = await client
         .from('recordings')
-        .select('id, last_heartbeat_at')
+        .select('id, last_heartbeat_at, status')
         .eq('account_id', accountId)
         .in('status', ['recording', 'paused', 'processing'])
         .limit(1)
@@ -76,7 +76,8 @@ export const POST = enhanceRouteHandler(
             error: 'There is already an active recording for this account',
             existingRecording: {
               id: existingRecording.id,
-              last_heartbeat_at: existingRecording.last_heartbeat_at
+              last_heartbeat_at: existingRecording.last_heartbeat_at,
+              status: existingRecording.status
             }
           },
           { status: 409 }

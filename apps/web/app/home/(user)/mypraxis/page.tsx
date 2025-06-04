@@ -737,6 +737,7 @@ export default function Page() {
               {/* Avatar - only show when fully loaded */}
               {avatarUrl && isAvatarLoaded ? (
                 <div className="relative h-[32px] w-[32px] rounded-full overflow-hidden" data-test="sidebar-avatar-container">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img 
                     src={avatarUrl}
                     alt={user.user_metadata?.full_name || ""}
@@ -879,6 +880,7 @@ export default function Page() {
           <div 
             className="w-full flex justify-center py-4 relative"
           >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/logo.svg"
               alt="My Praxis Logo"
