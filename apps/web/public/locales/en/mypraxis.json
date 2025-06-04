@@ -270,7 +270,13 @@
     "errors": {
       "startFailed": "Failed to start recording"
     },
-    "existingRecording": {
+    "pausedRecording": {
+      "title": "Paused Recording Found",
+      "description": "You have a paused recording open in another tab. Would you like to complete that recording and start a new one?",
+      "completeRecording": "Yes",
+      "abort": "No"
+    },
+    "activeRecording": {
       "title": "Active Recording Detected",
       "message": "You have an existing active recording in progress in another tab. Please complete it first before starting a new recording."
     },

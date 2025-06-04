@@ -22,6 +22,7 @@ export interface ExistingRecordingResponse {
   last_heartbeat_at: string;
   isExistingRecording: boolean;
   isStale?: boolean;
+  status?: string;
 }
 
 export const startRecording = async (options: StartRecordingOptions): Promise<string | ExistingRecordingResponse | null> => {
