@@ -41,5 +41,9 @@
         "src/*"
       ]
     }
+  },
+  "dependencies": {
+    "@kit/personal-invitations": "workspace:^",
+    "date-fns": "^4.1.0"
   }
 }

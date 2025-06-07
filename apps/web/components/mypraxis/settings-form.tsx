@@ -797,7 +797,7 @@ export function SettingsForm({ setIsNavVisible, isSmallScreen }: SettingsFormPro
       </div>
       
       {/* Profile Section */}
-      <div className="mt-5 space-y-6 pb-6 border-b border-[#E5E7EB]">
+      <div className="mt-5 space-y-6 pb-6 border-b border-[#E5E7EB] bg-gray-50 rounded-md p-4">
         <h3 className="text-[18px] font-medium text-[#111827]">{t('mypraxis:settings.profile')}</h3>
         
         {/* Avatar Upload */}
@@ -947,7 +947,7 @@ export function SettingsForm({ setIsNavVisible, isSmallScreen }: SettingsFormPro
       </div>
       
       {/* Professional Information */}
-      <div className="mt-6 space-y-6 pb-6 border-b border-[#E5E7EB]">
+      <div className="mt-5 space-y-6 pb-6 border-b border-[#E5E7EB] bg-gray-50 rounded-md p-4">
         <h3 className="text-[18px] font-medium text-[#111827]">{t('mypraxis:settings.professionalInformation')}</h3>
         
         {/* Country or Territory */}
@@ -1062,7 +1062,7 @@ export function SettingsForm({ setIsNavVisible, isSmallScreen }: SettingsFormPro
       </div>
       
       {/* Preferences */}
-      <div className="mt-6 space-y-6 pb-6 border-b border-[#E5E7EB]">
+      <div className="mt-5 space-y-6 pb-6 border-b border-[#E5E7EB] bg-gray-50 rounded-md p-4">
         <div className="flex items-center justify-between">
           <h3 className="text-[18px] font-medium text-[#111827]">{t('mypraxis:settings.preferences')}</h3>
           {isLoadingPreferences && (
@@ -1175,7 +1175,7 @@ export function SettingsForm({ setIsNavVisible, isSmallScreen }: SettingsFormPro
       </div>
       
       {/* Security */}
-      <div className="mt-6 space-y-6 pb-6 mb-12">
+      <div className="mt-5 space-y-6 pb-6 bg-gray-50 rounded-md p-4 mb-12">
         <h3 className="text-[18px] font-medium text-[#111827]">{t('mypraxis:settings.security')}</h3>
         
         {/* Password Change */}

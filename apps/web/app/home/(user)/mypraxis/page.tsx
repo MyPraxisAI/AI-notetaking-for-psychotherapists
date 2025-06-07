@@ -14,7 +14,6 @@ import { usePrefetchClientArtifacts } from "./_lib/hooks/use-client-artifacts"
 import { SessionWithId } from "./_lib/schemas/session"
 import {
   Users2,
-
   Settings,
   Wallet,
   HelpCircle,
@@ -31,6 +30,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Hammer,
+  Shield,
 } from "lucide-react"
 
 import { ProfileForm } from "../../../../components/mypraxis/profile-form"
@@ -44,9 +44,10 @@ import { useClients, useCreateClient, useDeleteClient } from "./_lib/hooks/use-c
 import { OnboardingModal } from "../../../../components/mypraxis/onboarding-modal"
 import { useUserSettings } from "./_lib/hooks/use-user-settings"
 import { ClientCreationModal } from "../../../../components/mypraxis/client-creation-modal"
+import { useIsSuperAdmin } from "../../../../lib/client/utils/is-super-admin"
 
 // Menu item type
-type MenuItem = "clients" | "settings" | "billing" | "help" | "gift" | "logout"
+type MenuItem = "clients" | "settings" | "billing" | "help" | "gift" | "logout" | "admin" | "onboarding"
 
 // Client types
 type ClientId = string
@@ -67,6 +68,7 @@ interface Session {
 
 export default function Page() {
   const { t } = useTranslation();
+  const { data: isSuperAdmin = false } = useIsSuperAdmin();
   const [selectedItem, setSelectedItem] = useState<MenuItem>("clients")
   const [selectedClient, setSelectedClient] = useState<ClientId>("")
   const [selectedDetailItem, setSelectedDetailItem] = useState<DetailItem>("prep-note")
@@ -844,17 +846,39 @@ export default function Page() {
                 {t('mypraxis:page.navigation.help')}
               </Button>
             </div>
-            <div className="px-2 mt-2">
-              <Button
-                variant="ghost"
-                className={getButtonClass("settings")}
-                onClick={handleTestOnboardingClick}
-                data-test="test-onboarding-button"
-              >
-                <Hammer className="h-[18px] w-[18px]" />
-                {t('mypraxis:page.testOnboarding')}
-              </Button>
-            </div>
+            {/* Super Admin Section */}
+            {isSuperAdmin && (
+              <div className="mt-4">
+                <div className="px-3 py-2">
+                  <div className="h-px bg-gray-700 mb-2"></div>
+                </div>
+                <div className="px-2">
+                  <Button
+                    variant="ghost"
+                    className={getButtonClass("onboarding")}
+                    onClick={handleTestOnboardingClick}
+                    data-test="test-onboarding-button"
+                  >
+                    <Hammer className="h-[18px] w-[18px]" />
+                    {t('mypraxis:page.testOnboarding')}
+                  </Button>
+                </div>
+                <div className="px-2">
+                  <Button
+                    variant="ghost"
+                    className={getButtonClass("admin")}
+                    onClick={() => window.open('/admin', '_blank')}
+                    data-test="admin-button"
+                  >
+                    <Shield className="h-[18px] w-[18px]" />
+                    {t('mypraxis:page.admin')}
+                  </Button>
+                </div>
+                <div className="px-3 py-2">
+                  <div className="h-px bg-gray-700 mt-2"></div>
+                </div>
+              </div>
+            )}
             <div className="px-2">
               <Button
                 variant="ghost"

@@ -1,0 +1,65 @@
+{
+  "languages": {
+    "english": "Английский",
+    "russian": "Русский"
+  },
+  "personalInvites": {
+    "pageTitle": "Персональные приглашения",
+    "createButton": "Создать приглашение",
+    "filters": {
+      "statusPlaceholder": "Статус приглашения",
+      "statusLabel": "Статус приглашения",
+      "allInvitations": "Все приглашения",
+      "pending": "В ожидании",
+      "accepted": "Принято",
+      "expired": "Истекло",
+      "revoked": "Отозвано",
+      "searchPlaceholder": "Поиск по email..."
+    },
+    "columns": {
+      "email": "Email",
+      "role": "Роль",
+      "status": "Статус",
+      "language": "Язык",
+      "createdAt": "Дата создания",
+      "expiresAt": "Срок действия до"
+    },
+    "actions": {
+      "label": "Действия",
+      "revoke": "Отозвать приглашение",
+      "copied": "Скопировано",
+      "copyEmail": "Копировать Email",
+      "resendEmail": "Переотправить Email",
+      "resendSuccess": "Email отправлен повторно",
+      "resendSuccessDescription": "Приглашение успешно отправлено повторно на {{email}}",
+      "resendErrorDescription": "Не удалось переотправить приглашение: {{message}}",
+      "copiedDescription": "Email-адрес скопирован в буфер обмена",
+      "revokeSuccess": "Приглашение отозвано",
+      "revokeSuccessDescription": "Приглашение было успешно отозвано.",
+      "error": "Ошибка",
+      "revokeErrorDescription": "Не удалось отозвать приглашение: {{message}}"
+    },
+    "form": {
+      "emailLabel": "Email",
+      "emailPlaceholder": "user@example.com",
+      "emailDescription": "Email-адрес человека, которого вы хотите пригласить.",
+      "languageLabel": "Язык email",
+      "languagePlaceholder": "Выберите язык",
+      "languageDescription": "Язык для приглашения по email.",
+      "expiresLabel": "Срок действия (дней)",
+      "expiresDescription": "Количество дней до истечения срока действия приглашения.",
+      "sending": "Отправка...",
+      "sendInvitation": "Отправить приглашение",
+      "invitationSent": "Приглашение отправлено",
+      "invitationSentDescription": "Приглашение было отправлено на {{email}}",
+      "error": "Ошибка",
+      "failedToSend": "Не удалось отправить приглашение",
+      "somethingWentWrong": "Что-то пошло не так"
+    },
+    "dialog": {
+      "title": "Пригласить нового пользователя",
+      "description": "Отправьте персональное приглашение, чтобы новый пользователь мог создать учетную запись.",
+      "footer": "Пользователь получит email со ссылкой для регистрации."
+    }
+  }
+}

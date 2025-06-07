@@ -1,0 +1,49 @@
+{
+  "name": "@kit/personal-invitations",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "clean": "git clean -xdf .turbo node_modules",
+    "format": "prettier --check \"**/*.{ts,tsx}\"",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "prettier": "@kit/prettier-config",
+  "dependencies": {
+    "@kit/email-templates": "workspace:*",
+    "@kit/mailers": "workspace:*",
+    "@kit/shared": "workspace:*",
+    "@kit/web-bg-common": "workspace:*",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@hookform/resolvers": "^4.1.3",
+    "@kit/eslint-config": "workspace:*",
+    "@kit/next": "workspace:*",
+    "@kit/prettier-config": "workspace:*",
+    "@kit/supabase": "workspace:*",
+    "@kit/tsconfig": "workspace:*",
+    "@kit/ui": "workspace:*",
+    "@makerkit/data-loader-supabase-core": "^0.0.8",
+    "@makerkit/data-loader-supabase-nextjs": "^1.2.3",
+    "@supabase/supabase-js": "2.49.1",
+    "@tanstack/react-query": "5.67.1",
+    "@types/react": "19.0.10",
+    "eslint": "^9.21.0",
+    "typescript": "^5.8.2"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./client": "./src/client.ts",
+    "./server": "./src/server.ts",
+    "./components/*": "./src/components/*.tsx",
+    "./lib/server/*": "./src/lib/server/*.ts"
+  },
+  "typesVersions": {
+    "*": {
+      "*": [
+        "src/*"
+      ]
+    }
+  }
+}

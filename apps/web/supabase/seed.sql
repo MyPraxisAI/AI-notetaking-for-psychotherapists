@@ -46,6 +46,21 @@ execute function "supabase_functions"."http_request"(
         '5000'
                  );
 
+-- NOTE: NOT DOING THIS FOR NOW, SENDING EMAILS INLINE ON CREATION
+-- this webhook will be triggered after every insert on the personal_invites table
+-- which should happen when an admin creates a personal invitation
+-- create trigger "personal_invites_insert"
+--     after insert
+--     on "public"."personal_invites"
+--     for each row
+-- execute function "supabase_functions"."http_request"(
+--         'http://host.docker.internal:3000/api/db/webhook',
+--         'POST',
+--         '{"Content-Type":"application/json", "X-Supabase-Event-Signature":"WEBHOOKSECRET"}',
+--         '{}',
+--         '5000'
+--                  );
+
 
 -- DATA SEED
 -- This is a data dump for testing purposes. It should be used to seed the database with data for testing.
@@ -71,7 +86,7 @@ INSERT INTO "auth"."users" ("instance_id", "id", "aud", "role", "email", "encryp
 VALUES ('00000000-0000-0000-0000-000000000000', 'b73eb03e-fb7a-424d-84ff-18e2791ce0b4', 'authenticated',
         'authenticated', 'custom@makerkit.dev', '$2a$10$b3ZPpU6TU3or30QzrXnZDuATPAx2pPq3JW.sNaneVY3aafMSuR4yi',
         '2024-04-20 08:38:00.860548+00', NULL, '', '2024-04-20 08:37:43.343769+00', '', NULL, '', '', NULL,
-        '2024-04-20 08:38:00.93864+00', '{"provider": "email", "providers": ["email"]}',
+        '2024-04-20 08:38:00.93864+00', '{"provider": "email", "providers": ["email"], "role": "super-admin"}',
         '{"sub": "b73eb03e-fb7a-424d-84ff-18e2791ce0b4", "email": "custom@makerkit.dev", "email_verified": false, "phone_verified": false}',
         NULL, '2024-04-20 08:37:43.3385+00', '2024-04-20 08:38:00.942809+00', NULL, NULL, '', '', NULL, '', 0, NULL, '',
         NULL, false, NULL, false),
@@ -85,14 +100,14 @@ VALUES ('00000000-0000-0000-0000-000000000000', 'b73eb03e-fb7a-424d-84ff-18e2791
        ('00000000-0000-0000-0000-000000000000', '5c064f1b-78ee-4e1c-ac3b-e99aa97c99bf', 'authenticated',
         'authenticated', 'owner@makerkit.dev', '$2a$10$D6arGxWJShy8q4RTW18z7eW0vEm2hOxEUovUCj5f3NblyHfamm5/a',
         '2024-04-20 08:36:37.517993+00', NULL, '', '2024-04-20 08:36:27.639648+00', '', NULL, '', '', NULL,
-        '2024-04-20 08:36:37.614337+00', '{"provider": "email", "providers": ["email"]}',
+        '2024-04-20 08:36:37.614337+00', '{"provider": "email", "providers": ["email"], "role": "super-admin"}',
         '{"sub": "5c064f1b-78ee-4e1c-ac3b-e99aa97c99bf", "email": "owner@makerkit.dev", "email_verified": false, "phone_verified": false}',
         NULL, '2024-04-20 08:36:27.630379+00', '2024-04-20 08:36:37.617955+00', NULL, NULL, '', '', NULL, '', 0, NULL,
         '', NULL, false, NULL, false),
        ('00000000-0000-0000-0000-000000000000', '6b83d656-e4ab-48e3-a062-c0c54a427368', 'authenticated',
         'authenticated', 'member@makerkit.dev', '$2a$10$6h/x.AX.6zzphTfDXIJMzuYx13hIYEi/Iods9FXH19J2VxhsLycfa',
         '2024-04-20 08:41:15.376778+00', NULL, '', '2024-04-20 08:41:08.689674+00', '', NULL, '', '', NULL,
-        '2024-04-20 08:41:15.484606+00', '{"provider": "email", "providers": ["email"]}',
+        '2024-04-20 08:41:15.484606+00', '{"provider": "email", "providers": ["email"], "role": "super-admin"}',
         '{"sub": "6b83d656-e4ab-48e3-a062-c0c54a427368", "email": "member@makerkit.dev", "email_verified": false, "phone_verified": false}',
         NULL, '2024-04-20 08:41:08.683395+00', '2024-04-20 08:41:15.485494+00', NULL, NULL, '', '', NULL, '', 0, NULL,
         '', NULL, false, NULL, false),
@@ -326,7 +341,7 @@ SELECT pg_catalog.setval('"supabase_functions"."hooks_id_seq"', 19, true);
 
 INSERT INTO "auth"."users" ("instance_id", "id", "aud", "role", "email", "encrypted_password", "email_confirmed_at", "invited_at", "confirmation_token", "confirmation_sent_at", "recovery_token", "recovery_sent_at", "email_change_token_new", "email_change", "email_change_sent_at", "last_sign_in_at", "raw_app_meta_data", "raw_user_meta_data", "is_super_admin", "created_at", "updated_at", "phone", "phone_confirmed_at", "phone_change", "phone_change_token", "phone_change_sent_at", "email_change_token_current", "email_change_confirm_status", "banned_until", "reauthentication_token", "reauthentication_sent_at", "is_sso_user", "deleted_at", "is_anonymous")
 -- Password for test@mypraxis.ai is 'testingpassword'
-VALUES ('00000000-0000-0000-0000-000000000000', 'e5b930c9-0a76-412e-a836-4bc4849a3271', 'authenticated', 'authenticated', 'test@mypraxis.ai', '$2a$10$NaMVRrI7NyfwP.AfAVWt6O/abulGnf9BBqwa6DqdMwXMvOCGpAnVO', '2025-03-27 17:55:11.176987+00', null, '', '2025-03-27 17:55:01.649714+00', '', null, '', '', null, '2025-03-27 17:55:11.17957+00', '{"provider": "email", "providers": ["email"]}', '{"sub": "e5b930c9-0a76-412e-a836-4bc4849a3271", "email": "test@mypraxis.ai", "email_verified": true, "phone_verified": false}', null, '2025-03-27 17:55:01.646641+00', '2025-03-27 17:55:11.181332+00', null, null, '', '', null, '', 0, NULL, '', NULL, false, NULL, false);
+VALUES ('00000000-0000-0000-0000-000000000000', 'e5b930c9-0a76-412e-a836-4bc4849a3271', 'authenticated', 'authenticated', 'test@mypraxis.ai', '$2a$10$NaMVRrI7NyfwP.AfAVWt6O/abulGnf9BBqwa6DqdMwXMvOCGpAnVO', '2025-03-27 17:55:11.176987+00', null, '', '2025-03-27 17:55:01.649714+00', '', null, '', '', null, '2025-03-27 17:55:11.17957+00', '{"provider": "email", "providers": ["email"], "role": "super-admin"}', '{"sub": "e5b930c9-0a76-412e-a836-4bc4849a3271", "email": "test@mypraxis.ai", "email_verified": true, "phone_verified": false}', null, '2025-03-27 17:55:01.646641+00', '2025-03-27 17:55:11.181332+00', null, null, '', '', null, '', 0, NULL, '', NULL, false, NULL, false);
 
 -- Add the user identity
 INSERT INTO "auth"."identities" ("id", "user_id", "identity_data", "provider", "provider_id", "last_sign_in_at", "created_at", "updated_at")

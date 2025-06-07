@@ -26,13 +26,18 @@ export function SignUpMethodsContainer(props: {
 
   displayTermsCheckbox?: boolean;
   inviteToken?: string;
+  isPersonalInvite?: boolean;
+  defaultEmail?: string;
 }) {
   const redirectUrl = getCallbackUrl(props);
-  const defaultValues = getDefaultValues();
+  // Use provided defaultEmail or fall back to URL params
+  const defaultValues = props.defaultEmail 
+    ? { email: props.defaultEmail } 
+    : getDefaultValues();
 
   return (
     <>
-      <If condition={props.inviteToken}>
+      <If condition={props.inviteToken && !props.isPersonalInvite}>
         <InviteAlert />
       </If>
 

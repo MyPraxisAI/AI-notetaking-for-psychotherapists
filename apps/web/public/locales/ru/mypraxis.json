@@ -115,6 +115,7 @@
     "demo": "Демо",
     "viewProfile": "Просмотр профиля",
     "testOnboarding": "Онбординг",
+    "admin": "Админка",
     "recording": {
       "startRecording": "Запись сессии",
       "recordingDesktopOnly": "Доступно на компьютере",
