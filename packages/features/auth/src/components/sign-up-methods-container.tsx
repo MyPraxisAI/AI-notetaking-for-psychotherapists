@@ -37,8 +37,6 @@ export function SignUpMethodsContainer(props: {
 
   // Determine if we have a team invite to show the team invite alert
   const hasTeamInvite = !!props.teamInviteToken;
-  // Determine which token to pass to the callback URL (team invite preferred)
-  const inviteTokenForUrl = props.teamInviteToken || props.personalInviteToken;
   
   return (
     <>
@@ -56,7 +54,8 @@ export function SignUpMethodsContainer(props: {
 
       <If condition={props.providers.magicLink}>
         <MagicLinkAuthContainer
-          inviteToken={inviteTokenForUrl}
+          teamInviteToken={props.teamInviteToken}
+          personalInviteToken={props.personalInviteToken}
           redirectUrl={redirectUrl}
           shouldCreateUser={true}
           defaultValues={defaultValues}
@@ -79,7 +78,8 @@ export function SignUpMethodsContainer(props: {
 
         <OauthProviders
           enabledProviders={props.providers.oAuth}
-          inviteToken={inviteTokenForUrl}
+          teamInviteToken={props.teamInviteToken}
+          personalInviteToken={props.personalInviteToken}
           shouldCreateUser={true}
           paths={{
             callback: props.paths.callback,
@@ -133,16 +133,11 @@ function getDefaultValues() {
     return { email: '' };
   }
 
+  // Just get the email from the search params if it exists
   const searchParams = new URLSearchParams(window.location.search);
-  const inviteToken = searchParams.get('invite_token');
-
-  if (!inviteToken) {
-    return { email: '' };
-  }
-
-  return {
-    email: searchParams.get('email') ?? '',
-  };
+  const email = searchParams.get('email') || '';
+  
+  return { email };
 }
 
 function InviteAlert() {

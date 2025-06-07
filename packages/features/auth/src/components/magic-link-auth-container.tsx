@@ -27,13 +27,15 @@ import { useCaptchaToken } from '../captcha/client';
 import { TermsAndConditionsFormField } from './terms-and-conditions-form-field';
 
 export function MagicLinkAuthContainer({
-  inviteToken,
+  teamInviteToken,
+  personalInviteToken,
   redirectUrl,
   shouldCreateUser,
   defaultValues,
   displayTermsCheckbox,
 }: {
-  inviteToken?: string;
+  teamInviteToken?: string;
+  personalInviteToken?: string;
   redirectUrl: string;
   shouldCreateUser: boolean;
   displayTermsCheckbox?: boolean;
@@ -61,8 +63,14 @@ export function MagicLinkAuthContainer({
   const onSubmit = ({ email }: { email: string }) => {
     const url = new URL(redirectUrl);
 
-    if (inviteToken) {
-      url.searchParams.set('invite_token', inviteToken);
+    // Handle team invitations
+    if (teamInviteToken) {
+      url.searchParams.set('invite_token', teamInviteToken);
+    }
+    
+    // Handle personal invitations with a different parameter
+    if (personalInviteToken) {
+      url.searchParams.set('personal_invite_token', personalInviteToken);
     }
 
     const emailRedirectTo = url.href;
