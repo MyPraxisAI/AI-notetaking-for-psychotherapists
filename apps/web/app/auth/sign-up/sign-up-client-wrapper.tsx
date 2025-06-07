@@ -11,16 +11,16 @@ import { useTranslation } from 'react-i18next';
  * from the server component to the client component
  */
 export function SignUpClientWrapper({
-  inviteToken,
-  isPersonalInvite,
+  teamInviteToken,
+  personalInviteToken,
   preferredLanguage,
   defaultEmail,
   providers,
   displayTermsCheckbox,
   paths,
 }: {
-  inviteToken?: string;
-  isPersonalInvite: boolean;
+  teamInviteToken?: string;
+  personalInviteToken?: string;
   preferredLanguage?: string | null;
   defaultEmail?: string;
   providers: {
@@ -47,8 +47,8 @@ export function SignUpClientWrapper({
     <SignUpMethodsContainer
       providers={providers}
       displayTermsCheckbox={displayTermsCheckbox}
-      inviteToken={inviteToken}
-      isPersonalInvite={isPersonalInvite}
+      teamInviteToken={teamInviteToken}
+      personalInviteToken={personalInviteToken}
       defaultEmail={defaultEmail}
       paths={paths}
     />

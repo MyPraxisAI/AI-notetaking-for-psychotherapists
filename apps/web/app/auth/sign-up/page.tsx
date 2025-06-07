@@ -76,7 +76,7 @@ async function SignUpPage({ searchParams }: Props) {
     );
   }
   
-  // If we have a personal invitation token, validate it
+  // We now pass team and personal invite tokens separately to avoid confusion in the auth flow
   let personalInviteValid = false;
   let personalInviteEmail = '';
   let personalInviteLanguage: string | null = null;
@@ -146,8 +146,8 @@ async function SignUpPage({ searchParams }: Props) {
       <SignUpClientWrapper
         providers={authConfig.providers}
         displayTermsCheckbox={authConfig.displayTermsCheckbox}
-        inviteToken={tokenToUse}
-        isPersonalInvite={!!personalInviteValid}
+        teamInviteToken={personalInviteValid ? undefined : inviteToken}
+        personalInviteToken={personalInviteValid ? personalInviteToken : undefined}
         preferredLanguage={personalInviteLanguage}
         defaultEmail={personalInviteValid ? personalInviteEmail : undefined}
         paths={paths}

@@ -25,8 +25,8 @@ export function SignUpMethodsContainer(props: {
   };
 
   displayTermsCheckbox?: boolean;
-  inviteToken?: string;
-  isPersonalInvite?: boolean;
+  teamInviteToken?: string;
+  personalInviteToken?: string;
   defaultEmail?: string;
 }) {
   const redirectUrl = getCallbackUrl(props);
@@ -35,9 +35,14 @@ export function SignUpMethodsContainer(props: {
     ? { email: props.defaultEmail } 
     : getDefaultValues();
 
+  // Determine if we have a team invite to show the team invite alert
+  const hasTeamInvite = !!props.teamInviteToken;
+  // Determine which token to pass to the callback URL (team invite preferred)
+  const inviteTokenForUrl = props.teamInviteToken || props.personalInviteToken;
+  
   return (
     <>
-      <If condition={props.inviteToken && !props.isPersonalInvite}>
+      <If condition={hasTeamInvite}>
         <InviteAlert />
       </If>
 
@@ -51,7 +56,7 @@ export function SignUpMethodsContainer(props: {
 
       <If condition={props.providers.magicLink}>
         <MagicLinkAuthContainer
-          inviteToken={props.inviteToken}
+          inviteToken={inviteTokenForUrl}
           redirectUrl={redirectUrl}
           shouldCreateUser={true}
           defaultValues={defaultValues}
@@ -74,7 +79,7 @@ export function SignUpMethodsContainer(props: {
 
         <OauthProviders
           enabledProviders={props.providers.oAuth}
-          inviteToken={props.inviteToken}
+          inviteToken={inviteTokenForUrl}
           shouldCreateUser={true}
           paths={{
             callback: props.paths.callback,
@@ -92,7 +97,8 @@ function getCallbackUrl(props: {
     appHome: string;
   };
 
-  inviteToken?: string;
+  teamInviteToken?: string;
+  personalInviteToken?: string;
 }) {
   if (!isBrowser()) {
     return '';
@@ -102,8 +108,14 @@ function getCallbackUrl(props: {
   const origin = window.location.origin;
   const url = new URL(redirectPath, origin);
 
-  if (props.inviteToken) {
-    url.searchParams.set('invite_token', props.inviteToken);
+  // Only pass team invite token as invite_token parameter
+  if (props.teamInviteToken) {
+    url.searchParams.set('invite_token', props.teamInviteToken);
+  }
+  
+  // For personal invites, we use a different parameter to avoid confusion
+  if (props.personalInviteToken) {
+    url.searchParams.set('personal_invite_token', props.personalInviteToken);
   }
 
   const searchParams = new URLSearchParams(window.location.search);
