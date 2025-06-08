@@ -1494,6 +1494,13 @@ export type Database = {
         }
         Returns: string
       }
+      accept_personal_invite_by_token: {
+        Args: {
+          token_param: string
+          account_id_param: string
+        }
+        Returns: string
+      }
       add_invitations_to_account: {
         Args: {
           account_slug: string

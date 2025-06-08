@@ -45,8 +45,13 @@ export function SignInMethodsContainer(props: {
       const joinTeamPath = props.paths.joinTeam + '?' + searchParams.toString();
       router.replace(joinTeamPath);
     } else if (props.personalInviteToken) {
-      // For personal invites, redirect to home (token is handled during registration)
-      router.replace(props.paths.returnPath);
+      // For personal invites, redirect to a dedicated handler
+      const searchParams = new URLSearchParams({
+        personal_invite_token: props.personalInviteToken,
+      });
+
+      const completePersonalInvitePath = `/complete-personal-invite?${searchParams.toString()}`;
+      router.replace(completePersonalInvitePath);
     } else {
       // No invitation, just redirect to the return path
       router.replace(props.paths.returnPath);

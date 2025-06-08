@@ -69,6 +69,7 @@ class AuthCallbackService {
     }
 
     const inviteToken = callbackUrl?.searchParams.get('invite_token');
+    const personalInviteToken = callbackUrl?.searchParams.get('personal_invite_token');
     const errorPath = params.errorPath ?? '/auth/callback/error';
 
     // remove the query params from the url
@@ -95,6 +96,11 @@ class AuthCallbackService {
       if (emailParam) {
         searchParams.set('email', emailParam);
       }
+    } 
+    // if we have a personal invite token, handle it similar to team invite token
+    else if (personalInviteToken) {
+      url.pathname = '/complete-personal-invite';
+      searchParams.set('personal_invite_token', personalInviteToken);
     }
 
     if (token_hash && type) {
@@ -148,6 +154,7 @@ class AuthCallbackService {
     const error = searchParams.get('error');
     const nextUrlPathFromParams = searchParams.get('next');
     const inviteToken = searchParams.get('invite_token');
+    const personalInviteToken = searchParams.get('personal_invite_token');
     const errorPath = params.errorPath ?? '/auth/callback/error';
 
     let nextUrl = nextUrlPathFromParams ?? params.redirectPath;
@@ -165,6 +172,14 @@ class AuthCallbackService {
       });
 
       nextUrl = `${params.joinTeamPath}?${urlParams.toString()}`;
+    } 
+    // if we have a personal invite token, we redirect to the complete personal invite page
+    else if (personalInviteToken) {
+      const urlParams = new URLSearchParams({
+        personal_invite_token: personalInviteToken
+      });
+
+      nextUrl = `/complete-personal-invite?${urlParams.toString()}`;
     }
 
     if (authCode) {

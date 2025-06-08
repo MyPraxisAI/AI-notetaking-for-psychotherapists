@@ -69,37 +69,66 @@ CREATE POLICY update_personal_invites_inviter_policy ON public.personal_invites
     public.is_account_owner(invited_by_account_id)
   );
 
--- Policy to allow invitee to update only the specific columns
-CREATE POLICY update_personal_invites_invitee_policy ON public.personal_invites
-  FOR UPDATE
-  TO authenticated
-  USING (
-    public.is_account_owner(invited_account_id)
-  );
+-- Create a stored procedure to accept personal invites
+-- This is necessary because the RLS policies prevent users from updating invitations
+-- before their account ID is set on the invitation record
 
--- Create a trigger to enforce column-level restrictions for invitee updates
-CREATE OR REPLACE FUNCTION check_personal_invite_update()
-RETURNS TRIGGER AS $$
+-- Create function to accept a personal invitation
+CREATE OR REPLACE FUNCTION public.accept_personal_invite_by_token(
+  token_param TEXT,
+  account_id_param UUID
+)
+RETURNS TEXT
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  invite_status TEXT;
+  update_succeeded INTEGER;
 BEGIN
-  -- For invitee updates, restrict which columns can be modified
-  IF public.is_account_owner(NEW.invited_account_id) AND NOT public.is_account_owner(NEW.invited_by_account_id) THEN
-    -- Only allow changes to accepted_at and invited_account_id fields
-    IF OLD.email != NEW.email OR 
-       OLD.token != NEW.token OR 
-       OLD.invited_by_account_id != NEW.invited_by_account_id OR
-       OLD.expires_at != NEW.expires_at THEN
-      RAISE EXCEPTION 'Invitee can only update acceptance status';
-    END IF;
-  END IF;
-  
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
+  -- Check if the invitation exists
+  SELECT status
+  FROM public.personal_invites
+  WHERE token = token_param
+  INTO invite_status;
 
-CREATE TRIGGER enforce_personal_invite_update_restrictions
-BEFORE UPDATE ON public.personal_invites
-FOR EACH ROW
-EXECUTE FUNCTION check_personal_invite_update();
+  -- If invitation doesn't exist, return not_found
+  IF invite_status IS NULL THEN
+    RETURN 'not_found';
+  END IF;
+
+  -- If invitation is already accepted, return already_accepted
+  IF invite_status = 'accepted' THEN
+    RETURN 'already_accepted';
+  END IF;
+
+  -- Update the invitation
+  UPDATE public.personal_invites
+  SET 
+    invited_account_id = account_id_param,
+    status = 'accepted',
+    accepted_at = now()
+  WHERE token = token_param
+    AND status = 'pending';
+    
+  -- Check if the update succeeded
+  GET DIAGNOSTICS update_succeeded = ROW_COUNT;
+  
+  IF update_succeeded > 0 THEN
+    RETURN 'success';
+  ELSE
+    RETURN 'failure';
+  END IF;
+END;
+$$;
+
+-- Grant execute permission to authenticated users
+GRANT EXECUTE ON FUNCTION public.accept_personal_invite_by_token(TEXT, UUID) TO authenticated;
+
+-- Add security comment
+COMMENT ON FUNCTION public.accept_personal_invite_by_token IS 
+  'Securely accepts a personal invitation by token, bypassing RLS restrictions';
 
 -- Note: Public API functions for anonymous users are defined in a separate migration
 
