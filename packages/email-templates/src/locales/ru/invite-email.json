@@ -1,0 +1,9 @@
+{
+  "subject": "Вас пригласили присоединиться к команде",
+  "heading": "Присоединяйтесь к {{teamName}} в {{productName}}",
+  "hello": "Здравствуйте, {{invitedUserEmail}}!",
+  "mainText": "<strong>{{inviter}}</strong> приглашает вас в команду <strong>{{teamName}}</strong> на платформе <strong>{{productName}}</strong>.",
+  "joinTeam": "Присоединиться к {{teamName}}",
+  "copyPasteLink": "или скопируйте и вставьте эту ссылку в ваш браузер:",
+  "invitationIntendedFor": "Это приглашение предназначено для {{invitedUserEmail}}."
+}

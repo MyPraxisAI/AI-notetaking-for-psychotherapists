@@ -353,6 +353,8 @@ function FactorNameForm(
     onCancel: () => void;
   }>,
 ) {
+  const { t } = useTranslation();
+  
   const form = useForm({
     resolver: zodResolver(
       z.object({
@@ -360,7 +362,7 @@ function FactorNameForm(
       }),
     ),
     defaultValues: {
-      name: '',
+      name: t('account:defaultFactorName'),
     },
   });
 
@@ -383,7 +385,12 @@ function FactorNameForm(
                   </FormLabel>
 
                   <FormControl>
-                    <Input autoComplete={'off'} required {...field} />
+                    <Input 
+                      autoComplete={'off'} 
+                      required 
+                      placeholder={t('account:defaultFactorName')} 
+                      {...field} 
+                    />
                   </FormControl>
 
                   <FormDescription>

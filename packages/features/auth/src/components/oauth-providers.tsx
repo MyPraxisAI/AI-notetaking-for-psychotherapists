@@ -31,7 +31,8 @@ const OAUTH_SCOPES: Partial<Record<Provider, string>> = {
 };
 
 export const OauthProviders: React.FC<{
-  inviteToken?: string;
+  teamInviteToken?: string;
+  personalInviteToken?: string;
   shouldCreateUser: boolean;
   enabledProviders: Provider[];
   queryParams?: Record<string, string>;
@@ -84,8 +85,14 @@ export const OauthProviders: React.FC<{
                     queryParams.set('next', props.paths.returnPath);
                   }
 
-                  if (props.inviteToken) {
-                    queryParams.set('invite_token', props.inviteToken);
+                  // Handle team invitations
+                  if (props.teamInviteToken) {
+                    queryParams.set('invite_token', props.teamInviteToken);
+                  }
+
+                  // Handle personal invitations with a different parameter
+                  if (props.personalInviteToken) {
+                    queryParams.set('personal_invite_token', props.personalInviteToken);
                   }
 
                   const redirectPath = [

@@ -1,0 +1,60 @@
+# Next.js App Router Guidelines
+
+## searchParams Handling
+
+In Next.js 15, `searchParams` is now a dynamic API and must be awaited before accessing its properties:
+
+```tsx
+// WRONG ❌
+async function PageComponent({ searchParams }) {
+  const token = searchParams.token; // Error: searchParams should be awaited
+  
+  // Rest of the code
+}
+
+// CORRECT ✅
+async function PageComponent({ searchParams }) {
+  const params = await searchParams;
+  const token = params.token;
+  
+  // Rest of the code
+}
+```
+
+This applies to all pages that use the `searchParams` prop from Next.js App Router. Always await the searchParams object before accessing any of its properties to avoid runtime errors.
+
+## Dynamic Rendering
+
+Remember that pages that use `searchParams` are automatically dynamically rendered. This means:
+
+1. The page will be rendered on each request
+2. The page will not be statically optimized
+3. `useSearchParams()` hook should be used in client components instead when possible
+
+## Redirects
+
+When using `redirect()` with searchParams, ensure you await the searchParams first:
+
+```tsx
+async function PageComponent({ searchParams }) {
+  const params = await searchParams;
+  
+  if (!params.token) {
+    return redirect('/login');
+  }
+}
+```
+
+## Passing searchParams to Components
+
+When passing searchParams to child components, always await it at the top level and pass the resolved object:
+
+```tsx
+async function PageComponent({ searchParams }) {
+  const params = await searchParams;
+  
+  return (
+    <ChildComponent searchParams={params} />
+  );
+}
+```

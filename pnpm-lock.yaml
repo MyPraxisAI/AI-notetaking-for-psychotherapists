@@ -7,6 +7,7 @@ settings:
 overrides:
   react-is: 19.0.0
   require-in-the-middle: 7.5.2
+  prettier: 3.5.3
 
 importers:
 
@@ -22,7 +23,7 @@ importers:
         specifier: ^7.0.3
         version: 7.0.3
       prettier:
-        specifier: ^3.5.3
+        specifier: 3.5.3
         version: 3.5.3
       turbo:
         specifier: 2.4.4
@@ -233,6 +234,9 @@ importers:
       '@kit/notifications':
         specifier: workspace:*
         version: link:../../packages/features/notifications
+      '@kit/personal-invitations':
+        specifier: workspace:^
+        version: link:../../packages/features/personal-invitations
       '@kit/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -253,7 +257,7 @@ importers:
         version: 0.0.8(@supabase/postgrest-js@1.19.4)(@supabase/supabase-js@2.49.1)
       '@makerkit/data-loader-supabase-nextjs':
         specifier: ^1.2.3
-        version: 1.2.3(@supabase/postgrest-js@1.19.4)(@supabase/supabase-js@2.49.1)(@tanstack/react-query@5.67.1(react@19.0.0))(next@15.2.1(@opentelemetry/api@1.9.0)(@playwright/test@1.50.1)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react@19.0.0)
+        version: 1.2.3(@supabase/postgrest-js@1.19.4)(@supabase/supabase-js@2.49.1)(@tanstack/react-query@5.67.1(react@19.0.0))(next@15.2.1(@opentelemetry/api@1.9.0)(@playwright/test@1.50.1)(babel-plugin-react-compiler@19.0.0-beta-e1e972c-20250221)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react@19.0.0)
       '@marsidev/react-turnstile':
         specifier: ^1.1.0
         version: 1.1.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -355,7 +359,7 @@ importers:
         specifier: ^13.0.0
         version: 13.0.0
       prettier:
-        specifier: ^3.5.3
+        specifier: 3.5.3
         version: 3.5.3
       supabase:
         specifier: ^2.15.8
@@ -684,6 +688,9 @@ importers:
       '@kit/eslint-config':
         specifier: workspace:*
         version: link:../../tooling/eslint
+      '@kit/personal-invitations':
+        specifier: workspace:*
+        version: link:../features/personal-invitations
       '@kit/prettier-config':
         specifier: workspace:*
         version: link:../../tooling/prettier
@@ -817,6 +824,13 @@ importers:
         version: 3.24.2
 
   packages/features/admin:
+    dependencies:
+      '@kit/personal-invitations':
+        specifier: workspace:^
+        version: link:../personal-invitations
+      date-fns:
+        specifier: ^4.1.0
+        version: 4.1.0
     devDependencies:
       '@hookform/resolvers':
         specifier: ^4.1.3
@@ -847,7 +861,7 @@ importers:
         version: 0.0.8(@supabase/postgrest-js@1.19.4)(@supabase/supabase-js@2.49.1)
       '@makerkit/data-loader-supabase-nextjs':
         specifier: ^1.2.3
-        version: 1.2.3(@supabase/postgrest-js@1.19.4)(@supabase/supabase-js@2.49.1)(@tanstack/react-query@5.67.1(react@19.0.0))(next@15.2.1(@opentelemetry/api@1.9.0)(@playwright/test@1.50.1)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react@19.0.0)
+        version: 1.2.3(@supabase/postgrest-js@1.19.4)(@supabase/supabase-js@2.49.1)(@tanstack/react-query@5.67.1(react@19.0.0))(next@15.2.1(@opentelemetry/api@1.9.0)(@playwright/test@1.50.1)(babel-plugin-react-compiler@19.0.0-beta-e1e972c-20250221)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react@19.0.0)
       '@supabase/supabase-js':
         specifier: 2.49.1
         version: 2.49.1
@@ -875,6 +889,9 @@ importers:
       react-hook-form:
         specifier: ^7.54.2
         version: 7.54.2(react@19.0.0)
+      typescript:
+        specifier: ^5.8.2
+        version: 5.8.2
       zod:
         specifier: ^3.24.2
         version: 3.24.2
@@ -974,6 +991,67 @@ importers:
       react-i18next:
         specifier: ^15.4.1
         version: 15.4.1(i18next@24.2.2(typescript@5.8.2))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+
+  packages/features/personal-invitations:
+    dependencies:
+      '@kit/email-templates':
+        specifier: workspace:*
+        version: link:../../email-templates
+      '@kit/mailers':
+        specifier: workspace:*
+        version: link:../../mailers/core
+      '@kit/shared':
+        specifier: workspace:*
+        version: link:../../shared
+      '@kit/web-bg-common':
+        specifier: workspace:*
+        version: link:../../web-bg-common
+      zod:
+        specifier: ^3.24.2
+        version: 3.24.2
+    devDependencies:
+      '@hookform/resolvers':
+        specifier: ^4.1.3
+        version: 4.1.3(react-hook-form@7.54.2(react@19.0.0))
+      '@kit/eslint-config':
+        specifier: workspace:*
+        version: link:../../../tooling/eslint
+      '@kit/next':
+        specifier: workspace:*
+        version: link:../../next
+      '@kit/prettier-config':
+        specifier: workspace:*
+        version: link:../../../tooling/prettier
+      '@kit/supabase':
+        specifier: workspace:*
+        version: link:../../supabase
+      '@kit/tsconfig':
+        specifier: workspace:*
+        version: link:../../../tooling/typescript
+      '@kit/ui':
+        specifier: workspace:*
+        version: link:../../ui
+      '@makerkit/data-loader-supabase-core':
+        specifier: ^0.0.8
+        version: 0.0.8(@supabase/postgrest-js@1.19.4)(@supabase/supabase-js@2.49.1)
+      '@makerkit/data-loader-supabase-nextjs':
+        specifier: ^1.2.3
+        version: 1.2.3(@supabase/postgrest-js@1.19.4)(@supabase/supabase-js@2.49.1)(@tanstack/react-query@5.67.1(react@19.0.0))(next@15.2.1(@opentelemetry/api@1.9.0)(@playwright/test@1.50.1)(babel-plugin-react-compiler@19.0.0-beta-e1e972c-20250221)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react@19.0.0)
+      '@supabase/supabase-js':
+        specifier: 2.49.1
+        version: 2.49.1
+      '@tanstack/react-query':
+        specifier: 5.67.1
+        version: 5.67.1(react@19.0.0)
+      '@types/react':
+        specifier: 19.0.10
+        version: 19.0.10
+      eslint:
+        specifier: ^9.21.0
+        version: 9.21.0(jiti@2.4.2)
+      typescript:
+        specifier: ^5.8.2
+        version: 5.8.2
 
   packages/features/team-accounts:
     dependencies:
@@ -1601,7 +1679,7 @@ importers:
         specifier: 0.4.4
         version: 0.4.4(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       prettier:
-        specifier: ^3.5.3
+        specifier: 3.5.3
         version: 3.5.3
       react-day-picker:
         specifier: ^8.10.1
@@ -1705,7 +1783,7 @@ importers:
         specifier: 5.2.2
         version: 5.2.2(prettier@3.5.3)
       prettier:
-        specifier: ^3.5.3
+        specifier: 3.5.3
         version: 3.5.3
       prettier-plugin-tailwindcss:
         specifier: ^0.6.11
@@ -4673,7 +4751,7 @@ packages:
     engines: {node: '>18.12'}
     peerDependencies:
       '@vue/compiler-sfc': 3.x
-      prettier: 2.x - 3.x
+      prettier: 3.5.3
       prettier-plugin-svelte: 3.x
       svelte: 4.x || 5.x
     peerDependenciesMeta:
@@ -7606,7 +7684,7 @@ packages:
       '@shopify/prettier-plugin-liquid': '*'
       '@trivago/prettier-plugin-sort-imports': '*'
       '@zackad/prettier-plugin-twig': '*'
-      prettier: ^3.0
+      prettier: 3.5.3
       prettier-plugin-astro: '*'
       prettier-plugin-css-order: '*'
       prettier-plugin-import-sort: '*'
@@ -7651,11 +7729,6 @@ packages:
         optional: true
       prettier-plugin-svelte:
         optional: true
-
-  prettier@3.4.2:
-    resolution: {integrity: sha512-e9MewbtFo+Fevyuxn/4rrcDAaq0IYxPGLvObpQjiZBMAzB9IGmzlnG9RZy3FFas+eBMu2vA0CszMeduow5dIuQ==}
-    engines: {node: '>=14'}
-    hasBin: true
 
   prettier@3.5.3:
     resolution: {integrity: sha512-QQtaxnoDJeAkDvDKWCLiwIXkTgRhwYDEQCghU9Z6q03iyek/rxRh/2lC3HB7P8sWT2xC/y5JDctPLBIGzHKbhw==}
@@ -10340,7 +10413,7 @@ snapshots:
       '@supabase/supabase-js': 2.49.1
       ts-case-convert: 2.1.0
 
-  '@makerkit/data-loader-supabase-nextjs@1.2.3(@supabase/postgrest-js@1.19.4)(@supabase/supabase-js@2.49.1)(@tanstack/react-query@5.67.1(react@19.0.0))(next@15.2.1(@opentelemetry/api@1.9.0)(@playwright/test@1.50.1)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react@19.0.0)':
+  '@makerkit/data-loader-supabase-nextjs@1.2.3(@supabase/postgrest-js@1.19.4)(@supabase/supabase-js@2.49.1)(@tanstack/react-query@5.67.1(react@19.0.0))(next@15.2.1(@opentelemetry/api@1.9.0)(@playwright/test@1.50.1)(babel-plugin-react-compiler@19.0.0-beta-e1e972c-20250221)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react@19.0.0)':
     dependencies:
       '@makerkit/data-loader-supabase-core': 0.0.8(@supabase/postgrest-js@1.19.4)(@supabase/supabase-js@2.49.1)
       '@supabase/supabase-js': 2.49.1
@@ -12186,7 +12259,7 @@ snapshots:
   '@react-email/render@1.0.5(react-dom@19.0.0(react@19.0.0))(react@19.0.0)':
     dependencies:
       html-to-text: 9.0.5
-      prettier: 3.4.2
+      prettier: 3.5.3
       react: 19.0.0
       react-dom: 19.0.0(react@19.0.0)
       react-promise-suspense: 0.3.4
@@ -16699,8 +16772,6 @@ snapshots:
       prettier: 3.5.3
     optionalDependencies:
       '@trivago/prettier-plugin-sort-imports': 5.2.2(prettier@3.5.3)
-
-  prettier@3.4.2: {}
 
   prettier@3.5.3: {}
 

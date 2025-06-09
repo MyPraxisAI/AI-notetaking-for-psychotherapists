@@ -1,0 +1,10 @@
+{
+  "subject": "Вас пригласили присоединиться к MyPraxis",
+  "heading": "Присоединяйтесь к {{productName}}",
+  "hello": "Здравствуйте, {{invitedUserEmail}}!",
+  "mainText": "<strong>{{inviterName}}</strong> ({{inviterEmail}}) приглашает вас присоединиться к платформе <strong>{{productName}}</strong>.",
+  "joinApp": "Присоединиться к {{productName}}",
+  "joinInvitation": "Принять приглашение",
+  "copyPasteLink": "или скопируйте и вставьте эту ссылку в ваш браузер:",
+  "invitationIntendedFor": "Это приглашение предназначено для {{invitedUserEmail}}."
+}

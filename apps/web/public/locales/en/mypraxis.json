@@ -115,6 +115,7 @@
     "demo": "Demo",
     "viewProfile": "View Profile",
     "testOnboarding": "Onboard",
+    "admin": "Admin",
     "recording": {
       "startRecording": "Start recording",
       "recordingDesktopOnly": "Available on desktop",
@@ -124,6 +125,7 @@
     },
     "navigation": {
       "clients": "Clients",
+      "sessions": "Sessions",
       "settings": "Settings",
       "billing": "Billing",
       "giftPraxis": "Gift Praxis",

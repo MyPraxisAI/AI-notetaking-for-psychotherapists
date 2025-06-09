@@ -28,11 +28,16 @@ import { ImageUploader } from "@kit/ui/image-uploader"
 import { GeoLocalitiesSelect } from "./geo-localities-select"
 import { TherapeuticApproachesSelect } from "./therapeutic-approaches-select"
 import { useTranslation } from "react-i18next"
+import { Trans } from "@kit/ui/trans"
 import { useUserWorkspace } from "@kit/accounts/hooks/use-user-workspace"
 
 import { X } from "lucide-react"
 import { z } from "zod"
 import { Menu } from "lucide-react"
+
+// Import MultiFactorAuthFactorsList from the accounts package
+import { MultiFactorAuthFactorsList } from "@kit/accounts/personal-account-settings"
+
 
 // Define the settings interface
 interface TherapistSettings {
@@ -793,7 +798,7 @@ export function SettingsForm({ setIsNavVisible, isSmallScreen }: SettingsFormPro
       </div>
       
       {/* Profile Section */}
-      <div className="mt-5 space-y-6 pb-6 border-b border-[#E5E7EB]">
+      <div className="mt-5 space-y-6 pb-6 border-b border-[#E5E7EB] bg-gray-50 rounded-md p-4">
         <h3 className="text-[18px] font-medium text-[#111827]">{t('mypraxis:settings.profile')}</h3>
         
         {/* Avatar Upload */}
@@ -943,7 +948,7 @@ export function SettingsForm({ setIsNavVisible, isSmallScreen }: SettingsFormPro
       </div>
       
       {/* Professional Information */}
-      <div className="mt-6 space-y-6 pb-6 border-b border-[#E5E7EB]">
+      <div className="mt-5 space-y-6 pb-6 border-b border-[#E5E7EB] bg-gray-50 rounded-md p-4">
         <h3 className="text-[18px] font-medium text-[#111827]">{t('mypraxis:settings.professionalInformation')}</h3>
         
         {/* Country or Territory */}
@@ -1058,7 +1063,7 @@ export function SettingsForm({ setIsNavVisible, isSmallScreen }: SettingsFormPro
       </div>
       
       {/* Preferences */}
-      <div className="mt-6 space-y-6 pb-6 border-b border-[#E5E7EB]">
+      <div className="mt-5 space-y-6 pb-6 border-b border-[#E5E7EB] bg-gray-50 rounded-md p-4">
         <div className="flex items-center justify-between">
           <h3 className="text-[18px] font-medium text-[#111827]">{t('mypraxis:settings.preferences')}</h3>
           {isLoadingPreferences && (
@@ -1171,13 +1176,13 @@ export function SettingsForm({ setIsNavVisible, isSmallScreen }: SettingsFormPro
       </div>
       
       {/* Security */}
-      <div className="mt-6 space-y-6 pb-6 mb-12">
+      <div className="mt-5 space-y-6 pb-6 bg-gray-50 rounded-md p-4 mb-12">
         <h3 className="text-[18px] font-medium text-[#111827]">{t('mypraxis:settings.security')}</h3>
         
         {/* Password Change */}
         <div className="relative space-y-3">
           <div className="flex items-center">
-            <Label>{t('mypraxis:settings.changePassword')}</Label>
+            <h4 className="text-[16px] font-medium text-[#111827]">{t('mypraxis:settings.changePassword')}</h4>
             <div className="w-5 h-5 ml-2">
               <Check 
                 className={`h-5 w-5 transition-opacity ${
@@ -1250,6 +1255,20 @@ export function SettingsForm({ setIsNavVisible, isSmallScreen }: SettingsFormPro
             {updatePassword.isPending ? t('mypraxis:settings.updating') : t('mypraxis:settings.changePassword')}
           </Button>
         </div>
+
+        <div className="space-y-4">
+          <div>
+            <h4 className="text-[16px] font-medium text-[#111827]">
+              <Trans i18nKey={'account:multiFactorAuth'} />
+            </h4>
+            
+            <p className="text-sm text-muted-foreground">
+              <Trans i18nKey={'account:multiFactorAuthDescription'} />
+            </p>
+          </div>
+          
+          <MultiFactorAuthFactorsList userId={user.id} />
+        </div>        
       </div>
     </div>
   );

@@ -30,6 +30,12 @@ class DatabaseWebhookRouterService {
         return this.handleInvitationsWebhook(payload);
       }
 
+      case 'personal_invites': {
+        const payload = body as RecordChange<typeof body.table>;
+
+        return this.handlePersonalInvitesWebhook(payload);
+      }
+
       case 'subscriptions': {
         const payload = body as RecordChange<typeof body.table>;
 
@@ -81,6 +87,19 @@ class DatabaseWebhookRouterService {
       const service = createAccountWebhooksService();
 
       return service.handleAccountDeletedWebhook(body.old_record);
+    }
+  }
+
+  private async handlePersonalInvitesWebhook(body: RecordChange<'personal_invites'>) {
+    if (body.type === 'INSERT' && body.record) {
+      // Dynamic import to avoid circular dependencies
+      const { createPersonalInviteWebhookService } = await import(
+        '@kit/personal-invitations/server'
+      );
+
+      const service = createPersonalInviteWebhookService(this.adminClient);
+
+      return service.handlePersonalInviteCreatedWebhook(body.record);
     }
   }
 }

@@ -54,6 +54,10 @@ const FeatureFlagsSchema = z.object({
     description: 'Enable version updater',
     required_error: 'Provide the variable NEXT_PUBLIC_ENABLE_VERSION_UPDATER',
   }),
+  enableInvitationOnlySignup: z.boolean({
+    description: 'Enable invitation-only signup flow (disables public signups)',
+    required_error: 'Provide the variable NEXT_PUBLIC_ENABLE_INVITATION_ONLY_SIGNUP',
+  }),
 });
 
 const featuresFlagConfig = FeatureFlagsSchema.parse({
@@ -97,6 +101,10 @@ const featuresFlagConfig = FeatureFlagsSchema.parse({
   ),
   enableVersionUpdater: getBoolean(
     process.env.NEXT_PUBLIC_ENABLE_VERSION_UPDATER,
+    false,
+  ),
+  enableInvitationOnlySignup: getBoolean(
+    process.env.NEXT_PUBLIC_ENABLE_INVITATION_ONLY_SIGNUP,
     false,
   ),
 } satisfies z.infer<typeof FeatureFlagsSchema>);

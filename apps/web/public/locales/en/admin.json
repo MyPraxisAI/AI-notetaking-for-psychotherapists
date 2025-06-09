@@ -1,0 +1,65 @@
+{
+  "languages": {
+    "english": "English",
+    "russian": "Russian"
+  },
+  "personalInvites": {
+    "pageTitle": "Personal Invitations",
+    "createButton": "Create Invitation",
+    "filters": {
+      "statusPlaceholder": "Invitation Status",
+      "statusLabel": "Invitation Status",
+      "allInvitations": "All invitations",
+      "pending": "Pending",
+      "accepted": "Accepted",
+      "revoked": "Revoked",
+      "searchPlaceholder": "Search by email..."
+    },
+    "columns": {
+      "email": "Email",
+      "role": "Role",
+      "status": "Status",
+      "language": "Language",
+      "createdAt": "Created At",
+      "expiresAt": "Expires At",
+      "acceptedAt": "Accepted At"
+    },
+    "actions": {
+      "label": "Actions",
+      "revoke": "Revoke Invitation",
+      "copied": "Copied",
+      "copyEmail": "Copy Email",
+      "resendEmail": "Resend Email",
+      "resendSuccess": "Email resent",
+      "resendSuccessDescription": "Invitation email resent successfully to {{email}}",
+      "resendErrorDescription": "Failed to resend invitation: {{message}}",
+      "copiedDescription": "Email address copied to clipboard"
+    },
+    "form": {
+      "emailLabel": "Email",
+      "emailPlaceholder": "user@example.com",
+      "emailDescription": "The email address of the person you want to invite.",
+      "languageLabel": "Email Language",
+      "languagePlaceholder": "Select language",
+      "languageDescription": "Language for the invitation email.",
+      "expiresLabel": "Expires In (Days)",
+      "expiresDescription": "Number of days until this invitation expires.",
+      "sending": "Sending...",
+      "sendInvitation": "Send Invitation",
+      "invitationSent": "Invitation sent",
+      "invitationSentDescription": "An invitation has been sent to {{email}}",
+      "error": "Error",
+      "failedToSend": "Failed to send invitation",
+      "somethingWentWrong": "Something went wrong"
+    },
+    "dialog": {
+      "title": "Invite New User",
+      "description": "Send a personal invitation to allow a new user to create an account.",
+      "footer": "The user will receive an email with a link to sign up."
+    },
+    "revokeSuccess": "Invitation revoked",
+    "revokeSuccessDescription": "The invitation has been successfully revoked.",
+    "error": "Error",
+    "revokeErrorDescription": "Failed to revoke invitation: {{message}}"
+  }
+}
