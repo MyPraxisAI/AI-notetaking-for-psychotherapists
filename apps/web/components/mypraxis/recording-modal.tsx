@@ -16,6 +16,7 @@ import * as MicrophoneUtils from "./utils/recording/microphone-selection"
 import type { MicrophoneDevice } from "./utils/recording/microphone-selection"
 import { toast } from "sonner"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@kit/ui/select"
+import { HeadphoneWarning } from "./utils/recording/headphone-warning"
 
 const overlayStyles = `
   .recording-modal-overlay {
@@ -777,15 +778,15 @@ export function RecordingModal({
       });
       
       // 3. Navigate to the session
-      toast.success('Audio file imported successfully');
+      toast.success(t("recordingModal.import.success"));
       if (result.sessionId) {
         await onSave(result.sessionId);
       } else {
         await onSave();
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to import audio file');
-      toast.error(err instanceof Error ? err.message : 'Failed to import audio file');
+      setError(err instanceof Error ? err.message : t("recordingModal.import.error"));
+      toast.error(err instanceof Error ? err.message : t("recordingModal.import.error"));
     } finally {
       setIsImporting(false);
       // Reset file input
@@ -897,17 +898,21 @@ export function RecordingModal({
             </div>
 
             {modalState === "soundCheck" && (
-              <div className="p-4 bg-white">
-                <h2 className="block text-sm font-medium text-gray-700 mb-2">
+              <div className="p-4 bg-white">                                
+                {/* Headphone warning message */}
+                <HeadphoneWarning />
+
+                <h2 className="block text-sm font-medium text-gray-700 mb-1">
                   {t("recordingModal.microphone.soundCheck")}
                 </h2>
-                
-                {/* Sound level indicator */}
-                <MicrophoneLevelIndicator stream={microphoneStream} className="mt-2" />
-                
+
+                <div className="mt-2">
+                  <MicrophoneLevelIndicator stream={microphoneStream} className="mb-2" />
+                </div>
+
                 {/* Device selection */}
                 <div className="mt-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
                     {t("recordingModal.microphone.label")}
                   </label>
                   <Select value={selectedDevice} onValueChange={setSelectedDevice} data-test="microphone-select">
@@ -985,8 +990,13 @@ export function RecordingModal({
               <div className="p-6 bg-white">
                 {/* Show microphone level indicator in recording state */}
                 {modalState === "recording" && (
-                  <div className="mb-4">
-                    <MicrophoneLevelIndicator stream={microphoneStream} className="mb-2" />
+                  <div className="mb-4">                    
+                    {/* Headphone warning message */}
+                    <HeadphoneWarning />
+
+                    <div className="mt-6">
+                      <MicrophoneLevelIndicator stream={microphoneStream} className="mb-2" />
+                    </div>
                   </div>
                 )}
                 <div className="flex items-center justify-center">
