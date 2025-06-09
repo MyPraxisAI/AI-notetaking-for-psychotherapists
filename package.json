@@ -34,6 +34,7 @@
     "supabase:web:typegen": "pnpm --filter web supabase:typegen",
     "supabase:web:reset": "pnpm --filter web supabase:reset",
     "db:reset": "pnpm supabase:web:reset",
+    "db:migrate": "pnpm --filter web supabase migration up --local",
     "supabase:web:test": "pnpm --filter web supabase:test",
     "supabase:regen": "pnpm run supabase:web:reset && pnpm run supabase:web:typegen",
     "db:regen": "pnpm supabase:regen",

@@ -4,6 +4,7 @@ import { useCallback, useState, useEffect, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { useQueryClient } from "@tanstack/react-query"
 import { Button } from "@kit/ui/button"
+import { useIsSuperAdmin } from "../../lib/client/utils/is-super-admin"
 import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogHeader, DialogFooter } from "@kit/ui/dialog"
 import { Mic, Pause, Play, Loader2, Upload, AlertTriangle } from "lucide-react"
 import { MicrophoneLevelIndicator } from "./utils/recording/microphone-level-indicator"
@@ -64,6 +65,7 @@ export function RecordingModal({
   const [selectedDevice, setSelectedDevice] = useState("default")
   const [availableMicrophones, setAvailableMicrophones] = useState<MicrophoneDevice[]>([])
   const [isLoadingMicrophones, setIsLoadingMicrophones] = useState(false)
+  const { data: isSuperAdmin = false } = useIsSuperAdmin()
   const [selectedTranscriptionEngine, setSelectedTranscriptionEngine] = useState("yandex-v3-ru")
   const [timer, setTimer] = useState(0)
   const [isRecording, setIsRecording] = useState(false)
@@ -952,30 +954,30 @@ export function RecordingModal({
             )}
             
             {/* Transcription engine selection - only in initial state */}
-            {modalState === "initial" && (
-              <div className="p-4 bg-white rounded-lg mt-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-sm font-medium">{t("recordingModal.transcription.label")}</h3>
-                  </div>
-                  <div className="w-64">
-                    <Select 
-                      value={selectedTranscriptionEngine} 
-                      onValueChange={setSelectedTranscriptionEngine}
-                      data-test="transcription-engine-select"
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder={t("recordingModal.transcription.select")} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="yandex-v3-ru" data-test="transcription-engine-option-yandex-v3-ru">
-                          {t("recordingModal.transcription.yandex")}
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
+            {modalState === "initial" && isSuperAdmin && (
+                <div className="p-4 bg-white rounded-lg mt-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-sm font-medium">{t("recordingModal.transcription.label")}</h3>
+                    </div>
+                    <div className="w-64">
+                      <Select 
+                        value={selectedTranscriptionEngine} 
+                        onValueChange={setSelectedTranscriptionEngine}
+                        data-test="transcription-engine-select"
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder={t("recordingModal.transcription.select")} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="yandex-v3-ru" data-test="transcription-engine-option-yandex-v3-ru">
+                            {t("recordingModal.transcription.yandex")}
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                 </div>
-              </div>
             )}
 
             
