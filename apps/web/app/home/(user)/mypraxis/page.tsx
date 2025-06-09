@@ -256,6 +256,10 @@ export default function Page() {
     setSelectedClient(setClientId(clientId))
     localStorage.setItem("selectedClient", clientId)
     
+    // Always set detail item to prep-note when selecting a client
+    setSelectedDetailItem("prep-note")
+    localStorage.setItem("selectedDetailItem", "prep-note")
+    
     // Prefetch client artifacts to avoid loading flash
     prefetchClientArtifacts(clientId);
     
