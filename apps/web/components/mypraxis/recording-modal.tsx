@@ -6,7 +6,7 @@ import { useQueryClient } from "@tanstack/react-query"
 import { Button } from "@kit/ui/button"
 import { useIsSuperAdmin } from "../../lib/client/utils/is-super-admin"
 import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogHeader, DialogFooter } from "@kit/ui/dialog"
-import { Mic, Pause, Play, Loader2, Upload, AlertTriangle } from "lucide-react"
+import { Mic, Pause, Play, Loader2, Upload, AlertTriangle, Volume2 } from "lucide-react"
 import { MicrophoneLevelIndicator } from "./utils/recording/microphone-level-indicator"
 import { AudioChunk, uploadAudioChunks, processAudioFile } from "./utils/recording/audio-upload"
 import * as RecordingAPI from "./utils/recording/recording-api"
@@ -16,6 +16,7 @@ import * as MicrophoneUtils from "./utils/recording/microphone-selection"
 import type { MicrophoneDevice } from "./utils/recording/microphone-selection"
 import { toast } from "sonner"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@kit/ui/select"
+import { HeadphoneWarning } from "./utils/recording/headphone-warning"
 
 const overlayStyles = `
   .recording-modal-overlay {
@@ -897,17 +898,21 @@ export function RecordingModal({
             </div>
 
             {modalState === "soundCheck" && (
-              <div className="p-4 bg-white">
-                <h2 className="block text-sm font-medium text-gray-700 mb-2">
+              <div className="p-4 bg-white">                                
+                {/* Headphone warning message */}
+                <HeadphoneWarning />
+
+                <h2 className="block text-sm font-medium text-gray-700 mb-1">
                   {t("recordingModal.microphone.soundCheck")}
                 </h2>
-                
-                {/* Sound level indicator */}
-                <MicrophoneLevelIndicator stream={microphoneStream} className="mt-2" />
-                
+
+                <div className="mt-2">
+                  <MicrophoneLevelIndicator stream={microphoneStream} className="mb-2" />
+                </div>
+
                 {/* Device selection */}
                 <div className="mt-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
                     {t("recordingModal.microphone.label")}
                   </label>
                   <Select value={selectedDevice} onValueChange={setSelectedDevice} data-test="microphone-select">
@@ -985,8 +990,13 @@ export function RecordingModal({
               <div className="p-6 bg-white">
                 {/* Show microphone level indicator in recording state */}
                 {modalState === "recording" && (
-                  <div className="mb-4">
-                    <MicrophoneLevelIndicator stream={microphoneStream} className="mb-2" />
+                  <div className="mb-4">                    
+                    {/* Headphone warning message */}
+                    <HeadphoneWarning />
+
+                    <div className="mt-6">
+                      <MicrophoneLevelIndicator stream={microphoneStream} className="mb-2" />
+                    </div>
                   </div>
                 )}
                 <div className="flex items-center justify-center">

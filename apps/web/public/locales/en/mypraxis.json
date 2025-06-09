@@ -174,7 +174,7 @@
   "clientGuidanceBanner": {
     "dismissAriaLabel": "Dismiss guidance",
     "successMessage": "Client profile created successfully. Ready to start recording a session.",
-    "startRecording": "Start Recording"
+    "startRecording": "Start recording"
   },
   "clientBio": {
     "title": "Client Bio",
@@ -238,6 +238,7 @@
       "label": "Microphone",
       "record": "Record with microphone",
       "soundCheck": "Sound check",
+      "headphoneWarning": "Currently teleconference recording is only supported without headphones, with your client speaking through your computer speakers.",
       "errorDialog": {
         "title": "Microphone Access Error",
         "message": "Could not access your microphone. Please check browser permissions (icon to the left of the address bar) and try again.",
