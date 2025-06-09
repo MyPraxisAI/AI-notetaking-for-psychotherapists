@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { useTranslation } from 'react-i18next';
+import { useTranslation, type TFunction } from 'react-i18next';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ColumnDef } from '@tanstack/react-table';
@@ -10,10 +10,7 @@ import { EllipsisVertical, RefreshCw } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
-import {
-  useMutation,
-  useQueryClient,
-} from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { Button } from '@kit/ui/button';
 import {
   DropdownMenu,
@@ -61,6 +58,8 @@ export function AdminPersonalInvitesTable(
     };
   }>,
 ) {
+  const { t } = useTranslation(['admin']);
+
   return (
     <div className={'flex flex-col space-y-4'}>
       <div className={'flex justify-end'}>
@@ -72,7 +71,7 @@ export function AdminPersonalInvitesTable(
         pageIndex={props.page - 1}
         pageCount={props.pageCount}
         data={props.data}
-        columns={getColumns()}
+        columns={getColumns(t)}
       />
     </div>
   );
@@ -164,8 +163,7 @@ function PersonalInvitesTableFilters(props: {
   );
 }
 
-function getColumns(): ColumnDef<PersonalInvite>[] {
-  const { t } = useTranslation(['admin']);
+function getColumns(t: TFunction): ColumnDef<PersonalInvite>[] {
   return [
     {
       id: 'email',
@@ -233,15 +231,14 @@ function getColumns(): ColumnDef<PersonalInvite>[] {
       header: '',
       cell: ({ row }) => {
         return (
-          <InviteActionsDropdown invite={row.original} />
+          <InviteActionsDropdown invite={row.original} t={t} />
         );
       },
     },
   ];
 }
 
-function InviteActionsDropdown({ invite }: { invite: PersonalInvite }) {
-  const { t } = useTranslation(['admin']);
+function InviteActionsDropdown({ invite, t }: { invite: PersonalInvite, t: TFunction }) {
   const router = useRouter();
   const isPending = invite.status === 'pending';
   const [isRevoking, setIsRevoking] = useState(false);
@@ -317,14 +314,15 @@ function InviteActionsDropdown({ invite }: { invite: PersonalInvite }) {
                           }
                         );
                       }
-                    } catch (error: any) {
+                    } catch (error: unknown) {
+                      const errorMessage = error instanceof Error ? error.message : t('admin:personalInvites.form.somethingWentWrong', 'Something went wrong');
                       toast.error(
                         t('admin:personalInvites.actions.error', 'Error'), 
                         {
                           description: t(
                             'admin:personalInvites.actions.resendErrorDescription', 
                             'Failed to resend invitation: {{message}}', 
-                            { message: error?.message || t('admin:personalInvites.form.somethingWentWrong', 'Something went wrong') }
+                            { message: errorMessage }
                           )
                         }
                       );
