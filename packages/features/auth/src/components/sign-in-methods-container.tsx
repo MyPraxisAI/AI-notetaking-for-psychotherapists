@@ -14,7 +14,8 @@ import { OauthProviders } from './oauth-providers';
 import { PasswordSignInContainer } from './password-sign-in-container';
 
 export function SignInMethodsContainer(props: {
-  inviteToken?: string;
+  teamInviteToken?: string;
+  personalInviteToken?: string;
 
   paths: {
     callback: string;
@@ -35,17 +36,24 @@ export function SignInMethodsContainer(props: {
     : '';
 
   const onSignIn = () => {
-    // if the user has an invite token, we should join the team
-    if (props.inviteToken) {
+    // If we have a team invite token, join the team
+    if (props.teamInviteToken) {
       const searchParams = new URLSearchParams({
-        invite_token: props.inviteToken,
+        invite_token: props.teamInviteToken,
       });
 
       const joinTeamPath = props.paths.joinTeam + '?' + searchParams.toString();
-
       router.replace(joinTeamPath);
+    } else if (props.personalInviteToken) {
+      // For personal invites, redirect to a dedicated handler
+      const searchParams = new URLSearchParams({
+        personal_invite_token: props.personalInviteToken,
+      });
+
+      const completePersonalInvitePath = `/complete-personal-invite?${searchParams.toString()}`;
+      router.replace(completePersonalInvitePath);
     } else {
-      // otherwise, we should redirect to the return path
+      // No invitation, just redirect to the return path
       router.replace(props.paths.returnPath);
     }
   };
@@ -58,7 +66,8 @@ export function SignInMethodsContainer(props: {
 
       <If condition={props.providers.magicLink}>
         <MagicLinkAuthContainer
-          inviteToken={props.inviteToken}
+          teamInviteToken={props.teamInviteToken}
+          personalInviteToken={props.personalInviteToken}
           redirectUrl={redirectUrl}
           shouldCreateUser={false}
         />
@@ -79,7 +88,8 @@ export function SignInMethodsContainer(props: {
 
         <OauthProviders
           enabledProviders={props.providers.oAuth}
-          inviteToken={props.inviteToken}
+          teamInviteToken={props.teamInviteToken}
+          personalInviteToken={props.personalInviteToken}
           shouldCreateUser={false}
           paths={{
             callback: props.paths.callback,

@@ -16,6 +16,7 @@
     "@kit/billing": "workspace:*",
     "@kit/billing-gateway": "workspace:*",
     "@kit/eslint-config": "workspace:*",
+    "@kit/personal-invitations": "workspace:*",
     "@kit/prettier-config": "workspace:*",
     "@kit/shared": "workspace:*",
     "@kit/stripe": "workspace:*",

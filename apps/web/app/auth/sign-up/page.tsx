@@ -1,14 +1,21 @@
 import Link from 'next/link';
 
-import { SignUpMethodsContainer } from '@kit/auth/sign-up';
 import { Button } from '@kit/ui/button';
 import { Heading } from '@kit/ui/heading';
 import { Trans } from '@kit/ui/trans';
+import { Alert, AlertDescription, AlertTitle } from '@kit/ui/alert';
 
 import authConfig from '~/config/auth.config';
+import featuresFlagConfig from '~/config/feature-flags.config';
 import pathsConfig from '~/config/paths.config';
 import { createI18nServerInstance } from '~/lib/i18n/i18n.server';
 import { withI18n } from '~/lib/i18n/with-i18n';
+import { isPersonalInviteTokenValidAction } from '@kit/personal-invitations';
+
+// Import the client wrapper component
+import { SignUpClientWrapper } from './sign-up-client-wrapper';
+
+
 
 export const generateMetadata = async () => {
   const i18n = await createI18nServerInstance();
@@ -21,6 +28,7 @@ export const generateMetadata = async () => {
 interface Props {
   searchParams: Promise<{
     invite_token?: string;
+    personal_invite_token?: string;
   }>;
 }
 
@@ -30,11 +38,101 @@ const paths = {
 };
 
 async function SignUpPage({ searchParams }: Props) {
-  const inviteToken = (await searchParams).invite_token;
+  const i18n = await createI18nServerInstance();
+  const resolvedParams = await searchParams;
+  const inviteToken = resolvedParams.invite_token;
+  const personalInviteToken = resolvedParams.personal_invite_token;
+  const isInvitationOnlyMode = featuresFlagConfig.enableInvitationOnlySignup;
+  
+  // Check if we have any type of invitation token
+  const hasToken = !!inviteToken || !!personalInviteToken;
+  
+  // In invitation-only mode, redirect to sign-in if no token is provided
+  if (isInvitationOnlyMode && !hasToken) {
+    return (
+      <>
+        <div className={'flex flex-col items-center gap-1'}>
+          <Heading level={4} className={'tracking-tight'}>
+            <Trans i18nKey={'auth:signUpHeading'} />
+          </Heading>
+        </div>
 
-  const signInPath =
-    pathsConfig.auth.signIn +
-    (inviteToken ? `?invite_token=${inviteToken}` : '');
+        <Alert variant="destructive" className="my-4">
+          <AlertTitle>{i18n.t('auth:invitationRequired')}</AlertTitle>
+          <AlertDescription>
+            {i18n.t('auth:invitationRequiredDescription')}
+          </AlertDescription>
+        </Alert>
+        
+        <div className={'flex justify-center mt-4'}>
+          <Button asChild variant={'default'}>
+            <Link href={pathsConfig.auth.signIn}>
+              <Trans i18nKey={'auth:backToSignIn'} />
+            </Link>
+          </Button>
+        </div>
+      </>
+    );
+  }
+  
+  // We now pass team and personal invite tokens separately to avoid confusion in the auth flow
+  let personalInviteValid = false;
+  let personalInviteEmail = '';
+  let personalInviteLanguage: string | null = null;
+  
+  if (personalInviteToken) {
+    const result = await isPersonalInviteTokenValidAction({ token: personalInviteToken });
+    personalInviteValid = result.valid;
+    personalInviteEmail = result.email || '';
+    personalInviteLanguage = result.language;
+    
+    // Show error for invalid personal invitation token
+    if (!personalInviteValid) {
+      return (
+        <>
+          <div className={'flex flex-col items-center gap-1'}>
+            <Heading level={4} className={'tracking-tight'}>
+              <Trans i18nKey={'auth:invalidInvitation'} />
+            </Heading>
+          </div>
+
+          <Alert variant="destructive" className="my-4">
+            <AlertTitle>{i18n.t('auth:invalidInvitationToken')}</AlertTitle>
+            <AlertDescription>
+              {i18n.t('auth:invalidInvitationTokenDescription')}
+            </AlertDescription>
+          </Alert>
+          
+          <div className={'flex justify-center mt-4'}>
+            <Button asChild variant={'default'}>
+              <Link href={pathsConfig.auth.signIn}>
+                <Trans i18nKey={'auth:backToSignIn'} />
+              </Link>
+            </Button>
+          </div>
+        </>
+      );
+    }
+  }
+
+  // Build the sign-in URL with appropriate token parameters
+  let signInPath = pathsConfig.auth.signIn;
+  const params = new URLSearchParams();
+  
+  // Add tokens to params if they exist
+  if (personalInviteToken) {
+    params.set('personal_invite_token', personalInviteToken);
+  }
+  
+  if (inviteToken) {
+    params.set('invite_token', inviteToken);
+  }
+  
+  // Append query string if we have parameters
+  const queryString = params.toString();
+  if (queryString) {
+    signInPath += `?${queryString}`;
+  }
 
   return (
     <>
@@ -46,22 +144,36 @@ async function SignUpPage({ searchParams }: Props) {
         <p className={'text-muted-foreground text-sm'}>
           <Trans i18nKey={'auth:signUpSubheading'} />
         </p>
+        
+        {personalInviteValid && personalInviteEmail && (
+          <Alert variant="default" className="mt-4 bg-primary/5 border-primary/10">
+            <AlertDescription>
+              {i18n.t('auth:signingUpWithInvitation', { email: personalInviteEmail })}
+            </AlertDescription>
+          </Alert>
+        )}
       </div>
 
-      <SignUpMethodsContainer
+      <SignUpClientWrapper
         providers={authConfig.providers}
         displayTermsCheckbox={authConfig.displayTermsCheckbox}
-        inviteToken={inviteToken}
+        teamInviteToken={personalInviteValid ? undefined : inviteToken}
+        personalInviteToken={personalInviteValid ? personalInviteToken : undefined}
+        preferredLanguage={personalInviteLanguage}
+        defaultEmail={personalInviteValid ? personalInviteEmail : undefined}
         paths={paths}
       />
 
-      <div className={'flex justify-center'}>
-        <Button asChild variant={'link'} size={'sm'}>
-          <Link href={signInPath}>
-            <Trans i18nKey={'auth:alreadyHaveAnAccount'} />
-          </Link>
-        </Button>
-      </div>
+      {/* Only show the sign-in link if not using a personal invitation */}
+      {!personalInviteValid && (
+        <div className={'flex justify-center'}>
+          <Button asChild variant={'link'} size={'sm'}>
+            <Link href={signInPath}>
+              <Trans i18nKey={'auth:alreadyHaveAnAccount'} />
+            </Link>
+          </Button>
+        </div>
+      )}
     </>
   );
 }

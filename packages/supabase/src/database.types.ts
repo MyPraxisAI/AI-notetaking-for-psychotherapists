@@ -7,6 +7,32 @@ export type Json =
   | Json[]
 
 export type Database = {
+  anonymous: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      get_invite_by_token: {
+        Args: {
+          token_param: string
+        }
+        Returns: {
+          email: string
+          valid: boolean
+          language: string
+        }[]
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   graphql_public: {
     Tables: {
       [_ in never]: never
@@ -637,6 +663,88 @@ export type Database = {
             columns: ["billing_customer_id"]
             isOneToOne: false
             referencedRelation: "billing_customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      personal_invites: {
+        Row: {
+          accepted_at: string | null
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          invited_account_id: string | null
+          invited_by_account_id: string
+          language: string
+          status: Database["public"]["Enums"]["invite_status"]
+          token: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          created_at?: string
+          email: string
+          expires_at?: string
+          id?: string
+          invited_account_id?: string | null
+          invited_by_account_id: string
+          language?: string
+          status?: Database["public"]["Enums"]["invite_status"]
+          token: string
+        }
+        Update: {
+          accepted_at?: string | null
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          invited_account_id?: string | null
+          invited_by_account_id?: string
+          language?: string
+          status?: Database["public"]["Enums"]["invite_status"]
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "personal_invites_invited_account_id_fkey"
+            columns: ["invited_account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "personal_invites_invited_account_id_fkey"
+            columns: ["invited_account_id"]
+            isOneToOne: false
+            referencedRelation: "user_account_workspace"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "personal_invites_invited_account_id_fkey"
+            columns: ["invited_account_id"]
+            isOneToOne: false
+            referencedRelation: "user_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "personal_invites_invited_by_account_id_fkey"
+            columns: ["invited_by_account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "personal_invites_invited_by_account_id_fkey"
+            columns: ["invited_by_account_id"]
+            isOneToOne: false
+            referencedRelation: "user_account_workspace"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "personal_invites_invited_by_account_id_fkey"
+            columns: ["invited_by_account_id"]
+            isOneToOne: false
+            referencedRelation: "user_accounts"
             referencedColumns: ["id"]
           },
         ]
@@ -1411,6 +1519,13 @@ export type Database = {
         }
         Returns: string
       }
+      accept_personal_invite_by_token: {
+        Args: {
+          token_param: string
+          account_id_param: string
+        }
+        Returns: string
+      }
       add_invitations_to_account: {
         Args: {
           account_slug: string
@@ -1737,6 +1852,7 @@ export type Database = {
         | "client_bio"
         | "session_speaker_roles_classification"
       billing_provider: "stripe" | "lemon-squeezy" | "paddle"
+      invite_status: "pending" | "accepted" | "revoked"
       language: "en" | "ru"
       notification_channel: "in_app" | "email"
       notification_type: "info" | "warning" | "error"

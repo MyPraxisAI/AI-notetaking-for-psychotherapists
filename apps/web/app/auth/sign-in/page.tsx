@@ -6,6 +6,7 @@ import { Heading } from '@kit/ui/heading';
 import { Trans } from '@kit/ui/trans';
 
 import authConfig from '~/config/auth.config';
+import featuresFlagConfig from '~/config/feature-flags.config';
 import pathsConfig from '~/config/paths.config';
 import { createI18nServerInstance } from '~/lib/i18n/i18n.server';
 import { withI18n } from '~/lib/i18n/with-i18n';
@@ -13,6 +14,7 @@ import { withI18n } from '~/lib/i18n/with-i18n';
 interface SignInPageProps {
   searchParams: Promise<{
     invite_token?: string;
+    personal_invite_token?: string;
     next?: string;
   }>;
 }
@@ -26,11 +28,23 @@ export const generateMetadata = async () => {
 };
 
 async function SignInPage({ searchParams }: SignInPageProps) {
-  const { invite_token: inviteToken, next = '' } = await searchParams;
-
-  const signUpPath =
-    pathsConfig.auth.signUp +
-    (inviteToken ? `?invite_token=${inviteToken}` : '');
+  // Get both team and personal invitation tokens
+  const resolvedParams = await searchParams;
+  const { invite_token: inviteToken, personal_invite_token: personalInviteToken, next = '' } = resolvedParams;
+  
+  // Check if invitation-only mode is enabled
+  const isInvitationOnlyMode = featuresFlagConfig.enableInvitationOnlySignup;
+  
+  // Create the sign-up URL with the appropriate token
+  const signUpParams = new URLSearchParams();
+  
+  if (personalInviteToken) {
+    signUpParams.append('personal_invite_token', personalInviteToken);
+  } else if (inviteToken) {
+    signUpParams.append('invite_token', inviteToken);
+  }
+  
+  const signUpPath = `${pathsConfig.auth.signUp}${signUpParams.toString() ? `?${signUpParams.toString()}` : ''}`;
 
   const paths = {
     callback: pathsConfig.auth.callback,
@@ -51,18 +65,22 @@ async function SignInPage({ searchParams }: SignInPageProps) {
       </div>
 
       <SignInMethodsContainer
-        inviteToken={inviteToken}
+        personalInviteToken={personalInviteToken}
+        teamInviteToken={inviteToken}
         paths={paths}
         providers={authConfig.providers}
       />
 
-      <div className={'flex justify-center'}>
-        <Button asChild variant={'link'} size={'sm'}>
-          <Link href={signUpPath}>
-            <Trans i18nKey={'auth:doNotHaveAccountYet'} />
-          </Link>
-        </Button>
-      </div>
+      {/* Only show sign-up link if not in invitation-only mode */}
+      {(!isInvitationOnlyMode) && (
+        <div className={'flex justify-center'}>
+          <Button asChild variant={'link'} size={'sm'}>
+            <Link href={signUpPath}>
+              <Trans i18nKey={'auth:doNotHaveAccountYet'} />
+            </Link>
+          </Button>
+        </div>
+      )}
     </>
   );
 }

@@ -1,0 +1,10 @@
+{
+  "subject": "You have been invited to join MyPraxis",
+  "heading": "Join {{productName}}",
+  "hello": "Hello {{invitedUserEmail}},",
+  "mainText": "<strong>{{inviterName}}</strong> ({{inviterEmail}}) has invited you to join <strong>{{productName}}</strong>.",
+  "joinApp": "Join {{productName}}",
+  "joinInvitation": "Accept Invitation",
+  "copyPasteLink": "or copy and paste this URL into your browser:",
+  "invitationIntendedFor": "This invitation is intended for {{invitedUserEmail}}."
+}
