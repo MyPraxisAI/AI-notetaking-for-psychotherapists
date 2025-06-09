@@ -28,8 +28,8 @@
     "supabase:deploy": "supabase link --project-ref $SUPABASE_PROJECT_REF && supabase db push",
     "supabase:reset-prod": "supabase link --project-ref $SUPABASE_PROJECT_REF && supabase db reset --linked",
     "supabase:typegen": "pnpm run supabase:typegen:packages && pnpm run supabase:typegen:app",
-    "supabase:typegen:packages": "supabase gen types typescript --local --schema=public,anonymous > ../../packages/supabase/src/database.types.ts",
-    "supabase:typegen:app": "supabase gen types typescript --local --schema=public,anonymous > ./lib/database.types.ts",
+    "supabase:typegen:packages": "supabase gen types typescript --local --schema=public,anonymous,storage,graphql_public > ../../packages/supabase/src/database.types.ts",
+    "supabase:typegen:app": "supabase gen types typescript --local --schema=public,anonymous,storage,graphql_public > ./lib/database.types.ts",
     "supabase:db:dump:local": "supabase db dump --local --data-only"
   },
   "dependencies": {
