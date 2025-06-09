@@ -777,15 +777,15 @@ export function RecordingModal({
       });
       
       // 3. Navigate to the session
-      toast.success('Audio file imported successfully');
+      toast.success(t("recordingModal.import.success"));
       if (result.sessionId) {
         await onSave(result.sessionId);
       } else {
         await onSave();
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to import audio file');
-      toast.error(err instanceof Error ? err.message : 'Failed to import audio file');
+      setError(err instanceof Error ? err.message : t("recordingModal.import.error"));
+      toast.error(err instanceof Error ? err.message : t("recordingModal.import.error"));
     } finally {
       setIsImporting(false);
       // Reset file input

@@ -261,7 +261,9 @@
     "import": {
       "or": "or",
       "button": "Import Audio File",
-      "importing": "Importing Audio File..."
+      "importing": "Importing Audio File...",
+      "success": "Audio file imported successfully",
+      "error": "Failed to import audio file"
     },
     "close": "close",
     "confirmCloseTitle": "Confirm Close",
