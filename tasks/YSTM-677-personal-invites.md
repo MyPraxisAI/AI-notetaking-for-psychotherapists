@@ -1,10 +1,8 @@
 # Personal Invitations Implementation Plan
 
 TODO:
-[x] !!! MAX (after deploy): add anonymous to exposed schemas in Supabase!!!
-[x] Implement token separation in auth components (teamInviteToken vs personalInviteToken)
-[x] Implement personal invitation processing after authentication
-[x] Create `/complete-personal-invite` endpoint and server action
+[ ] !!! MAX (after deploy): add anonymous to exposed schemas in Supabase!!!
+[ ] !!! Mark stan and yasha as superadmins
 
 ## Testing
 [ ] Test personal invitation flow with OAuth providers

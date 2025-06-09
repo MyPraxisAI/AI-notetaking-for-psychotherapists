@@ -5,13 +5,6 @@ import { enhanceAction } from '@kit/next/actions';
 import { getSupabaseAnonymousClient } from '@kit/supabase/server-client';
 import { getLogger } from '@kit/shared/logger';
 
-// Type for the response from the anonymous.get_invite_by_token function
-type InviteValidationResponse = {
-  email: string | null;
-  valid: boolean;
-  language: string | null;
-};
-
 const TokenSchema = z.object({
   token: z.string().min(1),
 });
