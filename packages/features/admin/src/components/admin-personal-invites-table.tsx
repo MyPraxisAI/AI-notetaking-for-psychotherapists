@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { useTranslation, type TFunction } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ColumnDef } from '@tanstack/react-table';
@@ -60,6 +60,80 @@ export function AdminPersonalInvitesTable(
 ) {
   const { t } = useTranslation(['admin']);
 
+  // Define columns within the component to avoid using TFunction type
+  const columns: ColumnDef<PersonalInvite>[] = [
+    {
+      id: 'email',
+      header: t('admin:personalInvites.columns.email', 'Email'),
+      accessorKey: 'email',
+    },
+    {
+      id: 'language',
+      header: t('admin:personalInvites.columns.language', 'Language'),
+      accessorKey: 'language',
+      cell: ({ row }) => {
+        const language = row.original.language || 'en';
+        const languageNames: Record<string, string> = {
+          en: t('admin:languages.english', 'English'),
+          ru: t('admin:languages.russian', 'Russian'),
+        };
+        
+        return languageNames[language] || language;
+      },
+    },
+    {
+      id: 'status',
+      header: t('admin:personalInvites.columns.status', 'Status'),
+      accessorKey: 'status',
+      cell: ({ row }) => {
+        const status = row.original.status;
+        const statusColors: Record<InviteStatus, string> = {
+          pending: 'bg-blue-100 text-blue-800',
+          accepted: 'bg-green-100 text-green-800',
+          revoked: 'bg-red-100 text-red-800',
+        };
+        
+        // Use existing translations from filters
+        const statusLabel = t(`admin:personalInvites.filters.${status}`, status.charAt(0).toUpperCase() + status.slice(1));
+
+        return (
+          <span className={`px-2 py-1 rounded-md text-xs font-medium ${statusColors[status]}`}>
+            {statusLabel}
+          </span>
+        );
+      },
+    },
+    {
+      id: 'created_at',
+      header: t('admin:personalInvites.columns.createdAt', 'Created At'),
+      accessorKey: 'created_at',
+      cell: ({ row }) => formatDate(new Date(row.original.created_at), 'PPP'),
+    },
+    {
+      id: 'expires_at',
+      header: t('admin:personalInvites.columns.expiresAt', 'Expires At'),
+      accessorKey: 'expires_at',
+      cell: ({ row }) => formatDate(new Date(row.original.expires_at), 'PPP'),
+    },
+    {
+      id: 'accepted_at',
+      header: t('admin:personalInvites.columns.acceptedAt', 'Accepted At'),
+      accessorKey: 'accepted_at',
+      cell: ({ row }) => row.original.accepted_at 
+        ? formatDate(new Date(row.original.accepted_at), 'PPP') 
+        : '-',
+    },
+    {
+      id: 'actions',
+      header: '',
+      cell: ({ row }) => {
+        return (
+          <InviteActionsDropdown invite={row.original} t={t} />
+        );
+      },
+    },
+  ];
+
   return (
     <div className={'flex flex-col space-y-4'}>
       <div className={'flex justify-end'}>
@@ -71,7 +145,7 @@ export function AdminPersonalInvitesTable(
         pageIndex={props.page - 1}
         pageCount={props.pageCount}
         data={props.data}
-        columns={getColumns(t)}
+        columns={columns}
       />
     </div>
   );
@@ -163,82 +237,9 @@ function PersonalInvitesTableFilters(props: {
   );
 }
 
-function getColumns(t: TFunction): ColumnDef<PersonalInvite>[] {
-  return [
-    {
-      id: 'email',
-      header: t('admin:personalInvites.columns.email', 'Email'),
-      accessorKey: 'email',
-    },
-    {
-      id: 'language',
-      header: t('admin:personalInvites.columns.language', 'Language'),
-      accessorKey: 'language',
-      cell: ({ row }) => {
-        const language = row.original.language || 'en';
-        const languageNames: Record<string, string> = {
-          en: t('admin:languages.english', 'English'),
-          ru: t('admin:languages.russian', 'Russian'),
-        };
-        
-        return languageNames[language] || language;
-      },
-    },
-    {
-      id: 'status',
-      header: t('admin:personalInvites.columns.status', 'Status'),
-      accessorKey: 'status',
-      cell: ({ row }) => {
-        const status = row.original.status;
-        const statusColors: Record<InviteStatus, string> = {
-          pending: 'bg-blue-100 text-blue-800',
-          accepted: 'bg-green-100 text-green-800',
-          revoked: 'bg-red-100 text-red-800',
-        };
-        
-        // Use existing translations from filters
-        const statusLabel = t(`admin:personalInvites.filters.${status}`, status.charAt(0).toUpperCase() + status.slice(1));
 
-        return (
-          <span className={`px-2 py-1 rounded-md text-xs font-medium ${statusColors[status]}`}>
-            {statusLabel}
-          </span>
-        );
-      },
-    },
-    {
-      id: 'created_at',
-      header: t('admin:personalInvites.columns.createdAt', 'Created At'),
-      accessorKey: 'created_at',
-      cell: ({ row }) => formatDate(new Date(row.original.created_at), 'PPP'),
-    },
-    {
-      id: 'expires_at',
-      header: t('admin:personalInvites.columns.expiresAt', 'Expires At'),
-      accessorKey: 'expires_at',
-      cell: ({ row }) => formatDate(new Date(row.original.expires_at), 'PPP'),
-    },
-    {
-      id: 'accepted_at',
-      header: t('admin:personalInvites.columns.acceptedAt', 'Accepted At'),
-      accessorKey: 'accepted_at',
-      cell: ({ row }) => row.original.accepted_at 
-        ? formatDate(new Date(row.original.accepted_at), 'PPP') 
-        : '-',
-    },
-    {
-      id: 'actions',
-      header: '',
-      cell: ({ row }) => {
-        return (
-          <InviteActionsDropdown invite={row.original} t={t} />
-        );
-      },
-    },
-  ];
-}
 
-function InviteActionsDropdown({ invite, t }: { invite: PersonalInvite, t: TFunction }) {
+function InviteActionsDropdown({ invite, t }: { invite: PersonalInvite, t: ReturnType<typeof useTranslation>['t'] }) {
   const router = useRouter();
   const isPending = invite.status === 'pending';
   const [isRevoking, setIsRevoking] = useState(false);
