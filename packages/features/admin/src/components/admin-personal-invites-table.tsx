@@ -241,8 +241,6 @@ function InviteActionsDropdown({ invite }: { invite: PersonalInvite }) {
   const [isResending, setIsResending] = useState(false);
   const [isPendingTransition, startTransition] = useTransition();
 
-  const queryClient = useQueryClient();
-
   const mutation = useMutation({
     mutationFn: async (id: string) => {
       setIsRevoking(true);
@@ -251,7 +249,9 @@ function InviteActionsDropdown({ invite }: { invite: PersonalInvite }) {
       return result;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'personal-invites'] });
+      // Refresh the page to update the UI immediately
+      router.refresh();
+      
       toast.success(t('admin:personalInvites.actions.revokeSuccess', 'Invitation revoked'), {
         description: t('admin:personalInvites.actions.revokeSuccessDescription', 'The invitation has been successfully revoked.'),
       });
