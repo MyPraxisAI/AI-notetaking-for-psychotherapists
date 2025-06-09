@@ -21,7 +21,8 @@
       "status": "Status",
       "language": "Language",
       "createdAt": "Created At",
-      "expiresAt": "Expires At"
+      "expiresAt": "Expires At",
+      "acceptedAt": "Accepted At"
     },
     "actions": {
       "label": "Actions",

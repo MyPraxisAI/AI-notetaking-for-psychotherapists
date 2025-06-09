@@ -221,6 +221,14 @@ function getColumns(): ColumnDef<PersonalInvite>[] {
       cell: ({ row }) => formatDate(new Date(row.original.expires_at), 'PPP'),
     },
     {
+      id: 'accepted_at',
+      header: t('admin:personalInvites.columns.acceptedAt', 'Accepted At'),
+      accessorKey: 'accepted_at',
+      cell: ({ row }) => row.original.accepted_at 
+        ? formatDate(new Date(row.original.accepted_at), 'PPP') 
+        : '-',
+    },
+    {
       id: 'actions',
       header: '',
       cell: ({ row }) => {

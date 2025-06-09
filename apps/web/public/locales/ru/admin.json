@@ -21,7 +21,8 @@
       "status": "Статус",
       "language": "Язык",
       "createdAt": "Дата создания",
-      "expiresAt": "Срок действия до"
+      "expiresAt": "Срок действия до",
+      "acceptedAt": "Дата принятия"
     },
     "actions": {
       "label": "Действия",
