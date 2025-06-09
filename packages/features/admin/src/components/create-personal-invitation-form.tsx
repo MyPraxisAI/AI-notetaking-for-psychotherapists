@@ -79,9 +79,13 @@ export function CreatePersonalInvitationForm({ onSuccess }: { onSuccess?: () => 
             description: t('admin:personalInvites.form.failedToSend', 'Failed to send invitation')
           });
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error 
+          ? error.message 
+          : t('admin:personalInvites.form.somethingWentWrong', 'Something went wrong');
+          
         toast.error(t('admin:personalInvites.form.error', 'Error'), {
-          description: error?.message || t('admin:personalInvites.form.somethingWentWrong', 'Something went wrong')
+          description: errorMessage
         });
       }
     });

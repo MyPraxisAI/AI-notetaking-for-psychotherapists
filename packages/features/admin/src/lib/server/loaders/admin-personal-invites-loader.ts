@@ -1,6 +1,5 @@
 import { getSupabaseServerAdminClient } from '@kit/supabase/server-admin-client';
 import { getLogger } from '@kit/shared/logger';
-import { InviteStatusEnum } from '@kit/personal-invitations';
 
 const DEFAULT_PAGE_SIZE = 10;
 
