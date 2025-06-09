@@ -115,12 +115,24 @@ async function SignUpPage({ searchParams }: Props) {
     }
   }
 
-  // Determine which token to pass to the sign-up component
-  // Priority: Personal invite token > Team invite token
-  const tokenToUse = personalInviteToken || inviteToken;
-  const signInPath =
-    pathsConfig.auth.signIn +
-    (tokenToUse ? `?invite_token=${tokenToUse}` : '');
+  // Build the sign-in URL with appropriate token parameters
+  let signInPath = pathsConfig.auth.signIn;
+  const params = new URLSearchParams();
+  
+  // Add tokens to params if they exist
+  if (personalInviteToken) {
+    params.set('personal_invite_token', personalInviteToken);
+  }
+  
+  if (inviteToken) {
+    params.set('invite_token', inviteToken);
+  }
+  
+  // Append query string if we have parameters
+  const queryString = params.toString();
+  if (queryString) {
+    signInPath += `?${queryString}`;
+  }
 
   return (
     <>

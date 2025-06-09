@@ -1,11 +1,7 @@
 # Personal Invitations Implementation Plan
 
 TODO:
-[ ] from: email
-[ ] post registration update - still doesn't work
-[ ] Max  (after deploy!): Create the personal_invites webhook in supabase (similar to invites).
-[ ] To fix: mypraxis-webapp/apps/web/lib/server/personal-invitations/webhooks/personal-invite-webhook.service.ts - this is not using personal-invite-email-service!
-[ ] Check if all translations are in place
+[x] !!! MAX (after deploy): add anonymous to exposed schemas in Supabase!!!
 [x] Implement token separation in auth components (teamInviteToken vs personalInviteToken)
 [x] Implement personal invitation processing after authentication
 [x] Create `/complete-personal-invite` endpoint and server action
@@ -14,7 +10,7 @@ TODO:
 [ ] Test personal invitation flow with OAuth providers
 [ ] Test personal invitation flow with Magic Link
 [ ] Test personal invitation flow with Password signup
-[ ] Verify correct invitation status updates in database
+[x] Verify correct invitation status updates in database
 
 ## 1. Database Schema Design
 
@@ -55,7 +51,7 @@ TODO:
   - Integrated with existing mailer infrastructure via `@kit/mailers`
   - Added email sending to invitation creation process with error handling
 
-- [ ] **Modify authentication flow:**
+- [x] **Modify authentication flow:**
   - Update sign-up logic to check for valid invitations
   - Create invitation acceptance handler
   - Handle automatic account linking

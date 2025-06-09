@@ -71,7 +71,7 @@ async function SignInPage({ searchParams }: SignInPageProps) {
         providers={authConfig.providers}
       />
 
-      {/* Only show sign-up link if not in invitation-only mode or if the user has an invitation token */}
+      {/* Only show sign-up link if not in invitation-only mode */}
       {(!isInvitationOnlyMode) && (
         <div className={'flex justify-center'}>
           <Button asChild variant={'link'} size={'sm'}>
