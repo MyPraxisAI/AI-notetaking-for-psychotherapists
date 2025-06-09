@@ -1,7 +1,7 @@
 -- PostgreSQL has gen_random_uuid() built-in via pgcrypto which is enabled by default in Supabase
 
 -- Create enum for invitation status
-CREATE TYPE public.invite_status AS ENUM ('pending', 'accepted', 'expired', 'revoked');
+CREATE TYPE public.invite_status AS ENUM ('pending', 'accepted', 'revoked');
 
 -- Create personal_invites table with proper relations
 CREATE TABLE public.personal_invites (
@@ -145,4 +145,4 @@ COMMENT ON TABLE public.personal_invites IS 'Stores personal account invitations
 COMMENT ON COLUMN public.personal_invites.email IS 'Email address of the invited user';
 COMMENT ON COLUMN public.personal_invites.token IS 'Secure token for accepting the invitation';
 COMMENT ON COLUMN public.personal_invites.invited_by_account_id IS 'Account ID of the account that created the invitation';
-COMMENT ON COLUMN public.personal_invites.status IS 'Current status of the invitation: pending, accepted, expired, or revoked';
+COMMENT ON COLUMN public.personal_invites.status IS 'Current status of the invitation: pending, accepted or revoked';

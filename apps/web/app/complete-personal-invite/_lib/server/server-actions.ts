@@ -5,9 +5,6 @@ import { getSupabaseServerClient } from '@kit/supabase/server-client';
 import { enhanceAction } from '@kit/next/actions';
 import { getLogger } from '@kit/shared/logger';
 
-// Import custom types to extend SupabaseClient
-import './supabase.types';
-
 /**
  * Server action to complete a personal invitation by updating the invited_account_id
  */

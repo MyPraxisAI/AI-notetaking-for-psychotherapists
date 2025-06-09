@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 // Define the invite status enum to match the database
-export const InviteStatusEnum = z.enum(['pending', 'accepted', 'expired', 'revoked']);
+export const InviteStatusEnum = z.enum(['pending', 'accepted', 'revoked']);
 export type InviteStatus = z.infer<typeof InviteStatusEnum>;
 
 // Schema for creating a new invitation

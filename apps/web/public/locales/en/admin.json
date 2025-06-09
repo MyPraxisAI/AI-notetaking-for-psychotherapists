@@ -12,7 +12,6 @@
       "allInvitations": "All invitations",
       "pending": "Pending",
       "accepted": "Accepted",
-      "expired": "Expired",
       "revoked": "Revoked",
       "searchPlaceholder": "Search by email..."
     },

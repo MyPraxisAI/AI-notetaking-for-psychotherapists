@@ -195,7 +195,6 @@ function getColumns(): ColumnDef<PersonalInvite>[] {
         const statusColors: Record<InviteStatus, string> = {
           pending: 'bg-blue-100 text-blue-800',
           accepted: 'bg-green-100 text-green-800',
-          expired: 'bg-gray-100 text-gray-800',
           revoked: 'bg-red-100 text-red-800',
         };
         

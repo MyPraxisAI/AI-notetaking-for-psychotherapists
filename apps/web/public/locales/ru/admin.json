@@ -12,7 +12,6 @@
       "allInvitations": "Все приглашения",
       "pending": "В ожидании",
       "accepted": "Принято",
-      "expired": "Истекло",
       "revoked": "Отозвано",
       "searchPlaceholder": "Поиск по email..."
     },

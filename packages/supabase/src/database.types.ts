@@ -1687,10 +1687,6 @@ export type Database = {
         }
         Returns: boolean
       }
-      install_extensions: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
       is_aal2: {
         Args: Record<PropertyKey, never>
         Returns: boolean
@@ -1856,7 +1852,7 @@ export type Database = {
         | "client_bio"
         | "session_speaker_roles_classification"
       billing_provider: "stripe" | "lemon-squeezy" | "paddle"
-      invite_status: "pending" | "accepted" | "expired" | "revoked"
+      invite_status: "pending" | "accepted" | "revoked"
       language: "en" | "ru"
       notification_channel: "in_app" | "email"
       notification_type: "info" | "warning" | "error"
