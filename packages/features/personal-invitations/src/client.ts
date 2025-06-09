@@ -11,7 +11,6 @@ export {
   createPersonalInviteAction,
   listPersonalInvitesAction,
   revokePersonalInviteAction,
-  acceptPersonalInviteAction,
   resendPersonalInviteAction
 } from './lib/server/server-actions';
 

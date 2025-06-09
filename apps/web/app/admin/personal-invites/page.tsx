@@ -1,5 +1,4 @@
 import { Metadata } from 'next';
-import { getSupabaseServerClient } from '@kit/supabase/server-client';
 import { Button } from '@kit/ui/button';
 import { PlusIcon } from 'lucide-react';
 import { PageBody, PageHeader } from '@kit/ui/page';
@@ -30,7 +29,6 @@ interface PageProps {
 
 async function AdminPersonalInvitesPage({ searchParams }: PageProps) {
   const { t } = await createI18nServerInstance();
-  const client = getSupabaseServerClient();
   const params = await searchParams;
   
   const invite_status = params.invite_status ?? 'all';
@@ -43,10 +41,25 @@ async function AdminPersonalInvitesPage({ searchParams }: PageProps) {
     query,
   });
   
+  // Define the type for personal invites based on the database structure
+  type PersonalInvite = {
+    id: string;
+    email: string;
+    status: 'pending' | 'accepted' | 'revoked';
+    invited_by_account_id: string;
+    invited_account_id: string | null;
+    created_at: string;
+    expires_at: string;
+    accepted_at: string | null;
+    token: string;
+    language: string;
+  };
+
   // Transform data to match the expected component structure
-  const data = rawData.map(invite => ({
+  const data = rawData.map((invite: PersonalInvite) => ({
     ...invite,
-    invited_account_id: invite.account_id,
+    // Don't attempt to add account_id property since it doesn't exist in the original data
+    // Instead, it's already correctly named as invited_account_id in the database
   }));
 
   return (
@@ -70,7 +83,7 @@ async function AdminPersonalInvitesPage({ searchParams }: PageProps) {
           pageSize={meta.pageSize}
           page={meta.page}
           filters={{
-            status: invite_status as any,
+            status: invite_status as 'all' | 'pending' | 'accepted' | 'revoked',
             query,
           }}
         />

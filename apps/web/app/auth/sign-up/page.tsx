@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { redirect } from 'next/navigation';
 
 import { Button } from '@kit/ui/button';
 import { Heading } from '@kit/ui/heading';

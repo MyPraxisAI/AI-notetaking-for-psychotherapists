@@ -1,9 +1,9 @@
-import { SupabaseClient } from '@supabase/supabase-js';
+// No need to import SupabaseClient as we're just extending the module
 
 // Extend the SupabaseClient rpc methods with our custom function
 declare module '@supabase/supabase-js' {
   interface SupabaseClient {
-    rpc<T = any>(
+    rpc(
       fn: 'accept_personal_invite_by_token',
       params: {
         token_param: string;

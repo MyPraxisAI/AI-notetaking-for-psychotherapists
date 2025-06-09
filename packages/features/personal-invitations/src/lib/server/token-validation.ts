@@ -48,9 +48,7 @@ export const isPersonalInviteTokenValidAction = enhanceAction(
         };
       }
       
-      // Cast data to the proper type from our function
-      const response = data as InviteValidationResponse;
-      
+      // Return the validation response
       return {
         email: data?.email || null,
         valid: !!data?.valid,

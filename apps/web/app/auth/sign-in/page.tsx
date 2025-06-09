@@ -35,12 +35,8 @@ async function SignInPage({ searchParams }: SignInPageProps) {
   // Check if invitation-only mode is enabled
   const isInvitationOnlyMode = featuresFlagConfig.enableInvitationOnlySignup;
   
-  // Determine which token to pass to the sign-up page
-  // Priority: Personal invite token > Team invite token
-  const tokenToUse = personalInviteToken || inviteToken;
-
   // Create the sign-up URL with the appropriate token
-  let signUpParams = new URLSearchParams();
+  const signUpParams = new URLSearchParams();
   
   if (personalInviteToken) {
     signUpParams.append('personal_invite_token', personalInviteToken);
@@ -69,13 +65,14 @@ async function SignInPage({ searchParams }: SignInPageProps) {
       </div>
 
       <SignInMethodsContainer
-        inviteToken={tokenToUse}
+        personalInviteToken={personalInviteToken}
+        teamInviteToken={inviteToken}
         paths={paths}
         providers={authConfig.providers}
       />
 
       {/* Only show sign-up link if not in invitation-only mode or if the user has an invitation token */}
-      {(!isInvitationOnlyMode || tokenToUse) && (
+      {(!isInvitationOnlyMode) && (
         <div className={'flex justify-center'}>
           <Button asChild variant={'link'} size={'sm'}>
             <Link href={signUpPath}>

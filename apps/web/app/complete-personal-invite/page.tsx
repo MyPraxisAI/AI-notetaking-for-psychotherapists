@@ -43,7 +43,7 @@ async function CompletePersonalInvitePage({
     }
     
     // Process the invitation
-    const result = await completePersonalInviteAction({
+    await completePersonalInviteAction({
       token: personalInviteToken,
       invitedAccountId: accountId,
     });
@@ -51,13 +51,18 @@ async function CompletePersonalInvitePage({
     // After successful processing, redirect to the dashboard
     return redirect('/home');
   } catch (error) {
+    // Define a type for Next.js redirect errors
+    type NextRedirectError = { digest: string };
+    // Define a type for authentication errors
+    type AuthError = { status: number };
+    
     // Rethrow NEXT_REDIRECT errors so they're handled by Next.js
-    if ((error as any)?.digest?.startsWith('NEXT_REDIRECT')) {
+    if ((error as NextRedirectError)?.digest?.startsWith('NEXT_REDIRECT')) {
       throw error;
     }
     
     // If error is due to authentication, redirect to sign-in
-    if ((error as any)?.status === 401) {
+    if ((error as AuthError)?.status === 401) {
       return redirect(`/auth/sign-in?personal_invite_token=${personalInviteToken}`);
     }
     

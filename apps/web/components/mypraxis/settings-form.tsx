@@ -27,7 +27,8 @@ import { useUpdateAvatar } from "../../app/home/(user)/mypraxis/_lib/hooks/use-u
 import { ImageUploader } from "@kit/ui/image-uploader"
 import { GeoLocalitiesSelect } from "./geo-localities-select"
 import { TherapeuticApproachesSelect } from "./therapeutic-approaches-select"
-import { useTranslation, Trans } from "react-i18next"
+import { useTranslation } from "react-i18next"
+import { Trans } from "@kit/ui/trans"
 import { useUserWorkspace } from "@kit/accounts/hooks/use-user-workspace"
 
 import { X } from "lucide-react"

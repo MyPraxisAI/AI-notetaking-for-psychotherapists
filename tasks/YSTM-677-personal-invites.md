@@ -47,7 +47,6 @@ TODO:
       - `revokePersonalInviteAction`
       - `listPersonalInvitesAction` 
       - `verifyPersonalInviteAction`
-      - `acceptPersonalInviteAction`
   - Added proper error handling and structured logging
 
 - [x] **Create email notification system:**

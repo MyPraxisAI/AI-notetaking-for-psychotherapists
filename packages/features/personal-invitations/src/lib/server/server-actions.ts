@@ -3,15 +3,16 @@
 import { z } from 'zod';
 import { randomUUID } from 'crypto';
 import { enhanceAction } from '@kit/next/actions';
-import { getSupabaseServerClient, SupabaseClient } from '@kit/supabase/server-client';
+import { getSupabaseServerClient } from '@kit/supabase/server-client';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { getLogger, Logger } from '@kit/shared/logger';
 import { createAccountsApi } from '@kit/web-bg-common';
-import { Database } from '@kit/supabase/database.types';
+// Import Database type from the standard path used in the project
+import type { Database } from '@kit/supabase/database';
 
 import {
   CreatePersonalInviteSchema,
   RevokePersonalInviteSchema,
-  AcceptPersonalInviteSchema,
   ResendPersonalInviteSchema,
   PersonalInvite
 } from './schemas/personal-invitations.schema';
@@ -29,7 +30,7 @@ async function sendPersonalInvitationEmail(
   invite: PersonalInvite,
   client: SupabaseClient<Database>,
   logger: Logger,
-  logContext: Record<string, any>
+  logContext: Record<string, unknown>
 ): Promise<boolean> {
   try {
     // Dynamically import the email service to prevent bundling with client code
@@ -271,61 +272,5 @@ export const resendPersonalInviteAction = enhanceAction(
   }
 );
 
-/**
- * Accept a personal invitation and mark it as accepted
- * NOTE: This action doesn't create the user account - that's handled by the signup flow
- * It only marks the invitation as accepted once the user has successfully signed up
- */
-export const acceptPersonalInviteAction = enhanceAction(
-  async function (data, user) {
-    const client = getSupabaseServerClient();
-    const logger = await getLogger();
-    const ctx = {
-      name: 'accept-personal-invite',
-      token: '***',  // Redacted for security
-      userId: user.id
-    };
-
-    try {
-      logger.info(ctx, 'Accepting personal invitation');
-
-      // First verify the invite is valid
-      const { data: invite, error: verifyError } = await client
-        .rpc('get_invite_by_token', { token_param: data.token })
-        .single();
-
-      if (verifyError || !invite) {
-        logger.error({ ...ctx, error: verifyError }, 'Failed to verify personal invitation for acceptance');
-        return { 
-          success: false, 
-          message: 'Invalid or expired invitation token'
-        };
-      }
-
-      // Update the invitation status
-      const { error: updateError } = await client
-        .from('personal_invites')
-        .update({
-          status: 'accepted',
-          accepted_at: new Date().toISOString(),
-          invited_account_id: user.id // Link to the user's personal account
-        })
-        .eq('token', data.token);
-
-      if (updateError) {
-        logger.error({ ...ctx, error: updateError }, 'Failed to update personal invitation status');
-        throw updateError;
-      }
-
-      logger.info(ctx, 'Personal invitation accepted successfully');
-      return { success: true };
-    } catch (error) {
-      logger.error({ ...ctx, error }, 'Error accepting personal invitation');
-      throw error;
-    }
-  },
-  {
-    auth: true, // User must be authenticated to accept an invitation
-    schema: AcceptPersonalInviteSchema,
-  }
-);
+// Note: Personal invite acceptance is now handled by completePersonalInviteAction
+// in /apps/web/app/complete-personal-invite/_lib/server/server-actions.ts
