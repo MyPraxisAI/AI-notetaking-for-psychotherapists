@@ -72,6 +72,8 @@ export function RecordingModal({
   const [isRecording, setIsRecording] = useState(false)
   const [recordingId, setRecordingId] = useState<string | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
+  const [isResuming, setIsResuming] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isImporting, setIsImporting] = useState(false)
@@ -283,22 +285,30 @@ export function RecordingModal({
     if (!recordingId) return
     
     try {
-      setIsProcessing(true)
       setError(null)
       
       const result = await RecordingAPI.resumeRecording(recordingId)
       
-      if (!result) {
-        throw new Error('Failed to resume recording')
+      if (result) {
+        // Resume the MediaRecorder using the utility function
+        if (mediaRecorder.current) {
+          MediaRecorderUtils.resumeMediaRecorder(mediaRecorder.current);
+        }
+        
+        setIsRecording(true)
+        setModalState("recording")
+        
+        // Restart timer
+        timerInterval.current = setInterval(() => {
+          setTimer(prev => prev + 1)
+        }, 1000)
+        
+        return result
       }
-      
-      return result
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to resume recording')
       toast.error(err instanceof Error ? err.message : 'Failed to resume recording')
       return null
-    } finally {
-      setIsProcessing(false)
     }
   }
   
@@ -709,30 +719,17 @@ export function RecordingModal({
   
   const handleResumeRecording = async () => {
     try {
-      setIsProcessing(true)
+      setIsResuming(true)
       
       const result = await resumeRecording()
       
       if (result) {
-        // Resume the MediaRecorder using the utility function
-        if (mediaRecorder.current) {
-          MediaRecorderUtils.resumeMediaRecorder(mediaRecorder.current);
-        }
-        
-        setIsRecording(true)
-        setModalState("recording")
-        
-        // Restart timer
-        timerInterval.current = setInterval(() => {
-          setTimer(prev => prev + 1)
-        }, 1000)
-        
-        setIsProcessing(false)
+        setIsResuming(false)
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to resume recording')
       toast.error(err instanceof Error ? err.message : 'Failed to resume recording')
-      setIsProcessing(false)
+      setIsResuming(false)
     }
   }
   
@@ -798,7 +795,7 @@ export function RecordingModal({
 
   const handleSaveSession = async () => {
     try {
-      setModalState("saving")
+      setIsSaving(true)
       
       // Stop the MediaRecorder using the utility function
       if (mediaRecorder.current) {
@@ -831,12 +828,12 @@ export function RecordingModal({
           await onSave()
         }
       } else {
-        setModalState("paused")
+        setIsSaving(false)
         toast.error('Failed to save recording. Please try again.')
       }
     } catch (error) {
       console.error('Error in handleSaveSession:', error)
-      setModalState("paused")
+      setIsSaving(false)
       toast.error('An error occurred while saving the recording.')
     }
   };
@@ -872,6 +869,13 @@ export function RecordingModal({
       }
     }
   }, [])
+  
+  useEffect(() => {
+    if (modalState === "paused") {
+      setIsSaving(false);
+      setIsResuming(false);
+    }
+  }, [modalState]);
   
   if (!isOpen) return null
   
@@ -1110,7 +1114,7 @@ export function RecordingModal({
                   {isProcessing ? (
                     <>
                       <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                      {t("recordingModal.recording.pausing")}
+                      {/* {t("recordingModal.recording.pausing")} */}
                     </>
                   ) : (
                     <>
@@ -1121,14 +1125,14 @@ export function RecordingModal({
                 </Button>
               )}
               
-              {modalState === "paused" && (
+              {(modalState === "paused" || modalState === "saving") && (
                 <div className="flex gap-4">
                   <Button 
                     className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800"
                     onClick={handleResumeRecording}
-                    disabled={isProcessing}
+                    disabled={isResuming || isSaving}
                   >
-                    {isProcessing ? (
+                    {isResuming ? (
                       <Loader2 className="h-5 w-5 animate-spin" />
                     ) : (
                       <>
@@ -1141,25 +1145,15 @@ export function RecordingModal({
                   <Button 
                     className="flex-1 bg-green-500 hover:bg-green-600 text-white"
                     onClick={handleSaveSession}
-                    disabled={isProcessing}
+                    disabled={isResuming || isSaving}
                   >
-                    {isProcessing ? (
+                    {isSaving ? (
                       <Loader2 className="h-5 w-5 animate-spin" />
                     ) : (
                       t("recordingModal.recording.save")
                     )}
                   </Button>
                 </div>
-              )}
-              
-              {modalState === "saving" && (
-                <Button 
-                  className="w-full bg-green-500 hover:bg-green-600 text-white"
-                  disabled
-                >
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  {t("recordingModal.recording.saving")}
-                </Button>
               )}
             </div>
           </div>
