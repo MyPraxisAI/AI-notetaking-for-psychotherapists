@@ -40,7 +40,7 @@ export function MyPraxisAudioVisualizer({ stream, className = "" }: MyPraxisAudi
       if (audioContextRef.current.state !== "closed") {
         try {
           audioContextRef.current.close();
-        } catch (_e) { /* ignore error */ }
+        } catch { /* ignore error */ }
       }
       audioContextRef.current = null;
       analyserRef.current = null;
@@ -84,7 +84,7 @@ export function MyPraxisAudioVisualizer({ stream, className = "" }: MyPraxisAudi
       if (audioContextRef.current?.state !== "closed") {
         try {
           audioContextRef.current?.close();
-        } catch (_e) { /* ignore error */ }
+        } catch { /* ignore error */ }
       }
     };
   }, [stream]);
