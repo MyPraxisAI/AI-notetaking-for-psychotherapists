@@ -14,6 +14,11 @@ type Parameters<T extends (args: never) => unknown> = T extends (
 export function initializeSentryServerClient(
   props: Parameters<typeof Sentry.init>[0] = {},
 ) {
+  // Skip Sentry initialization in development environment
+  if (process.env.NODE_ENV === 'development') {
+    return;
+  }
+
   return Sentry.init({
     dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
 

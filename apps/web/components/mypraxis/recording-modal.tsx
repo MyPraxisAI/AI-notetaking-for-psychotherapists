@@ -7,7 +7,7 @@ import { Button } from "@kit/ui/button"
 import { useIsSuperAdmin } from "../../lib/client/utils/is-super-admin"
 import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogHeader, DialogFooter } from "@kit/ui/dialog"
 import { Mic, Pause, Play, Loader2, Upload, AlertTriangle } from "lucide-react"
-import { MicrophoneLevelIndicator } from "./utils/recording/microphone-level-indicator"
+import { MyPraxisAudioVisualizer } from "./utils/recording/visualizers/mypraxis-audio-visualizer"
 import { AudioChunk, uploadAudioChunks, processAudioFile } from "./utils/recording/audio-upload"
 import * as RecordingAPI from "./utils/recording/recording-api"
 import * as MediaRecorderUtils from "./utils/recording/media-recorder"
@@ -898,20 +898,24 @@ export function RecordingModal({
             </div>
 
             {modalState === "soundCheck" && (
-              <div className="p-4 bg-white">                                
+              <div className="p-4 bg-white">
                 {/* Headphone warning message */}
-                <HeadphoneWarning />
+                <div className="mb-6">
+                  <HeadphoneWarning />
+                </div>
 
-                <h2 className="block text-sm font-medium text-gray-700 mb-1">
+                <h2 className="block text-sm font-medium text-gray-700">
                   {t("recordingModal.microphone.soundCheck")}
                 </h2>
 
-                <div className="mt-2">
-                  <MicrophoneLevelIndicator stream={microphoneStream} className="mb-2" />
+                <div>
+                  <div className="flex items-center justify-center w-full h-full">
+                    <MyPraxisAudioVisualizer stream={microphoneStream} />
+                  </div>
                 </div>
 
                 {/* Device selection */}
-                <div className="mt-4">
+                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-3">
                     {t("recordingModal.microphone.label")}
                   </label>
@@ -990,12 +994,14 @@ export function RecordingModal({
               <div className="p-6 bg-white">
                 {/* Show microphone level indicator in recording state */}
                 {modalState === "recording" && (
-                  <div className="mb-4">                    
+                  <div>                    
                     {/* Headphone warning message */}
-                    <HeadphoneWarning />
+                    <div className="mb-6">
+                      <HeadphoneWarning />
+                    </div>
 
-                    <div className="mt-6">
-                      <MicrophoneLevelIndicator stream={microphoneStream} className="mb-2" />
+                    <div className="flex items-center justify-center w-full h-full">
+                      <MyPraxisAudioVisualizer stream={microphoneStream} className="mb-2" />
                     </div>
                   </div>
                 )}
