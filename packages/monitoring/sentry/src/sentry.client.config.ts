@@ -14,6 +14,11 @@ type Parameters<T extends (args: never) => unknown> = T extends (
 export function initializeSentryBrowserClient(
   props: Parameters<typeof init>[0] = {},
 ) {
+  // Skip Sentry initialization in development environment
+  if (process.env.NODE_ENV === 'development') {
+    return;
+  }
+
   return init({
     dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
     // Replay may only be enabled for the client-side
