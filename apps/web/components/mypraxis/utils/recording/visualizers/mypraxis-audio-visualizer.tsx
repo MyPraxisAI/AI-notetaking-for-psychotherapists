@@ -34,14 +34,13 @@ export function MyPraxisAudioVisualizer({ stream, className = "" }: MyPraxisAudi
   const animationFrameRef = useRef<number | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
-  const timeRef = useRef<number>(0);
 
   useEffect(() => {
     if (audioContextRef.current) {
       if (audioContextRef.current.state !== "closed") {
         try {
           audioContextRef.current.close();
-        } catch (e) {}
+        } catch (_e) { /* ignore error */ }
       }
       audioContextRef.current = null;
       analyserRef.current = null;
@@ -85,7 +84,7 @@ export function MyPraxisAudioVisualizer({ stream, className = "" }: MyPraxisAudi
       if (audioContextRef.current?.state !== "closed") {
         try {
           audioContextRef.current?.close();
-        } catch (e) {}
+        } catch (_e) { /* ignore error */ }
       }
     };
   }, [stream]);
