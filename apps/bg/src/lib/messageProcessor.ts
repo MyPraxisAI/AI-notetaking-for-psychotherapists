@@ -3,6 +3,7 @@ import { getSupabaseAdminClient } from './supabase';
 import { SQSQueueManager } from './sqs';
 import { AudioTranscriptionProcessor, AudioProcessingTaskData, ArtifactsGenerationProcessor, ArtifactsGenerateTaskData } from './processors';
 import { withCurrentAccountId } from '@kit/web-bg-common/db';
+import { captureException } from './monitoring';
 import { 
   BaseBackgroundTask, 
   SQSMessage 
@@ -74,6 +75,12 @@ export class MessageProcessor {
       await sqsManager.deleteMessage(message.ReceiptHandle);
     } catch (error: any) {
       console.error(`Error processing message ${message.MessageId}:`, error);
+      // Capture the error in Sentry with additional context
+      captureException(error, {
+        messageId: message.MessageId,
+        messageBody: message.Body,
+        receiptHandle: message.ReceiptHandle,
+      });
       // Note: Not deleting the message will cause it to become visible again after the visibility timeout
     }
   }

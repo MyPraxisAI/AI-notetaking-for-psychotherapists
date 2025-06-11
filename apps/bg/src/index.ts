@@ -2,10 +2,14 @@ import * as dotenv from 'dotenv';
 import * as http from 'http';
 import { SQSQueueManager } from './lib/sqs';
 import { MessageProcessor } from './lib/messageProcessor';
+import { captureException, captureMessage, initMonitoring } from './lib/monitoring';
 import { SQSMessage } from './types';
 
 // Load environment variables
 dotenv.config();
+
+// Initialize monitoring
+initMonitoring();
 
 // Create a simple health check server for Fargate
 const server = http.createServer((req: http.IncomingMessage, res: http.ServerResponse) => {
@@ -58,6 +62,11 @@ class Application {
       
       // Log startup information
       console.log(`Starting SQS poller for queue: ${this.sqsManager.queueName}`);
+      captureMessage('Background worker started', 'info', {
+        queueName: this.sqsManager.queueName,
+        pollingInterval: this.pollingInterval,
+        environment: process.env.NODE_ENV,
+      });
             
       // Start polling for messages
       this.startPolling();
@@ -65,6 +74,11 @@ class Application {
       return true;
     } catch (error) {
       console.error('Failed to initialize application:', error);
+      captureException(error as Error, {
+        queueName: this.sqsManager.queueName,
+        pollingInterval: this.pollingInterval,
+        environment: process.env.NODE_ENV,
+      });
       throw error;
     }
   }
@@ -124,6 +138,10 @@ const app = new Application();
 console.log('Starting background worker application...');
 app.initialize().catch(err => {
   console.error('Failed to initialize application:', err);
+  captureException(err as Error, {
+    phase: 'startup',
+    environment: process.env.NODE_ENV,
+  });
   process.exit(1);
 });
 
@@ -136,6 +154,10 @@ process.on('SIGINT', () => {
 
 process.on('SIGTERM', () => {
   console.log('Shutting down...');
+  captureMessage('Background worker shutting down', 'info', {
+    reason: 'SIGTERM',
+    environment: process.env.NODE_ENV,
+  });
   app.stopPolling();
   process.exit(0);
 });
