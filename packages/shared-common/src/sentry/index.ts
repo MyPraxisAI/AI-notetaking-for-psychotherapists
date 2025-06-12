@@ -1,10 +1,10 @@
-import type { Scope, Severity } from '@sentry/types';
+import type { Scope } from '@sentry/types';
 
 let sentryModule: any = null;
-let withScope: any = null;
-let captureExceptionFn: any = null;
-let captureMessageFn: any = null;
-let initFn: any = null;
+let withScope: ((cb: (scope: Scope) => void) => void) | null = null;
+let captureExceptionFn: ((error: unknown) => void) | null = null;
+let captureMessageFn: ((message: string, level?: SentryLevel) => void) | null = null;
+let initFn: ((options: unknown) => void) | null = null;
 
 type SentryLevel = 'fatal' | 'error' | 'warning' | 'log' | 'info' | 'debug';
 
@@ -54,14 +54,14 @@ export async function captureException(error: Error, context?: Record<string, an
   if (!captureExceptionFn || !withScope) await initSentryAdapter();
   try {
     if (context) {
-      withScope((scope: Scope) => {
+      if (withScope) withScope((scope: Scope) => {
         Object.entries(context).forEach(([key, value]) => {
           scope.setExtra(key, value);
         });
-        captureExceptionFn(error);
+        if (captureExceptionFn) captureExceptionFn(error);
       });
     } else {
-      captureExceptionFn(error);
+      if (captureExceptionFn) captureExceptionFn(error);
     }
   } catch (sentryError) {
     console.error('Failed to capture exception in Sentry:', {
@@ -86,14 +86,14 @@ export async function captureMessage(
   if (!captureMessageFn || !withScope) await initSentryAdapter();
   try {
     if (context) {
-      withScope((scope: Scope) => {
+      if (withScope) withScope((scope: Scope) => {
         Object.entries(context).forEach(([key, value]) => {
           scope.setExtra(key, value);
         });
-        captureMessageFn(message, level);
+        if (captureMessageFn) captureMessageFn(message, level);
       });
     } else {
-      captureMessageFn(message, level);
+      if (captureMessageFn) captureMessageFn(message, level);
     }
   } catch (sentryError) {
     console.error('Failed to capture message in Sentry:', {
@@ -116,7 +116,7 @@ export async function initSentry(config: {
 }) {
   if (!initFn) await initSentryAdapter();
   try {
-    initFn({
+    if (initFn) initFn({
       dsn: config.dsn,
       environment: config.environment || process.env.NODE_ENV,
       tracesSampleRate: config.tracesSampleRate ?? 1.0,
@@ -132,7 +132,7 @@ export function withScopeAndContext(context: Record<string, any>, cb: () => void
   // Debug: log context being forwarded
   // eslint-disable-next-line no-console
   console.debug('[Sentry] withScope called with context:', context);
-  withScope((scope: Scope) => {
+  if (withScope) withScope((scope: Scope) => {
     if (context.module) {
       // eslint-disable-next-line no-console
       console.debug('[Sentry] setTag module:', context.module);

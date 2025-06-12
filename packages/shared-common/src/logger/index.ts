@@ -1,4 +1,4 @@
-import type { Logger, LogFn } from './logger';
+import type { Logger } from './logger';
 
 let loggerInstance: Logger | null = null;
 
@@ -11,12 +11,10 @@ export async function getLogger(): Promise<Logger> {
     return loggerInstance;
   }
 
-  const env = process.env.NODE_ENV || 'development';
-  
   const { default: createPinoLogger } = await import('./impl/pino.js');
   loggerInstance = createPinoLogger();
 
   return loggerInstance;
 }
 
-export type { Logger, LogFn } from './logger';
+export type { Logger } from './logger';
