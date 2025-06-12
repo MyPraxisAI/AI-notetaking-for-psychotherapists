@@ -20,5 +20,16 @@ export function createLoggerContext(submodule: string, additionalContext: Record
  * @returns A logger instance
  */
 export async function getBackgroundLogger() {
-  return getLogger();
+  const logger = await getLogger();
+  
+  // Log the current logger configuration
+  logger.debug({
+    environment: process.env.NODE_ENV,
+    sentryDisabled: process.env.SENTRY_DISABLED === 'true',
+    hasSentryDsn: !!process.env.SENTRY_DSN,
+    hasNextPublicSentryDsn: !!process.env.NEXT_PUBLIC_SENTRY_DSN,
+    logLevel: 'debug'
+  }, 'Logger initialized with configuration');
+
+  return logger;
 } 

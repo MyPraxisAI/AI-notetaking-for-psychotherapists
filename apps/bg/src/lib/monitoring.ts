@@ -1,5 +1,6 @@
-import * as Sentry from '@sentry/node';
-import type { Scope } from '@sentry/types';
+import { initSentry, captureException as captureExceptionInSentry, captureMessage as captureMessageInSentry } from '@kit/shared-common/sentry';
+import type { Event, EventHint } from '@sentry/types';
+import type { NodeOptions } from '@sentry/node';
 
 const isSentryDisabled = process.env.SENTRY_DISABLED === 'true';
 
@@ -9,21 +10,36 @@ export function initMonitoring() {
     return;
   }
 
-  const dsn = process.env.SENTRY_DSN;
+  // Check both SENTRY_DSN and NEXT_PUBLIC_SENTRY_DSN for backward compatibility
+  const dsn = process.env.SENTRY_DSN || '';
   if (!dsn) {
     console.warn('SENTRY_DSN is not set, Sentry monitoring will not be initialized');
     return;
   }
 
-  Sentry.init({
-    dsn,
-    environment: process.env.NODE_ENV,
-    // Set tracesSampleRate to 1.0 to capture 100% of transactions for performance monitoring.
-    // We recommend adjusting this value in production
-    tracesSampleRate: 1.0,
-  });
+  console.log('Initializing Sentry with DSN:', dsn.substring(0, 10) + '...');
 
-  console.log('Sentry monitoring initialized');
+  try {
+    initSentry({
+      dsn,
+      environment: process.env.NODE_ENV,
+      // Set tracesSampleRate to 1.0 to capture 100% of transactions for performance monitoring.
+      // We recommend adjusting this value in production
+      tracesSampleRate: 1.0,
+      debug: process.env.NODE_ENV === 'development', // Enable debug mode in development
+      beforeSend(event: Event, hint: EventHint) {
+        event.tags = {
+          ...event.tags,
+          module: 'bg',
+        };
+        return event;
+      },
+    } as any);
+
+    console.log('Sentry monitoring initialized successfully');
+  } catch (error) {
+    console.error('Failed to initialize Sentry:', error);
+  }
 }
 
 /**
@@ -31,7 +47,7 @@ export function initMonitoring() {
  * @param error - The error to capture
  * @param context - Additional context to include with the error
  */
-export function captureException(error: Error, context?: Record<string, any>) {
+export async function captureException(error: Error, context?: Record<string, any>) {
   if (isSentryDisabled) {
     console.error('Error:', error);
     if (context) {
@@ -40,15 +56,24 @@ export function captureException(error: Error, context?: Record<string, any>) {
     return;
   }
 
-  if (context) {
-    Sentry.withScope((scope: Scope) => {
-      Object.entries(context).forEach(([key, value]) => {
-        scope.setExtra(key, value);
-      });
-      Sentry.captureException(error);
+  console.debug('Capturing exception in Sentry:', {
+    errorName: error.name,
+    errorMessage: error.message,
+    hasContext: !!context,
+    environment: process.env.NODE_ENV
+  });
+
+  try {
+    await captureExceptionInSentry(error, context);
+  } catch (sentryError) {
+    console.error('Failed to capture exception in Sentry:', {
+      sentryError,
+      originalError: {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      }
     });
-  } else {
-    Sentry.captureException(error);
   }
 }
 
@@ -58,9 +83,9 @@ export function captureException(error: Error, context?: Record<string, any>) {
  * @param level - The severity level of the message
  * @param context - Additional context to include with the message
  */
-export function captureMessage(
+export async function captureMessage(
   message: string,
-  level: Sentry.SeverityLevel = 'info',
+  level: 'fatal' | 'error' | 'warning' | 'log' | 'info' | 'debug' = 'info',
   context?: Record<string, any>
 ) {
   if (isSentryDisabled) {
@@ -71,14 +96,21 @@ export function captureMessage(
     return;
   }
 
-  if (context) {
-    Sentry.withScope((scope: Scope) => {
-      Object.entries(context).forEach(([key, value]) => {
-        scope.setExtra(key, value);
-      });
-      Sentry.captureMessage(message, level);
+  console.debug('Capturing message in Sentry:', {
+    message,
+    level,
+    hasContext: !!context,
+    environment: process.env.NODE_ENV
+  });
+
+  try {
+    await captureMessageInSentry(message, level, context);
+  } catch (sentryError) {
+    console.error('Failed to capture message in Sentry:', {
+      sentryError,
+      message,
+      level,
+      context
     });
-  } else {
-    Sentry.captureMessage(message, level);
   }
 } 

@@ -1,5 +1,5 @@
 import type { Logger, LogFn } from '../logger';
-import * as Sentry from '@sentry/nextjs';
+import * as Sentry from '@sentry/node';
 
 // Define types for logger context and extras
 type Extras = Record<string, unknown>;
@@ -59,6 +59,108 @@ const getEnv = (): EnvVars => {
   }
 };
 
+// Create a fallback logger
+const createFallbackLogger = (): Logger => {
+  const captureErrorInSentry = async (obj: unknown, msg?: string) => {
+    const isSentryDisabled = process.env.SENTRY_DISABLED === 'true';
+    console.debug('Sentry status:', { 
+      isSentryDisabled,
+      hasSentryDsn: !!process.env.SENTRY_DSN || !!process.env.NEXT_PUBLIC_SENTRY_DSN,
+      env: process.env.NODE_ENV,
+      errorType: obj instanceof Error ? obj.constructor.name : typeof obj
+    });
+
+    if (isSentryDisabled) {
+      console.debug('Sentry is disabled, skipping error capture');
+      return;
+    }
+
+    if (!process.env.SENTRY_DSN && !process.env.NEXT_PUBLIC_SENTRY_DSN) {
+      console.warn('Sentry DSN is not set, skipping error capture');
+      return;
+    }
+
+    try {
+      if (obj instanceof Error) {
+        console.debug('Capturing Error object in Sentry:', { 
+          errorName: obj.name, 
+          errorMessage: obj.message 
+        });
+        await Sentry.captureException(obj);
+      } else if (typeof obj === 'object' && obj !== null) {
+        const objWithError = obj as { error?: Error };
+        if (objWithError.error instanceof Error) {
+          console.debug('Capturing Error from context in Sentry:', { 
+            errorName: objWithError.error.name, 
+            errorMessage: objWithError.error.message 
+          });
+          await Sentry.captureException(objWithError.error);
+        } else if (msg) {
+          console.debug('Capturing message with context in Sentry:', { 
+            message: msg,
+            hasContext: true 
+          });
+          await Sentry.captureMessage(msg, 'error');
+        }
+      } else if (msg) {
+        console.debug('Capturing message in Sentry:', { message: msg });
+        await Sentry.captureMessage(msg, 'error');
+      }
+    } catch (sentryError) {
+      console.error('Failed to capture error in Sentry:', { 
+        error: sentryError,
+        originalError: obj instanceof Error ? {
+          name: obj.name,
+          message: obj.message,
+          stack: obj.stack
+        } : obj
+      });
+    }
+  };
+
+  return {
+    info: createEnhancedLogFn(console.info.bind(console)),
+    error: createEnhancedLogFn(async (...args: unknown[]) => {
+      console.error(...args);
+      const [firstArg, secondArg] = args;
+      if (typeof firstArg === 'object' && firstArg !== null) {
+        await captureErrorInSentry(firstArg, typeof secondArg === 'string' ? secondArg : undefined);
+      } else if (typeof firstArg === 'string') {
+        await captureErrorInSentry({}, firstArg);
+      }
+    }),
+    warn: createEnhancedLogFn(console.warn.bind(console)),
+    debug: createEnhancedLogFn(console.debug.bind(console)),
+    fatal: createEnhancedLogFn(async (...args: unknown[]) => {
+      console.error(...args);
+      const [firstArg, secondArg] = args;
+      if (typeof firstArg === 'object' && firstArg !== null) {
+        if (firstArg instanceof Error) {
+          console.debug('Capturing fatal Error in Sentry:', { 
+            errorName: firstArg.name, 
+            errorMessage: firstArg.message,
+            level: 'fatal'
+          });
+          await Sentry.captureException(firstArg);
+        } else if (typeof secondArg === 'string') {
+          console.debug('Capturing fatal message with context in Sentry:', { 
+            message: secondArg,
+            level: 'fatal',
+            hasContext: true 
+          });
+          await Sentry.captureMessage(secondArg, 'fatal');
+        }
+      } else if (typeof firstArg === 'string') {
+        console.debug('Capturing fatal message in Sentry:', { 
+          message: firstArg,
+          level: 'fatal' 
+        });
+        await Sentry.captureMessage(firstArg, 'fatal');
+      }
+    }),
+  };
+};
+
 /**
  * @name PinoLogger
  * @description A logger implementation using Pino
@@ -79,49 +181,80 @@ const createPinoLogger = (): Logger => {
       errorKey: 'error',
     });
 
-    // Helper function to capture error in Sentry
-    const captureErrorInSentry = (obj: unknown, msg?: string) => {
-      if (obj instanceof Error) {
-        Sentry.captureException(obj);
-      } else if (typeof obj === 'object' && obj !== null) {
-        // If we have an error object in the context
-        const objWithError = obj as { error?: Error };
-        if (objWithError.error instanceof Error) {
-          Sentry.captureException(objWithError.error);
-        } else {
-          // Otherwise capture as a message with context
-          Sentry.captureMessage(msg || 'Error logged', {
-            level: 'error',
-            extra: obj as Extras
-          });
-        }
-      } else if (msg) {
-        // If we just have a message, capture it
-        Sentry.captureMessage(msg, {
-          level: 'error',
-          extra: obj as Extras
+    // Helper to forward context fields to Sentry as tags/extras
+    function forwardContextToSentry(context: Record<string, any>, cb: () => void) {
+      Sentry.withScope((scope: any) => {
+        if (context.module) scope.setTag('module', context.module);
+        if (context.submodule) scope.setTag('submodule', context.submodule);
+        Object.entries(context).forEach(([key, value]) => {
+          if (key !== 'module' && key !== 'submodule') {
+            scope.setExtra(key, value);
+          }
         });
+        cb();
+      });
+    }
+
+    // Helper function to capture error in Sentry with debug logging
+    const captureErrorInSentry = async (obj: unknown, msg?: string) => {
+      const isSentryDisabled = process.env.SENTRY_DISABLED === 'true';
+      logger.debug({ 
+        isSentryDisabled,
+        hasSentryDsn: !!process.env.SENTRY_DSN || !!process.env.NEXT_PUBLIC_SENTRY_DSN,
+        env: process.env.NODE_ENV,
+        errorType: obj instanceof Error ? obj.constructor.name : typeof obj
+      }, 'Attempting to capture error in Sentry');
+
+      if (isSentryDisabled) {
+        logger.debug('Sentry is disabled, skipping error capture');
+        return;
+      }
+
+      if (!process.env.SENTRY_DSN && !process.env.NEXT_PUBLIC_SENTRY_DSN) {
+        logger.warn('Sentry DSN is not set, skipping error capture');
+        return;
+      }
+
+      try {
+        if (obj instanceof Error) {
+          logger.debug({ errorName: obj.name, errorMessage: obj.message }, 'Capturing Error object in Sentry');
+          forwardContextToSentry({}, () => Sentry.captureException(obj));
+        } else if (typeof obj === 'object' && obj !== null) {
+          const objWithError = obj as { error?: Error };
+          if (objWithError.error instanceof Error) {
+            logger.debug({ errorName: objWithError.error.name, errorMessage: objWithError.error.message }, 'Capturing Error from context in Sentry');
+            forwardContextToSentry(obj as Record<string, any>, () => Sentry.captureException(objWithError.error as Error));
+          } else {
+            logger.debug({ message: msg || 'Error logged', hasContext: true }, 'Capturing message with context in Sentry');
+            forwardContextToSentry(obj as Record<string, any>, () => Sentry.captureMessage(msg || 'Error logged', 'error'));
+          }
+        } else if (msg) {
+          logger.debug({ message: msg }, 'Capturing message in Sentry');
+          forwardContextToSentry({}, () => Sentry.captureMessage(msg, 'error'));
+        }
+      } catch (sentryError) {
+        logger.error({ error: sentryError, originalError: obj instanceof Error ? { name: obj.name, message: obj.message, stack: obj.stack } : obj }, 'Failed to capture error in Sentry');
       }
     };
     
     // Create enhanced logger functions that handle additional arguments
     const enhancedLogger: Logger = {
       info: createEnhancedLogFn(logger.info.bind(logger)),
-      error: createEnhancedLogFn((...args: unknown[]) => {
+      error: createEnhancedLogFn(async (...args: unknown[]) => {
         // First log to Pino
         logger.error(...args);
         
         // Then capture in Sentry
         const [firstArg, secondArg] = args;
         if (typeof firstArg === 'object' && firstArg !== null) {
-          captureErrorInSentry(firstArg, typeof secondArg === 'string' ? secondArg : undefined);
+          await captureErrorInSentry(firstArg, typeof secondArg === 'string' ? secondArg : undefined);
         } else if (typeof firstArg === 'string') {
-          captureErrorInSentry({}, firstArg);
+          await captureErrorInSentry({}, firstArg);
         }
       }),
       warn: createEnhancedLogFn(logger.warn.bind(logger)),
       debug: createEnhancedLogFn(logger.debug.bind(logger)),
-      fatal: createEnhancedLogFn((...args: unknown[]) => {
+      fatal: createEnhancedLogFn(async (...args: unknown[]) => {
         // First log to Pino
         logger.fatal(...args);
         
@@ -129,59 +262,35 @@ const createPinoLogger = (): Logger => {
         const [firstArg, secondArg] = args;
         if (typeof firstArg === 'object' && firstArg !== null) {
           if (firstArg instanceof Error) {
-            Sentry.captureException(firstArg, { level: 'fatal' });
+            logger.debug({ 
+              errorName: firstArg.name, 
+              errorMessage: firstArg.message,
+              level: 'fatal'
+            }, 'Capturing fatal Error in Sentry');
+            await Sentry.captureException(firstArg);
           } else if (typeof secondArg === 'string') {
-            Sentry.captureMessage(secondArg, {
+            logger.debug({ 
+              message: secondArg,
               level: 'fatal',
-              extra: firstArg as Extras
-            });
+              hasContext: true 
+            }, 'Capturing fatal message with context in Sentry');
+            await Sentry.captureMessage(secondArg, 'fatal');
           }
         } else if (typeof firstArg === 'string') {
-          Sentry.captureMessage(firstArg, { level: 'fatal' });
+          logger.debug({ 
+            message: firstArg,
+            level: 'fatal' 
+          }, 'Capturing fatal message in Sentry');
+          await Sentry.captureMessage(firstArg, 'fatal');
         }
       }),
     };
     
     return enhancedLogger;
-  } catch (e) {
+  } catch (error) {
     // Fallback logger if pino is not available
-    return {
-      info: createEnhancedLogFn(console.info.bind(console)),
-      error: createEnhancedLogFn((...args: unknown[]) => {
-        console.error(...args);
-        const [firstArg, secondArg] = args;
-        if (typeof firstArg === 'object' && firstArg !== null) {
-          if (firstArg instanceof Error) {
-            Sentry.captureException(firstArg);
-          } else if (typeof secondArg === 'string') {
-            Sentry.captureMessage(secondArg, {
-              level: 'error',
-              extra: firstArg as Extras
-            });
-          }
-        } else if (typeof firstArg === 'string') {
-          Sentry.captureMessage(firstArg, { level: 'error' });
-        }
-      }),
-      warn: createEnhancedLogFn(console.warn.bind(console)),
-      debug: createEnhancedLogFn(console.debug.bind(console)),
-      fatal: createEnhancedLogFn((...args: unknown[]) => {
-        console.error(...args);
-        const [firstArg, secondArg] = args;
-        if (typeof firstArg === 'object' && firstArg !== null) {
-          if (firstArg instanceof Error) {
-            Sentry.captureException(firstArg, { level: 'fatal' });
-          } else if (typeof secondArg === 'string') {
-            Sentry.captureMessage(secondArg, {
-              level: 'fatal',
-              extra: firstArg as Extras
-            });
-          }
-        } else if (typeof firstArg === 'string') {
-          Sentry.captureMessage(firstArg, { level: 'fatal' });
-        }
-      }),
-    };
+    console.error('Failed to create Pino logger, falling back to console logger:', error);
+    return createFallbackLogger();
   }
 };
 

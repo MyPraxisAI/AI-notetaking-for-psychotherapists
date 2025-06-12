@@ -13,15 +13,8 @@ export async function getLogger(): Promise<Logger> {
 
   const env = process.env.NODE_ENV || 'development';
   
-  if (env === 'production') {
-    // In production, use Pino logger
-    const createPinoLogger = (await import('./impl/pino.js')).default;
-    loggerInstance = createPinoLogger();
-  } else {
-    // In development, use console logger
-    const { createConsoleLogger } = await import('./impl/console.js');
-    loggerInstance = createConsoleLogger();
-  }
+  const { default: createPinoLogger } = await import('./impl/pino.js');
+  loggerInstance = createPinoLogger();
 
   return loggerInstance;
 }

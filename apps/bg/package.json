@@ -22,7 +22,7 @@
     "@kit/web-bg-common": "workspace:*",
     "@langchain/google-genai": "^0.2.4",
     "@langchain/openai": "^0.5.5",
-    "@sentry/node": "^7.107.0",
+    "@sentry/node": "^7.120.3",
     "@supabase/supabase-js": "2.49.1",
     "aws-sdk": "2.1692.0",
     "dotenv": "16.4.7",
