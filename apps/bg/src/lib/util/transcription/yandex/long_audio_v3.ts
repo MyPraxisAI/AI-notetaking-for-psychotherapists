@@ -13,6 +13,7 @@ import * as https from 'node:https';
 import * as url from 'node:url';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
+import { getBackgroundLogger, createLoggerContext } from '../../../logger';
 
 /**
  * Extended options for Yandex SpeechKit v3 transcription
@@ -106,7 +107,8 @@ export class YandexLongAudioV3Provider extends YandexBaseProvider {
       // Process the result to extract text, speakers, and segments
       return this.processTranscriptionResult(result, processingTime, client, transcriptionOptions);
     } catch (error) {
-      console.error('Error during v3 transcription:', error);
+      const logger = await getBackgroundLogger();
+      logger.error(createLoggerContext('transcription-yandex-long-audio-v3', { error }), 'Error during v3 transcription');
       throw error;
     } finally {
 
@@ -760,7 +762,8 @@ export class YandexLongAudioV3Provider extends YandexBaseProvider {
     try {
       await classifySpeakerRoles(client, transcriptionResult);
     } catch (error) {
-      console.error('Error during speaker role classification:', error);
+      const logger = await getBackgroundLogger();
+      logger.error(createLoggerContext('transcription-yandex-long-audio-v3', { error }), 'Error during speaker role classification');
       // Continue with unclassified roles if there's an error
     }
     // Text formatting is now handled in the transcribeAudio function

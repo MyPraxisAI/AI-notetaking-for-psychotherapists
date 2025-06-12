@@ -1,6 +1,7 @@
 import { SupabaseClient } from '@supabase/supabase-js';
 import { TranscriptionChunk } from '../../types';
 import { BaseBackgroundTask } from '../../types';
+import { getBackgroundLogger, createLoggerContext } from '../logger';
 
 /**
  * Audio Processing Task Data
@@ -59,7 +60,8 @@ export class AudioTranscriptionProcessor {
       await this.cleanupResources(supabase, task);
       
     } catch (error: any) {
-      console.error(`Error processing audio transcription: ${error.message}`);
+      const logger = await getBackgroundLogger();
+      logger.error(createLoggerContext('audioTranscriptionProcessor', { error }), `Error processing audio transcription: ${error.message}`);
       throw error; // Rethrow to prevent message deletion
     }
   }

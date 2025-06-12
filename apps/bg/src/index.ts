@@ -4,6 +4,7 @@ import { SQSQueueManager } from './lib/sqs';
 import { MessageProcessor } from './lib/messageProcessor';
 import { captureException, captureMessage, initMonitoring } from './lib/monitoring';
 import { SQSMessage } from './types';
+import { getBackgroundLogger, createLoggerContext } from './lib/logger';
 
 // Load environment variables
 dotenv.config();
@@ -26,6 +27,8 @@ const PORT = process.env.PORT || 8080;
 server.listen(PORT, () => {
   console.log(`Health check server listening on port ${PORT}`);
 });
+
+const loggerPromise = getBackgroundLogger();
 
 /**
  * Main application class
@@ -73,7 +76,8 @@ class Application {
       
       return true;
     } catch (error) {
-      console.error('Failed to initialize application:', error);
+      const logger = await loggerPromise;
+      logger.error(createLoggerContext('index', { error }), 'Failed to initialize application');
       captureException(error as Error, {
         queueName: this.sqsManager.queueName,
         pollingInterval: this.pollingInterval,
@@ -124,7 +128,8 @@ class Application {
         console.log('No messages received');
       }
     } catch (error) {
-      console.error('Error polling queue:', error);
+      const logger = await loggerPromise;
+      logger.error(createLoggerContext('index', { error }), 'Error polling queue');
     }
     
     // Schedule next poll
@@ -136,14 +141,18 @@ class Application {
 const app = new Application();
 
 console.log('Starting background worker application...');
-app.initialize().catch(err => {
-  console.error('Failed to initialize application:', err);
-  captureException(err as Error, {
-    phase: 'startup',
-    environment: process.env.NODE_ENV,
-  });
-  process.exit(1);
-});
+(async () => {
+  try {
+    await app.initialize();
+  } catch (err) {
+    const logger = await loggerPromise;
+    logger.error(createLoggerContext('index', { err }), 'Failed to initialize application');
+    captureException(err as Error, {
+      phase: 'startup',
+    });
+    process.exit(1);
+  }
+})();
 
 // Handle graceful shutdown
 process.on('SIGINT', () => {

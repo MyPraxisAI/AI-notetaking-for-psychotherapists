@@ -1,6 +1,7 @@
 import { initSentry, captureException as captureExceptionInSentry, captureMessage as captureMessageInSentry } from '@kit/shared-common/sentry';
 import type { Event, EventHint } from '@sentry/types';
 import type { NodeOptions } from '@sentry/node';
+import { getBackgroundLogger, createLoggerContext } from './logger';
 
 const isSentryDisabled = process.env.SENTRY_DISABLED === 'true';
 
@@ -38,7 +39,10 @@ export function initMonitoring() {
 
     console.log('Sentry monitoring initialized successfully');
   } catch (error) {
-    console.error('Failed to initialize Sentry:', error);
+    const loggerPromise = getBackgroundLogger();
+    loggerPromise.then(logger => {
+      logger.error(createLoggerContext('monitoring', { error }), 'Failed to initialize Sentry');
+    });
   }
 }
 
@@ -66,13 +70,13 @@ export async function captureException(error: Error, context?: Record<string, an
   try {
     await captureExceptionInSentry(error, context);
   } catch (sentryError) {
-    console.error('Failed to capture exception in Sentry:', {
-      sentryError,
-      originalError: {
+    const loggerPromise = getBackgroundLogger();
+    loggerPromise.then(logger => {
+      logger.error(createLoggerContext('monitoring', { sentryError, originalError: {
         name: error.name,
         message: error.message,
         stack: error.stack
-      }
+      } }), 'Failed to capture exception in Sentry');
     });
   }
 }
@@ -106,11 +110,9 @@ export async function captureMessage(
   try {
     await captureMessageInSentry(message, level, context);
   } catch (sentryError) {
-    console.error('Failed to capture message in Sentry:', {
-      sentryError,
-      message,
-      level,
-      context
+    const loggerPromise = getBackgroundLogger();
+    loggerPromise.then(logger => {
+      logger.error(createLoggerContext('monitoring', { sentryError, message, level, context }), 'Failed to capture message in Sentry');
     });
   }
 } 

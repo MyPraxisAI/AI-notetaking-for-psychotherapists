@@ -1,6 +1,7 @@
 import { SupabaseClient } from '@supabase/supabase-js';
 import { getOrCreateArtifact } from '@kit/web-bg-common';
 import { getArtifact } from '@kit/web-bg-common/db/artifact-api';
+import { getBackgroundLogger, createLoggerContext } from '../logger';
 
 /**
  * Artifacts Generation Task Data
@@ -39,7 +40,8 @@ export class ArtifactsGenerationProcessor {
       
       console.log(`Successfully processed artifacts generation for session ${sessionId}`);
     } catch (error: any) {
-      console.error(`Error processing artifacts generation: ${error.message}`);
+      const logger = await getBackgroundLogger();
+      logger.error(createLoggerContext('artifactsGenerationProcessor', { error }), `Error processing artifacts generation: ${error.message}`);
       throw error; // Rethrow to prevent message deletion
     }
   }

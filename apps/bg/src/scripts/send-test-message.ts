@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 import { SQSQueueManager } from '../lib/sqs';
 import { AudioProcessingTaskData } from '../lib/processors/audioTranscriptionProcessor';
+import { getBackgroundLogger, createLoggerContext } from '../lib/logger';
 
 // Load environment variables
 dotenv.config();
@@ -37,7 +38,8 @@ async function sendTestMessage(): Promise<void> {
     
     process.exit(0);
   } catch (error) {
-    console.error('Error sending test message:', error);
+    const logger = await getBackgroundLogger();
+    logger.error(createLoggerContext('send-test-message-script', { error }), 'Error sending test message');
     process.exit(1);
   }
 }

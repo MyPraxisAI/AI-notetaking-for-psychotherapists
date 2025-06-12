@@ -45,7 +45,6 @@ export class MessageProcessor {
       // Parse the message body first
       let body: any;
       try {
-        throw new Error('simulate error while parsing message');       
         body = JSON.parse(message.Body as string);
       } catch (error) {
         logger.error(
