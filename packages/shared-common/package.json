@@ -29,6 +29,7 @@
     }
   },
   "dependencies": {
+    "@sentry/nextjs": "^9.3.0",
     "pino": "^9.6.0"
   },
   "devDependencies": {

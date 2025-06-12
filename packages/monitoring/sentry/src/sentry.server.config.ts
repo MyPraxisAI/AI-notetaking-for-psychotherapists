@@ -6,6 +6,8 @@ type Parameters<T extends (args: never) => unknown> = T extends (
   ? P
   : never;
 
+const isSentryDisabled = process.env.SENTRY_DISABLED === 'true';
+
 /**
  * @name initializeSentryServerClient
  * @description Initialize the Sentry client in the server
@@ -14,8 +16,8 @@ type Parameters<T extends (args: never) => unknown> = T extends (
 export function initializeSentryServerClient(
   props: Parameters<typeof Sentry.init>[0] = {},
 ) {
-  // Skip Sentry initialization in development environment
-  if (process.env.NODE_ENV === 'development') {
+  // Skip Sentry initialization if disabled
+  if (isSentryDisabled) {
     return;
   }
 

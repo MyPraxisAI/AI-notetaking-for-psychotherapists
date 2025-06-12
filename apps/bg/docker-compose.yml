@@ -28,9 +28,6 @@ services:
       - AWS_SECRET_ACCESS_KEY=test
       - NODE_ENV=development
       - AWS_REGION=eu-west-1
-      - SQS_QUEUE_NAME=development-mypraxis-bg-worker-queue
-      - BACKGROUND_TASKS_QUEUE_URL=http://localhost:9324/queue/development-mypraxis-bg-worker-queue
-      - SENTRY_ENABLED=false
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
       interval: 5s

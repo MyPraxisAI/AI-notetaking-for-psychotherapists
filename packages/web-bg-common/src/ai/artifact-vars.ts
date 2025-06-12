@@ -2,7 +2,7 @@ import { SupabaseClient } from '@supabase/supabase-js';
 import { getArtifact, getArtifacts } from '../db/artifact-api';
 import { getUserLanguage, getOrCreateArtifact, getFullLanguageName, createTherapistApi } from '..';
 import type { ArtifactType, LanguageType, VariableContext } from '../types';
-import { getLogger } from '../logger';
+import { getLogger } from '@kit/shared-common';
 import { getTranscriptsAsText, getTranscriptAsText } from './artifact-utils';
 
 /**

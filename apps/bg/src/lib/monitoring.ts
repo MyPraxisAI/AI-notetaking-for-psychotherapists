@@ -1,10 +1,10 @@
 import * as Sentry from '@sentry/node';
 import type { Scope } from '@sentry/types';
 
-const isSentryEnabled = process.env.SENTRY_ENABLED === 'true';
+const isSentryDisabled = process.env.SENTRY_DISABLED === 'true';
 
 export function initMonitoring() {
-  if (!isSentryEnabled) {
+  if (isSentryDisabled) {
     console.log('Sentry monitoring is disabled');
     return;
   }
@@ -13,7 +13,7 @@ export function initMonitoring() {
   if (!dsn) {
     console.warn('SENTRY_DSN is not set, Sentry monitoring will not be initialized');
     return;
-}
+  }
 
   Sentry.init({
     dsn,
@@ -32,7 +32,7 @@ export function initMonitoring() {
  * @param context - Additional context to include with the error
  */
 export function captureException(error: Error, context?: Record<string, any>) {
-  if (!isSentryEnabled) {
+  if (isSentryDisabled) {
     console.error('Error:', error);
     if (context) {
       console.error('Context:', context);
@@ -63,7 +63,7 @@ export function captureMessage(
   level: Sentry.SeverityLevel = 'info',
   context?: Record<string, any>
 ) {
-  if (!isSentryEnabled) {
+  if (isSentryDisabled) {
     console.log(`[${level.toUpperCase()}] ${message}`);
     if (context) {
       console.log('Context:', context);

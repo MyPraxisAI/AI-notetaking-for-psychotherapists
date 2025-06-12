@@ -1,26 +1,29 @@
-import { createRegistry } from '../registry';
-import type { Logger } from './logger';
+import type { Logger, LogFn } from './logger';
 
-// Define the type for the logger provider. Currently supporting 'pino'.
-type LoggerProvider = 'pino';
-
-const LOGGER = (process.env?.LOGGER ?? 'pino') as LoggerProvider;
-
-// Create a registry for logger implementations
-const loggerRegistry = createRegistry<Logger, LoggerProvider>();
-
-// Register the 'pino' logger implementation
-loggerRegistry.register('pino', async () => {
-  const { PinoLogger } = await import('./impl/pino.js');
-  return PinoLogger;
-});
+let loggerInstance: Logger | null = null;
 
 /**
  * @name getLogger
- * @description Retrieves the logger implementation based on the LOGGER environment variable using the registry API.
+ * @description Retrieves the logger implementation based on the environment.
  */
 export async function getLogger(): Promise<Logger> {
-  return loggerRegistry.get(LOGGER);
+  if (loggerInstance) {
+    return loggerInstance;
+  }
+
+  const env = process.env.NODE_ENV || 'development';
+  
+  if (env === 'production') {
+    // In production, use Pino logger
+    const createPinoLogger = (await import('./impl/pino.js')).default;
+    loggerInstance = createPinoLogger();
+  } else {
+    // In development, use console logger
+    const { createConsoleLogger } = await import('./impl/console.js');
+    loggerInstance = createConsoleLogger();
+  }
+
+  return loggerInstance;
 }
 
 export type { Logger, LogFn } from './logger';
