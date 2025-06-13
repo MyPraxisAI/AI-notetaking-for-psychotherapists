@@ -1,17 +1,26 @@
 import type { Scope } from '@sentry/types';
+import type { NodeOptions } from '@sentry/node';
 
-let sentryModule: any = null;
+type SentryModule = {
+  withScope: (cb: (scope: Scope) => void) => void;
+  captureException: (error: unknown) => void;
+  captureMessage: (message: string, level?: SentryLevel) => void;
+  init: (options: NodeOptions) => void;
+};
+
+let sentryModule: SentryModule | null = null;
 let withScope: ((cb: (scope: Scope) => void) => void) | null = null;
 let captureExceptionFn: ((error: unknown) => void) | null = null;
 let captureMessageFn: ((message: string, level?: SentryLevel) => void) | null = null;
-let initFn: ((options: unknown) => void) | null = null;
+let initFn: ((options: NodeOptions) => void) | null = null;
 
 type SentryLevel = 'fatal' | 'error' | 'warning' | 'log' | 'info' | 'debug';
+type ContextRecord = Record<string, unknown>;
 
 /**
  * Initialize the Sentry adapter with the appropriate package
  */
-export async function initSentryAdapter() {
+export async function initSentryAdapter(): Promise<SentryModule> {
   if (sentryModule) {
     return sentryModule;
   }
@@ -22,9 +31,11 @@ export async function initSentryAdapter() {
   
   try {
     if (isNextJs) {
-      sentryModule = await import('@sentry/nextjs');
+      const nextjsModule = await import('@sentry/nextjs');
+      sentryModule = nextjsModule as unknown as SentryModule;
     } else {
-      sentryModule = await import('@sentry/node');
+      const nodeModule = await import('@sentry/node');
+      sentryModule = nodeModule as unknown as SentryModule;
     }
     withScope = sentryModule.withScope;
     captureExceptionFn = sentryModule.captureException;
@@ -40,17 +51,17 @@ export async function initSentryAdapter() {
 /**
  * Get the current Sentry instance
  */
-export async function getSentry() {
+export async function getSentry(): Promise<SentryModule> {
   if (!sentryModule) {
     await initSentryAdapter();
   }
-  return sentryModule;
+  return sentryModule!;
 }
 
 /**
  * Capture an exception in Sentry
  */
-export async function captureException(error: Error, context?: Record<string, any>) {
+export async function captureException(error: Error, context?: ContextRecord): Promise<void> {
   if (!captureExceptionFn || !withScope) await initSentryAdapter();
   try {
     if (context) {
@@ -80,9 +91,9 @@ export async function captureException(error: Error, context?: Record<string, an
  */
 export async function captureMessage(
   message: string,
-  level: 'fatal' | 'error' | 'warning' | 'log' | 'info' | 'debug' = 'info',
-  context?: Record<string, any>
-) {
+  level: SentryLevel = 'info',
+  context?: ContextRecord
+): Promise<void> {
   if (!captureMessageFn || !withScope) await initSentryAdapter();
   try {
     if (context) {
@@ -113,7 +124,7 @@ export async function initSentry(config: {
   environment?: string;
   tracesSampleRate?: number;
   debug?: boolean;
-}) {
+}): Promise<void> {
   if (!initFn) await initSentryAdapter();
   try {
     if (initFn) initFn({
@@ -128,24 +139,19 @@ export async function initSentry(config: {
   }
 }
 
-export function withScopeAndContext(context: Record<string, any>, cb: () => void) {
-  // Debug: log context being forwarded
-  // eslint-disable-next-line no-console
+export function withScopeAndContext(context: ContextRecord, cb: () => void): void {
   console.debug('[Sentry] withScope called with context:', context);
   if (withScope) withScope((scope: Scope) => {
     if (context.module) {
-      // eslint-disable-next-line no-console
       console.debug('[Sentry] setTag module:', context.module);
-      scope.setTag('module', context.module);
+      scope.setTag('module', context.module as string);
     }
     if (context.submodule) {
-      // eslint-disable-next-line no-console
       console.debug('[Sentry] setTag submodule:', context.submodule);
-      scope.setTag('submodule', context.submodule);
+      scope.setTag('submodule', context.submodule as string);
     }
     Object.entries(context).forEach(([key, value]) => {
       if (key !== 'module' && key !== 'submodule') {
-        // eslint-disable-next-line no-console
         console.debug('[Sentry] setExtra', key, value);
         scope.setExtra(key, value);
       }
@@ -154,9 +160,8 @@ export function withScopeAndContext(context: Record<string, any>, cb: () => void
   });
 }
 
-export function captureExceptionWithContext(error: Error, context: Record<string, any> = {}) {
+export function captureExceptionWithContext(error: Error, context: ContextRecord = {}): void {
   withScopeAndContext(context, () => {
-    // eslint-disable-next-line no-console
     console.debug('[Sentry] captureException called:', error);
     captureException(error);
   });
@@ -165,10 +170,9 @@ export function captureExceptionWithContext(error: Error, context: Record<string
 export function captureMessageWithContext(
   message: string,
   level: SentryLevel = 'error',
-  context: Record<string, any> = {}
-) {
+  context: ContextRecord = {}
+): void {
   withScopeAndContext(context, () => {
-    // eslint-disable-next-line no-console
     console.debug('[Sentry] captureMessage called:', message, level);
     captureMessage(message, level);
   });
