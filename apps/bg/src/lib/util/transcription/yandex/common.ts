@@ -10,6 +10,7 @@ import * as url from 'node:url';
 import * as https from 'node:https';
 import * as crypto from 'node:crypto';
 import { getContentType } from './utils';
+import { getBackgroundLogger, createLoggerContext } from '../../../logger';
 
 /**
  * Language codes supported by Yandex SpeechKit
@@ -219,7 +220,8 @@ export abstract class YandexBaseProvider {
       // Return the storage URI
       return `https://${this.storageBucket}.${this.storageEndpoint}/${objectKey}`;
     } catch (error: any) {
-      console.error('- Upload failed:', error);
+      const logger = await getBackgroundLogger();
+      logger.error(createLoggerContext('transcription-yandex-common', { error }), '- Upload failed');
       throw new Error(`Failed to upload to Yandex Object Storage: ${error.message}`);
     }
   }

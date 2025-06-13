@@ -1,4 +1,5 @@
 import AWS from 'aws-sdk';
+import { getBackgroundLogger, createLoggerContext } from '../lib/logger';
 
 // Configure AWS SDK for LocalStack
 const sqs = new AWS.SQS({
@@ -30,7 +31,8 @@ async function deleteQueues() {
     
     console.log('All queues deleted successfully');
   } catch (error) {
-    console.error('Error deleting queues:', error);
+    const logger = await getBackgroundLogger();
+    logger.error(createLoggerContext('delete-queues-script', { error }), 'Error deleting queues');
   }
 }
 

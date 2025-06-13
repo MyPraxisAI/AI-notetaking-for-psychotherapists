@@ -2,7 +2,7 @@ import * as nunjucks from 'nunjucks';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { generateLLMResponse } from './models';
 import { createPromptApi, getUserLanguage } from '..';
-import { getLogger } from '../logger';
+import { getLogger } from '@kit/shared-common';
 import { generateVariableData, extractTemplateVariables, canGenerateVariable } from './artifact-vars';
 import { cleanupMarkdownCodeBlocks } from './artifact-utils';
 import { getArtifact, saveArtifact } from '../db/artifact-api';

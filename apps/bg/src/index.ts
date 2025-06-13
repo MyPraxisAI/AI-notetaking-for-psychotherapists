@@ -2,10 +2,15 @@ import * as dotenv from 'dotenv';
 import * as http from 'http';
 import { SQSQueueManager } from './lib/sqs';
 import { MessageProcessor } from './lib/messageProcessor';
+import { captureException, captureMessage, initMonitoring } from './lib/monitoring';
 import { SQSMessage } from './types';
+import { getBackgroundLogger, createLoggerContext } from './lib/logger';
 
 // Load environment variables
 dotenv.config();
+
+// Initialize monitoring
+initMonitoring();
 
 // Create a simple health check server for Fargate
 const server = http.createServer((req: http.IncomingMessage, res: http.ServerResponse) => {
@@ -22,6 +27,8 @@ const PORT = process.env.PORT || 8080;
 server.listen(PORT, () => {
   console.log(`Health check server listening on port ${PORT}`);
 });
+
+const loggerPromise = getBackgroundLogger();
 
 /**
  * Main application class
@@ -58,13 +65,24 @@ class Application {
       
       // Log startup information
       console.log(`Starting SQS poller for queue: ${this.sqsManager.queueName}`);
+      captureMessage('Background worker started', 'info', {
+        queueName: this.sqsManager.queueName,
+        pollingInterval: this.pollingInterval,
+        environment: process.env.NODE_ENV,
+      });
             
       // Start polling for messages
       this.startPolling();
       
       return true;
     } catch (error) {
-      console.error('Failed to initialize application:', error);
+      const logger = await loggerPromise;
+      logger.error(createLoggerContext('index', { error }), 'Failed to initialize application');
+      captureException(error as Error, {
+        queueName: this.sqsManager.queueName,
+        pollingInterval: this.pollingInterval,
+        environment: process.env.NODE_ENV,
+      });
       throw error;
     }
   }
@@ -110,7 +128,8 @@ class Application {
         console.log('No messages received');
       }
     } catch (error) {
-      console.error('Error polling queue:', error);
+      const logger = await loggerPromise;
+      logger.error(createLoggerContext('index', { error }), 'Error polling queue');
     }
     
     // Schedule next poll
@@ -122,10 +141,18 @@ class Application {
 const app = new Application();
 
 console.log('Starting background worker application...');
-app.initialize().catch(err => {
-  console.error('Failed to initialize application:', err);
-  process.exit(1);
-});
+(async () => {
+  try {
+    await app.initialize();
+  } catch (err) {
+    const logger = await loggerPromise;
+    logger.error(createLoggerContext('index', { err }), 'Failed to initialize application');
+    captureException(err as Error, {
+      phase: 'startup',
+    });
+    process.exit(1);
+  }
+})();
 
 // Handle graceful shutdown
 process.on('SIGINT', () => {
@@ -136,6 +163,10 @@ process.on('SIGINT', () => {
 
 process.on('SIGTERM', () => {
   console.log('Shutting down...');
+  captureMessage('Background worker shutting down', 'info', {
+    reason: 'SIGTERM',
+    environment: process.env.NODE_ENV,
+  });
   app.stopPolling();
   process.exit(0);
 });

@@ -1,5 +1,6 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { SupabaseConfig } from '../types';
+import { getBackgroundLogger, createLoggerContext } from './logger';
 
 // Initialize Supabase client
 const supabaseUrl = process.env.SUPABASE_URL;
@@ -47,10 +48,12 @@ export async function getSupabaseAdminClient(): Promise<SupabaseClient> {
     .select('*');
     
   if (testError) {
-    console.error('Error testing admin client:', testError);
+    const logger = await getBackgroundLogger();
+    logger.error(createLoggerContext('supabase', { error: testError }), 'Error testing admin client');
     throw new Error(`Failed to test admin client: ${testError.message}`);
   } else if (testData && testData.length > 0) {
-    console.error(`Unexpected rows returned for admin client: ${testData.length}, expected 0`);
+    const logger = await getBackgroundLogger();
+    logger.error(createLoggerContext('supabase', { rows: testData.length }), `Unexpected rows returned for admin client: ${testData.length}, expected 0`);
     throw new Error(`Failed to verify admin client: expected 0 rows, got ${testData.length}`);
   }
   

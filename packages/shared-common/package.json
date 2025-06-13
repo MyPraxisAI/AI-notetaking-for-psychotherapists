@@ -22,6 +22,11 @@
       "require": "./dist/logger/index.js",
       "types": "./dist/logger/index.d.ts"
     },
+    "./sentry": {
+      "import": "./dist/sentry/index.js",
+      "require": "./dist/sentry/index.js",
+      "types": "./dist/sentry/index.d.ts"
+    },
     "./registry": {
       "import": "./dist/registry/index.js",
       "require": "./dist/registry/index.js",
@@ -29,10 +34,13 @@
     }
   },
   "dependencies": {
+    "@sentry/nextjs": "^9.3.0",
+    "@sentry/node": "^7.120.3",
     "pino": "^9.6.0"
   },
   "devDependencies": {
     "@kit/eslint-config": "workspace:*",
+    "@sentry/types": "^7.107.0",
     "@types/node": "^22.13.4",
     "typescript": "^5.8.2"
   },

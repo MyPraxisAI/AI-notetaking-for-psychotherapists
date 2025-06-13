@@ -3,6 +3,7 @@ import { getSupabaseAdminClient } from './supabase';
 import { SQSQueueManager } from './sqs';
 import { AudioTranscriptionProcessor, AudioProcessingTaskData, ArtifactsGenerationProcessor, ArtifactsGenerateTaskData } from './processors';
 import { withCurrentAccountId } from '@kit/web-bg-common/db';
+import { getBackgroundLogger, createLoggerContext } from './logger';
 import { 
   BaseBackgroundTask, 
   SQSMessage 
@@ -36,6 +37,7 @@ export class MessageProcessor {
    * @param sqsManager - The SQS queue manager for deleting messages
    */
   async processMessage(message: SQSMessage, sqsManager: SQSQueueManager): Promise<void> {
+    const logger = await getBackgroundLogger();
     try {
       console.log(`Processing message: ${message.MessageId}`);
       console.log(`Message body: ${message.Body}`);
@@ -45,14 +47,34 @@ export class MessageProcessor {
       try {
         body = JSON.parse(message.Body as string);
       } catch (error) {
-        console.error('Error parsing message body:', error);
+        logger.error(
+          createLoggerContext('message-processor', {
+            error,
+            messageId: message.MessageId,
+            messageBody: message.Body,
+            receiptHandle: message.ReceiptHandle,
+            errorType: 'message_parse_error'
+          }),
+          'Error parsing message body'
+        );
         await sqsManager.deleteMessage(message.ReceiptHandle);
         return;
       }
       
       // Ensure the message contains an accountId
       if (!body.accountId) {
-        throw new Error('Message is missing required accountId field');
+        const error = new Error('Message is missing required accountId field');
+        logger.error(
+          createLoggerContext('message-processor', {
+            error,
+            messageId: message.MessageId,
+            messageBody: message.Body,
+            receiptHandle: message.ReceiptHandle,
+            errorType: 'missing_account_id'
+          }),
+          'Message is missing required accountId field'
+        );
+        throw error;
       }
       
       // Use the admin client with service role privileges
@@ -62,7 +84,18 @@ export class MessageProcessor {
       await withCurrentAccountId(body.accountId, async () => {
         // Process the message based on its operation
         if (!body.operation) {
-          throw new Error(`Message has no operation field. Message ID: ${message.MessageId}`);
+          const error = new Error(`Message has no operation field. Message ID: ${message.MessageId}`);
+          logger.error(
+            createLoggerContext('message-processor', {
+              error,
+              messageId: message.MessageId,
+              messageBody: message.Body,
+              receiptHandle: message.ReceiptHandle,
+              errorType: 'missing_operation'
+            }),
+            'Message has no operation field'
+          );
+          throw error;
           // This will cause the message to go to the dead letter queue
         }
         await this.processMessageByOperation(body, message.MessageId, supabase);
@@ -73,7 +106,16 @@ export class MessageProcessor {
       // Delete the message from the queue
       await sqsManager.deleteMessage(message.ReceiptHandle);
     } catch (error: any) {
-      console.error(`Error processing message ${message.MessageId}:`, error);
+      logger.error(
+        createLoggerContext('message-processor', {
+          error,
+          messageId: message.MessageId,
+          messageBody: message.Body,
+          receiptHandle: message.ReceiptHandle,
+          errorType: 'message_processing_error'
+        }),
+        `Error processing message ${message.MessageId}`
+      );
       // Note: Not deleting the message will cause it to become visible again after the visibility timeout
     }
   }

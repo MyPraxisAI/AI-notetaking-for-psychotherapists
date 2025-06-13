@@ -5,6 +5,7 @@
  */
 
 import { aiService } from './ai-service';
+import { getLogger } from '@kit/shared-common';
 
 // Default timeout for model requests in milliseconds (2 minutes)
 const DEFAULT_MODEL_TIMEOUT_MS = 120000;
@@ -53,7 +54,8 @@ export async function generateLLMResponse(
   options: GenerationOptions
 ): Promise<GenerationResult> {
   // Log the request
-  console.log(`Sending request to ${options.provider} API`, { 
+  const logger = await getLogger();
+  logger.info(`Sending request to ${options.provider} API`, { 
     model: options.model,
     provider: options.provider,
     temperature: options.temperature
@@ -79,7 +81,7 @@ export async function generateLLMResponse(
         throw new Error(`Unsupported model provider: ${options.provider}`);
     }
   } catch (error) {
-    console.error(`Error generating text with ${options.provider}:`, error);
+    logger.error(`Error generating text with ${options.provider}:`, error);
     throw new Error(`Failed to generate text: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
@@ -98,6 +100,7 @@ async function generateWithGoogle(
   startTime: number,
   promptTokens: number
 ): Promise<GenerationResult> {
+  const logger = await getLogger();
   // Initialize Google client with options
   const client = aiService.getGoogleGenAIClient({
     temperature: options.temperature,
@@ -107,7 +110,7 @@ async function generateWithGoogle(
   });
   
   // Call the model with improved error handling
-  console.log(`Starting Google request with model: ${options.model}`);
+  logger.info(`Starting Google request with model: ${options.model}`);
   // Type assertion for the client
   const typedClient = client as { invoke: (prompt: string) => Promise<{ content: string }> };
   
@@ -127,10 +130,10 @@ async function generateWithGoogle(
       timeoutPromise
     ]) as { content: string };
     
-    console.log(`Google request completed successfully for model: ${options.model}`);
+    logger.info(`Google request completed successfully for model: ${options.model}`);
   } catch (error) {
-    console.error(`Google request failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    console.error('Error details:', error);
+    logger.error(`Google request failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    logger.error('Error details:', error);
     throw error;
   }
   
@@ -144,8 +147,13 @@ async function generateWithGoogle(
   const completionTokens = aiService.estimateTokenCount(content);
   
   // Log success
-  console.log(`Successfully generated text with ${options.provider}`, 
-    JSON.stringify({ duration: `${duration}ms`, promptTokens, completionTokens, totalTokens: promptTokens + completionTokens }, null, 0));
+  logger.info({ 
+    provider: options.provider,
+    duration: `${duration}ms`,
+    promptTokens,
+    completionTokens,
+    totalTokens: promptTokens + completionTokens
+  }, 'Successfully generated text');
 
     return {
     content,
@@ -170,6 +178,7 @@ async function generateWithOpenAI(
   startTime: number,
   promptTokens: number
 ): Promise<GenerationResult> {
+  const logger = await getLogger();
   // Initialize OpenAI client with options
   const client = aiService.getOpenAIClient({
     temperature: options.temperature,
@@ -179,7 +188,7 @@ async function generateWithOpenAI(
   });
   
   // Call the model with improved error handling
-  console.log(`Starting OpenAI request with model: ${options.model}`);
+  logger.info(`Starting OpenAI request with model: ${options.model}`);
   // Type assertion for the client
   const typedClient = client as { invoke: (prompt: string) => Promise<{ content: string }> };
   
@@ -199,10 +208,10 @@ async function generateWithOpenAI(
       timeoutPromise
     ]) as { content: string };
     
-    console.log(`OpenAI request completed successfully for model: ${options.model}`);
+    logger.info(`OpenAI request completed successfully for model: ${options.model}`);
   } catch (error) {
-    console.error(`OpenAI request failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    console.error('Error details:', error);
+    logger.error(`OpenAI request failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    logger.error('Error details:', error);
     throw error;
   }
   
@@ -216,12 +225,13 @@ async function generateWithOpenAI(
   const completionTokens = aiService.estimateTokenCount(content);
   
   // Log success
-  console.log(`Successfully generated text with ${options.provider}`, { 
+  logger.info({ 
+    provider: options.provider,
     duration: `${duration}ms`,
     promptTokens,
     completionTokens,
     totalTokens: promptTokens + completionTokens
-  });
+  }, 'Successfully generated text');
   
   // Return the result
   return {

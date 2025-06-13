@@ -8,6 +8,7 @@ const OpenAI = require('openai');
 import * as fs from 'fs';
 import { BaseTranscriptionProvider, TranscriptionResult } from '../transcription';
 import { SupabaseClient } from '@supabase/supabase-js';
+import { getBackgroundLogger, createLoggerContext } from '../../logger';
 
 /**
  * Options for Whisper-1 model transcription
@@ -130,7 +131,8 @@ export class OpenAITranscriptionProvider extends BaseTranscriptionProvider {
       
       return result;
     } catch (error) {
-      console.error('Error during OpenAI transcription:', error);
+      const logger = await getBackgroundLogger();
+      logger.error(createLoggerContext('transcription-openai', { error }), 'Error during OpenAI transcription');
       throw error;
     }
   }
