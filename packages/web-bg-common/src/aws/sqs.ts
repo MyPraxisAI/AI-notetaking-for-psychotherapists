@@ -1,5 +1,5 @@
 import { SQSClient, SendMessageCommand } from '@aws-sdk/client-sqs';
-import { getLogger } from '../logger';
+import { getLogger } from '@kit/shared-common';
 
 /**
  * Get the SQS client instance

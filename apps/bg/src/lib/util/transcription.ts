@@ -5,6 +5,7 @@
 // Import Node.js modules with proper type declarations
 import * as fs from 'node:fs';
 import * as path from 'node:path';
+import { getBackgroundLogger, createLoggerContext } from '../logger';
 
 /**
  * Speaker information for diarized transcription
@@ -143,7 +144,10 @@ export function getTranscriptionProvider(provider: TranscriptionProvider): BaseT
         // Use type assertion to ensure TypeScript recognizes this as a proper subclass
         providerInstance = new OpenAITranscriptionProvider() as BaseTranscriptionProvider;
       } catch (error: any) {
-        console.error('Error loading OpenAI transcription provider:', error);
+        const loggerPromise = getBackgroundLogger();
+        loggerPromise.then(logger => {
+          logger.error(createLoggerContext('transcription', { error }), 'Error loading OpenAI transcription provider');
+        });
         throw new Error(`Failed to load OpenAI transcription provider: ${error?.message || 'Unknown error'}`);
       }
       break;
@@ -154,7 +158,10 @@ export function getTranscriptionProvider(provider: TranscriptionProvider): BaseT
         // Use type assertion to ensure TypeScript recognizes this as a proper subclass
         providerInstance = new YandexTranscriptionProvider() as BaseTranscriptionProvider;
       } catch (error: any) {
-        console.error('Error loading Yandex transcription provider:', error);
+        const loggerPromise = getBackgroundLogger();
+        loggerPromise.then(logger => {
+          logger.error(createLoggerContext('transcription', { error }), 'Error loading Yandex transcription provider');
+        });
         throw new Error(`Failed to load Yandex transcription provider: ${error?.message || 'Unknown error'}`);
       }
       break;

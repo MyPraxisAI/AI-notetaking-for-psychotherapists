@@ -1,5 +1,5 @@
 import { SupabaseClient } from '@supabase/supabase-js';
-import { getLogger } from '../logger';
+import { getLogger } from '@kit/shared-common';
 import type { ArtifactType, LanguageType } from '../types';
 
 /**

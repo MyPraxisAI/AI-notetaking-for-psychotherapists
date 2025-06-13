@@ -3,7 +3,7 @@
 import { z } from 'zod';
 import { enhanceAction } from '@kit/next/actions';
 import { getSupabaseServerClient } from '@kit/supabase/server-client';
-import { getLogger } from '@kit/web-bg-common/logger';
+import { getLogger } from '@kit/shared-common/logger';
 import type { User, SupabaseClient } from '@supabase/supabase-js';
 import { createI18nServerInstance } from '~/lib/i18n/i18n.server';
 

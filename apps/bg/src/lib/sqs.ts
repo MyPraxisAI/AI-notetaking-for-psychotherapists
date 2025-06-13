@@ -1,5 +1,6 @@
 import AWS from 'aws-sdk';
 import { SQSConfig, SQSMessage } from '../types';
+import { getBackgroundLogger, createLoggerContext } from './logger';
 
 /**
  * Initialize and configure the AWS SQS client
@@ -102,10 +103,11 @@ export class SQSQueueManager {
     this.initializationPromise = this.ensureQueueExists().then(() => {
       this.initialized = true;
       console.log('SQS Queue Manager initialization complete');
-    }).catch(err => {
+    }).catch(async (err) => {
       // Reset initialization promise on error so it can be retried
       this.initializationPromise = null;
-      console.error('SQS Queue Manager initialization failed:', err);
+      const logger = await getBackgroundLogger();
+      logger.error(createLoggerContext('sqs', { error: err }), 'SQS Queue Manager initialization failed');
       throw err;
     });
     

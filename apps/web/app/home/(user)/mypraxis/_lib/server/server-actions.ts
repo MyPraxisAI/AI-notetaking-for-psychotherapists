@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { enhanceAction } from '@kit/next/actions';
 import { getSupabaseServerClient } from '@kit/supabase/server-client';
 import { SessionSchema, SessionMetadata } from '../schemas/session';
-import { getLogger } from '@kit/web-bg-common/logger';
+import { getLogger } from '@kit/shared-common/logger';
 import { generateContent, createSessionApi, regenerateArtifactsForSession } from '@kit/web-bg-common';
 import type { User, SupabaseClient } from '@supabase/supabase-js';
 
@@ -212,7 +212,7 @@ export const updateSessionAction = enhanceAction(
         .single();
         
       if (fetchError) {
-        await logger.error({ ...ctx, error: fetchError }, 'Failed to fetch current session data');
+        logger.error({ ...ctx, error: fetchError }, 'Failed to fetch current session data');
         throw new Error('Failed to fetch current session data');
       }
 
@@ -274,9 +274,9 @@ export const updateSessionAction = enhanceAction(
             data.id, 
             currentSession.account_id
           );
-          await logger.info({ ...ctx }, 'Invalidated artifacts and queued regeneration');
+          logger.info({ ...ctx }, 'Invalidated artifacts and queued regeneration');
         } catch (invalidateError) {
-          await logger.error({ ...ctx, error: invalidateError }, 'Failed to invalidate artifacts and queue regeneration');
+          logger.error({ ...ctx, error: invalidateError }, 'Failed to invalidate artifacts and queue regeneration');
         }
         
       } else {

@@ -19,6 +19,7 @@ export * from './language';
 // Re-export AI utilities
 export * from './ai/ai-service';
 export * from './ai/models';
+
 // Export specific functions from artifact-vars to avoid conflicts
 export { 
   generateVariableData,
@@ -32,9 +33,6 @@ export {
   extractTemplateVariables,
   canGenerateVariable
 } from './ai/artifact-vars';
-
-// Re-export logger utilities
-export * from './logger';
 
 // Export specific functions from artifacts to maintain backward compatibility
 export { 

@@ -52,6 +52,7 @@
     "@kit/notifications": "workspace:*",
     "@kit/personal-invitations": "workspace:^",
     "@kit/shared": "workspace:*",
+    "@kit/shared-common": "workspace:*",
     "@kit/supabase": "workspace:*",
     "@kit/team-accounts": "workspace:*",
     "@kit/ui": "workspace:*",

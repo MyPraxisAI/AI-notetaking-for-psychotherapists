@@ -6,6 +6,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { executeFFmpeg } from './ffmpeg';
 import { execSync } from 'child_process';
+import { getBackgroundLogger, createLoggerContext } from '../logger';
 
 /**
  * Get audio file information using ffprobe
@@ -131,7 +132,8 @@ export async function combineAudioChunks(
     
     return finalOutputPath;
   } catch (error) {
-    console.error('Error combining audio chunks:', error);
+    const logger = await getBackgroundLogger();
+    logger.error(createLoggerContext('audio', { error }), 'Error combining audio chunks');
     throw error;
   }
 }
