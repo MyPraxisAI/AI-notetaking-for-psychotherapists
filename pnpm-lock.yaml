@@ -246,6 +246,9 @@ importers:
       '@kit/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+      '@kit/shared-common':
+        specifier: workspace:*
+        version: link:../../packages/shared-common
       '@kit/supabase':
         specifier: workspace:*
         version: link:../../packages/supabase

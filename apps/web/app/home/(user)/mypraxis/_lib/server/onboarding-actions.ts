@@ -2,10 +2,11 @@
 
 import { enhanceAction } from '@kit/next/actions';
 import { getSupabaseServerClient } from '@kit/supabase/server-client';
-import { getLogger, getUserLanguage, createAccountsApi } from '@kit/web-bg-common';
+import { getUserLanguage, createAccountsApi } from '@kit/web-bg-common';
+import { getLogger } from '@kit/shared-common/logger';
 import { CompleteOnboardingSchema } from '../schemas/user-settings';
 import type { User, SupabaseClient } from '@supabase/supabase-js';
-import type { Logger } from '@kit/web-bg-common/logger';
+import type { Logger } from '@kit/shared-common/logger';
 
 /**
  * Sets up demo clients for a user based on their language preference
