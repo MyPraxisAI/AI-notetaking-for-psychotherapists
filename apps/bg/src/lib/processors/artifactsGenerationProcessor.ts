@@ -1,8 +1,6 @@
 import { SupabaseClient } from '@supabase/supabase-js';
 import { getOrCreateArtifact } from '@kit/web-bg-common';
-import { getArtifact } from '@kit/web-bg-common/db/artifact-api';
 import { getBackgroundLogger, createLoggerContext } from '../logger';
-import { Message } from 'aws-sdk/clients/sqs';
 
 /**
  * Artifacts Generation Task Data
@@ -40,9 +38,10 @@ export class ArtifactsGenerationProcessor {
       await this.regenerateArtifacts(supabase, task);
       
       console.log(`Successfully processed artifacts generation for session ${sessionId}`);
-    } catch (error: any) {
+    } catch (error: unknown) {
       const logger = await getBackgroundLogger();
-      logger.error(createLoggerContext('artifactsGenerationProcessor', { error }), `Error processing artifacts generation: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      logger.error(createLoggerContext('artifactsGenerationProcessor', { error }), `Error processing artifacts generation: ${errorMessage}`);
       throw error; // Rethrow to prevent message deletion
     }
   }
@@ -98,7 +97,7 @@ export class ArtifactsGenerationProcessor {
           
           // Use getOrCreateArtifact to generate or regenerate the artifact
           // Language will be automatically determined by the function
-          const { content, isNew } = await getOrCreateArtifact(
+          const { isNew } = await getOrCreateArtifact(
             supabase,
             artifactConfig.referenceId,
             artifactConfig.referenceType,

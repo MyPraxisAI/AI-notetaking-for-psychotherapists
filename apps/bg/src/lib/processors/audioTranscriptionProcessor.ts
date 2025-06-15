@@ -7,7 +7,6 @@ import {
 } from '../util/transcription';
 import { YandexV3RuOptions } from '../util/transcription/yandex/long_audio_v3';
 import { combineAudioChunks } from '../util/audio';
-import { regenerateArtifactsForSession } from '@kit/web-bg-common';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
@@ -57,9 +56,10 @@ export class AudioTranscriptionProcessor {
       // Clean up resources
       await this.cleanupResources(supabase, task);
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       const logger = await getBackgroundLogger();
-      logger.error(createLoggerContext('audioTranscriptionProcessor', { error }), `Error processing audio transcription: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      logger.error(createLoggerContext('audioTranscriptionProcessor', { error }), `Error processing audio transcription: ${errorMessage}`);
       throw error; // Rethrow to prevent message deletion
     }
   }
@@ -170,7 +170,10 @@ export class AudioTranscriptionProcessor {
    * @param recordingId - The recording ID
    * @returns Recording information
    */
-  private async getRecordingInfo(accountId: string, recordingId: string): Promise<any> {
+  private async getRecordingInfo(accountId: string, recordingId: string): Promise<{
+    standalone_chunks: boolean;
+    transcription_engine?: string;
+  }> {
     const { data, error } = await this.supabase
       .from('recordings')
       .select('*')
@@ -196,9 +199,13 @@ export class AudioTranscriptionProcessor {
    * @param recordingId - The recording ID
    * @returns Array of recording chunks
    */
-  private async getRecordingChunks(accountId: string, recordingId: string): Promise<any[]> {
+  private async getRecordingChunks(accountId: string, recordingId: string): Promise<Array<{
+    storage_bucket: string;
+    storage_path: string;
+    chunk_number: number;
+  }>> {
     const { data, error } = await this.supabase
-      .from('recordings_chunks')
+      .from('recording_chunks')
       .select('*')
       .eq('account_id', accountId)
       .eq('recording_id', recordingId)
@@ -250,7 +257,14 @@ export class AudioTranscriptionProcessor {
    * @param tempDir - Temporary directory to store the chunks
    * @returns Array of paths to the downloaded chunk files
    */
-  private async downloadChunks(chunks: any[], tempDir: string): Promise<string[]> {
+  private async downloadChunks(
+    chunks: Array<{
+      storage_bucket: string;
+      storage_path: string;
+      chunk_number: number;
+    }>,
+    tempDir: string
+  ): Promise<string[]> {
     const chunkFiles: string[] = [];
     const MAX_RETRIES = 1;
     const PARALLELISM = 5; // Download 5 chunks in parallel
@@ -336,62 +350,27 @@ export class AudioTranscriptionProcessor {
     task: AudioProcessingTaskData,
     result: TranscriptionResult
   ): Promise<void> {
-    const { accountId, recordingId } = task;
-        
-    // Use the model name directly from the TranscriptionResult
-    // It already includes the provider prefix (e.g., 'openai/whisper-1')
+    const { recordingId } = task;
     
     try {
-      // First, get the session_id from the recording
-      const { data: recordingData, error: recordingError } = await supabase
-        .from('recordings')
-        .select('session_id')
-        .eq('id', recordingId)
-        .single();
-        
-      if (recordingError) {
-        console.error('Error retrieving recording data from Supabase:', recordingError);
-        throw new Error(`Failed to retrieve recording data: ${recordingError.message}`);
-      }
-      
-      if (!recordingData.session_id) {
-        console.error('Recording does not have an associated session_id');
-        throw new Error('Recording does not have an associated session_id');
-      }
-      
-      // Insert the transcript into the transcripts table
-      const { data, error } = await supabase
-        .from('transcripts')
-        .insert({ 
-          session_id: recordingData.session_id,
-          account_id: accountId,
-          transcription_model: result.model || 'openai/whisper-1',
-          content: result.text,
-          content_json: result.content_json
+      const { error } = await supabase
+        .from('transcriptions')
+        .upsert({
+          recording_id: recordingId,
+          text: result.text,
+          content_json: result.content_json,
+          model: result.model,
+          timestamp: result.timestamp
         });
         
       if (error) {
-        console.error('Error inserting transcript into transcripts table:', error);
-        throw new Error(`Failed to insert transcript into transcripts table: ${error.message}`);
-      } else {
-        console.log('Transcript inserted into transcripts table successfully');
-      }
-
-      // Invalidate all artifacts related to this session and its client and queue regeneration
-      // This will mark them as stale and trigger a background task to regenerate them
-      try {
-        await regenerateArtifactsForSession(
-          supabase,
-          recordingData.session_id,
-          task.accountId
-        );
-      } catch (invalidateError) {
-        console.error('Error invalidating artifacts and queueing regeneration:', invalidateError);
-        // Continue processing even if invalidation fails
+        console.error('Error storing transcription result:', error);
+        throw new Error(`Failed to store transcription result: ${error.message}`);
       }
       
+      console.log(`Successfully stored transcription result for recording ${recordingId}`);
     } catch (error) {
-      console.error('Error in Supabase operation:', error);
+      console.error(`Error storing transcription result for recording ${recordingId}:`, error);
       throw error;
     }
   }
@@ -405,7 +384,8 @@ export class AudioTranscriptionProcessor {
     supabase: SupabaseClient,
     task: AudioProcessingTaskData
   ): Promise<void> {
-    const { accountId, recordingId } = task;
+    const { recordingId } = task;
+    const _logger = await getBackgroundLogger();
     
     try {
       // Delete the recording from the database
@@ -422,7 +402,7 @@ export class AudioTranscriptionProcessor {
         console.log('Recording deleted successfully');
       }
     } catch (error) {
-      console.error('Error in cleanup operations:', error);
+      console.error(`Error cleaning up resources for recording ${recordingId}:`, error);
       throw error;
     }
   }
