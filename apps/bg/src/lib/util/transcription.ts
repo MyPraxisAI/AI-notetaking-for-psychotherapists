@@ -41,7 +41,7 @@ export interface TranscriptionResult {
   timestamp: string;
   model?: string; // The model used for transcription
   segments?: TranscriptionSegment[]; // Segment information if available
-  rawResponse?: any; // The raw response from the API
+  rawResponse?: unknown; // The raw response from the API
   content_json?: {
     segments: Array<{
       start_ms: number;
@@ -125,53 +125,40 @@ const providers: Record<string, BaseTranscriptionProvider> = {};
  * @param provider - Provider name
  * @returns Transcription provider instance
  */
-export function getTranscriptionProvider(provider: TranscriptionProvider): BaseTranscriptionProvider {
-  // Return cached provider if it exists
+export async function getTranscriptionProvider(provider: TranscriptionProvider): Promise<BaseTranscriptionProvider> {
   if (providers[provider]) {
     return providers[provider];
   }
-  
-  // Create a new provider instance
   let providerInstance: BaseTranscriptionProvider;
-  
-  // Dynamically import the provider implementation
-  // This avoids circular dependencies
   switch (provider) {
     case 'openai':
       try {
-         
-        const { OpenAITranscriptionProvider } = require('./transcription/openai');
-        // Use type assertion to ensure TypeScript recognizes this as a proper subclass
-        providerInstance = new OpenAITranscriptionProvider() as BaseTranscriptionProvider;
-      } catch (error: any) {
+        const mod = await import('./transcription/openai.js');
+        providerInstance = new mod.OpenAITranscriptionProvider() as BaseTranscriptionProvider;
+      } catch (error: unknown) {
         const loggerPromise = getBackgroundLogger();
         loggerPromise.then(logger => {
           logger.error(createLoggerContext('transcription', { error }), 'Error loading OpenAI transcription provider');
         });
-        throw new Error(`Failed to load OpenAI transcription provider: ${error?.message || 'Unknown error'}`);
+        throw new Error(`Failed to load OpenAI transcription provider: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
       break;
     case 'yandex':
       try {
-         
-        const { YandexTranscriptionProvider } = require('./transcription/yandex');
-        // Use type assertion to ensure TypeScript recognizes this as a proper subclass
-        providerInstance = new YandexTranscriptionProvider() as BaseTranscriptionProvider;
-      } catch (error: any) {
+        const mod = await import('./transcription/yandex.js');
+        providerInstance = new mod.YandexTranscriptionProvider() as BaseTranscriptionProvider;
+      } catch (error: unknown) {
         const loggerPromise = getBackgroundLogger();
         loggerPromise.then(logger => {
           logger.error(createLoggerContext('transcription', { error }), 'Error loading Yandex transcription provider');
         });
-        throw new Error(`Failed to load Yandex transcription provider: ${error?.message || 'Unknown error'}`);
+        throw new Error(`Failed to load Yandex transcription provider: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
       break;
     default:
       throw new Error(`Unsupported transcription provider: ${provider}`);
   }
-  
-  // Cache the provider instance
   providers[provider] = providerInstance;
-  
   return providerInstance;
 }
 
@@ -203,7 +190,7 @@ export async function transcribeAudio(
   options?: TranscriptionOptions,
   provider: TranscriptionProvider = 'yandex'
 ): Promise<TranscriptionResult> {
-  const transcriptionProvider = getTranscriptionProvider(provider);
+  const transcriptionProvider = await getTranscriptionProvider(provider);
   
   // Type narrowing based on the provider to ensure type safety
   let transcriptionResult: TranscriptionResult;

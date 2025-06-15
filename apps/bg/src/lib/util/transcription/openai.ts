@@ -2,9 +2,6 @@
  * OpenAI transcription provider implementation
  */
 
-// Import OpenAI SDK using CommonJS require to avoid TypeScript type declaration issues
- 
-const OpenAI = require('openai');
 import * as fs from 'fs';
 import { BaseTranscriptionProvider, TranscriptionResult } from '../transcription';
 import { SupabaseClient } from '@supabase/supabase-js';
@@ -42,7 +39,9 @@ export const defaultOpenAITranscriptionOptions: WhisperTranscriptionOptions = {
  * OpenAI transcription provider
  */
 export class OpenAITranscriptionProvider extends BaseTranscriptionProvider {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private openai: any;
+  private logger = getBackgroundLogger();
 
   constructor() {
     super();
@@ -53,9 +52,21 @@ export class OpenAITranscriptionProvider extends BaseTranscriptionProvider {
     }
     
     // Initialize OpenAI client for audio transcription
-    this.openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-    });
+    this.initializeOpenAI(process.env.OPENAI_API_KEY);
+  }
+
+  private async initializeOpenAI(apiKey: string) {
+    try {
+      const { OpenAI } = await import('openai');
+      this.openai = new OpenAI({ apiKey });
+    } catch (error: unknown) {
+      const logger = await this.logger;
+      logger.error(
+        createLoggerContext('transcription-openai', { error }),
+        'Failed to initialize OpenAI'
+      );
+      throw error;
+    }
   }
 
   /**
@@ -130,9 +141,14 @@ export class OpenAITranscriptionProvider extends BaseTranscriptionProvider {
       console.log(`Transcription completed in ${processingTime.toFixed(2)} seconds`);
       
       return result;
-    } catch (error) {
+    } catch (error: unknown) {
       const logger = await getBackgroundLogger();
-      logger.error(createLoggerContext('transcription-openai', { error }), 'Error during OpenAI transcription');
+      logger.error({ 
+        error,
+        module: 'bg',
+        submodule: 'transcription-openai',
+        environment: process.env.NODE_ENV
+      }, 'Error during OpenAI transcription');
       throw error;
     }
   }
