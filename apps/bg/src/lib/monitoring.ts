@@ -1,6 +1,5 @@
 import { initSentry, captureException as captureExceptionInSentry, captureMessage as captureMessageInSentry } from '@kit/shared-common/sentry';
 import type { Event, EventHint } from '@sentry/types';
-import type { NodeOptions } from '@sentry/node';
 import { getBackgroundLogger, createLoggerContext } from './logger';
 
 const isSentryDisabled = process.env.SENTRY_DISABLED === 'true';
@@ -21,21 +20,23 @@ export function initMonitoring() {
   console.log('Initializing Sentry with DSN:', dsn.substring(0, 10) + '...');
 
   try {
-    initSentry({
+    const options = {
       dsn,
       environment: process.env.NODE_ENV,
       // Set tracesSampleRate to 1.0 to capture 100% of transactions for performance monitoring.
       // We recommend adjusting this value in production
       tracesSampleRate: 1.0,
       debug: process.env.NODE_ENV === 'development', // Enable debug mode in development
-      beforeSend(event: Event, hint: EventHint) {
+      beforeSend(event: Event, _hint: EventHint) {
         event.tags = {
           ...event.tags,
           module: 'bg',
         };
         return event;
       },
-    } as any);
+    };
+
+    initSentry(options);
 
     console.log('Sentry monitoring initialized successfully');
   } catch (error) {
@@ -86,7 +87,7 @@ export async function captureException(error: Error, _hint?: string) {
 export async function captureMessage(
   message: string,
   level: 'fatal' | 'error' | 'warning' | 'log' | 'info' | 'debug' = 'info',
-  context?: Record<string, any>
+  context?: Record<string, unknown>
 ) {
   if (isSentryDisabled) {
     console.log(`[${level.toUpperCase()}] ${message}`);
