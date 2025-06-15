@@ -4,13 +4,11 @@
  */
 
 import { BaseTranscriptionProvider, TranscriptionResult } from '../../transcription';
-import { YandexTranscriptionOptions } from './common';
 // Short audio v1 provider has been removed
 // Long audio v2 provider has been removed
 import { YandexLongAudioV3Provider, YandexV3TranscriptionOptions } from './long_audio_v3';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { convertToSupportedFormat } from './utils';
-import { getBackgroundLogger } from '../../../logger';
 import * as fs from 'node:fs';
 
 /**

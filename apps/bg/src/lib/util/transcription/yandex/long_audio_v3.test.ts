@@ -1,7 +1,3 @@
- 
-import { YandexLongAudioV3Provider } from './long_audio_v3';
-import { readFileSync } from 'fs';
-
 describe('YandexLongAudioV3Provider.processTranscriptionResult', () => {
   it('processes parsed NDJSON and preserves Cyrillic text', async () => {
     // // Set dummy env vars to satisfy constructor
