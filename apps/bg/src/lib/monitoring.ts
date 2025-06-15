@@ -49,26 +49,22 @@ export function initMonitoring() {
 /**
  * Capture an exception in Sentry
  * @param error - The error to capture
- * @param context - Additional context to include with the error
+ * @param _hint - Additional context to include with the error
  */
-export async function captureException(error: Error, context?: Record<string, any>) {
+export async function captureException(error: Error, _hint?: string) {
   if (isSentryDisabled) {
     console.error('Error:', error);
-    if (context) {
-      console.error('Context:', context);
-    }
     return;
   }
 
   console.debug('Capturing exception in Sentry:', {
     errorName: error.name,
     errorMessage: error.message,
-    hasContext: !!context,
     environment: process.env.NODE_ENV
   });
 
   try {
-    await captureExceptionInSentry(error, context);
+    await captureExceptionInSentry(error);
   } catch (sentryError) {
     const loggerPromise = getBackgroundLogger();
     loggerPromise.then(logger => {

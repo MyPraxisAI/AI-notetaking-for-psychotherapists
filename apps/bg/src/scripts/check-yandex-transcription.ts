@@ -1,10 +1,8 @@
-#!/usr/bin/env tsx
+#!/usr/bin/env node
 
 import { config } from 'dotenv';
-import { getLogger } from '@kit/shared-common/logger';
-import { captureException } from '@kit/shared-common/sentry';
-import { randomBytes } from 'crypto';
-import { writeFile } from 'fs/promises';
+import { getBackgroundLogger } from '../lib/logger';
+import { writeFile } from 'node:fs/promises';
 
 // Load environment variables
 config();
@@ -18,7 +16,7 @@ if (!YANDEX_API_KEY) {
 }
 
 async function checkTranscriptionStatus(operationId: string) {
-  const logger = await getLogger();
+  const logger = await getBackgroundLogger();
   const ctx = { name: 'check-yandex-transcription', operationId };
   let rawBody: string | undefined = undefined;
 

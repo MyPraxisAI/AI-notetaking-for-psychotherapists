@@ -2,7 +2,8 @@
  * Utility functions for Yandex SpeechKit transcription
  */
 
-import * as path from 'node:path';
+import { getAudioInfo } from '../../audio';
+import { executeFFmpegSync } from '../../ffmpeg';
 
 /**
  * Check if the audio format is supported by Yandex SpeechKit
@@ -18,9 +19,6 @@ export async function isFormatSupported(filePath: string): Promise<boolean> {
     console.log(`File extension ${extension} is not supported by Yandex (only mp3 is supported)`);
     return false;
   }
-  
-  // Import the getAudioInfo function from audio.ts
-  const { getAudioInfo } = require('../../audio');
   
   // Check audio properties using ffprobe
   const audioInfo = await getAudioInfo(filePath);
@@ -76,9 +74,6 @@ export async function convertToSupportedFormat(inputFilePath: string): Promise<s
   }
   
   console.log(`Converting file to Yandex-supported format (mono MP3): ${inputFilePath}`);
-  
-  // Import ffmpeg utility
-  const { executeFFmpegSync } = require('../../ffmpeg');
   
   // Generate output file path
   const outputFilePath = `${inputFilePath}.mp3`;

@@ -1,7 +1,16 @@
 import { SupabaseClient } from '@supabase/supabase-js';
-import { TranscriptionChunk } from '../../types';
 import { BaseBackgroundTask } from '../../types';
 import { getBackgroundLogger, createLoggerContext } from '../logger';
+import { 
+  transcribeAudio, 
+  TranscriptionResult
+} from '../util/transcription';
+import { YandexV3RuOptions } from '../util/transcription/yandex/long_audio_v3';
+import { combineAudioChunks } from '../util/audio';
+import { regenerateArtifactsForSession } from '@kit/web-bg-common';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as os from 'os';
 
 /**
  * Audio Processing Task Data
@@ -11,18 +20,7 @@ export interface AudioProcessingTaskData extends BaseBackgroundTask {
   accountId: string;
   recordingId: string;
 }
-import * as fs from 'fs';
-import * as path from 'path';
-import * as os from 'os';
-import { promisify } from 'util';
-import { exec } from 'child_process';
-import { 
-  transcribeAudio, 
-  TranscriptionResult
-} from '../util/transcription';
-import { YandexV3RuOptions } from '../util/transcription/yandex/long_audio_v3';
-import { combineAudioChunks } from '../util/audio';
-import { regenerateArtifactsForSession } from '@kit/web-bg-common';
+
 
 // TranscriptionResult interface is now imported from '../util/transcription'
 
@@ -36,12 +34,12 @@ export class AudioTranscriptionProcessor {
    * Process an audio transcription task
    * @param supabase - Supabase client
    * @param task - The audio processing task data
-   * @param messageId - The SQS message ID
+   * @param _messageId - The SQS message ID
    */
   public async process(
     supabase: SupabaseClient,
     task: AudioProcessingTaskData,
-    messageId: string
+    _messageId: string
   ): Promise<void> {
     // Store the Supabase client for use in other methods
     this.supabase = supabase;
@@ -73,7 +71,6 @@ export class AudioTranscriptionProcessor {
    */
   private async performTranscription(task: AudioProcessingTaskData): Promise<TranscriptionResult> {
     const { accountId, recordingId } = task;
-    const execPromise = promisify(exec);
     let tempDir: string | null = null;
     
     // We'll determine if chunks are standalone from the database

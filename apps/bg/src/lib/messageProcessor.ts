@@ -5,7 +5,6 @@ import { AudioTranscriptionProcessor, AudioProcessingTaskData, ArtifactsGenerati
 import { withCurrentAccountId } from '@kit/web-bg-common/db';
 import { getBackgroundLogger, createLoggerContext } from './logger';
 import { 
-  BaseBackgroundTask, 
   SQSMessage 
 } from '../types';
 

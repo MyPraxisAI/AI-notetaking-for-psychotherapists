@@ -3,6 +3,12 @@ export interface BaseBackgroundTask {
   id: string;
   type: string;
   timestamp: string;
+  operation: string;
+  accountId: string;
+  sessionId?: string;
+  priority?: 'high' | 'normal' | 'low';
+  idempotencyKey?: string;
+  metadata?: Record<string, unknown>;
 }
 
 
@@ -21,7 +27,7 @@ export interface AudioTranscription {
   confidence?: number;
   chunks?: TranscriptionChunk[];
   standalone_chunks: boolean;
-  metadata?: any;
+  metadata?: Record<string, unknown>;
   created_at?: string;
   processed_at?: string;
   status: 'pending' | 'processing' | 'completed' | 'failed';
@@ -32,7 +38,7 @@ export interface SQSMessage {
   MessageId: string;
   ReceiptHandle: string;
   Body: string;
-  [key: string]: any;
+  [key: string]: string | number | boolean | null | undefined;
 }
 
 export interface SQSBatchDeleteItem {

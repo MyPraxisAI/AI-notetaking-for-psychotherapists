@@ -2,6 +2,7 @@ import { SupabaseClient } from '@supabase/supabase-js';
 import { getOrCreateArtifact } from '@kit/web-bg-common';
 import { getArtifact } from '@kit/web-bg-common/db/artifact-api';
 import { getBackgroundLogger, createLoggerContext } from '../logger';
+import { Message } from 'aws-sdk/clients/sqs';
 
 /**
  * Artifacts Generation Task Data
@@ -23,12 +24,12 @@ export class ArtifactsGenerationProcessor {
    * Process an artifacts generation task
    * @param supabase - Supabase client
    * @param task - The artifacts generation task data
-   * @param messageId - The SQS message ID
+   * @param _messageId - The SQS message ID
    */
   public async process(
     supabase: SupabaseClient,
     task: ArtifactsGenerateTaskData,
-    messageId: string
+    _messageId: string
   ): Promise<void> {
     try {
       const { accountId, sessionId } = task;

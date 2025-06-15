@@ -139,7 +139,7 @@ export function getTranscriptionProvider(provider: TranscriptionProvider): BaseT
   switch (provider) {
     case 'openai':
       try {
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
+         
         const { OpenAITranscriptionProvider } = require('./transcription/openai');
         // Use type assertion to ensure TypeScript recognizes this as a proper subclass
         providerInstance = new OpenAITranscriptionProvider() as BaseTranscriptionProvider;
@@ -153,7 +153,7 @@ export function getTranscriptionProvider(provider: TranscriptionProvider): BaseT
       break;
     case 'yandex':
       try {
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
+         
         const { YandexTranscriptionProvider } = require('./transcription/yandex');
         // Use type assertion to ensure TypeScript recognizes this as a proper subclass
         providerInstance = new YandexTranscriptionProvider() as BaseTranscriptionProvider;

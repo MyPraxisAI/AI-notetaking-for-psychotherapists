@@ -10,6 +10,8 @@ import { YandexTranscriptionOptions } from './common';
 import { YandexLongAudioV3Provider, YandexV3TranscriptionOptions } from './long_audio_v3';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { convertToSupportedFormat } from './utils';
+import { getBackgroundLogger } from '../../../logger';
+import * as fs from 'node:fs';
 
 /**
  * Yandex transcription provider
@@ -39,11 +41,7 @@ export class YandexTranscriptionProvider extends BaseTranscriptionProvider {
     audioFilePath: string,
     transcriptionOptions: YandexV3TranscriptionOptions
   ): Promise<TranscriptionResult> {
-    // Use default options if none provided
-    const options = transcriptionOptions;
-    
     // Check file size to determine which API to use
-    const fs = require('fs');
     const stats = fs.statSync(audioFilePath);
     const fileSizeInBytes = stats.size;
     const fileSizeInMB = fileSizeInBytes / (1024 * 1024);
@@ -51,19 +49,17 @@ export class YandexTranscriptionProvider extends BaseTranscriptionProvider {
     console.log(`Audio file size: ${fileSizeInMB.toFixed(2)} MB`);
     
     // Convert audio to a supported format if needed
-    // Using the utility function directly instead of through a provider instance
     const convertedFilePath = await convertToSupportedFormat(audioFilePath);
     
     // Determine which API version to use
     const apiVersion = transcriptionOptions.version;
-    let provider;
     switch (apiVersion) {
       case 'v3':
         console.log('Using long audio API (v3) with speaker identification');
         return this.longAudioV3Provider.transcribeLongAudio(
           client,
           convertedFilePath,
-          transcriptionOptions as YandexV3TranscriptionOptions
+          transcriptionOptions
         );
       default:
         throw new Error(`Unsupported API version: ${apiVersion}`);

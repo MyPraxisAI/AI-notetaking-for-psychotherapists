@@ -3,7 +3,7 @@
  */
 
 // Import OpenAI SDK using CommonJS require to avoid TypeScript type declaration issues
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+ 
 const OpenAI = require('openai');
 import * as fs from 'fs';
 import { BaseTranscriptionProvider, TranscriptionResult } from '../transcription';

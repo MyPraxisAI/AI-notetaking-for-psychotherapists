@@ -6,7 +6,7 @@
  */
 
 import { TranscriptionResult, Speaker, TranscriptionSegment } from '../../transcription';
-import { YandexBaseProvider, YandexTranscriptionOptions } from './common';
+import { YandexBaseProvider, YandexTranscriptionOptions, YandexModelType, YandexLanguageCode } from './common';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { classifySpeakerRoles } from '../role_classification';
 import * as https from 'node:https';
@@ -29,7 +29,29 @@ export interface YandexV3TranscriptionOptions extends YandexTranscriptionOptions
    */
   enableSpeakerIdentification?: boolean;
   
-
+  /**
+   * Model to use for transcription
+   * @override
+   */
+  model?: YandexModelType;
+  
+  /**
+   * Language code for transcription
+   * @override
+   */
+  language?: YandexLanguageCode;
+  
+  /**
+   * Enable literature text mode
+   * @override
+   */
+  literatureText?: boolean;
+  
+  /**
+   * Enable profanity filter
+   * @override
+   */
+  profanityFilter?: boolean;
 }
 
 /**
@@ -105,7 +127,17 @@ export class YandexLongAudioV3Provider extends YandexBaseProvider {
       console.log(`Long audio transcription with v3 API completed in ${processingTime.toFixed(2)} seconds`);
       
       // Process the result to extract text, speakers, and segments
-      return this.processTranscriptionResult(result, processingTime, client, transcriptionOptions);
+      const transcriptionResult = await this.processTranscriptionResult(result, processingTime, transcriptionOptions);
+      // Classify speaker roles and update the transcription
+      try {
+        await classifySpeakerRoles(client, transcriptionResult);
+      } catch (error) {
+        const logger = await getBackgroundLogger();
+        logger.error(createLoggerContext('transcription-yandex-long-audio-v3', { error }), 'Error during speaker role classification');
+        // Continue with unclassified roles if there's an error
+      }
+      // Text formatting is now handled in the transcribeAudio function
+      return transcriptionResult;
     } catch (error) {
       const logger = await getBackgroundLogger();
       logger.error(createLoggerContext('transcription-yandex-long-audio-v3', { error }), 'Error during v3 transcription');
@@ -324,15 +356,49 @@ export class YandexLongAudioV3Provider extends YandexBaseProvider {
         const req = https.request(options, (res: any) => {
           console.log(`V3 operation status response code: ${res.statusCode}`);
           
+          // Helper function to get charset from Content-Type header
+          const getCharsetFromContentType = (contentType: string | undefined): BufferEncoding => {
+            if (!contentType) return 'utf8';
+            
+            // Parse charset from Content-Type header
+            // Example: "application/json; charset=utf-8" or "application/json;charset=utf-8"
+            const charsetMatch = contentType.match(/charset=([^;]+)/i);
+            const detectedCharset = charsetMatch ? charsetMatch[1].toLowerCase() : 'utf8';
+            
+            // Map common charset names to Node.js BufferEncoding
+            const charsetMap: Record<string, BufferEncoding> = {
+              'utf-8': 'utf8',
+              'utf8': 'utf8',
+              'ascii': 'ascii',
+              'utf16le': 'utf16le',
+              'ucs2': 'ucs2',
+              'base64': 'base64',
+              'latin1': 'latin1',
+              'binary': 'binary',
+              'hex': 'hex'
+            };
+            
+            // Return mapped charset or fallback to utf8
+            return charsetMap[detectedCharset] || 'utf8';
+          };
+          
+          // Get charset from Content-Type header
+          const contentType = res.headers['content-type'];
+          const charset = getCharsetFromContentType(contentType);
+          console.log(`Response Content-Type: ${contentType}, using charset: ${charset}`);
+          
           // If status code is not 200, handle accordingly
           if (res.statusCode !== 200) {
-            // Collect the response body
-            let responseBody = '';
-            res.on('data', (chunk: any) => {
-              responseBody += chunk;
+            // Collect the response body using Buffer accumulation
+            const chunks: Buffer[] = [];
+            res.on('data', (chunk: Buffer) => {
+              chunks.push(Buffer.from(chunk));
             });
             
             res.on('end', () => {
+              // Convert accumulated buffers to string using the detected charset
+              const responseBody = Buffer.concat(chunks).toString(charset);
+              
               // If status code is 400, fail immediately
               if (res.statusCode === 400) {
                 console.error(`Received 400 Bad Request from API. Response body:`, responseBody);
@@ -357,14 +423,18 @@ export class YandexLongAudioV3Provider extends YandexBaseProvider {
             return;
           }
           
-          let data = '';
+          // Collect response data using Buffer accumulation
+          const chunks: Buffer[] = [];
           
-          res.on('data', (chunk: any) => {
-            data += chunk;
+          res.on('data', (chunk: Buffer) => {
+            chunks.push(Buffer.from(chunk));
           });
           
           res.on('end', () => {
             try {
+              // Convert accumulated buffers to string using the detected charset
+              const data = Buffer.concat(chunks).toString(charset);
+              
               console.log(`V3 operation status complete response (${data.length} bytes)`);
               if (data.length === 0) {
                 console.warn('Empty response received from operation status endpoint');
@@ -493,13 +563,12 @@ export class YandexLongAudioV3Provider extends YandexBaseProvider {
    * 
    * @param result - Raw API result
    * @param processingTime - Processing time in seconds
-   * @param client - Supabase client
+   * @param options - Transcription options
    * @returns Formatted transcription result
    */
   private async processTranscriptionResult(
     result: any,
     processingTime: number,
-    client: SupabaseClient,
     options: YandexV3TranscriptionOptions
   ): Promise<TranscriptionResult> {
     // console.log(`Processing v3 transcription result: ${JSON.stringify(result)}`);
@@ -737,7 +806,6 @@ export class YandexLongAudioV3Provider extends YandexBaseProvider {
     // Sort all segments by start time
     segments.sort((a, b) => a.start - b.start);
 
-
     // Create the initial transcription result
     const transcriptionResult: TranscriptionResult = {
       processingTime,
@@ -758,16 +826,6 @@ export class YandexLongAudioV3Provider extends YandexBaseProvider {
       rawResponse: result
     };
     
-    // Classify speaker roles and update the transcription
-    try {
-      await classifySpeakerRoles(client, transcriptionResult);
-    } catch (error) {
-      const logger = await getBackgroundLogger();
-      logger.error(createLoggerContext('transcription-yandex-long-audio-v3', { error }), 'Error during speaker role classification');
-      // Continue with unclassified roles if there's an error
-    }
-    // Text formatting is now handled in the transcribeAudio function
-
     return transcriptionResult;
   }
   
