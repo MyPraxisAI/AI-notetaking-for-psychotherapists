@@ -58,7 +58,12 @@ async function checkTranscriptionStatus(operationId: string) {
       throw new Error(`Failed to parse NDJSON: ${jsonError}`);
     }
 
-    logger.info({ ...ctx, status: Array.isArray(data) && data.length > 0 ? (data[0] as any).status : undefined }, 'Received transcription status');
+    const status =
+      Array.isArray(data) && data.length > 0 && typeof data[0] === 'object' && data[0] !== null && 'status' in data[0]
+        ? (data[0] as { status?: unknown }).status
+        : undefined;
+
+    logger.info({ ...ctx, status }, 'Received transcription status');
 
     // Pretty print the response
     console.log('\nTranscription Status:');
