@@ -375,7 +375,7 @@ export class AudioTranscriptionProcessor {
       }
 
       // Insert the transcript into the transcripts table
-      const { data, error } = await supabase
+      const { data: _data, error } = await supabase
         .from('transcripts')
         .insert({ 
           session_id: recordingData.session_id,
