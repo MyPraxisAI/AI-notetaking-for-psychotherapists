@@ -10,6 +10,7 @@ import { combineAudioChunks } from '../util/audio';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
+import { regenerateArtifactsForSession } from 'packages/web-bg-common/src/ai/artifacts';
 
 /**
  * Audio Processing Task Data
@@ -350,31 +351,66 @@ export class AudioTranscriptionProcessor {
     task: AudioProcessingTaskData,
     result: TranscriptionResult
   ): Promise<void> {
-    const { recordingId } = task;
-    
+    const { accountId, recordingId } = task;
+
+    // Use the model name directly from the TranscriptionResult
+    // It already includes the provider prefix (e.g., 'openai/whisper-1')
+
     try {
-      const { error } = await supabase
-        .from('transcriptions')
-        .upsert({
-          recording_id: recordingId,
-          text: result.text,
-          content_json: result.content_json,
-          model: result.model,
-          timestamp: result.timestamp
-        });
-        
-      if (error) {
-        console.error('Error storing transcription result:', error);
-        throw new Error(`Failed to store transcription result: ${error.message}`);
+      // First, get the session_id from the recording
+      const { data: recordingData, error: recordingError } = await supabase
+        .from('recordings')
+        .select('session_id')
+        .eq('id', recordingId)
+        .single();
+
+      if (recordingError) {
+        console.error('Error retrieving recording data from Supabase:', recordingError);
+        throw new Error(`Failed to retrieve recording data: ${recordingError.message}`);
       }
-      
-      console.log(`Successfully stored transcription result for recording ${recordingId}`);
+
+      if (!recordingData.session_id) {
+        console.error('Recording does not have an associated session_id');
+        throw new Error('Recording does not have an associated session_id');
+      }
+
+      // Insert the transcript into the transcripts table
+      const { data, error } = await supabase
+        .from('transcripts')
+        .insert({ 
+          session_id: recordingData.session_id,
+          account_id: accountId,
+          transcription_model: result.model || 'openai/whisper-1',
+          content: result.text,
+          content_json: result.content_json
+        });
+
+      if (error) {
+        console.error('Error inserting transcript into transcripts table:', error);
+        throw new Error(`Failed to insert transcript into transcripts table: ${error.message}`);
+      } else {
+        console.log('Transcript inserted into transcripts table successfully');
+      }
+
+      // Invalidate all artifacts related to this session and its client and queue regeneration
+      // This will mark them as stale and trigger a background task to regenerate them
+      try {
+        await regenerateArtifactsForSession(
+          supabase,
+          recordingData.session_id,
+          task.accountId
+        );
+      } catch (invalidateError) {
+        console.error('Error invalidating artifacts and queueing regeneration:', invalidateError);
+        // Continue processing even if invalidation fails
+      }
+
     } catch (error) {
-      console.error(`Error storing transcription result for recording ${recordingId}:`, error);
+      console.error('Error in Supabase operation:', error);
       throw error;
     }
   }
-  
+    
   /**
    * Clean up resources after processing
    * @param supabase - Supabase client
