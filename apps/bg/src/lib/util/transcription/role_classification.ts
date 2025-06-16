@@ -73,42 +73,33 @@ export async function classifySpeakerRoles(
  * @param result - The parsed classification result to validate
  * @returns True if the result is valid, false otherwise
  */
-function validateClassificationResult(result: any): boolean {
-  // Check if result is an object
+function validateClassificationResult(result: unknown): boolean {
   if (!result || typeof result !== 'object') {
     return false;
   }
-  
-  // Check if it has both speaker_1 and speaker_2
-  if (!result.speaker_1 || !result.speaker_2) {
+  const r = result as Record<string, unknown>;
+  if (!r.speaker_1 || !r.speaker_2) {
     return false;
   }
-  
-  // Validate each speaker role
-  const speakerKeys = Object.keys(result).filter(key => key.startsWith('speaker_'));
+  const speakerKeys = Object.keys(r).filter(key => key.startsWith('speaker_'));
   for (const key of speakerKeys) {
-    const value = result[key];
+    const value = r[key];
     if (typeof value !== 'string' || !(value.toLowerCase() === 'therapist' || value.toLowerCase() === 'client')) {
       return false;
     }
   }
-  
-  // Check for confidence (optional but should be a number between 0-1 if present)
-  if ('confidence' in result) {
-    const confidence = result.confidence;
+  if ('confidence' in r) {
+    const confidence = r.confidence;
     if (typeof confidence !== 'number' || confidence < 0 || confidence > 1) {
       return false;
     }
   }
-  
-  // Check for reasoning (optional but should be a string if present)
-  if ('reasoning' in result) {
-    const reasoning = result.reasoning;
+  if ('reasoning' in r) {
+    const reasoning = r.reasoning;
     if (typeof reasoning !== 'string') {
       return false;
     }
   }
-  
   return true;
 }
 

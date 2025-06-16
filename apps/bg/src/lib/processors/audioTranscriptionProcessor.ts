@@ -1,7 +1,16 @@
 import { SupabaseClient } from '@supabase/supabase-js';
-import { TranscriptionChunk } from '../../types';
 import { BaseBackgroundTask } from '../../types';
 import { getBackgroundLogger, createLoggerContext } from '../logger';
+import { 
+  transcribeAudio, 
+  TranscriptionResult
+} from '../util/transcription';
+import { YandexV3RuOptions } from '../util/transcription/yandex/long_audio_v3';
+import { combineAudioChunks } from '../util/audio';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as os from 'os';
+import { regenerateArtifactsForSession } from '@kit/web-bg-common';
 
 /**
  * Audio Processing Task Data
@@ -11,18 +20,7 @@ export interface AudioProcessingTaskData extends BaseBackgroundTask {
   accountId: string;
   recordingId: string;
 }
-import * as fs from 'fs';
-import * as path from 'path';
-import * as os from 'os';
-import { promisify } from 'util';
-import { exec } from 'child_process';
-import { 
-  transcribeAudio, 
-  TranscriptionResult
-} from '../util/transcription';
-import { YandexV3RuOptions } from '../util/transcription/yandex/long_audio_v3';
-import { combineAudioChunks } from '../util/audio';
-import { regenerateArtifactsForSession } from '@kit/web-bg-common';
+
 
 // TranscriptionResult interface is now imported from '../util/transcription'
 
@@ -36,12 +34,12 @@ export class AudioTranscriptionProcessor {
    * Process an audio transcription task
    * @param supabase - Supabase client
    * @param task - The audio processing task data
-   * @param messageId - The SQS message ID
+   * @param _messageId - The SQS message ID
    */
   public async process(
     supabase: SupabaseClient,
     task: AudioProcessingTaskData,
-    messageId: string
+    _messageId: string
   ): Promise<void> {
     // Store the Supabase client for use in other methods
     this.supabase = supabase;
@@ -59,9 +57,10 @@ export class AudioTranscriptionProcessor {
       // Clean up resources
       await this.cleanupResources(supabase, task);
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       const logger = await getBackgroundLogger();
-      logger.error(createLoggerContext('audioTranscriptionProcessor', { error }), `Error processing audio transcription: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      logger.error(createLoggerContext('audioTranscriptionProcessor', { error }), `Error processing audio transcription: ${errorMessage}`);
       throw error; // Rethrow to prevent message deletion
     }
   }
@@ -73,7 +72,6 @@ export class AudioTranscriptionProcessor {
    */
   private async performTranscription(task: AudioProcessingTaskData): Promise<TranscriptionResult> {
     const { accountId, recordingId } = task;
-    const execPromise = promisify(exec);
     let tempDir: string | null = null;
     
     // We'll determine if chunks are standalone from the database
@@ -173,7 +171,10 @@ export class AudioTranscriptionProcessor {
    * @param recordingId - The recording ID
    * @returns Recording information
    */
-  private async getRecordingInfo(accountId: string, recordingId: string): Promise<any> {
+  private async getRecordingInfo(accountId: string, recordingId: string): Promise<{
+    standalone_chunks: boolean;
+    transcription_engine?: string;
+  }> {
     const { data, error } = await this.supabase
       .from('recordings')
       .select('*')
@@ -199,7 +200,11 @@ export class AudioTranscriptionProcessor {
    * @param recordingId - The recording ID
    * @returns Array of recording chunks
    */
-  private async getRecordingChunks(accountId: string, recordingId: string): Promise<any[]> {
+  private async getRecordingChunks(accountId: string, recordingId: string): Promise<Array<{
+    storage_bucket: string;
+    storage_path: string;
+    chunk_number: number;
+  }>> {
     const { data, error } = await this.supabase
       .from('recordings_chunks')
       .select('*')
@@ -253,7 +258,14 @@ export class AudioTranscriptionProcessor {
    * @param tempDir - Temporary directory to store the chunks
    * @returns Array of paths to the downloaded chunk files
    */
-  private async downloadChunks(chunks: any[], tempDir: string): Promise<string[]> {
+  private async downloadChunks(
+    chunks: Array<{
+      storage_bucket: string;
+      storage_path: string;
+      chunk_number: number;
+    }>,
+    tempDir: string
+  ): Promise<string[]> {
     const chunkFiles: string[] = [];
     const MAX_RETRIES = 1;
     const PARALLELISM = 5; // Download 5 chunks in parallel
@@ -340,10 +352,10 @@ export class AudioTranscriptionProcessor {
     result: TranscriptionResult
   ): Promise<void> {
     const { accountId, recordingId } = task;
-        
+
     // Use the model name directly from the TranscriptionResult
     // It already includes the provider prefix (e.g., 'openai/whisper-1')
-    
+
     try {
       // First, get the session_id from the recording
       const { data: recordingData, error: recordingError } = await supabase
@@ -351,19 +363,19 @@ export class AudioTranscriptionProcessor {
         .select('session_id')
         .eq('id', recordingId)
         .single();
-        
+
       if (recordingError) {
         console.error('Error retrieving recording data from Supabase:', recordingError);
         throw new Error(`Failed to retrieve recording data: ${recordingError.message}`);
       }
-      
+
       if (!recordingData.session_id) {
         console.error('Recording does not have an associated session_id');
         throw new Error('Recording does not have an associated session_id');
       }
-      
+
       // Insert the transcript into the transcripts table
-      const { data, error } = await supabase
+      const { data: _data, error } = await supabase
         .from('transcripts')
         .insert({ 
           session_id: recordingData.session_id,
@@ -372,7 +384,7 @@ export class AudioTranscriptionProcessor {
           content: result.text,
           content_json: result.content_json
         });
-        
+
       if (error) {
         console.error('Error inserting transcript into transcripts table:', error);
         throw new Error(`Failed to insert transcript into transcripts table: ${error.message}`);
@@ -392,13 +404,13 @@ export class AudioTranscriptionProcessor {
         console.error('Error invalidating artifacts and queueing regeneration:', invalidateError);
         // Continue processing even if invalidation fails
       }
-      
+
     } catch (error) {
       console.error('Error in Supabase operation:', error);
       throw error;
     }
   }
-  
+    
   /**
    * Clean up resources after processing
    * @param supabase - Supabase client
@@ -408,7 +420,8 @@ export class AudioTranscriptionProcessor {
     supabase: SupabaseClient,
     task: AudioProcessingTaskData
   ): Promise<void> {
-    const { accountId, recordingId } = task;
+    const { recordingId } = task;
+    const _logger = await getBackgroundLogger();
     
     try {
       // Delete the recording from the database
@@ -425,7 +438,7 @@ export class AudioTranscriptionProcessor {
         console.log('Recording deleted successfully');
       }
     } catch (error) {
-      console.error('Error in cleanup operations:', error);
+      console.error(`Error cleaning up resources for recording ${recordingId}:`, error);
       throw error;
     }
   }
