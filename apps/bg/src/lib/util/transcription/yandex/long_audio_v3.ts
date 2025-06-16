@@ -549,13 +549,6 @@ export class YandexLongAudioV3Provider extends YandexBaseProvider {
       };
       
       const pollResponse = await pollForResult();
-      const result = pollResponse.result;
-      if (!result ||
-          (!result.finalRefinements?.length &&
-           !result.alternatives?.length &&
-           !result.speakerAnalysis?.length)) {
-        throw new Error('No usable data in response');
-      }
       
       // Log polling status for debugging
       if (pollResponse.status === 'POLLING' && pollResponse.error) {
@@ -654,9 +647,11 @@ export class YandexLongAudioV3Provider extends YandexBaseProvider {
     options: YandexV3TranscriptionOptions
   ): Promise<TranscriptionResult> {
     // console.log(`Processing v3 transcription result: ${JSON.stringify(result)}`);
-    
+
+    const typedResponse = result as YandexResponse;
+    const typedResult = typedResponse.result as YandexResult;
     // Check if we have any data to process
-    const typedResult = result as YandexResult;
+
     if (!typedResult || 
         (!typedResult.finalRefinements?.length && 
          !typedResult.alternatives?.length && 

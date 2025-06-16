@@ -10,7 +10,7 @@ import { combineAudioChunks } from '../util/audio';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
-import { regenerateArtifactsForSession } from 'packages/web-bg-common/src/ai/artifacts';
+import { regenerateArtifactsForSession } from '@kit/web-bg-common';
 
 /**
  * Audio Processing Task Data
