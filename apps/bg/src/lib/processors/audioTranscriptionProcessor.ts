@@ -205,7 +205,7 @@ export class AudioTranscriptionProcessor {
     chunk_number: number;
   }>> {
     const { data, error } = await this.supabase
-      .from('recording_chunks')
+      .from('recordings_chunks')
       .select('*')
       .eq('account_id', accountId)
       .eq('recording_id', recordingId)

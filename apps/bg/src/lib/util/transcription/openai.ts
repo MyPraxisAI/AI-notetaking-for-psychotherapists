@@ -42,17 +42,26 @@ export class OpenAITranscriptionProvider extends BaseTranscriptionProvider {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private openai: any;
   private logger = getBackgroundLogger();
+  private initialized = false;
 
-  constructor() {
+  private constructor() {
     super();
-    
+  }
+
+  /**
+   * Factory method to create and initialize an OpenAITranscriptionProvider
+   * @returns Promise<OpenAITranscriptionProvider>
+   */
+  public static async create(): Promise<OpenAITranscriptionProvider> {
     // Check if OPENAI_API_KEY is set
     if (!process.env.OPENAI_API_KEY) {
       throw new Error('OPENAI_API_KEY environment variable is not set');
     }
-    
-    // Initialize OpenAI client for audio transcription
-    this.initializeOpenAI(process.env.OPENAI_API_KEY);
+
+    const provider = new OpenAITranscriptionProvider();
+    await provider.initializeOpenAI(process.env.OPENAI_API_KEY);
+    provider.initialized = true;
+    return provider;
   }
 
   private async initializeOpenAI(apiKey: string) {
@@ -81,6 +90,10 @@ export class OpenAITranscriptionProvider extends BaseTranscriptionProvider {
     audioFilePath: string,
     options?: OpenAITranscriptionOptions
   ): Promise<TranscriptionResult> {
+    if (!this.initialized) {
+      throw new Error('OpenAITranscriptionProvider not properly initialized. Use create() method to instantiate.');
+    }
+
     // Default to whisper-1 if no options provided
     const defaultOptions: WhisperTranscriptionOptions = {
       model: 'whisper-1'

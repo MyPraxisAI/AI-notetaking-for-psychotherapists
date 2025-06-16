@@ -134,7 +134,7 @@ export async function getTranscriptionProvider(provider: TranscriptionProvider):
     case 'openai':
       try {
         const mod = await import('./transcription/openai.js');
-        providerInstance = new mod.OpenAITranscriptionProvider() as BaseTranscriptionProvider;
+        providerInstance = await mod.OpenAITranscriptionProvider.create() as BaseTranscriptionProvider;
       } catch (error: unknown) {
         const loggerPromise = getBackgroundLogger();
         loggerPromise.then(logger => {
