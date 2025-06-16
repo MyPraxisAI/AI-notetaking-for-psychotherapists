@@ -1,6 +1,5 @@
 import { initSentry, captureException as captureExceptionInSentry, captureMessage as captureMessageInSentry } from '@kit/shared-common/sentry';
 import type { Event, EventHint } from '@sentry/types';
-import type { NodeOptions } from '@sentry/node';
 import { getBackgroundLogger, createLoggerContext } from './logger';
 
 const isSentryDisabled = process.env.SENTRY_DISABLED === 'true';
@@ -21,21 +20,23 @@ export function initMonitoring() {
   console.log('Initializing Sentry with DSN:', dsn.substring(0, 10) + '...');
 
   try {
-    initSentry({
+    const options = {
       dsn,
       environment: process.env.NODE_ENV,
       // Set tracesSampleRate to 1.0 to capture 100% of transactions for performance monitoring.
       // We recommend adjusting this value in production
       tracesSampleRate: 1.0,
       debug: process.env.NODE_ENV === 'development', // Enable debug mode in development
-      beforeSend(event: Event, hint: EventHint) {
+      beforeSend(event: Event, _hint: EventHint) {
         event.tags = {
           ...event.tags,
           module: 'bg',
         };
         return event;
       },
-    } as any);
+    };
+
+    initSentry(options);
 
     console.log('Sentry monitoring initialized successfully');
   } catch (error) {
@@ -49,26 +50,22 @@ export function initMonitoring() {
 /**
  * Capture an exception in Sentry
  * @param error - The error to capture
- * @param context - Additional context to include with the error
+ * @param _hint - Additional context to include with the error
  */
-export async function captureException(error: Error, context?: Record<string, any>) {
+export async function captureException(error: Error, _hint?: string) {
   if (isSentryDisabled) {
     console.error('Error:', error);
-    if (context) {
-      console.error('Context:', context);
-    }
     return;
   }
 
   console.debug('Capturing exception in Sentry:', {
     errorName: error.name,
     errorMessage: error.message,
-    hasContext: !!context,
     environment: process.env.NODE_ENV
   });
 
   try {
-    await captureExceptionInSentry(error, context);
+    await captureExceptionInSentry(error);
   } catch (sentryError) {
     const loggerPromise = getBackgroundLogger();
     loggerPromise.then(logger => {
@@ -90,7 +87,7 @@ export async function captureException(error: Error, context?: Record<string, an
 export async function captureMessage(
   message: string,
   level: 'fatal' | 'error' | 'warning' | 'log' | 'info' | 'debug' = 'info',
-  context?: Record<string, any>
+  context?: Record<string, unknown>
 ) {
   if (isSentryDisabled) {
     console.log(`[${level.toUpperCase()}] ${message}`);

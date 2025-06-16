@@ -2,9 +2,6 @@
  * OpenAI transcription provider implementation
  */
 
-// Import OpenAI SDK using CommonJS require to avoid TypeScript type declaration issues
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const OpenAI = require('openai');
 import * as fs from 'fs';
 import { BaseTranscriptionProvider, TranscriptionResult } from '../transcription';
 import { SupabaseClient } from '@supabase/supabase-js';
@@ -42,20 +39,43 @@ export const defaultOpenAITranscriptionOptions: WhisperTranscriptionOptions = {
  * OpenAI transcription provider
  */
 export class OpenAITranscriptionProvider extends BaseTranscriptionProvider {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private openai: any;
+  private logger = getBackgroundLogger();
+  private initialized = false;
 
-  constructor() {
+  private constructor() {
     super();
-    
+  }
+
+  /**
+   * Factory method to create and initialize an OpenAITranscriptionProvider
+   * @returns Promise<OpenAITranscriptionProvider>
+   */
+  public static async create(): Promise<OpenAITranscriptionProvider> {
     // Check if OPENAI_API_KEY is set
     if (!process.env.OPENAI_API_KEY) {
       throw new Error('OPENAI_API_KEY environment variable is not set');
     }
-    
-    // Initialize OpenAI client for audio transcription
-    this.openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-    });
+
+    const provider = new OpenAITranscriptionProvider();
+    await provider.initializeOpenAI(process.env.OPENAI_API_KEY);
+    provider.initialized = true;
+    return provider;
+  }
+
+  private async initializeOpenAI(apiKey: string) {
+    try {
+      const { OpenAI } = await import('openai');
+      this.openai = new OpenAI({ apiKey });
+    } catch (error: unknown) {
+      const logger = await this.logger;
+      logger.error(
+        createLoggerContext('transcription-openai', { error }),
+        'Failed to initialize OpenAI'
+      );
+      throw error;
+    }
   }
 
   /**
@@ -70,6 +90,10 @@ export class OpenAITranscriptionProvider extends BaseTranscriptionProvider {
     audioFilePath: string,
     options?: OpenAITranscriptionOptions
   ): Promise<TranscriptionResult> {
+    if (!this.initialized) {
+      throw new Error('OpenAITranscriptionProvider not properly initialized. Use create() method to instantiate.');
+    }
+
     // Default to whisper-1 if no options provided
     const defaultOptions: WhisperTranscriptionOptions = {
       model: 'whisper-1'
@@ -130,9 +154,14 @@ export class OpenAITranscriptionProvider extends BaseTranscriptionProvider {
       console.log(`Transcription completed in ${processingTime.toFixed(2)} seconds`);
       
       return result;
-    } catch (error) {
+    } catch (error: unknown) {
       const logger = await getBackgroundLogger();
-      logger.error(createLoggerContext('transcription-openai', { error }), 'Error during OpenAI transcription');
+      logger.error({ 
+        error,
+        module: 'bg',
+        submodule: 'transcription-openai',
+        environment: process.env.NODE_ENV
+      }, 'Error during OpenAI transcription');
       throw error;
     }
   }

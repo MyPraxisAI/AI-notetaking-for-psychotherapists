@@ -1,5 +1,4 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { SupabaseConfig } from '../types';
 import { getBackgroundLogger, createLoggerContext } from './logger';
 
 // Initialize Supabase client

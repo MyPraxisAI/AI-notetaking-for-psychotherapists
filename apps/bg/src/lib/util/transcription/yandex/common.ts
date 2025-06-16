@@ -2,12 +2,9 @@
  * Common types and utilities for Yandex SpeechKit transcription
  */
 
-import { BaseTranscriptionProvider, TranscriptionResult } from '../../transcription';
 import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import * as url from 'node:url';
-import * as https from 'node:https';
 import * as crypto from 'node:crypto';
 import { getContentType } from './utils';
 import { getBackgroundLogger, createLoggerContext } from '../../../logger';
@@ -219,10 +216,10 @@ export abstract class YandexBaseProvider {
       
       // Return the storage URI
       return `https://${this.storageBucket}.${this.storageEndpoint}/${objectKey}`;
-    } catch (error: any) {
+    } catch (error: unknown) {
       const logger = await getBackgroundLogger();
       logger.error(createLoggerContext('transcription-yandex-common', { error }), '- Upload failed');
-      throw new Error(`Failed to upload to Yandex Object Storage: ${error.message}`);
+      throw new Error(`Failed to upload to Yandex Object Storage: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -261,8 +258,6 @@ export abstract class YandexBaseProvider {
     }
   }
 
-
-
   /**
    * Estimate audio duration in seconds using ffprobe or file size fallback
    * 
@@ -271,8 +266,7 @@ export abstract class YandexBaseProvider {
    */
   protected async estimateAudioDuration(audioFilePath: string): Promise<number> {
     try {
-      // Use the getAudioInfo function from audio.ts
-      const { getAudioInfo } = require('../../../util/audio');
+      const { getAudioInfo } = await import('../../../util/audio.js');
       const audioInfo = await getAudioInfo(audioFilePath);
       
       if (audioInfo.duration > 0) {

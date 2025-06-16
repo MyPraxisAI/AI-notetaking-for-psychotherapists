@@ -65,7 +65,7 @@ class Application {
       
       // Log startup information
       console.log(`Starting SQS poller for queue: ${this.sqsManager.queueName}`);
-      captureMessage('Background worker started', 'info', {
+      await captureMessage('Background worker started', 'info', {
         queueName: this.sqsManager.queueName,
         pollingInterval: this.pollingInterval,
         environment: process.env.NODE_ENV,
@@ -78,11 +78,7 @@ class Application {
     } catch (error) {
       const logger = await loggerPromise;
       logger.error(createLoggerContext('index', { error }), 'Failed to initialize application');
-      captureException(error as Error, {
-        queueName: this.sqsManager.queueName,
-        pollingInterval: this.pollingInterval,
-        environment: process.env.NODE_ENV,
-      });
+      await captureException(error as Error, 'Failed to initialize application');
       throw error;
     }
   }
@@ -147,9 +143,7 @@ console.log('Starting background worker application...');
   } catch (err) {
     const logger = await loggerPromise;
     logger.error(createLoggerContext('index', { err }), 'Failed to initialize application');
-    captureException(err as Error, {
-      phase: 'startup',
-    });
+    await captureException(err as Error, 'Failed to initialize application during startup');
     process.exit(1);
   }
 })();

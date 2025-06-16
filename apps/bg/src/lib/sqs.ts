@@ -1,4 +1,5 @@
-import AWS from 'aws-sdk';
+import * as AWS from 'aws-sdk';
+import { AWSError } from 'aws-sdk';
 import { SQSConfig, SQSMessage } from '../types';
 import { getBackgroundLogger, createLoggerContext } from './logger';
 
@@ -140,9 +141,10 @@ export class SQSQueueManager {
       this.queueUrl = data.QueueUrl || '';
       console.log(`Found existing queue: ${this.queueUrl}`);
       return;
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Queue doesn't exist or other error occurred
-      if (error.code !== 'AWS.SimpleQueueService.NonExistentQueue') {
+      const awsError = error as AWSError;
+      if (awsError.code !== 'AWS.SimpleQueueService.NonExistentQueue') {
         console.error('Error getting queue URL:', error);
         
         // In production, if we can't get the queue and it's not because it doesn't exist,
@@ -235,7 +237,7 @@ export class SQSQueueManager {
    * @param messageAttributes - Optional message attributes
    * @returns The send message result
    */
-  async sendMessage(messageBody: any, messageAttributes: Record<string, AWS.SQS.MessageAttributeValue> = {}): Promise<AWS.SQS.SendMessageResult> {
+  async sendMessage(messageBody: object | string, messageAttributes: Record<string, AWS.SQS.MessageAttributeValue> = {}): Promise<AWS.SQS.SendMessageResult> {
     // Ensure the queue is initialized before sending a message
     await this.ensureInitialized();
     
