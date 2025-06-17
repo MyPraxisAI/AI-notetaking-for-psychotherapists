@@ -16,6 +16,7 @@ interface SessionMetadata {
 export interface SessionWithContent {
   note: string | null;
   transcript: { id: string } | null;
+  created_at: string;
 }
 
 /**
@@ -32,6 +33,7 @@ export async function getSessionContent(
     .from('sessions')
     .select(`
       note,
+      created_at,
       transcript:transcripts!left (id)
     `)
     .eq('id', sessionId)

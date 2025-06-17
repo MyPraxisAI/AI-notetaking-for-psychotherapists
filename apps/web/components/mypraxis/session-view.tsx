@@ -57,7 +57,7 @@ function TranscriptContent({ clientId, sessionId, session, handleSessionUpdate }
   const queryClient = useQueryClient()
   
   // Handle transcript title generation when recording is complete
-  useEffect(() => {    
+  useEffect(() => {
     // If recording status is defined and not processing
     if (recordingStatus !== undefined && !recordingStatus.isProcessing) {
       // Invalidate session data to ensure we have the latest transcript
@@ -114,8 +114,9 @@ function TranscriptContent({ clientId, sessionId, session, handleSessionUpdate }
     )
   }
   
-  // If a recording is being processed, show the "Transcription in progress..." UI
-  if (recordingStatus?.isProcessing) {    
+  // If a recording is being processed OR if recording is done but transcript is not yet available (race condition with object updates),
+  // show the "Transcription in progress..." UI
+  if (recordingStatus?.isProcessing || (!recordingStatus?.isProcessing && !session.transcript)) {    
     return (
       <div className="w-full h-[150px] border border-dashed border-input bg-muted/20 rounded-md flex flex-col items-center justify-center p-6 space-y-2">
         <div className="flex items-center justify-center space-x-2">
@@ -129,9 +130,9 @@ function TranscriptContent({ clientId, sessionId, session, handleSessionUpdate }
     )
   }
   
-  // Otherwise, show empty state
+  // Otherwise, show empty state (this should never happen - we show Transcription in progress... when transcript is null)
   return (
-    <div className="w-full h-[100px] border border-dashed border-input bg-muted/20 rounded-md flex items-center justify-center">
+    <div className="w-full h-[100px] border border-dashed border-input bg-muted/20 rounded-md flex flex-col items-center justify-center">
       <p className="text-sm text-muted-foreground">
         {t('mypraxis:sessionView.transcript.noTranscript')}
       </p>

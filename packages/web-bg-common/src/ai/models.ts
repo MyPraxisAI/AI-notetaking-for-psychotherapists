@@ -29,6 +29,8 @@ export interface GenerationOptions {
   temperature?: number;
   maxTokens?: number;
   provider: ModelProvider;
+  maxRetries?: number;
+  enableRetryAfter?: boolean;
   [key: string]: string | number | boolean | undefined;
 }
 
@@ -55,11 +57,11 @@ export async function generateLLMResponse(
 ): Promise<GenerationResult> {
   // Log the request
   const logger = await getLogger();
-  logger.info(`Sending request to ${options.provider} API`, { 
+  logger.info({ 
     model: options.model,
     provider: options.provider,
     temperature: options.temperature
-  });
+  }, `Sending request to ${options.provider} API`);
   
   // Estimate prompt token count
   const promptTokens = aiService.estimateTokenCount(prompt);
@@ -81,7 +83,10 @@ export async function generateLLMResponse(
         throw new Error(`Unsupported model provider: ${options.provider}`);
     }
   } catch (error) {
-    logger.error(`Error generating text with ${options.provider}:`, error);
+    logger.error({ 
+      provider: options.provider,
+      error
+    }, `Error generating text with ${options.provider}`);
     throw new Error(`Failed to generate text: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
@@ -106,11 +111,13 @@ async function generateWithGoogle(
     temperature: options.temperature,
     maxTokens: options.maxTokens,
     model: options.model,
-    provider: mapProviderType(options.provider) // Ensure proper type mapping
+    provider: mapProviderType(options.provider), // Ensure proper type mapping
+    maxRetries: options.maxRetries,
+    enableRetryAfter: options.enableRetryAfter
   });
   
   // Call the model with improved error handling
-  logger.info(`Starting Google request with model: ${options.model}`);
+  logger.info({ model: options.model }, 'Starting Google request');
   // Type assertion for the client
   const typedClient = client as { invoke: (prompt: string) => Promise<{ content: string }> };
   
@@ -130,10 +137,12 @@ async function generateWithGoogle(
       timeoutPromise
     ]) as { content: string };
     
-    logger.info(`Google request completed successfully for model: ${options.model}`);
+    logger.info({ model: options.model }, 'Google request completed successfully');
   } catch (error) {
-    logger.error(`Google request failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    logger.error('Error details:', error);
+    logger.error({ 
+      model: options.model,
+      error
+    }, 'Google request failed');
     throw error;
   }
   
@@ -184,11 +193,13 @@ async function generateWithOpenAI(
     temperature: options.temperature,
     maxTokens: options.maxTokens,
     model: options.model,
-    provider: mapProviderType(options.provider) // Ensure proper type mapping
+    provider: mapProviderType(options.provider), // Ensure proper type mapping
+    maxRetries: options.maxRetries,
+    enableRetryAfter: options.enableRetryAfter
   });
   
   // Call the model with improved error handling
-  logger.info(`Starting OpenAI request with model: ${options.model}`);
+  logger.info({ model: options.model }, 'Starting OpenAI request');
   // Type assertion for the client
   const typedClient = client as { invoke: (prompt: string) => Promise<{ content: string }> };
   
@@ -208,10 +219,12 @@ async function generateWithOpenAI(
       timeoutPromise
     ]) as { content: string };
     
-    logger.info(`OpenAI request completed successfully for model: ${options.model}`);
+    logger.info({ model: options.model }, 'OpenAI request completed successfully');
   } catch (error) {
-    logger.error(`OpenAI request failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    logger.error('Error details:', error);
+    logger.error({ 
+      model: options.model,
+      error
+    }, 'OpenAI request failed');
     throw error;
   }
   

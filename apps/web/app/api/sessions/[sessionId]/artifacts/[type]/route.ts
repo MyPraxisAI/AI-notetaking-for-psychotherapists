@@ -51,6 +51,18 @@ export const GET = enhanceRouteHandler(
 
           // Only generate if we have content to generate from
           if (session && (session.transcript || session.note)) {
+            // Check if session was created before June 6, 2025 (Stas's old sessions)
+            const cutoffDate = new Date('2025-06-06T00:00:00Z');
+            const sessionCreatedAt = new Date(session.created_at);
+
+            if (sessionCreatedAt >= cutoffDate) {
+              console.log(`Skipping artifact generation for session ${sessionId} (created after ${cutoffDate.toISOString()})`);
+              return NextResponse.json(
+                { error: 'Artifact not found' },
+                { status: 404 }
+              );      
+            }
+
             console.log(`Session ${sessionId} has content, attempting to create artifact`);
             
             // Use getOrCreateArtifact to generate the specific artifact
