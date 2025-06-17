@@ -63,10 +63,21 @@ export interface AIClientOptions {
 }
 
 /**
+ * Interface for OpenAI API errors that may include retry-after headers
+ */
+interface OpenAIError {
+  status?: number;
+  headers?: Record<string, string>;
+  type?: string;
+  code?: string;
+  message?: string;
+}
+
+/**
  * Custom retry handler that respects OpenAI's retry-after header
  * @param error The error that occurred
  */
-async function handleOpenAIRetry(error: any): Promise<void> {
+async function handleOpenAIRetry(error: OpenAIError): Promise<void> {
   const logger = await getLogger();
   
   // Check if this is a rate limit error (429) with retry-after header
