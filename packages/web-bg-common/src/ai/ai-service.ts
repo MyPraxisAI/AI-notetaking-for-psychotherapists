@@ -1,6 +1,51 @@
+/**
+ * AI Service with Enhanced Rate Limit Handling
+ * 
+ * This service provides a centralized interface for AI model interactions with
+ * intelligent retry logic that respects OpenAI's rate limits.
+ * 
+ * Key Features:
+ * - Automatic retry with exponential backoff for transient errors
+ * - Respects OpenAI's 'retry-after' header for rate limit errors (429)
+ * - Configurable retry attempts and behavior
+ * - Jitter to prevent thundering herd problems
+ * - Comprehensive logging for debugging
+ * 
+ * Usage:
+ * ```typescript
+ * const aiService = AIService.getInstance();
+ * 
+ * // Basic usage with default retry settings
+ * const client = aiService.getOpenAIClient({
+ *   model: 'gpt-4o-mini',
+ *   temperature: 0.7
+ * });
+ * 
+ * // Custom retry configuration
+ * const client = aiService.getOpenAIClient({
+ *   model: 'gpt-4o-mini',
+ *   maxRetries: 10,           // Increase retry attempts
+ *   enableRetryAfter: true    // Respect retry-after headers (default)
+ * });
+ * 
+ * // Disable retry-after handling (use default exponential backoff only)
+ * const client = aiService.getOpenAIClient({
+ *   model: 'gpt-4o-mini',
+ *   enableRetryAfter: false
+ * });
+ * ```
+ * 
+ * Rate Limit Handling:
+ * - When a 429 error occurs, the service checks for a 'retry-after' header
+ * - If present, it waits for the specified time plus random jitter (0-1000ms)
+ * - This prevents overwhelming the API and ensures optimal retry timing
+ * - All retry attempts are logged with detailed timing information
+ */
+
 import { ChatOpenAI } from '@langchain/openai';
 import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
 import { encodingForModel } from 'js-tiktoken';
+import { getLogger } from '@kit/shared-common';
 
 // Import the mock implementations
 import * as mockOpenAIClient from './__mocks__/openai-client';
@@ -12,7 +57,59 @@ export interface AIClientOptions {
   temperature?: number;
   maxTokens?: number;
   provider?: 'openai' | 'google';
+  maxRetries?: number;
+  enableRetryAfter?: boolean; // Whether to respect retry-after headers
   [key: string]: string | number | boolean | undefined;
+}
+
+/**
+ * Interface for OpenAI API errors that may include retry-after headers
+ */
+interface OpenAIError {
+  status?: number;
+  headers?: Record<string, string>;
+  type?: string;
+  code?: string;
+  message?: string;
+}
+
+/**
+ * Custom retry handler that respects OpenAI's retry-after header
+ * @param error The error that occurred
+ */
+async function handleOpenAIRetry(error: OpenAIError): Promise<void> {
+  const logger = await getLogger();
+  
+  // Check if this is a rate limit error (429) with retry-after header
+  if (error.status === 429 && error.headers?.['retry-after']) {
+    const retryAfterMs = parseInt(error.headers['retry-after']) * 1000;
+    
+    // Add some jitter to avoid thundering herd (random delay between 0-1000ms)
+    const jitter = Math.random() * 1000;
+    const totalDelay = retryAfterMs + jitter;
+    
+    logger.info({
+      retryAfterMs,
+      jitter,
+      totalDelay,
+      errorType: error.type || 'unknown',
+      errorCode: error.code || 'unknown'
+    }, 'Rate limit hit, waiting before retry');
+    
+    // Wait for the specified retry-after time plus jitter
+    await new Promise(resolve => setTimeout(resolve, totalDelay));
+  } else {
+    // Log other types of errors for debugging
+    logger.warn({
+      status: error.status,
+      errorType: error.type || 'unknown',
+      errorCode: error.code || 'unknown',
+      hasRetryAfter: !!error.headers?.['retry-after']
+    }, 'Non-rate-limit error occurred, continuing with default retry logic');
+  }
+  
+  // Re-throw the error to continue with LangChain's retry logic
+  throw error;
 }
 
 /**
@@ -101,7 +198,8 @@ class AIService {
           temperature: options.temperature || 0.7,
           maxTokens: options.maxTokens,
           openAIApiKey: apiKey,
-          maxRetries: 3,  // Retry 3 times on failure
+          maxRetries: options.maxRetries || 5,  // Use provided maxRetries or default to 5
+          onFailedAttempt: options.enableRetryAfter !== false ? handleOpenAIRetry : undefined, // Enable by default
         });
       }
     }
@@ -155,7 +253,9 @@ class AIService {
       provider,
       model: options.model || defaultModel,
       temperature: options.temperature || 0.7,
-      maxTokens: options.maxTokens
+      maxTokens: options.maxTokens,
+      maxRetries: options.maxRetries || 5,
+      enableRetryAfter: options.enableRetryAfter !== false
     });
   }
 }
