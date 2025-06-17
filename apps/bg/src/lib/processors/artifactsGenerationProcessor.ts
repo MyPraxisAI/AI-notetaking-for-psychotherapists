@@ -14,6 +14,17 @@ export interface ArtifactsGenerateTaskData {
 }
 
 /**
+ * Extended error interface for combined artifact generation errors
+ */
+interface CombinedArtifactError extends Error {
+  failedArtifacts: string[];
+  sessionId: string;
+  clientId: string;
+  totalArtifacts: number;
+  failedCount: number;
+}
+
+/**
  * Artifacts Generation Processor
  * Handles processing of artifact generation tasks
  */
@@ -29,17 +40,18 @@ export class ArtifactsGenerationProcessor {
     task: ArtifactsGenerateTaskData,
     _messageId: string
   ): Promise<void> {
+    const logger = await getBackgroundLogger();
+    
     try {
       const { accountId, sessionId } = task;
       
-      console.log(`Processing artifacts generation: accountId=${accountId}, sessionId=${sessionId}`);
+      logger.info(createLoggerContext('artifactsGenerationProcessor', { accountId, sessionId }), 'Processing artifacts generation');
       
       // 1. Generate key artifacts for this session and its client
       await this.regenerateArtifacts(supabase, task);
       
-      console.log(`Successfully processed artifacts generation for session ${sessionId}`);
+      logger.info(createLoggerContext('artifactsGenerationProcessor', { accountId, sessionId }), 'Successfully processed artifacts generation');
     } catch (error: unknown) {
-      const logger = await getBackgroundLogger();
       const errorMessage = error instanceof Error ? error.message : String(error);
       logger.error(createLoggerContext('artifactsGenerationProcessor', { error }), `Error processing artifacts generation: ${errorMessage}`);
       throw error; // Rethrow to prevent message deletion
@@ -56,6 +68,7 @@ export class ArtifactsGenerationProcessor {
     task: ArtifactsGenerateTaskData
   ): Promise<void> {
     const { sessionId } = task;
+    const logger = await getBackgroundLogger();
     
     try {
       // 1. Get the client ID for this session
@@ -66,18 +79,18 @@ export class ArtifactsGenerationProcessor {
         .single();
         
       if (sessionFetchError) {
-        console.error('Error fetching session data:', sessionFetchError);
+        logger.error(createLoggerContext('artifactsGenerationProcessor', { error: sessionFetchError }), 'Error fetching session data');
         throw sessionFetchError;
       }
       
       const clientId = sessionData?.client_id;
       
       if (!clientId) {
-        console.error(`No client ID found for session ${sessionId}, cannot generate artifacts`);
+        logger.error(createLoggerContext('artifactsGenerationProcessor', { sessionId }), 'No client ID found for session, cannot generate artifacts');
         throw new Error(`No client ID found for session ${sessionId}`);
       }
       
-      console.log(`Generating artifacts for session ${sessionId} and client ${clientId}`);
+      logger.info(createLoggerContext('artifactsGenerationProcessor', { sessionId, clientId }), 'Generating artifacts for session and client');
       
       // Define the artifacts to generate in specific order
       // TODO: build dynamic dependence graph of the artifacts. 
@@ -90,10 +103,17 @@ export class ArtifactsGenerationProcessor {
         { referenceId: clientId, referenceType: 'client' as const, type: 'client_prep_note' as const }
       ];
       
+      // Collect errors from artifact generation
+      const errors: Array<{ artifactType: string; error: unknown }> = [];
+      
       // Process artifacts in sequence to avoid overwhelming the system
       for (const artifactConfig of artifactsToGenerate) {
         try {
-          console.log(`Generating ${artifactConfig.type} for ${artifactConfig.referenceType} ${artifactConfig.referenceId}`);
+          logger.info(createLoggerContext('artifactsGenerationProcessor', { 
+            artifactType: artifactConfig.type, 
+            referenceType: artifactConfig.referenceType, 
+            referenceId: artifactConfig.referenceId 
+          }), `Generating ${artifactConfig.type}`);
           
           // Use getOrCreateArtifact to generate or regenerate the artifact
           // Language will be automatically determined by the function
@@ -104,16 +124,48 @@ export class ArtifactsGenerationProcessor {
             artifactConfig.type
           );
           
-          console.log(`Successfully generated ${artifactConfig.type} for ${artifactConfig.referenceType} ${artifactConfig.referenceId}, isNew=${isNew}`);
+          logger.info(createLoggerContext('artifactsGenerationProcessor', { 
+            artifactType: artifactConfig.type, 
+            referenceType: artifactConfig.referenceType, 
+            referenceId: artifactConfig.referenceId,
+            isNew 
+          }), `Successfully generated ${artifactConfig.type}`);
         } catch (error) {
-          console.error(`Error generating artifact ${artifactConfig.type}:`, error);
-          // Continue with other artifacts even if one fails
+          logger.error(createLoggerContext('artifactsGenerationProcessor', { 
+            error, 
+            artifactType: artifactConfig.type, 
+            referenceType: artifactConfig.referenceType, 
+            referenceId: artifactConfig.referenceId 
+          }), `Error generating artifact ${artifactConfig.type}`);
+          
+          // Collect the error to throw later
+          errors.push({ artifactType: artifactConfig.type, error });
         }
       }
       
-      console.log(`Completed artifact generation for session ${sessionId} and client ${clientId}`);
+      // If there were any errors, throw a combined error
+      if (errors.length > 0) {
+        const errorMessages = errors.map(({ artifactType, error }) => 
+          `${artifactType}: ${error instanceof Error ? error.message : String(error)}`
+        ).join('; ');
+        
+        const combinedError = new Error(
+          `Failed to generate ${errors.length}/${artifactsToGenerate.length} artifacts for session ${sessionId}, client ${clientId}: ${errorMessages}`
+        );
+        
+        // Add additional context to the error object for debugging
+        (combinedError as CombinedArtifactError).failedArtifacts = errors.map(e => e.artifactType);
+        (combinedError as CombinedArtifactError).sessionId = sessionId;
+        (combinedError as CombinedArtifactError).clientId = clientId;
+        (combinedError as CombinedArtifactError).totalArtifacts = artifactsToGenerate.length;
+        (combinedError as CombinedArtifactError).failedCount = errors.length;
+        
+        throw combinedError;
+      }
+      
+      logger.info(createLoggerContext('artifactsGenerationProcessor', { sessionId, clientId }), 'Completed artifact generation for session and client');
     } catch (error) {
-      console.error(`Error generating artifacts for session ${sessionId}:`, error);
+      logger.error(createLoggerContext('artifactsGenerationProcessor', { error, sessionId }), 'Error generating artifacts for session');
       throw error;
     }
   }
