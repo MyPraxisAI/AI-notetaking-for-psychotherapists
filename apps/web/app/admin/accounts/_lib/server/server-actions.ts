@@ -5,7 +5,6 @@ import { enhanceAction } from '@kit/next/actions';
 import { getSupabaseServerAdminClient } from '@kit/supabase/server-admin-client';
 import { getLogger } from '@kit/shared/logger';
 import { adminAction } from '@kit/admin';
-import type { Database } from '@kit/supabase/database';
 
 const PAGE_SIZE = 10;
 
@@ -63,7 +62,7 @@ export const getAccountsWithStatsAction = adminAction(
           logger.error({ ...ctx, sort_field: data.sort_field }, 'Invalid sort_field');
           // Return a 400 error
           const error = new Error(`Invalid sort_field: ${data.sort_field}`);
-          // @ts-ignore
+          // @ts-expect-error: Custom error property for HTTP status code
           error.status = 400;
           throw error;
         }

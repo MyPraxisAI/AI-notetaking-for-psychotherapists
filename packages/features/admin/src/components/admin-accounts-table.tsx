@@ -37,7 +37,7 @@ import { AdminDeleteAccountDialog } from './admin-delete-account-dialog';
 import { AdminDeleteUserDialog } from './admin-delete-user-dialog';
 import { AdminImpersonateUserDialog } from './admin-impersonate-user-dialog';
 
-type Account = Database['public']['Tables']['accounts']['Row'] & {
+export type Account = Database['public']['Tables']['accounts']['Row'] & {
   sessions_count: number;
   sessions_duration_seconds: number;
 };

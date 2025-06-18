@@ -1,4 +1,5 @@
 import { AdminAccountsTable } from '@kit/admin/components/admin-accounts-table';
+import type { Account } from '@kit/admin/components/admin-accounts-table';
 import { AdminGuard } from '@kit/admin/components/admin-guard';
 import { AppBreadcrumbs } from '@kit/ui/app-breadcrumbs';
 import { PageBody, PageHeader } from '@kit/ui/page';
@@ -51,7 +52,7 @@ async function AccountsPage(props: AdminAccountsPageProps) {
 
       <PageBody>
         <AdminAccountsTable
-          data={accountsWithStats ?? []}
+          data={accountsWithStats as Account[] ?? []}
           pageCount={pageCount}
           pageSize={PAGE_SIZE}
           page={page}
