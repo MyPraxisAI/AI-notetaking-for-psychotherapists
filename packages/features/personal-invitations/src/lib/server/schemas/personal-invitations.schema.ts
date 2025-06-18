@@ -7,7 +7,7 @@ export type InviteStatus = z.infer<typeof InviteStatusEnum>;
 // Schema for creating a new invitation
 export const CreatePersonalInviteSchema = z.object({
   email: z.string().email('Invalid email address'),
-  expiresInDays: z.number().int().positive().default(7),
+  expiresInDays: z.number().int().positive().default(365),
   language: z.string().min(2).max(5).default('en')
 });
 
