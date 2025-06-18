@@ -1325,6 +1325,7 @@ export type Database = {
           content: string | null
           content_json: Json | null
           created_at: string
+          duration_ms: number | null
           id: string
           session_id: string
           transcription_model: string | null
@@ -1335,6 +1336,7 @@ export type Database = {
           content?: string | null
           content_json?: Json | null
           created_at?: string
+          duration_ms?: number | null
           id?: string
           session_id: string
           transcription_model?: string | null
@@ -1345,6 +1347,7 @@ export type Database = {
           content?: string | null
           content_json?: Json | null
           created_at?: string
+          duration_ms?: number | null
           id?: string
           session_id?: string
           transcription_model?: string | null
@@ -1639,6 +1642,12 @@ export type Database = {
           path: string
         }
         Returns: string
+      }
+      get_last_segment_end_ms: {
+        Args: {
+          content_json: Json
+        }
+        Returns: number
       }
       get_nonce_status: {
         Args: {

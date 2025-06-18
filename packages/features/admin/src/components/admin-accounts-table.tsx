@@ -39,12 +39,49 @@ import { AdminImpersonateUserDialog } from './admin-impersonate-user-dialog';
 
 type Account = Database['public']['Tables']['accounts']['Row'] & {
   sessions_count: number;
+  sessions_duration_seconds: number;
 };
 
 const FiltersSchema = z.object({
   type: z.enum(['all', 'team', 'personal']),
   query: z.string().optional(),
 });
+
+/**
+ * Formats duration in seconds to a human-readable string
+ * @param seconds Total duration in seconds
+ * @returns Formatted string
+ */
+function formatDuration(seconds: number): string {
+  if (!seconds) return '0s';
+
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const remainingSeconds = seconds % 60;
+
+  // Under 1 minute: show seconds
+  if (seconds < 60) {
+    return `${seconds}s`;
+  }
+
+  // Under 10 minutes: show minutes and seconds
+  if (seconds < 600) {
+    return `${minutes}m ${remainingSeconds}s`;
+  }
+
+  // Under 1 hour: show minutes
+  if (hours == 0) {
+    return `${minutes}m`;
+  }
+
+  // Under 10 hours: show hours and minutes
+  if (hours < 10) {
+    return `${hours}h ${minutes}m`;
+  }
+
+  // Over 10 hours: show only hours
+  return `${hours}h`;
+}
 
 export function AdminAccountsTable(
   props: React.PropsWithChildren<{
@@ -211,6 +248,18 @@ function getColumns(): ColumnDef<Account>[] {
         return (
           <span className="font-mono">
             {count}
+          </span>
+        );
+      },
+    },
+    {
+      id: 'sessions_duration',
+      header: 'Total Session Duration',
+      cell: ({ row }) => {
+        const duration = row.original.sessions_duration_seconds ?? 0;
+        return (
+          <span className="font-mono">
+            {formatDuration(duration)}
           </span>
         );
       },

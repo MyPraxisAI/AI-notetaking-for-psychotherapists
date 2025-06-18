@@ -1,4 +1,5 @@
 export * from './lib/server/utils/is-super-admin';
+export * from './lib/server/utils/admin-action';
 
 // Admin Personal Invitations
 export * from './components/admin-personal-invites-table';
