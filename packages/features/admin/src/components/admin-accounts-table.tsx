@@ -37,7 +37,9 @@ import { AdminDeleteAccountDialog } from './admin-delete-account-dialog';
 import { AdminDeleteUserDialog } from './admin-delete-user-dialog';
 import { AdminImpersonateUserDialog } from './admin-impersonate-user-dialog';
 
-type Account = Database['public']['Tables']['accounts']['Row'];
+type Account = Database['public']['Tables']['accounts']['Row'] & {
+  sessions_count: number;
+};
 
 const FiltersSchema = z.object({
   type: z.enum(['all', 'team', 'personal']),
@@ -157,6 +159,22 @@ function AccountsTableFilters(props: {
   );
 }
 
+function DateCell({ value }: { value: string | null }) {
+  if (!value) return <span className="text-muted-foreground">-</span>;
+  
+  const date = new Date(value);
+  const formattedDate = new Intl.DateTimeFormat('en-US', {
+    dateStyle: 'medium',
+    timeStyle: 'short'
+  }).format(date);
+  
+  return (
+    <time dateTime={value} title={value}>
+      {formattedDate}
+    </time>
+  );
+}
+
 function getColumns(): ColumnDef<Account>[] {
   return [
     {
@@ -186,14 +204,28 @@ function getColumns(): ColumnDef<Account>[] {
       },
     },
     {
+      id: 'sessions_count',
+      header: 'Sessions',
+      cell: ({ row }) => {
+        const count = row.original.sessions_count ?? 0;
+        return (
+          <span className="font-mono">
+            {count}
+          </span>
+        );
+      },
+    },
+    {
       id: 'created_at',
       header: 'Created At',
       accessorKey: 'created_at',
+      cell: ({ getValue }) => <DateCell value={getValue() as string | null} />,
     },
     {
       id: 'updated_at',
       header: 'Updated At',
       accessorKey: 'updated_at',
+      cell: ({ getValue }) => <DateCell value={getValue() as string | null} />,
     },
     {
       id: 'actions',
