@@ -14,6 +14,8 @@ const GetAccountsSchema = z.object({
   page: z.number().min(1),
   account_type: z.enum(['all', 'personal', 'team']),
   query: z.string().optional(),
+  sort_field: z.string().optional(),
+  sort_direction: z.enum(['asc', 'desc']).optional(),
 }).required();
 
 type GetAccountsData = z.infer<typeof GetAccountsSchema>;
@@ -46,29 +48,33 @@ export const getAccountsWithStatsAction = adminAction(
       logger.info(ctx, 'Fetching accounts with session stats');
 
       try {
-        // Build the base query
-        const baseQuery = adminClient
-          .from('accounts')
-          .select(`
-            *,
-            clients!left(
-              id,
-              demo,
-              sessions!left(
-                id,
-                transcripts!left(
-                  id,
-                  content_json,
-                  duration_ms
-                )
-              )
-            )
-          `, { count: 'exact' })
-          .eq('clients.demo', false);
+        // Allowed sort fields
+        const allowedSortFields = [
+          'id',
+          'name',
+          'email',
+          'created_at',
+          'updated_at',
+          'sessions_count',
+          'sessions_duration_seconds',
+        ];
+
+        if (data.sort_field && !allowedSortFields.includes(data.sort_field)) {
+          logger.error({ ...ctx, sort_field: data.sort_field }, 'Invalid sort_field');
+          // Return a 400 error
+          const error = new Error(`Invalid sort_field: ${data.sort_field}`);
+          // @ts-ignore
+          error.status = 400;
+          throw error;
+        }
+
+        // Query the view directly
+        let query = adminClient
+          .from('admin_accounts_with_stats')
+          .select('*', { count: 'exact' });
 
         // Apply filters if they exist
         const filters = getFilters(data);
-        let query = baseQuery;
         Object.entries(filters).forEach(([key, value]) => {
           if (value.eq !== undefined) {
             query = query.eq(key, value.eq);
@@ -78,72 +84,26 @@ export const getAccountsWithStatsAction = adminAction(
           }
         });
 
+        // Apply sorting if provided
+        if (data.sort_field && data.sort_direction) {
+          query = query.order(data.sort_field, { ascending: data.sort_direction === 'asc' });
+        }
+
         // Apply pagination
         const from = (data.page - 1) * PAGE_SIZE;
         const to = from + PAGE_SIZE - 1;
         query = query.range(from, to);
 
-        // Log the query details
-        logger.info({
-          ...ctx,
-          filters,
-          pagination: { from, to },
-        }, 'Executing query with filters and pagination');
-
         // Execute the query
         const { data: accounts, count, error } = await query;
-
-        // Log the raw query result
-        logger.info({
-          ...ctx,
-          error: error ? { message: error.message, details: error.details } : null,
-          count,
-          rawAccounts: accounts ? accounts.slice(0, 1) : null, // Log just the first account to keep the log size manageable
-        }, 'Raw query result');
 
         if (error) {
           logger.error({ ...ctx, error }, 'Error fetching accounts with sessions');
           throw error;
         }
 
-        // Log the processed results
-        logger.info({
-          ...ctx,
-          accountsCount: accounts?.length ?? 0,
-          totalCount: count,
-          firstAccount: accounts?.[0] ? {
-            id: accounts[0].id,
-            clientCount: accounts[0].clients?.length,
-            firstClient: accounts[0].clients?.[0] ? {
-              id: accounts[0].clients[0].id,
-              sessionCount: accounts[0].clients[0].sessions?.length,
-              firstSession: accounts[0].clients[0].sessions?.[0]?.id,
-              firstTranscript: accounts[0].clients[0].sessions?.[0]?.transcripts?.id
-            } : null
-          } : null
-        }, 'Query results');
-
-        // Calculate session stats for each account
-        const accountsWithStats = (accounts ?? []).map((account) => {
-          // Get all non-demo sessions across all clients
-          const sessions = account.clients?.flatMap(client => 
-            client.demo ? [] : (client.sessions ?? [])
-          ) ?? [];
-
-          const totalDurationMs = sessions.reduce((sum, session) => {
-            const transcript = session.transcripts;
-            return sum + (transcript?.duration_ms ?? 0);
-          }, 0);
-
-          return {
-            ...account,
-            sessions_count: sessions.length,
-            sessions_duration_seconds: Math.round(totalDurationMs / 1000), // Convert ms to seconds
-          };
-        });
-
         return {
-          data: accountsWithStats,
+          data: accounts,
           count: count ?? 0,
         };
       } catch (error) {

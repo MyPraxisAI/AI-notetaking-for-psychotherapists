@@ -93,8 +93,34 @@ export function AdminAccountsTable(
       type: 'all' | 'team' | 'personal';
       query: string;
     };
+    sort_field: string;
+    sort_direction: 'asc' | 'desc';
   }>,
 ) {
+  const router = useRouter();
+  const pathname = usePathname();
+
+  // Map sort_field/sort_direction to tanstack sorting state
+  const sorting = [
+    {
+      id: props.sort_field,
+      desc: props.sort_direction === 'desc',
+    },
+  ];
+
+  function handleSortingChange(updater: any) {
+    let nextSorting = typeof updater === 'function' ? updater(sorting) : updater;
+    const sort = nextSorting[0] || { id: 'name', desc: false };
+    const params = new URLSearchParams({
+      account_type: props.filters.type,
+      query: props.filters.query,
+      page: props.page.toString(),
+      sort_field: sort.id,
+      sort_direction: sort.desc ? 'desc' : 'asc',
+    });
+    router.push(`${pathname}?${params.toString()}`);
+  }
+
   return (
     <div className={'flex flex-col space-y-4'}>
       <div className={'flex justify-end'}>
@@ -107,6 +133,9 @@ export function AdminAccountsTable(
         pageCount={props.pageCount}
         data={props.data}
         columns={getColumns()}
+        sorting={sorting}
+        onSortingChange={handleSortingChange}
+        manualSorting={true}
       />
     </div>
   );
@@ -265,7 +294,7 @@ function getColumns(): ColumnDef<Account>[] {
       },
     },
     {
-      id: 'sessions_duration',
+      id: 'sessions_duration_seconds',
       header: ({ column }) => (
         <button
           type="button"

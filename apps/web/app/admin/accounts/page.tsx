@@ -8,6 +8,8 @@ interface SearchParams {
   page?: string;
   account_type?: 'all' | 'personal' | 'team';
   query?: string;
+  sort_field?: string;
+  sort_direction?: 'asc' | 'desc';
 }
 
 interface AdminAccountsPageProps {
@@ -23,11 +25,15 @@ const PAGE_SIZE = 10;
 async function AccountsPage(props: AdminAccountsPageProps) {
   const searchParams = await props.searchParams;
   const page = searchParams.page ? parseInt(searchParams.page) : 1;
+  const sort_field = searchParams.sort_field ?? 'name';
+  const sort_direction = searchParams.sort_direction ?? 'asc';
 
   const { data: accountsWithStats, count } = await getAccountsWithStatsAction({
     page,
     account_type: searchParams.account_type ?? 'all',
     query: searchParams.query ?? '',
+    sort_field,
+    sort_direction,
   });
 
   const pageCount = Math.ceil(count / PAGE_SIZE);
@@ -53,6 +59,8 @@ async function AccountsPage(props: AdminAccountsPageProps) {
             type: searchParams.account_type ?? 'all',
             query: searchParams.query ?? '',
           }}
+          sort_field={sort_field}
+          sort_direction={sort_direction}
         />
       </PageBody>
     </>
