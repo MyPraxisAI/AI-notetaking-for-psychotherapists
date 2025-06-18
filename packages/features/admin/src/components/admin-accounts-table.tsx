@@ -242,7 +242,19 @@ function getColumns(): ColumnDef<Account>[] {
     },
     {
       id: 'sessions_count',
-      header: 'Sessions',
+      header: ({ column }) => (
+        <button
+          type="button"
+          className="flex items-center gap-1"
+          onClick={column.getToggleSortingHandler()}
+        >
+          Sessions&nbsp;
+          {column.getIsSorted() === 'asc' && '▲'}
+          {column.getIsSorted() === 'desc' && '▼'}
+        </button>
+      ),
+      accessorKey: 'sessions_count',
+      enableSorting: true,
       cell: ({ row }) => {
         const count = row.original.sessions_count ?? 0;
         return (
@@ -254,7 +266,19 @@ function getColumns(): ColumnDef<Account>[] {
     },
     {
       id: 'sessions_duration',
-      header: 'Total Session Duration',
+      header: ({ column }) => (
+        <button
+          type="button"
+          className="flex items-center gap-1"
+          onClick={column.getToggleSortingHandler()}
+        >
+          Total Session Duration&nbsp;
+          {column.getIsSorted() === 'asc' && '▲'}
+          {column.getIsSorted() === 'desc' && '▼'}
+        </button>
+      ),
+      accessorKey: 'sessions_duration_seconds',
+      enableSorting: true,
       cell: ({ row }) => {
         const duration = row.original.sessions_duration_seconds ?? 0;
         return (
