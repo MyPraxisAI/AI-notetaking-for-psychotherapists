@@ -108,8 +108,8 @@ export function AdminAccountsTable(
     },
   ];
 
-  function handleSortingChange(updater: any) {
-    let nextSorting = typeof updater === 'function' ? updater(sorting) : updater;
+  function handleSortingChange(updater: ((prev: typeof sorting) => typeof sorting) | typeof sorting) {
+    const nextSorting = typeof updater === 'function' ? updater(sorting) : updater;
     const sort = nextSorting[0] || { id: 'name', desc: false };
     const params = new URLSearchParams({
       account_type: props.filters.type,

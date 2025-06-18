@@ -12,6 +12,8 @@ AS $$
   END;
 $$;
 
+GRANT EXECUTE ON FUNCTION public.get_last_segment_end_ms(jsonb) TO authenticated, service_role;
+
 -- Add a regular column
 ALTER TABLE transcripts ADD COLUMN duration_ms INTEGER;
 
@@ -23,6 +25,7 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+
 
 -- Create the trigger
 CREATE TRIGGER trigger_update_transcript_duration

@@ -6,11 +6,11 @@ import { getSupabaseServerAdminClient } from '@kit/supabase/server-admin-client'
 import { getLogger } from '@kit/shared/logger';
 import { adminAction } from '@kit/admin';
 
-const PAGE_SIZE = 10;
 
 // Schema for the search params
 const GetAccountsSchema = z.object({
   page: z.number().min(1),
+  page_size: z.number().min(1).max(100).default(20),
   account_type: z.enum(['all', 'personal', 'team']),
   query: z.string().optional(),
   sort_field: z.string().optional(),
@@ -89,8 +89,8 @@ export const getAccountsWithStatsAction = adminAction(
         }
 
         // Apply pagination
-        const from = (data.page - 1) * PAGE_SIZE;
-        const to = from + PAGE_SIZE - 1;
+        const from = (data.page - 1) * data.page_size;
+        const to = from + data.page_size - 1;
         query = query.range(from, to);
 
         // Execute the query

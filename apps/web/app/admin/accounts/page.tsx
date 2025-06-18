@@ -21,7 +21,7 @@ export const metadata = {
   title: `Accounts`,
 };
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 20;
 
 async function AccountsPage(props: AdminAccountsPageProps) {
   const searchParams = await props.searchParams;
@@ -31,6 +31,7 @@ async function AccountsPage(props: AdminAccountsPageProps) {
 
   const { data: accountsWithStats, count } = await getAccountsWithStatsAction({
     page,
+    page_size: PAGE_SIZE,
     account_type: searchParams.account_type ?? 'all',
     query: searchParams.query ?? '',
     sort_field,

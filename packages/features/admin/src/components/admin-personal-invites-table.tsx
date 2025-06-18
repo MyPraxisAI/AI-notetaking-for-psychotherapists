@@ -35,14 +35,12 @@ import {
 import { toast } from '@kit/ui/sonner';
 import { format as formatDate } from 'date-fns';
 import {
-  InviteStatus,
   PersonalInvite,
   revokePersonalInviteAction,
   resendPersonalInviteAction
 } from '@kit/personal-invitations';
 
-const DisplayStatusEnum = z.enum(['pending', 'accepted', 'revoked', 'expired']);
-type DisplayStatus = z.infer<typeof DisplayStatusEnum>;
+type DisplayStatus = 'pending' | 'accepted' | 'revoked' | 'expired';
 
 const FiltersSchema = z.object({
   status: z.enum(['all', 'pending', 'accepted', 'expired', 'revoked']),
