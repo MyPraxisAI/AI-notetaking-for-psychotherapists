@@ -35,11 +35,12 @@ import {
 import { toast } from '@kit/ui/sonner';
 import { format as formatDate } from 'date-fns';
 import {
-  InviteStatus,
   PersonalInvite,
   revokePersonalInviteAction,
   resendPersonalInviteAction
 } from '@kit/personal-invitations';
+
+type DisplayStatus = 'pending' | 'accepted' | 'revoked' | 'expired';
 
 const FiltersSchema = z.object({
   status: z.enum(['all', 'pending', 'accepted', 'expired', 'revoked']),
@@ -53,7 +54,7 @@ export function AdminPersonalInvitesTable(
     pageSize: number;
     page: number;
     filters: {
-      status: 'all' | InviteStatus;
+      status: 'all' | DisplayStatus;
       query: string;
     };
   }>,
@@ -86,18 +87,26 @@ export function AdminPersonalInvitesTable(
       header: t('admin:personalInvites.columns.status', 'Status'),
       accessorKey: 'status',
       cell: ({ row }) => {
-        const status = row.original.status;
-        const statusColors: Record<InviteStatus, string> = {
+        const invite = row.original;
+        let displayStatus: DisplayStatus = invite.status;
+        
+        // Check if pending invitation has expired
+        if (displayStatus === 'pending' && new Date(invite.expires_at) < new Date()) {
+          displayStatus = 'expired';
+        }
+        
+        const statusColors: Record<DisplayStatus, string> = {
           pending: 'bg-blue-100 text-blue-800',
           accepted: 'bg-green-100 text-green-800',
           revoked: 'bg-red-100 text-red-800',
+          expired: 'bg-gray-100 text-gray-800'
         };
         
         // Use existing translations from filters
-        const statusLabel = t(`admin:personalInvites.filters.${status}`, status.charAt(0).toUpperCase() + status.slice(1));
+        const statusLabel = t(`admin:personalInvites.filters.${displayStatus}`, displayStatus.charAt(0).toUpperCase() + displayStatus.slice(1));
 
         return (
-          <span className={`px-2 py-1 rounded-md text-xs font-medium ${statusColors[status]}`}>
+          <span className={`px-2 py-1 rounded-md text-xs font-medium ${statusColors[displayStatus]}`}>
             {statusLabel}
           </span>
         );
@@ -237,11 +246,10 @@ function PersonalInvitesTableFilters(props: {
   );
 }
 
-
-
 function InviteActionsDropdown({ invite, t }: { invite: PersonalInvite, t: ReturnType<typeof useTranslation>['t'] }) {
   const router = useRouter();
-  const isPending = invite.status === 'pending';
+  const isExpired = new Date(invite.expires_at) < new Date();
+  const isPending = invite.status === 'pending' && !isExpired;
   const [isRevoking, setIsRevoking] = useState(false);
   const [isResending, setIsResending] = useState(false);
   const [isPendingTransition, startTransition] = useTransition();
