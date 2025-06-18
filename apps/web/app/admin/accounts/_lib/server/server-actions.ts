@@ -10,7 +10,7 @@ import { adminAction } from '@kit/admin';
 // Schema for the search params
 const GetAccountsSchema = z.object({
   page: z.number().min(1),
-  page_size: z.number().min(1).max(100).default(20),
+  page_size: z.number().min(1).max(100),
   account_type: z.enum(['all', 'personal', 'team']),
   query: z.string().optional(),
   sort_field: z.string().optional(),
