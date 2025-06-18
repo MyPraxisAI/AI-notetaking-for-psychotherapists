@@ -1,15 +1,16 @@
-import { ServerDataLoader } from '@makerkit/data-loader-supabase-nextjs';
-
 import { AdminAccountsTable } from '@kit/admin/components/admin-accounts-table';
+import type { Account } from '@kit/admin/components/admin-accounts-table';
 import { AdminGuard } from '@kit/admin/components/admin-guard';
-import { getSupabaseServerClient } from '@kit/supabase/server-client';
 import { AppBreadcrumbs } from '@kit/ui/app-breadcrumbs';
 import { PageBody, PageHeader } from '@kit/ui/page';
+import { getAccountsWithStatsAction } from './_lib/server/server-actions';
 
 interface SearchParams {
   page?: string;
-  account_type?: 'all' | 'team' | 'personal';
+  account_type?: 'all' | 'personal' | 'team';
   query?: string;
+  sort_field?: string;
+  sort_direction?: 'asc' | 'desc';
 }
 
 interface AdminAccountsPageProps {
@@ -20,66 +21,52 @@ export const metadata = {
   title: `Accounts`,
 };
 
-async function AccountsPage(props: AdminAccountsPageProps) {
-  const client = getSupabaseServerClient();
-  const searchParams = await props.searchParams;
+const PAGE_SIZE = 20;
 
+async function AccountsPage(props: AdminAccountsPageProps) {
+  const searchParams = await props.searchParams;
   const page = searchParams.page ? parseInt(searchParams.page) : 1;
-  const filters = getFilters(searchParams);
+  const sort_field = searchParams.sort_field ?? 'name';
+  const sort_direction = searchParams.sort_direction ?? 'asc';
+
+  const { data: accountsWithStats, count } = await getAccountsWithStatsAction({
+    page,
+    page_size: PAGE_SIZE,
+    account_type: searchParams.account_type ?? 'all',
+    query: searchParams.query ?? '',
+    sort_field,
+    sort_direction,
+  });
+
+  const pageCount = Math.ceil(count / PAGE_SIZE);
 
   return (
     <>
-      <PageHeader description={<AppBreadcrumbs />} />
+      <PageHeader>
+        <AppBreadcrumbs
+          values={{
+            admin: 'Admin',
+            'admin.accounts': 'Accounts',
+          }}
+        />
+      </PageHeader>
 
       <PageBody>
-        <ServerDataLoader
-          table={'accounts'}
-          client={client}
+        <AdminAccountsTable
+          data={accountsWithStats as Account[] ?? []}
+          pageCount={pageCount}
+          pageSize={PAGE_SIZE}
           page={page}
-          where={filters}
-        >
-          {({ data, page, pageSize, pageCount }) => {
-            return (
-              <AdminAccountsTable
-                page={page}
-                pageSize={pageSize}
-                pageCount={pageCount}
-                data={data}
-                filters={{
-                  type: searchParams.account_type ?? 'all',
-                  query: searchParams.query ?? '',
-                }}
-              />
-            );
+          filters={{
+            type: searchParams.account_type ?? 'all',
+            query: searchParams.query ?? '',
           }}
-        </ServerDataLoader>
+          sort_field={sort_field}
+          sort_direction={sort_direction}
+        />
       </PageBody>
     </>
   );
-}
-
-function getFilters(params: SearchParams) {
-  const filters: Record<
-    string,
-    {
-      eq?: boolean | string;
-      like?: string;
-    }
-  > = {};
-
-  if (params.account_type && params.account_type !== 'all') {
-    filters.is_personal_account = {
-      eq: params.account_type === 'personal',
-    };
-  }
-
-  if (params.query) {
-    filters.name = {
-      like: `%${params.query}%`,
-    };
-  }
-
-  return filters;
 }
 
 export default AdminGuard(AccountsPage);

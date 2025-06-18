@@ -52,7 +52,7 @@ export function CreatePersonalInvitationForm({ onSuccess }: { onSuccess?: () => 
     resolver: zodResolver(CreatePersonalInviteSchema),
     defaultValues: {
       email: '',
-      expiresInDays: 7,
+      expiresInDays: 365,
       language: i18n.language || 'en', // Use current language or fallback to English
     },
   });
@@ -155,10 +155,10 @@ export function CreatePersonalInvitationForm({ onSuccess }: { onSuccess?: () => 
                 <Input 
                   type="number" 
                   min="1" 
-                  max="30" 
+                  max="365" 
                   {...field}
                   value={field.value}
-                  onChange={(e) => field.onChange(parseInt(e.target.value) || 7)}
+                  onChange={(e) => field.onChange(parseInt(e.target.value) || 365)}
                   disabled={isPending}
                 />
               </FormControl>

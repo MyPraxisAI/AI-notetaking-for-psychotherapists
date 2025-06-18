@@ -145,6 +145,13 @@ export type Database = {
             foreignKeyName: "accounts_memberships_account_id_fkey"
             columns: ["account_id"]
             isOneToOne: false
+            referencedRelation: "admin_accounts_with_stats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "accounts_memberships_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
             referencedRelation: "user_account_workspace"
             referencedColumns: ["id"]
           },
@@ -213,6 +220,13 @@ export type Database = {
             foreignKeyName: "artifacts_account_id_fkey"
             columns: ["account_id"]
             isOneToOne: false
+            referencedRelation: "admin_accounts_with_stats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "artifacts_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
             referencedRelation: "user_account_workspace"
             referencedColumns: ["id"]
           },
@@ -253,6 +267,13 @@ export type Database = {
             columns: ["account_id"]
             isOneToOne: false
             referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "billing_customers_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "admin_accounts_with_stats"
             referencedColumns: ["id"]
           },
           {
@@ -311,6 +332,13 @@ export type Database = {
             columns: ["account_id"]
             isOneToOne: false
             referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clients_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "admin_accounts_with_stats"
             referencedColumns: ["id"]
           },
           {
@@ -421,6 +449,13 @@ export type Database = {
             columns: ["account_id"]
             isOneToOne: false
             referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invitations_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "admin_accounts_with_stats"
             referencedColumns: ["id"]
           },
           {
@@ -549,6 +584,13 @@ export type Database = {
             foreignKeyName: "notifications_account_id_fkey"
             columns: ["account_id"]
             isOneToOne: false
+            referencedRelation: "admin_accounts_with_stats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
             referencedRelation: "user_account_workspace"
             referencedColumns: ["id"]
           },
@@ -648,6 +690,13 @@ export type Database = {
             foreignKeyName: "orders_account_id_fkey"
             columns: ["account_id"]
             isOneToOne: false
+            referencedRelation: "admin_accounts_with_stats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
             referencedRelation: "user_account_workspace"
             referencedColumns: ["id"]
           },
@@ -716,6 +765,13 @@ export type Database = {
             foreignKeyName: "personal_invites_invited_account_id_fkey"
             columns: ["invited_account_id"]
             isOneToOne: false
+            referencedRelation: "admin_accounts_with_stats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "personal_invites_invited_account_id_fkey"
+            columns: ["invited_account_id"]
+            isOneToOne: false
             referencedRelation: "user_account_workspace"
             referencedColumns: ["id"]
           },
@@ -731,6 +787,13 @@ export type Database = {
             columns: ["invited_by_account_id"]
             isOneToOne: false
             referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "personal_invites_invited_by_account_id_fkey"
+            columns: ["invited_by_account_id"]
+            isOneToOne: false
+            referencedRelation: "admin_accounts_with_stats"
             referencedColumns: ["id"]
           },
           {
@@ -840,6 +903,13 @@ export type Database = {
             foreignKeyName: "recordings_account_id_fkey"
             columns: ["account_id"]
             isOneToOne: false
+            referencedRelation: "admin_accounts_with_stats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recordings_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
             referencedRelation: "user_account_workspace"
             referencedColumns: ["id"]
           },
@@ -912,6 +982,13 @@ export type Database = {
             columns: ["account_id"]
             isOneToOne: false
             referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recordings_chunks_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "admin_accounts_with_stats"
             referencedColumns: ["id"]
           },
           {
@@ -1015,6 +1092,13 @@ export type Database = {
             columns: ["account_id"]
             isOneToOne: false
             referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sessions_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "admin_accounts_with_stats"
             referencedColumns: ["id"]
           },
           {
@@ -1151,6 +1235,13 @@ export type Database = {
             foreignKeyName: "subscriptions_account_id_fkey"
             columns: ["account_id"]
             isOneToOne: false
+            referencedRelation: "admin_accounts_with_stats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscriptions_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
             referencedRelation: "user_account_workspace"
             referencedColumns: ["id"]
           },
@@ -1234,6 +1325,13 @@ export type Database = {
             foreignKeyName: "therapists_account_id_fkey"
             columns: ["account_id"]
             isOneToOne: true
+            referencedRelation: "admin_accounts_with_stats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "therapists_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: true
             referencedRelation: "user_account_workspace"
             referencedColumns: ["id"]
           },
@@ -1293,6 +1391,13 @@ export type Database = {
             foreignKeyName: "therapists_approaches_account_id_fkey"
             columns: ["account_id"]
             isOneToOne: false
+            referencedRelation: "admin_accounts_with_stats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "therapists_approaches_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
             referencedRelation: "user_account_workspace"
             referencedColumns: ["id"]
           },
@@ -1325,6 +1430,7 @@ export type Database = {
           content: string | null
           content_json: Json | null
           created_at: string
+          duration_ms: number | null
           id: string
           session_id: string
           transcription_model: string | null
@@ -1335,6 +1441,7 @@ export type Database = {
           content?: string | null
           content_json?: Json | null
           created_at?: string
+          duration_ms?: number | null
           id?: string
           session_id: string
           transcription_model?: string | null
@@ -1345,6 +1452,7 @@ export type Database = {
           content?: string | null
           content_json?: Json | null
           created_at?: string
+          duration_ms?: number | null
           id?: string
           session_id?: string
           transcription_model?: string | null
@@ -1356,6 +1464,13 @@ export type Database = {
             columns: ["account_id"]
             isOneToOne: false
             referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transcripts_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "admin_accounts_with_stats"
             referencedColumns: ["id"]
           },
           {
@@ -1421,6 +1536,13 @@ export type Database = {
             foreignKeyName: "user_preferences_account_id_fkey"
             columns: ["account_id"]
             isOneToOne: true
+            referencedRelation: "admin_accounts_with_stats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_preferences_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: true
             referencedRelation: "user_account_workspace"
             referencedColumns: ["id"]
           },
@@ -1467,6 +1589,13 @@ export type Database = {
             foreignKeyName: "user_settings_account_id_fkey"
             columns: ["account_id"]
             isOneToOne: true
+            referencedRelation: "admin_accounts_with_stats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_settings_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: true
             referencedRelation: "user_account_workspace"
             referencedColumns: ["id"]
           },
@@ -1481,6 +1610,25 @@ export type Database = {
       }
     }
     Views: {
+      admin_accounts_with_stats: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          email: string | null
+          id: string | null
+          is_personal_account: boolean | null
+          name: string | null
+          picture_url: string | null
+          primary_owner_user_id: string | null
+          public_data: Json | null
+          sessions_count: number | null
+          sessions_duration_seconds: number | null
+          slug: string | null
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Relationships: []
+      }
       user_account_workspace: {
         Row: {
           id: string | null
@@ -1639,6 +1787,12 @@ export type Database = {
           path: string
         }
         Returns: string
+      }
+      get_last_segment_end_ms: {
+        Args: {
+          content_json: Json
+        }
+        Returns: number
       }
       get_nonce_status: {
         Args: {

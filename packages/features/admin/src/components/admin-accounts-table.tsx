@@ -37,12 +37,51 @@ import { AdminDeleteAccountDialog } from './admin-delete-account-dialog';
 import { AdminDeleteUserDialog } from './admin-delete-user-dialog';
 import { AdminImpersonateUserDialog } from './admin-impersonate-user-dialog';
 
-type Account = Database['public']['Tables']['accounts']['Row'];
+export type Account = Database['public']['Tables']['accounts']['Row'] & {
+  sessions_count: number;
+  sessions_duration_seconds: number;
+};
 
 const FiltersSchema = z.object({
   type: z.enum(['all', 'team', 'personal']),
   query: z.string().optional(),
 });
+
+/**
+ * Formats duration in seconds to a human-readable string
+ * @param seconds Total duration in seconds
+ * @returns Formatted string
+ */
+function formatDuration(seconds: number): string {
+  if (!seconds) return '0s';
+
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const remainingSeconds = seconds % 60;
+
+  // Under 1 minute: show seconds
+  if (seconds < 60) {
+    return `${seconds}s`;
+  }
+
+  // Under 10 minutes: show minutes and seconds
+  if (seconds < 600) {
+    return `${minutes}m ${remainingSeconds}s`;
+  }
+
+  // Under 1 hour: show minutes
+  if (hours == 0) {
+    return `${minutes}m`;
+  }
+
+  // Under 10 hours: show hours and minutes
+  if (hours < 10) {
+    return `${hours}h ${minutes}m`;
+  }
+
+  // Over 10 hours: show only hours
+  return `${hours}h`;
+}
 
 export function AdminAccountsTable(
   props: React.PropsWithChildren<{
@@ -54,8 +93,34 @@ export function AdminAccountsTable(
       type: 'all' | 'team' | 'personal';
       query: string;
     };
+    sort_field: string;
+    sort_direction: 'asc' | 'desc';
   }>,
 ) {
+  const router = useRouter();
+  const pathname = usePathname();
+
+  // Map sort_field/sort_direction to tanstack sorting state
+  const sorting = [
+    {
+      id: props.sort_field,
+      desc: props.sort_direction === 'desc',
+    },
+  ];
+
+  function handleSortingChange(updater: ((prev: typeof sorting) => typeof sorting) | typeof sorting) {
+    const nextSorting = typeof updater === 'function' ? updater(sorting) : updater;
+    const sort = nextSorting[0] || { id: 'name', desc: false };
+    const params = new URLSearchParams({
+      account_type: props.filters.type,
+      query: props.filters.query,
+      page: props.page.toString(),
+      sort_field: sort.id,
+      sort_direction: sort.desc ? 'desc' : 'asc',
+    });
+    router.push(`${pathname}?${params.toString()}`);
+  }
+
   return (
     <div className={'flex flex-col space-y-4'}>
       <div className={'flex justify-end'}>
@@ -68,6 +133,9 @@ export function AdminAccountsTable(
         pageCount={props.pageCount}
         data={props.data}
         columns={getColumns()}
+        sorting={sorting}
+        onSortingChange={handleSortingChange}
+        manualSorting={true}
       />
     </div>
   );
@@ -157,6 +225,22 @@ function AccountsTableFilters(props: {
   );
 }
 
+function DateCell({ value }: { value: string | null }) {
+  if (!value) return <span className="text-muted-foreground">-</span>;
+  
+  const date = new Date(value);
+  const formattedDate = new Intl.DateTimeFormat('en-US', {
+    dateStyle: 'medium',
+    timeStyle: 'short'
+  }).format(date);
+  
+  return (
+    <time dateTime={value} title={value}>
+      {formattedDate}
+    </time>
+  );
+}
+
 function getColumns(): ColumnDef<Account>[] {
   return [
     {
@@ -186,14 +270,64 @@ function getColumns(): ColumnDef<Account>[] {
       },
     },
     {
+      id: 'sessions_count',
+      header: ({ column }) => (
+        <button
+          type="button"
+          className="flex items-center gap-1"
+          onClick={column.getToggleSortingHandler()}
+        >
+          Sessions&nbsp;
+          {column.getIsSorted() === 'asc' && '▲'}
+          {column.getIsSorted() === 'desc' && '▼'}
+        </button>
+      ),
+      accessorKey: 'sessions_count',
+      enableSorting: true,
+      cell: ({ row }) => {
+        const count = row.original.sessions_count ?? 0;
+        return (
+          <span className="font-mono">
+            {count}
+          </span>
+        );
+      },
+    },
+    {
+      id: 'sessions_duration_seconds',
+      header: ({ column }) => (
+        <button
+          type="button"
+          className="flex items-center gap-1"
+          onClick={column.getToggleSortingHandler()}
+        >
+          Total Session Duration&nbsp;
+          {column.getIsSorted() === 'asc' && '▲'}
+          {column.getIsSorted() === 'desc' && '▼'}
+        </button>
+      ),
+      accessorKey: 'sessions_duration_seconds',
+      enableSorting: true,
+      cell: ({ row }) => {
+        const duration = row.original.sessions_duration_seconds ?? 0;
+        return (
+          <span className="font-mono">
+            {formatDuration(duration)}
+          </span>
+        );
+      },
+    },
+    {
       id: 'created_at',
       header: 'Created At',
       accessorKey: 'created_at',
+      cell: ({ getValue }) => <DateCell value={getValue() as string | null} />,
     },
     {
       id: 'updated_at',
       header: 'Updated At',
       accessorKey: 'updated_at',
+      cell: ({ getValue }) => <DateCell value={getValue() as string | null} />,
     },
     {
       id: 'actions',

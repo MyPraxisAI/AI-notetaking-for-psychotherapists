@@ -36,10 +36,17 @@ export async function getAdminPersonalInvites({
 
     // Apply status filter if provided
     if (status && status !== 'all') {
-      // Validate that status is a valid InviteStatusEnum value
-      if (['pending', 'accepted', 'revoked'].includes(status)) {
-        // Cast status to a valid InviteStatusEnum value
-        queryBuilder = queryBuilder.eq('status', status as 'pending' | 'accepted' | 'revoked');
+      if (status === 'expired') {
+        // For expired status, check if expires_at is in the past
+        queryBuilder = queryBuilder.lt('expires_at', 'now()');
+      } else if (status === 'pending') {
+        // For pending status, check both status and that it hasn't expired
+        queryBuilder = queryBuilder
+          .eq('status', status as 'pending')
+          .gt('expires_at', 'now()');
+      } else if (['accepted', 'revoked'].includes(status)) {
+        // For other statuses, use the status field
+        queryBuilder = queryBuilder.eq('status', status as 'accepted' | 'revoked');
       }
     }
 
