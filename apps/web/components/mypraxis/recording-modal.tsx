@@ -72,6 +72,7 @@ export function RecordingModal({
   const [isRecording, setIsRecording] = useState(false)
   const [recordingId, setRecordingId] = useState<string | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
+  const [isMicrophoneChecking, setIsMicrophoneChecking] = useState(false)
   const [isResuming, setIsResuming] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
@@ -547,7 +548,7 @@ export function RecordingModal({
   // Initialize microphone and MediaRecorder in the soundCheck state
   const initializeMicrophone = useCallback(async () => {
     try {
-      setIsProcessing(true);
+      setIsMicrophoneChecking(true);
       setError(null);
       // This will prompt for permissions if needed
       await loadAvailableMicrophones(); // Load microphone list (will prompt for permission)
@@ -563,7 +564,7 @@ export function RecordingModal({
       // Return to initial state
       setModalState("initial");
     } finally {
-      setIsProcessing(false);
+      setIsMicrophoneChecking(false);
     }
   }, [setupMediaRecorder, loadAvailableMicrophones]);
   
@@ -1034,9 +1035,9 @@ export function RecordingModal({
                   <Button 
                     className="w-full bg-green-500 hover:bg-green-600 text-white"
                     onClick={handleStartRecordingFlow}
-                    disabled={isProcessing || isImporting}
+                    disabled={isMicrophoneChecking || isImporting}
                   >
-                    {isProcessing ? (
+                    {isMicrophoneChecking ? (
                       <>
                         <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                         {t("recordingModal.microphone.checking")}
@@ -1061,7 +1062,7 @@ export function RecordingModal({
                   <Button 
                     className="w-full bg-blue-500 hover:bg-blue-600 text-white"
                     onClick={handleImportClick}
-                    disabled={isProcessing || isImporting}
+                    disabled={isImporting}
                   >
                     {isImporting ? (
                       <>
@@ -1075,11 +1076,16 @@ export function RecordingModal({
                       </>
                     )}
                   </Button>
+                  <div className="text-sm text-gray-500 mt-2 text-center">
+                    {t("recordingModal.microphone.supportedFormats", {
+                      formats: "mp3, wav, m4a/mp4, aac, flac, ogg, aiff, webm, wma"
+                    })}
+                  </div>
                   <input 
                     type="file" 
                     ref={fileInputRef}
                     className="hidden" 
-                    accept="audio/mp3,audio/mpeg"
+                    accept="audio/mp3,audio/mpeg,.mp3,audio/wav,audio/vnd.wav,.wav,audio/mp4,.m4a,.mp4,audio/aac,.aac,audio/flac,.flac,audio/ogg,.ogg,audio/aiff,audio/x-aiff,.aiff,audio/webm,.webm,audio/midi,audio/x-midi,.midi,.mid,audio/x-ms-wma,.wma"
                     onChange={handleFileSelected}
                   />
                 </div>
