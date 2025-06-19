@@ -9,6 +9,18 @@ import { execSync } from 'child_process';
 import { getBackgroundLogger, createLoggerContext } from '../logger';
 
 /**
+ * Maps file extensions to FFmpeg-compatible formats
+ * @param extension - The original file extension (with dot)
+ * @returns FFmpeg-compatible extension (with dot)
+ */
+function mapToFFmpegFormat(extension: string): string {
+  const formatMap: Record<string, string> = {
+    '.weba': '.webm', // WebM Audio should use .webm for FFmpeg
+  };
+  return formatMap[extension] || extension;
+}
+
+/**
  * Get audio file information using ffprobe
  * 
  * @param audioFilePath - Path to the audio file
@@ -72,8 +84,8 @@ export async function combineAudioChunks(
     // If there's only one chunk, just use it directly instead of combining
     if (chunkFiles.length === 1) {
       console.log('Only one chunk found, using it directly without combining');
-      // Get the extension from the original file
-      const extension = path.extname(chunkFiles[0]);
+      // Get the extension from the original file and map it to FFmpeg format
+      const extension = mapToFFmpegFormat(path.extname(chunkFiles[0]));
       const finalOutputPath = `${outputFilePath}${extension}`;
       
       // Move the single chunk to the output path (faster than copying)
@@ -81,8 +93,8 @@ export async function combineAudioChunks(
       return finalOutputPath;
     }
     
-    // Get extension from the first chunk file
-    const extension = path.extname(chunkFiles[0]) || '.webm'; // Default to .webm if no extension
+    // Get extension from the first chunk file and map it to FFmpeg format
+    const extension = mapToFFmpegFormat(path.extname(chunkFiles[0]) || '.webm'); // Default to .webm if no extension
     const finalOutputPath = `${outputFilePath}${extension}`;
     
     if (standaloneChunks) {

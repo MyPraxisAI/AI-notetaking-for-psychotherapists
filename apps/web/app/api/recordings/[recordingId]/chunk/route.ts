@@ -5,6 +5,7 @@ import { getLogger } from '@kit/shared/logger';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { getSupabaseServerClient } from '@kit/supabase/server-client';
 import { getUserPersonalAccount } from '../../../_lib/get-user-account';
+import mime from 'mime';
 
 // Initialize logger properly with await
 const logger = await getLogger();
@@ -63,11 +64,19 @@ export const POST = enhanceRouteHandler(
       // Format chunk number with leading zeros (e.g., 0001, 0002, etc.)
       const paddedChunkNumber = chunkNumber.toString().padStart(4, '0');
       
-      // Determine file extension based on MIME type
-      const fileExtension = mimeType.includes('webm') ? 'webm' : 
-                           mimeType.includes('ogg') ? 'ogg' : 
-                           mimeType.includes('mpeg') || mimeType.includes('mp3') ? 'mp3' : 
-                           'webm'; // Default to webm if unknown
+      // Get the file extension from the MIME type using the mime package
+      const fileExtension = mime.getExtension(mimeType);
+      if (!fileExtension) {
+        return new Response(
+          JSON.stringify({
+            error: `Unsupported format: ${mimeType}. Please use a supported audio/video format.`
+          }),
+          {
+            status: 400,
+            headers: { 'Content-Type': 'application/json' }
+          }
+        );
+      }
       
       // Define the storage path: {account_id}/{recording_id}/chunk-{0-padded chunk number}.<extension>
       const storagePath = `${accountId}/${recordingId}/chunk-${paddedChunkNumber}.${fileExtension}`;
