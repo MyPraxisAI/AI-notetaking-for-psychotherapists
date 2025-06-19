@@ -94,6 +94,7 @@
     "autoprefixer": "^10.4.20",
     "babel-plugin-react-compiler": "19.0.0-beta-e1e972c-20250221",
     "dotenv-cli": "^8.0.0",
+    "eslint-import-resolver-typescript": "^4.4.3",
     "pino-pretty": "^13.0.0",
     "prettier": "^3.5.3",
     "supabase": "^2.15.8",
