@@ -2,6 +2,19 @@
 
 import { useEffect, useRef, useState } from "react";
 
+// Simple browser logger
+const logger = {
+  debug: (message: string, data?: unknown) => {
+    console.debug(`[AudioVisualizer] ${message}`, data);
+  },
+  warn: (message: string, data?: unknown) => {
+    console.warn(`[AudioVisualizer] ${message}`, data);
+  },
+  error: (message: string, data?: unknown) => {
+    console.error(`[AudioVisualizer] ${message}`, data);
+  }
+};
+
 interface MyPraxisAudioVisualizerProps {
   stream: MediaStream | null;
   className?: string;
@@ -34,19 +47,28 @@ export function MyPraxisAudioVisualizer({ stream, className = "" }: MyPraxisAudi
   const animationFrameRef = useRef<number | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
+  const lastActivityRef = useRef<boolean>(false);
+  const svgRef = useRef<SVGSVGElement>(null);
 
   useEffect(() => {
     if (audioContextRef.current) {
+      logger.debug('Cleaning up previous audio context', {
+        state: audioContextRef.current.state
+      });
+      
       if (audioContextRef.current.state !== "closed") {
         try {
           audioContextRef.current.close();
-        } catch { /* ignore error */ }
+        } catch (error) {
+          logger.error('Error closing audio context', { error });
+        }
       }
       audioContextRef.current = null;
       analyserRef.current = null;
     }
 
     if (!stream) {
+      logger.debug('No stream provided, resetting visualizer state');
       setAmplitude(1);
       setHasActivity(false);
       return;
@@ -62,7 +84,11 @@ export function MyPraxisAudioVisualizer({ stream, className = "" }: MyPraxisAudi
     const dataArray = new Uint8Array(analyser.frequencyBinCount);
 
     const animate = () => {
-      if (!analyserRef.current) return;
+      if (!analyserRef.current) {
+        logger.warn('Analyzer not available during animation frame');
+        return;
+      }
+      
       analyserRef.current.getByteFrequencyData(dataArray);
       // Calculate average volume (amplitude)
       let sum = 0;
@@ -72,8 +98,21 @@ export function MyPraxisAudioVisualizer({ stream, className = "" }: MyPraxisAudi
       const avg = dataArray.length > 0 ? sum / dataArray.length : 0;
       // Map 0-255 to 0-1 (0 = no sound, 1 = max sound)
       const amp = avg < 5 ? 0 : Math.min(avg / 255, 1);
+      
+      const newHasActivity = amp > 0.02;
+      
+      // Log state changes to track animation triggers
+      if (newHasActivity !== lastActivityRef.current) {
+        logger.debug('Activity state changed', {
+          hasActivity: newHasActivity,
+          amplitude: amp,
+          average: avg
+        });
+        lastActivityRef.current = newHasActivity;
+      }
+      
       setAmplitude(amp);
-      setHasActivity(amp > 0.02);
+      setHasActivity(newHasActivity);
       animationFrameRef.current = requestAnimationFrame(animate);
     };
     animate();
@@ -84,32 +123,38 @@ export function MyPraxisAudioVisualizer({ stream, className = "" }: MyPraxisAudi
       if (audioContextRef.current?.state !== "closed") {
         try {
           audioContextRef.current?.close();
-        } catch { /* ignore error */ }
+        } catch (error) {
+          logger.error('Error closing audio context during cleanup', { error });
+        }
       }
     };
   }, [stream]);
 
-  // Animate wave
-  const [waveTime, setWaveTime] = useState(0);
+  // Force a reflow of the SVG when the stream changes
   useEffect(() => {
-    let raf: number;
-    const animateWave = () => {
-      setWaveTime(performance.now() / 180); 
-      raf = requestAnimationFrame(animateWave);
-    };
-    animateWave();
-    return () => cancelAnimationFrame(raf);
-  }, []);
+    if (svgRef.current) {
+      // Force a reflow
+      svgRef.current.style.display = 'none';
+      void svgRef.current.getBoundingClientRect();
+      svgRef.current.style.display = 'block';
+    }
+  }, [stream]);
 
   return (
     <div className={`flex items-center justify-center w-full h-full ${className}`} style={{ minHeight: 126 }}>
       <svg
+        ref={svgRef}
         width={"360px"}
         height={"126px"}
         viewBox="0 0 1200 420"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        style={{ display: "block" }}
+        style={{ 
+          display: "block",
+          backfaceVisibility: "hidden",
+          perspective: "1000px",
+          transform: "translate3d(0,0,0)"
+        }}
       >
         <g transform={`translate(${offsetX}, ${offsetY})`}>
           {ELLIPSES.map((ellipse, i) => {
@@ -118,7 +163,7 @@ export function MyPraxisAudioVisualizer({ stream, className = "" }: MyPraxisAudi
             // If no activity, show static logo
             let scale = 1;
             if (hasActivity) {
-              scale = 1 + amplitude * 2.5 * Math.max(0, Math.sin(waveTime + phaseOffset));
+              scale = 1 + amplitude * 2.5 * Math.max(0, Math.sin(performance.now() / 180 + phaseOffset));
             }
             return (
               <ellipse
@@ -129,9 +174,12 @@ export function MyPraxisAudioVisualizer({ stream, className = "" }: MyPraxisAudi
                 ry={ellipse.ry}
                 fill="black"
                 style={{
-                  transform: `scaleY(${scale})`,
+                  transform: `translate3d(0,0,0) scaleY(${scale})`,
                   transformOrigin: `${ellipse.cx}px ${ellipse.cy}px`,
-                  transition: "transform 0.08s cubic-bezier(.4,2,.6,1)",
+                  backfaceVisibility: "hidden",
+                  perspective: "1000px",
+                  willChange: "transform",
+                  transition: "none",
                   opacity: 0.95,
                 }}
               />
