@@ -4,13 +4,13 @@ import { useEffect, useRef, useState } from "react";
 
 // Simple browser logger
 const logger = {
-  debug: (message: string, data?: any) => {
+  debug: (message: string, data?: unknown) => {
     console.debug(`[AudioVisualizer] ${message}`, data);
   },
-  warn: (message: string, data?: any) => {
+  warn: (message: string, data?: unknown) => {
     console.warn(`[AudioVisualizer] ${message}`, data);
   },
-  error: (message: string, data?: any) => {
+  error: (message: string, data?: unknown) => {
     console.error(`[AudioVisualizer] ${message}`, data);
   }
 };
@@ -135,7 +135,7 @@ export function MyPraxisAudioVisualizer({ stream, className = "" }: MyPraxisAudi
     if (svgRef.current) {
       // Force a reflow
       svgRef.current.style.display = 'none';
-      void svgRef.current.offsetHeight;
+      void svgRef.current.getBoundingClientRect();
       svgRef.current.style.display = 'block';
     }
   }, [stream]);
