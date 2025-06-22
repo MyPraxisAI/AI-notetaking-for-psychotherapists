@@ -78,6 +78,7 @@ export function RecordingModal({
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isImporting, setIsImporting] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState(0)
   const timerInterval = useRef<NodeJS.Timeout | null>(null)
   const heartbeatInterval = useRef<NodeJS.Timeout | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -750,6 +751,7 @@ export function RecordingModal({
     try {
       setIsImporting(true);
       setError(null);
+      setUploadProgress(0);
       
       // 1. Create a new recording
       const startResult = await startRecording({ standaloneChunks: false });
@@ -766,8 +768,8 @@ export function RecordingModal({
       const result = await processAudioFile(file, {
         recordingId: startResult.recordingId,
         onProgress: (current: number, total: number) => {
-          // Could add progress indicator here if needed
-          console.log(`Processing chunk ${current}/${total}`);
+          const progress = Math.round((current / total) * 100);
+          setUploadProgress(progress);
         },
         onError: (error: Error) => {
           setError(error.message);
@@ -1063,6 +1065,13 @@ export function RecordingModal({
                     className="w-full bg-blue-500 hover:bg-blue-600 text-white"
                     onClick={handleImportClick}
                     disabled={isImporting}
+                    style={
+                      isImporting
+                        ? {
+                            background: `linear-gradient(to right, #2563eb ${uploadProgress}%, #3b82f6 ${uploadProgress}%)`,
+                          }
+                        : {}
+                    }
                   >
                     {isImporting ? (
                       <>
