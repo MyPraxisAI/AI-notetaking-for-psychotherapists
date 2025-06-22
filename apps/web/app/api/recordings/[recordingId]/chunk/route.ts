@@ -6,6 +6,7 @@ import { SupabaseClient } from '@supabase/supabase-js';
 import { getSupabaseServerClient } from '@kit/supabase/server-client';
 import { getUserPersonalAccount } from '../../../_lib/get-user-account';
 import mime from 'mime';
+import { remapUncommonExtensions } from '@kit/web-bg-common';
 
 // Initialize logger properly with await
 const logger = await getLogger();
@@ -65,7 +66,9 @@ export const POST = enhanceRouteHandler(
       const paddedChunkNumber = chunkNumber.toString().padStart(4, '0');
       
       // Get the file extension from the MIME type using the mime package
-      const fileExtension = mime.getExtension(mimeType);
+      const extension = mime.getExtension(mimeType);
+      const fileExtension = extension ? remapUncommonExtensions(`.${extension}`) : null;
+
       if (!fileExtension) {
         return new Response(
           JSON.stringify({
@@ -79,7 +82,7 @@ export const POST = enhanceRouteHandler(
       }
       
       // Define the storage path: {account_id}/{recording_id}/chunk-{0-padded chunk number}.<extension>
-      const storagePath = `${accountId}/${recordingId}/chunk-${paddedChunkNumber}.${fileExtension}`;
+      const storagePath = `${accountId}/${recordingId}/chunk-${paddedChunkNumber}${fileExtension}`;
       const storageBucket = 'recordings';
       
       logger.info({ 
