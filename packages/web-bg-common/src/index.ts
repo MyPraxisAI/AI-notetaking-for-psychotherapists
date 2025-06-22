@@ -50,3 +50,6 @@ export * as aws from './aws';
 
 // Re-export time utilities
 export * from './utils/time';
+
+// Re-export mime utilities
+export * from './utils/mime';
