@@ -30,6 +30,8 @@ import { TherapeuticApproachesSelect } from "./therapeutic-approaches-select"
 import { useTranslation } from "react-i18next"
 import { Trans } from "@kit/ui/trans"
 import { useUserWorkspace } from "@kit/accounts/hooks/use-user-workspace"
+import { useAppEvents } from '@kit/shared/events';
+import { AppEvents } from '~/lib/app-events';
 
 import { X } from "lucide-react"
 import { z } from "zod"
@@ -64,6 +66,7 @@ interface SettingsFormProps {
 
 export function SettingsForm({ setIsNavVisible, isSmallScreen }: SettingsFormProps) {
   const { t, i18n } = useTranslation();
+  const { emit } = useAppEvents<AppEvents>();
   
   // Get user data from the Makerkit useUserWorkspace hook
   const { user } = useUserWorkspace();
@@ -143,6 +146,10 @@ export function SettingsForm({ setIsNavVisible, isSmallScreen }: SettingsFormPro
 
   // Timeout ref for saved fields
   const saveTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    emit({ type: 'SettingsViewed', payload: {} });
+  }, [emit]);
 
   // Initialize with user data
   useEffect(() => {
@@ -274,6 +281,11 @@ export function SettingsForm({ setIsNavVisible, isSmallScreen }: SettingsFormPro
       });
       
       combinedPromise.then(() => {
+        emit({
+          type: 'SettingsUpdated',
+          payload: { field: field === 'fullName' ? 'name' : 'credentials' },
+        });
+
         // Show checkmark
         setSavedFields((prev) => new Set(prev).add(field));
         
@@ -322,7 +334,17 @@ export function SettingsForm({ setIsNavVisible, isSmallScreen }: SettingsFormPro
     } else if (field === "email" && typeof value === "string") {
       // Update user's email in Supabase Auth with verification
       const redirectTo = window.location.href;
-      updateEmail.mutate({ email: value, redirectTo });
+      updateEmail.mutate(
+        { email: value, redirectTo },
+        {
+          onSuccess: () => {
+            emit({
+              type: 'SettingsUpdated',
+              payload: { field: 'email' },
+            });
+          },
+        },
+      );
     } else if (field === "language" || field === "use24HourClock" || field === "useUSDateFormat") {
       // These are handled by the preference hooks
       // Do nothing here as they're handled in handleSelectChange and handleCheckboxChange
@@ -471,6 +493,11 @@ export function SettingsForm({ setIsNavVisible, isSmallScreen }: SettingsFormPro
       });
       
       promise.then(() => {
+        emit({
+          type: 'SettingsUpdated',
+          payload: { field: 'language' },
+        });
+
         // Show checkmark
         setSavedFields((prev) => new Set(prev).add(field));
         
@@ -505,6 +532,11 @@ export function SettingsForm({ setIsNavVisible, isSmallScreen }: SettingsFormPro
       });
       
       promise.then(() => {
+        emit({
+          type: 'SettingsUpdated',
+          payload: { field: 'country' },
+        });
+
         // Show checkmark
         setSavedFields((prev) => new Set(prev).add(field));
         
@@ -558,6 +590,11 @@ export function SettingsForm({ setIsNavVisible, isSmallScreen }: SettingsFormPro
     });
     
     promise.then(() => {
+      emit({
+        type: 'SettingsUpdated',
+        payload: { field: 'primaryTherapeuticApproach' },
+      });
+
       // Show checkmark
       setSavedFields((prev) => new Set(prev).add("primaryTherapeuticApproach"));
       
@@ -618,6 +655,11 @@ export function SettingsForm({ setIsNavVisible, isSmallScreen }: SettingsFormPro
     });
     
     promise.then(() => {
+      emit({
+        type: 'SettingsUpdated',
+        payload: { field: 'secondaryTherapeuticApproaches' },
+      });
+
       // Update saved values
       setSavedValues((prev) => ({
         ...prev,
@@ -662,6 +704,11 @@ export function SettingsForm({ setIsNavVisible, isSmallScreen }: SettingsFormPro
     });
     
     promise.then(() => {
+      emit({
+        type: 'SettingsUpdated',
+        payload: { field: 'secondaryTherapeuticApproaches' },
+      });
+
       // Update saved values
       setSavedValues((prev) => ({
         ...prev,
@@ -711,6 +758,11 @@ export function SettingsForm({ setIsNavVisible, isSmallScreen }: SettingsFormPro
       });
       
       promise.then(() => {
+        emit({
+          type: 'SettingsUpdated',
+          payload: { field: field as 'use24HourClock' | 'useUSDateFormat' },
+        });
+
         // Show checkmark
         setSavedFields((prev) => new Set(prev).add(field));
         
@@ -1241,6 +1293,16 @@ export function SettingsForm({ setIsNavVisible, isSmallScreen }: SettingsFormPro
               if (settings.password && validation.passwordMatch && validation.passwordValid) {
                 updatePassword.mutate(settings.password, {
                   onSuccess: () => {
+                    emit({
+                      type: 'SettingsUpdated',
+                      payload: { field: 'password' },
+                    });
+
+                    emit({
+                      type: 'UserPasswordResetCompleted',
+                      payload: {},
+                    });
+
                     // Clear password fields
                     setSettings(prev => ({ ...prev, password: "" }));
                     setConfirmPassword("");

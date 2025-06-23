@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback } from "@kit/ui/avatar"
 import { Badge } from "@kit/ui/badge"
 import { Button } from "@kit/ui/button"
 import { useSignOut } from '@kit/supabase/hooks/use-sign-out'
+import { useAppEvents } from '@kit/shared/events';
 import { useUserData } from './_lib/hooks/use-user-data'
 import { toast } from "sonner"
 import { useCreateSession, useSessions } from "./_lib/hooks/use-sessions"
@@ -45,6 +46,7 @@ import { OnboardingModal } from "../../../../components/mypraxis/onboarding-moda
 import { useUserSettings } from "./_lib/hooks/use-user-settings"
 import { ClientCreationModal } from "../../../../components/mypraxis/client-creation-modal"
 import { useIsSuperAdmin } from "../../../../lib/client/utils/is-super-admin"
+import { AppEvents } from "../../../../lib/app-events";
 
 // Menu item type
 type MenuItem = "clients" | "settings" | "billing" | "help" | "gift" | "logout" | "admin" | "onboarding"
@@ -68,6 +70,7 @@ interface Session {
 
 export default function Page() {
   const { t } = useTranslation();
+  const { emit } = useAppEvents<AppEvents>();
   const { data: isSuperAdmin = false } = useIsSuperAdmin();
   const [selectedItem, setSelectedItem] = useState<MenuItem>("clients")
   const [selectedClient, setSelectedClient] = useState<ClientId>("")
@@ -104,6 +107,11 @@ export default function Page() {
   // Update sessions state when Supabase data changes
   useEffect(() => {
     if (sessionsData) {
+      emit({
+        type: 'SessionListViewed',
+        payload: { client_id: selectedClient },
+      });
+
       // Map Supabase SessionWithId to local Session type
       const mappedSessions = sessionsData.map(session => ({
         id: session.id,
@@ -119,7 +127,7 @@ export default function Page() {
       }))
       setSessions(mappedSessions)
     }
-  }, [sessionsData])
+  }, [sessionsData, selectedClient, emit])
   const [_selectedSession, setSelectedSessionState] = useState<string | null>(null)
   const [_isDeleteModalOpen, _setIsDeleteModalOpen] = useState(false)
   const [isNavVisible, setIsNavVisible] = useState(true)
@@ -129,6 +137,10 @@ export default function Page() {
   const [isMobileView, setIsMobileView] = useState(false)
   const isNavVisibleRef = useRef(true)
   const isInitialNavVisibilitySet = useRef(false)
+
+  useEffect(() => {
+    emit({ type: 'ClientListViewed', payload: {} });
+  }, [emit]);
 
   // Track newly created clients
   const [_newClientIds, setNewClientIds] = useState<Set<string>>(new Set())
@@ -220,6 +232,12 @@ export default function Page() {
   // Initialize the sign out mutation from Makerkit
   const signOut = useSignOut();
 
+  const handleSignOut = useCallback(() => {
+    signOut.mutateAsync().then(() => {
+      emit({ type: 'UserSignedOut', payload: {} });
+    });
+  }, [signOut, emit]);
+
   const handleMenuClick = (item: MenuItem) => {
     // Always close navigation on small screens, regardless of whether the item is already selected
     if (window.innerWidth <= 1430) {
@@ -239,7 +257,7 @@ export default function Page() {
 
     // Handle logout
     if (item === "logout") {
-      void signOut.mutateAsync(); // Correctly call mutateAsync
+      handleSignOut();
       return;
     }
     
@@ -253,6 +271,11 @@ export default function Page() {
   }
 
   const handleClientClick = (clientId: string) => {
+    emit({
+      type: 'ClientProfileViewed',
+      payload: { client_id: clientId },
+    });
+
     setSelectedClient(setClientId(clientId))
     localStorage.setItem("selectedClient", clientId)
     
@@ -326,13 +349,17 @@ export default function Page() {
    * Navigate to a specific session and optionally open a specific tab
    */
   const navigateToSession = async (sessionId: string, openTab?: 'transcript' | 'notes') => {
-    console.log(`Navigating to session ${sessionId}${openTab ? ` (${openTab} tab)` : ''}`)
-    
-    // Prefetch session artifacts to avoid loading flash
-    prefetchSessionArtifacts(sessionId);
-    
-    // First, ensure we have the session in our sessions list
+    emit({
+      type: 'SessionDetailViewed',
+      payload: {
+        session_id: sessionId,
+        client_id: selectedClient,
+      },
+    });
+
+    // Check if the session belongs to the currently selected client
     const sessionExists = sessions.some(s => s.id === sessionId);
+
     if (!sessionExists) {
       console.log('Session not found in sessions list, fetching it');
       // Trigger a refetch of sessions to ensure the new session is loaded
@@ -892,7 +919,7 @@ export default function Page() {
                   handleMenuClick("logout"); // Call the main handler
                   // Add direct call as fallback with delay
                   setTimeout(() => {
-                    void signOut.mutateAsync(); // Correctly call mutateAsync
+                    handleSignOut();
                   }, 100);
                 }}
               >

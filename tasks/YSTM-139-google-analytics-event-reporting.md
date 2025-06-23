@@ -26,65 +26,70 @@ Implement Google Analytics event reporting throughout the application according 
 - **ClientCreated**: Therapist adds client (`client_id`, `source`)
 - **ClientUpdated**: Profile edited (`client_id`, `fields_changed`)
 
-### 4. Session Management Events
-- **SessionCreated**: Start recording of new session (`session_id`, `client_id`)
-- **SessionDeleted**: Session removed (`session_id`)
-- **SessionCompleted**: Therapist marks finish recording (`session_id`, `duration_minutes`)
-- **SessionNoteAdded**: Note created (`session_id`, `note_length_chars`)
-- **SessionNoteUpdated**: Note edited (`session_id`, `change_size_chars`)
+### 4. Recording Events
+- **RecordingStarted**: User starts a new recording (`client_id`)
+- **RecordingPaused**: User pauses a recording (`client_id`)
+- **RecordingResumed**: User resumes a recording (`client_id`)
+- **RecordingCompleted**: A recording is successfully completed (`session_id`, `client_id`, `duration_minutes`)
+- **RecordingAborted**: User abandons a recording in progress (`client_id`)
+- **RecordingFileImported**: User imports an audio file for a session (`session_id`, `client_id`)
 
-### 5. Artifact Events
+### 5. Settings Events
+- **SettingsViewed**: User views the settings page
+- **SettingsUpdated**: User updates a field in the settings (`field_changed`)
+
+### 6. Artifact Events
 - **ArtifactViewed**: Artifact opened (`artifact_id`, `artifact_type`, `via`)
-- **ArtifactCopied**: Copy to clipboard (`artifact_id`)
+- **ArtifactCopied**: User copies artifact text (`artifact_id`, `artifact_type`, `format`)
 - **ArtifactGenerationRequested**: Therapist clicks generate (`artifact_type`, `prompt_length`)
 - **ArtifactGenerationCompleted**: Generation done (`artifact_id`, `duration_ms`)
 - **ArtifactGenerationFailed**: Generation error (`artifact_type`, `error_message`)
 
-### 6. Performance (Internal Metrics)
+### 7. Performance (Internal Metrics)
 - **PerformanceMetric**: (`metric`, `duration_ms`, `endpoint`)
 
-### 7. Property Reference
+### 8. Property Reference
 See PRD for full property definitions and types.
 
 ---
 
 ## Implementation Tasks
 
-1. **Google Analytics Integration**
-   - [ ] Add Google Analytics SDK to the project (web and server as needed)
-   - [ ] Configure Google Analytics project tokens and environments
-   - [ ] Set up Google Analytics initialization logic
+### 1. Setup & Configuration
+- [x] Add Google Analytics plugin to the project
+- [x] Configure Google Analytics measurement IDs for different environments
+- [x] Create a centralized event tracking utility/module
+- [x] Define TypeScript types/interfaces for all event names and properties
 
-2. **Event Tracking Utilities**
-   - [ ] Create a centralized event tracking utility/module
-   - [ ] Define TypeScript types/interfaces for all event names and properties
-   - [ ] Ensure utility supports all required event properties and context (user, device, app version, etc.)
+### 2. Authentication Events
+- [x] Track user sign-in, sign-out, and password reset events
 
-3. **Authentication Events**
-   - [ ] Fire events at appropriate points in the authentication flow (sign up, sign in, sign out, password reset, session expiry)
+### 3. Navigation Events
+- [x] Track screen views and other major navigation actions
 
-4. **Navigation Events**
-   - [ ] Track screen/page views and navigation events with required properties
-   - [ ] Ensure referrer and via/source are captured
+### 4. Recording Events
+- [x] Track recording start, pause, resume, completion, abandonment, and file import events
 
-5. **Client Management Events**
-   - [ ] Track client creation and updates, including property changes
+### 5. Settings Events
+- [x] Track settings page views and field updates
 
-6. **Session Management Events**
-   - [ ] Track session creation, deletion, completion, and note events
+### 6. Client & Session Events
+- [x] Track client list views, profile views, and session list/detail views
+- [x] Track client creation and updates
+- [ ] Track session creation, deletion, completion, and note events
 
-7. **Artifact Events**
-   - [ ] Track artifact views, copies, generation requests, completions, and failures
+### 7. Artifact Events
+- [ ] Track artifact views, copies, generation requests, completions, and failures
 
-8. **Performance Metrics (Server-side)**
-   - [ ] Implement server-side event reporting for internal performance metrics
+### 8. Performance Metrics (Server-side)
+- [ ] Implement server-side event reporting for internal performance metrics
 
-9. **Testing & QA**
-   - [ ] Validate that all events fire with correct properties in all relevant flows
-   - [ ] Add automated and/or manual tests for event reporting
+### 9. Testing & QA
+- [ ] Validate that all events fire with correct properties in all relevant flows
+- [ ] Add automated and/or manual tests for event reporting
 
-10. **Documentation**
-    - [ ] Document event names, properties, and usage for future reference
+### 10. Documentation
+- [ ] Document event names, properties, and usage for future reference
 
 ---
 
@@ -92,3 +97,14 @@ See PRD for full property definitions and types.
 - Ensure all user and account context is included with each event (user_id, role, etc.)
 - Respect privacy and security best practices when reporting events
 - Coordinate with product/analytics for property naming and event validation 
+
+- [x] Track client list views, profile views, creations, and updates
+- [x] Track session list views and detail views
+- [x] Track recording start, pause, resume, completion, abandonment, and file import events
+- [x] Track settings page views and field updates
+
+### 6. Artifact Events
+- [ ] Track artifact views, copies, generation requests, completions, and failures
+
+### 8. Property Reference
+See PRD for full property definitions and types. 

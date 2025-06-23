@@ -14,8 +14,16 @@ export function AuthProvider(props: React.PropsWithChildren) {
   useAuthChangeListener({
     appHomePath: pathsConfig.app.home,
     onEvent: (event, session) => {
-      dispatchEvent(event, session?.user.id, {
-        email: session?.user.email ?? '',
+      if (!session) {
+        return dispatchEvent(event);
+      }
+
+      const user = session.user;
+      const accountId = user.app_metadata.account_id as string;
+
+      dispatchEvent(event, user.id, {
+        email: user.email ?? '',
+        account_id: accountId,
       });
     },
   });

@@ -344,7 +344,12 @@
       "updatedSuccess": "Client updated successfully",
       "updatedError": "Failed to update client",
       "deletedSuccess": "Client deleted successfully",
-      "deletedError": "Failed to delete client"
+      "deletedError": "Failed to delete client",
+      "avatar": {
+        "updating": "Updating profile picture...",
+        "success": "Profile picture updated successfully",
+        "error": "Failed to update profile picture"
+      }
     },
     "userProfile": {
       "nameRequired": "Name is required",

@@ -418,6 +418,9 @@ importers:
       '@kit/eslint-config':
         specifier: workspace:*
         version: link:../../tooling/eslint
+      '@kit/google-analytics':
+        specifier: workspace:^
+        version: link:../plugins/analytics/google-analytics
       '@kit/prettier-config':
         specifier: workspace:*
         version: link:../../tooling/prettier

@@ -4,6 +4,7 @@ import { useCallback, useState, useEffect, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { useQueryClient } from "@tanstack/react-query"
 import { Button } from "@kit/ui/button"
+import { useAppEvents } from '@kit/shared/events';
 import { useIsSuperAdmin } from "../../lib/client/utils/is-super-admin"
 import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogHeader, DialogFooter } from "@kit/ui/dialog"
 import { Mic, Pause, Play, Loader2, Upload, AlertTriangle } from "lucide-react"
@@ -17,6 +18,8 @@ import type { MicrophoneDevice } from "./utils/recording/microphone-selection"
 import { toast } from "sonner"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@kit/ui/select"
 import { HeadphoneWarning } from "./utils/recording/headphone-warning"
+import { AppEvents } from '~/lib/app-events';
+import { useCreateSession } from '../../app/home/(user)/mypraxis/_lib/hooks/use-sessions';
 
 const overlayStyles = `
   .recording-modal-overlay {
@@ -56,6 +59,8 @@ export function RecordingModal({
   // Get the query client for cache invalidation
   const queryClient = useQueryClient()
   const { t } = useTranslation("mypraxis")
+  const { emit } = useAppEvents<AppEvents>();
+  const createSession = useCreateSession();
   const [modalState, setModalState] = useState<
     "initial" | "soundCheck" | "recording" | "paused" | "saving"
   >("initial")
@@ -248,6 +253,11 @@ export function RecordingModal({
       // At this point, result must be a string (the recording ID)
       const newRecordingId = result as string
       setRecordingId(newRecordingId)
+
+      emit({
+        type: 'RecordingStarted',
+        payload: { client_id: selectedClient },
+      });
       return { success: true, recordingId: newRecordingId } // Successfully started a new recording
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : t('mypraxis:recordingModal.errors.startFailed')
@@ -261,6 +271,10 @@ export function RecordingModal({
   
   const pauseRecording = async () => {
     if (!recordingId) return
+    emit({
+      type: 'RecordingPaused',
+      payload: { client_id: selectedClient },
+    });
     
     try {
       setIsProcessing(true)
@@ -284,7 +298,12 @@ export function RecordingModal({
   
   const resumeRecording = async () => {
     if (!recordingId) return
-    
+
+    emit({
+      type: 'RecordingResumed',
+      payload: { client_id: selectedClient },
+    });
+        
     try {
       setError(null)
       
@@ -521,8 +540,13 @@ export function RecordingModal({
    * Abort the recording in the API and then clean up resources
    */
   const abortRecording = async () => {
-    // Set the aborted flag to prevent further uploads
-    isAborted.current = true;
+    emit({
+      type: 'RecordingAborted',
+      payload: { client_id: selectedClient },
+    });
+
+    // Set the aborted flag
+    isAborted.current = true
 
     // If there's an active recording, delete it from the database
     if (recordingId && (isRecording || modalState === "paused")) {
@@ -775,6 +799,16 @@ export function RecordingModal({
         }
       });
       
+      if (result.sessionId) {
+        emit({
+          type: 'RecordingFileImported',
+          payload: {
+            session_id: result.sessionId,
+            client_id: selectedClient,
+          },
+        });
+      }
+
       // 3. Navigate to the session
       toast.success(t("recordingModal.import.success"));
       if (result.sessionId) {
@@ -817,6 +851,15 @@ export function RecordingModal({
       console.log('Recording complete result:', result)
       
       if (result) {
+        emit({
+          type: 'RecordingCompleted',
+          payload: {
+            session_id: result.sessionId,
+            client_id: selectedClient,
+            duration_minutes: Math.round(currentTimerRef.current / 60),
+          },
+        });
+
         // Just clean up resources without aborting the recording since it was successfully completed
         cleanupRecording()
         toast.success('Recording saved successfully')
@@ -837,7 +880,7 @@ export function RecordingModal({
       setIsSaving(false)
       toast.error('An error occurred while saving the recording.')
     }
-  };
+  }
   
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600)

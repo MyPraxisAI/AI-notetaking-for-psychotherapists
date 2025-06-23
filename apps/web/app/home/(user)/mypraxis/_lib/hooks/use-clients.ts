@@ -6,6 +6,8 @@ import { useSupabase } from '@kit/supabase/hooks/use-supabase';
 import { useUserWorkspace } from '@kit/accounts/hooks/use-user-workspace';
 import { ClientData, ClientWithId, ClientRecord } from '../schemas/client';
 import { useTranslation } from 'react-i18next';
+import { useAppEvents } from '@kit/shared/events';
+import type { AppEvents } from '~/lib/app-events';
 
 /**
  * Hook to fetch all clients for the current user
@@ -130,6 +132,7 @@ export function useCreateClient() {
   const accountId = workspace?.id;
   const client = useSupabase();
   const { t } = useTranslation('mypraxis');
+  const { emit } = useAppEvents<AppEvents>();
 
   return useMutation({
     mutationFn: async (data: ClientData): Promise<ClientWithId> => {
@@ -187,8 +190,15 @@ export function useCreateClient() {
         throw error;
       }
     },
-    onSuccess: () => {
+    onSuccess: (newClient) => {
       toast.success(t('hooks.clients.createdSuccess'));
+
+      emit({
+        type: 'ClientCreated',
+        payload: {
+          client_id: newClient.id,
+        },
+      });
       
       // Invalidate clients query to refetch the list
       if (accountId) {
@@ -213,6 +223,7 @@ export function useUpdateClient() {
   const accountId = workspace?.id;
   const client = useSupabase();
   const { t } = useTranslation('mypraxis');
+  const { emit } = useAppEvents<AppEvents>();
 
   return useMutation({
     mutationFn: async ({ id, ...data }: ClientWithId): Promise<ClientWithId> => {
@@ -252,8 +263,55 @@ export function useUpdateClient() {
         throw error;
       }
     },
-    onSuccess: (_, variables) => {
+    onMutate: async (variables) => {
+      const previousClient = queryClient.getQueryData<ClientWithId>(['client', variables.id, accountId]);
+      return { previousClient };
+    },
+    onSuccess: (updatedClient, variables, context) => {
       toast.success(t('hooks.clients.updatedSuccess'));
+
+      // Determine which fields have changed
+      const originalClient = context?.previousClient;
+      const changedFields: (keyof ClientData)[] = [];
+
+      if (originalClient) {
+        if (originalClient.fullName !== updatedClient.fullName) {
+          changedFields.push('fullName');
+        }
+        if (originalClient.email !== updatedClient.email) {
+          changedFields.push('email');
+        }
+        if (originalClient.phone !== updatedClient.phone) {
+          changedFields.push('phone');
+        }
+      }
+
+      // Emit an event for each changed field
+      changedFields.forEach((field) => {
+        // Map the field name to the allowed values in the event
+        let eventField: AppEvents['ClientUpdated']['field'];
+        
+        switch (field) {
+          case 'fullName':
+            eventField = 'name';
+            break;
+          case 'email':
+            eventField = 'email';
+            break;
+          case 'phone':
+            eventField = 'phone';
+            break;
+          default:
+            return;
+        }
+
+        emit({
+          type: 'ClientUpdated',
+          payload: {
+            field: eventField,
+          },
+        });
+      });
       
       // Invalidate specific client query and clients list
       if (accountId) {
