@@ -344,12 +344,7 @@
       "updatedSuccess": "Client updated successfully",
       "updatedError": "Failed to update client",
       "deletedSuccess": "Client deleted successfully",
-      "deletedError": "Failed to delete client",
-      "avatar": {
-        "updating": "Updating profile picture...",
-        "success": "Profile picture updated successfully",
-        "error": "Failed to update profile picture"
-      }
+      "deletedError": "Failed to delete client"
     },
     "userProfile": {
       "nameRequired": "Name is required",
@@ -361,7 +356,12 @@
       "passwordRequirements": "Password must include uppercase, lowercase, number and special character",
       "passwordsDoNotMatch": "Passwords do not match",
       "passwordUpdatedSuccess": "Password updated successfully",
-      "passwordUpdatedError": "Failed to update password. Please try again."
+      "passwordUpdatedError": "Failed to update password. Please try again.",
+      "avatar": {
+        "updating": "Updating profile picture...",
+        "success": "Profile picture updated successfully",
+        "error": "Failed to update profile picture"
+      }
     }
   },
   "sessionView": {

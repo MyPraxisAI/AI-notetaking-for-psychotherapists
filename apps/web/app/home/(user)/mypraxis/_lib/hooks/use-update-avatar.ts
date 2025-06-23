@@ -14,7 +14,7 @@ import { useUser } from '@kit/supabase/hooks/use-user';
 const AVATARS_BUCKET = 'account_image';
 
 export function useUpdateAvatar() {
-  const { t } = useTranslation();
+  const { t } = useTranslation('mypraxis');
   const client = useSupabase();
   const { user } = useUserWorkspace();
   const queryClient = useQueryClient();
@@ -115,9 +115,9 @@ export function useUpdateAvatar() {
           return result;
         },
         {
-          loading: t('hooks.avatar.updating'),
-          success: t('hooks.avatar.success'),
-          error: (err) => `${t('hooks.avatar.error')}: ${err.message}`,
+          loading: t('hooks.userProfile.avatar.updating'),
+          success: t('hooks.userProfile.avatar.success'),
+          error: (err) => `${t('hooks.userProfile.avatar.error')}: ${err.message}`,
         }
       );
     },
