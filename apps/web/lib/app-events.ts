@@ -2,12 +2,12 @@ import type { ConsumerProvidedEventTypes } from '@kit/shared/events';
 
 type Method = 'email' | 'google';
 type ArtifactType =
-  | 'summary'
-  | 'client summary'
-  | 'transcript'
-  | 'conceptualization'
-  | 'bio'
-  | 'prepnote';
+  | 'session_therapist_summary'
+  | 'session_client_summary'
+  | 'client_prep_note'
+  | 'client_conceptualization'
+  | 'client_bio'
+  | 'session_speaker_roles_classification';
 
 export interface AppEvents extends ConsumerProvidedEventTypes {
   // Authentication
@@ -88,32 +88,16 @@ export interface AppEvents extends ConsumerProvidedEventTypes {
 
   // Artifact
   ArtifactViewed: {
-    artifact_id: string;
+    client_id: string;
+    session_id?: string;
     artifact_type: ArtifactType;
-    via: string;
   };
   ArtifactCopied: {
-    artifact_id: string;
-  };
-  ArtifactGenerationRequested: {
+    client_id: string;
+    session_id?: string;
     artifact_type: ArtifactType;
-    prompt_length: number;
-  };
-  ArtifactGenerationCompleted: {
-    artifact_id: string;
-    duration_ms: number;
-  };
-  ArtifactGenerationFailed: {
-    artifact_type: ArtifactType;
-    error_message: string;
   };
 
-  // Performance (internal metrics)
-  PerformanceMetric: {
-    metric: 'APIResponseTime' | 'TranscriptionTime' | string;
-    duration_ms: number;
-    endpoint?: string;
-  };
 
   // Settings
   SettingsViewed: Record<string, never>;

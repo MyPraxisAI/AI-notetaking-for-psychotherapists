@@ -7,6 +7,8 @@ import { Button } from '@kit/ui/button';
 import { Badge } from '@kit/ui/badge';
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useAppEvents } from '@kit/shared/events';
+import type { AppEvents } from '../../lib/app-events';
 
 interface ClientPrepNoteProps {
   clientId: string;
@@ -14,6 +16,7 @@ interface ClientPrepNoteProps {
 
 export function ClientPrepNote({ clientId }: ClientPrepNoteProps) {
   const { t } = useTranslation();
+  const { emit } = useAppEvents<AppEvents>();
   // Fetch the prep note for the client
   const { 
     data: prepNoteData, 
@@ -40,6 +43,15 @@ export function ClientPrepNote({ clientId }: ClientPrepNoteProps) {
     
     navigator.clipboard.writeText(text);
     setIsCopied(true);
+    
+    // Emit analytics event for artifact copy
+    emit({
+      type: 'ArtifactCopied',
+      payload: {
+        client_id: clientId,
+        artifact_type: 'client_prep_note'
+      },
+    });
     
     if (copyTimeout.current) {
       clearTimeout(copyTimeout.current);

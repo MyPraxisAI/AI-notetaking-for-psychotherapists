@@ -133,8 +133,6 @@ export default function Page() {
   const isNavVisibleRef = useRef(true)
   const isInitialNavVisibilitySet = useRef(false)
 
- 
-
   // Track newly created clients
   const [_newClientIds, setNewClientIds] = useState<Set<string>>(new Set())
 
@@ -180,6 +178,33 @@ export default function Page() {
       emit({
         type: 'ClientProfileViewed',
         payload: { client_id: selectedClient },
+      });
+    }
+
+    // Emit analytics event for client artifact views
+    if (item === "prep-note") {
+      emit({
+        type: 'ArtifactViewed',
+        payload: { 
+          client_id: selectedClient, 
+          artifact_type: 'client_prep_note'
+        },
+      });
+    } else if (item === "client-bio") {
+      emit({
+        type: 'ArtifactViewed',
+        payload: { 
+          client_id: selectedClient, 
+          artifact_type: 'client_bio'
+        },
+      });
+    } else if (item === "overview") {
+      emit({
+        type: 'ArtifactViewed',
+        payload: { 
+          client_id: selectedClient, 
+          artifact_type: 'client_conceptualization'
+        },
       });
     }
 

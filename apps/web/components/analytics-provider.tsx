@@ -102,16 +102,6 @@ const analyticsMapping: AnalyticsMapping<AppEvents> = {
   // Artifact
   ArtifactViewed: (event) => analytics.trackEvent(event.type, event.payload),
   ArtifactCopied: (event) => analytics.trackEvent(event.type, event.payload),
-  ArtifactGenerationRequested: (event) =>
-    analytics.trackEvent(event.type, event.payload),
-  ArtifactGenerationCompleted: (event) =>
-    analytics.trackEvent(event.type, event.payload),
-  ArtifactGenerationFailed: (event) =>
-    analytics.trackEvent(event.type, event.payload),
-
-  // Performance
-  PerformanceMetric: (event) =>
-    analytics.trackEvent(event.type, event.payload),
 
   // Settings
   SettingsViewed: (event) => analytics.trackEvent(event.type),

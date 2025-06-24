@@ -146,10 +146,17 @@ class GoogleAnalyticsService {
   async identify(userId: string, traits: Record<string, string> = {}) {
     await this.initialize();
 
+    // Set the user ID
     gtag('config', this.measurementId, {
       user_id: userId,
-      ...traits,
     });
+
+    // Set user properties (traits) separately
+    if (Object.keys(traits).length > 0) {
+      gtag('set', {
+        user_properties: traits,
+      });
+    }
   }
 
   private setLocalHostTrackingDisabled() {

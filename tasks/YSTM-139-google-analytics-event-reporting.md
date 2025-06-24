@@ -8,8 +8,8 @@ Implement Google Analytics event reporting throughout the application according 
 ## PRD Summary
 
 ### 1. Authentication Events
-- (x - part of Makerkit?) **UserSignedUp**: Account created (`method`)
-- (x - part of Makerkit?) **UserSignedIn**: Login success (`method`)
+- (x - part of Makerkit) **UserSignedUp**: Account created (`method`)
+- (x - part of Makerkit) **UserSignedIn**: Login success (`method`)
 - v **UserSignedOut**: User clicks sign-out
 - v **UserPasswordResetRequested**: "Forgot password" clicked
 - v **UserPasswordResetCompleted**: Password reset finished
@@ -38,14 +38,8 @@ Implement Google Analytics event reporting throughout the application according 
 - v **SettingsUpdated**: User updates a field in the settings (`field_changed`)
 
 ### 6. Artifact Events
-- **ArtifactViewed**: Artifact opened (`artifact_id`, `artifact_type`, `via`)
-- **ArtifactCopied**: User copies artifact text (`artifact_id`, `artifact_type`, `format`)
-- **ArtifactGenerationRequested**: Therapist clicks generate (`artifact_type`, `prompt_length`)
-- **ArtifactGenerationCompleted**: Generation done (`artifact_id`, `duration_ms`)
-- **ArtifactGenerationFailed**: Generation error (`artifact_type`, `error_message`)
-
-### 7. Performance (Internal Metrics)
-- **PerformanceMetric**: (`metric`, `duration_ms`, `endpoint`)
+- **ArtifactViewed**: Artifact opened (`client_id`, `session_id` (optional), `artifact_type`)
+- **ArtifactCopied**: User copies artifact text (`client_id`, `session_id` (optional), `artifact_type`)
 
 ### 8. Property Reference
 See PRD for full property definitions and types.
