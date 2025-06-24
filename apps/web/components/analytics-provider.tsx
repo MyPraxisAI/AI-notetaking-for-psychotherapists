@@ -117,6 +117,9 @@ const analyticsMapping: AnalyticsMapping<AppEvents> = {
   SettingsViewed: (event) => analytics.trackEvent(event.type),
   SettingsUpdated: (event) => analytics.trackEvent(event.type, event.payload),
 
+  // Help & Support
+  HelpRequested: (event) => analytics.trackEvent(event.type),
+
   // Default Makerkit events
   'user.signedIn': (event) => {
     const { userId, ...traits } = event.payload;

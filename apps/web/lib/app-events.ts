@@ -131,4 +131,7 @@ export interface AppEvents extends ConsumerProvidedEventTypes {
       | 'use24HourClock'
       | 'useUSDateFormat';
   };
+
+  // Help & Support
+  HelpRequested: Record<string, never>;
 } 

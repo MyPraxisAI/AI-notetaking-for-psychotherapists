@@ -107,11 +107,6 @@ export default function Page() {
   // Update sessions state when Supabase data changes
   useEffect(() => {
     if (sessionsData) {
-      emit({
-        type: 'SessionListViewed',
-        payload: { client_id: selectedClient },
-      });
-
       // Map Supabase SessionWithId to local Session type
       const mappedSessions = sessionsData.map(session => ({
         id: session.id,
@@ -138,24 +133,76 @@ export default function Page() {
   const isNavVisibleRef = useRef(true)
   const isInitialNavVisibilitySet = useRef(false)
 
-  useEffect(() => {
-    emit({ type: 'ClientListViewed', payload: {} });
-  }, [emit]);
+ 
 
   // Track newly created clients
   const [_newClientIds, setNewClientIds] = useState<Set<string>>(new Set())
+
+  // Centralized function to handle menu item selection with analytics
+  const selectMenuItem = useCallback((item: MenuItem) => {
+    // Emit analytics event for clients view
+    if (item === "clients") {
+      emit({ type: 'ClientListViewed', payload: {} });
+    }
+
+    setSelectedItem(item);
+    localStorage.setItem("selectedMenuItem", item);
+  }, [emit])
+
+  // Centralized function to handle client selection with analytics
+  const selectClient = useCallback((clientId: string) => {
+    emit({
+      type: 'SessionListViewed',
+      payload: { client_id: clientId },
+    });
+
+    setSelectedClient(setClientId(clientId));
+    localStorage.setItem("selectedClient", clientId);
+  }, [emit])
+
+  // Centralized function to handle session selection with analytics
+  const selectSession = useCallback((sessionId: string) => {
+    emit({
+      type: 'SessionDetailViewed',
+      payload: {
+        session_id: sessionId,
+        client_id: selectedClient,
+      },
+    });
+
+    setSelectedSessionState(sessionId);
+  }, [emit, selectedClient])
+
+  // Centralized function to handle detail item selection with analytics
+  const selectDetailItem = useCallback((item: DetailItem) => {
+    // Emit analytics event for profile view
+    if (item === "profile") {
+      emit({
+        type: 'ClientProfileViewed',
+        payload: { client_id: selectedClient },
+      });
+    }
+
+    setSelectedDetailItem(item)
+    localStorage.setItem("selectedDetailItem", item)
+
+    // If the item is a session ID, update selected session with analytics
+    if (sessions.find((s) => s.id === item)) {
+      selectSession(item)
+    }
+  }, [emit, selectedClient, sessions, selectSession])
 
   useEffect(() => {
     // Load selected menu item from localStorage
     const savedMenuItem = localStorage.getItem("selectedMenuItem")
     if (savedMenuItem && isMenuItem(savedMenuItem)) {
-      setSelectedItem(savedMenuItem as MenuItem)
+      selectMenuItem(savedMenuItem as MenuItem)
     }
 
     // Load selected detail item from localStorage
     const savedDetailItem = localStorage.getItem("selectedDetailItem")
     if (savedDetailItem && isDetailItem(savedDetailItem)) {
-      setSelectedDetailItem(savedDetailItem as DetailItem)
+      selectDetailItem(savedDetailItem as DetailItem)
     }
 
     // Handle client selection with validation against available clients
@@ -167,13 +214,12 @@ export default function Page() {
       
       if (savedClientExists) {
         // If saved client exists, select it
-        setSelectedClient(setClientId(savedClient!))
+        selectClient(savedClient!)
       } else {
         // If no valid saved client or no selection, select the first available client
         const initialClient = clients[0]
         if (initialClient) {
-          setSelectedClient(setClientId(initialClient.id))
-          localStorage.setItem("selectedClient", initialClient.id)
+          selectClient(initialClient.id)
           console.log(`Auto-selected first available client: ${initialClient.id}`)
         }
       }
@@ -198,7 +244,7 @@ export default function Page() {
         localStorage.removeItem("selectedSession") // Clear invalid data
       }
     }
-  }, [clients]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [clients, selectMenuItem, selectClient, selectSession, selectDetailItem]) // eslint-disable-line react-hooks/exhaustive-deps
   // We're intentionally omitting navigateToSession and isDetailItem from the deps array
   // because they're defined later in the file and would cause circular dependencies
 
@@ -251,6 +297,7 @@ export default function Page() {
     
     // Handle special menu items
     if (item === "help") {
+      emit({ type: 'HelpRequested', payload: {} });
       window.location.href = "mailto:hello@mypraxis.ai";
       return;
     }
@@ -261,8 +308,7 @@ export default function Page() {
       return;
     }
     
-    setSelectedItem(item);
-    localStorage.setItem("selectedMenuItem", item);
+    selectMenuItem(item);
     
     // Only hide client list on small screens when switching to a different item
     if (window.innerWidth <= 1430) {
@@ -271,17 +317,10 @@ export default function Page() {
   }
 
   const handleClientClick = (clientId: string) => {
-    emit({
-      type: 'ClientProfileViewed',
-      payload: { client_id: clientId },
-    });
-
-    setSelectedClient(setClientId(clientId))
-    localStorage.setItem("selectedClient", clientId)
+    selectClient(clientId)
     
     // Always set detail item to prep-note when selecting a client
-    setSelectedDetailItem("prep-note")
-    localStorage.setItem("selectedDetailItem", "prep-note")
+    selectDetailItem("prep-note")
     
     // Prefetch client artifacts to avoid loading flash
     prefetchClientArtifacts(clientId);
@@ -293,13 +332,7 @@ export default function Page() {
   }
 
   const handleDetailItemClick = (item: DetailItem) => {
-    setSelectedDetailItem(item)
-    localStorage.setItem("selectedDetailItem", item)
-
-    // If the item is a session ID, update selected session
-    if (sessions.find((s) => s.id === item)) {
-      setSelectedSessionState(item)
-    }
+    selectDetailItem(item)
   }
 
   const createClient = useCreateClient()
@@ -321,10 +354,8 @@ export default function Page() {
         setNewClientIds((prev) => new Set(prev).add(newClient.id))
 
         // Select the new client and switch to profile view
-        setSelectedClient(setClientId(newClient.id))
-        setSelectedDetailItem("profile")
-        localStorage.setItem("selectedClient", newClient.id)
-        localStorage.setItem("selectedDetailItem", "profile")
+        selectClient(newClient.id)
+        selectDetailItem("profile")
 
         // Close client list on small screens when new client button is clicked
         if (window.innerWidth <= 1050) {
@@ -349,14 +380,6 @@ export default function Page() {
    * Navigate to a specific session and optionally open a specific tab
    */
   const navigateToSession = async (sessionId: string, openTab?: 'transcript' | 'notes') => {
-    emit({
-      type: 'SessionDetailViewed',
-      payload: {
-        session_id: sessionId,
-        client_id: selectedClient,
-      },
-    });
-
     // Check if the session belongs to the currently selected client
     const sessionExists = sessions.some(s => s.id === sessionId);
 
@@ -369,10 +392,8 @@ export default function Page() {
       await new Promise(resolve => setTimeout(resolve, 300));
     }
     
-    // Update selected session state - this is what triggers the view change
-    setSelectedSessionState(sessionId);
-    setSelectedDetailItem(sessionId);
-    localStorage.setItem("selectedDetailItem", sessionId);
+    // Update selected session state and detail item - this triggers the view change and analytics
+    selectDetailItem(sessionId);
 
     // Save selected session to localStorage for UI state
     const sessionData = {
@@ -471,10 +492,8 @@ export default function Page() {
           if (remainingClients.length > 0) {
             const nextClient = remainingClients[0]
             if (nextClient) {
-              setSelectedClient(setClientId(nextClient.id))
-              localStorage.setItem("selectedClient", nextClient.id)
-              setSelectedDetailItem("prep-note")
-              localStorage.setItem("selectedDetailItem", "prep-note")
+              selectClient(nextClient.id)
+              selectDetailItem("prep-note")
             }
           }
         }
@@ -554,10 +573,9 @@ export default function Page() {
 
     // Navigate to next session or prep-note
     if (nextSessionId) {
-      setSelectedDetailItem(nextSessionId)
-      setSelectedSessionState(nextSessionId)
+      selectDetailItem(nextSessionId)
     } else {
-      setSelectedDetailItem("prep-note")
+      selectDetailItem("prep-note")
       setSelectedSessionState(null)
     }
   }

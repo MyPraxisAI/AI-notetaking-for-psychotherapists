@@ -8,35 +8,34 @@ Implement Google Analytics event reporting throughout the application according 
 ## PRD Summary
 
 ### 1. Authentication Events
-- **UserSignedUp**: Account created (`method`)
-- **UserSignedIn**: Login success (`method`)
-- **UserSignedOut**: User clicks sign-out
-- **UserPasswordResetRequested**: "Forgot password" clicked
-- **UserPasswordResetCompleted**: Password reset finished
-- **UserSessionExpired**: Token refresh fails (`inactivityMinutes`)
+- (x - part of Makerkit?) **UserSignedUp**: Account created (`method`)
+- (x - part of Makerkit?) **UserSignedIn**: Login success (`method`)
+- v **UserSignedOut**: User clicks sign-out
+- v **UserPasswordResetRequested**: "Forgot password" clicked
+- v **UserPasswordResetCompleted**: Password reset finished
 
 ### 2. Navigation Events
-- **ScreenViewed**: Any screen rendered (`screen_name`, `referrer_screen`, `via`)
-- **ClientListViewed**: Therapist opens client list
-- **ClientProfileViewed**: Therapist opens profile (`client_id`)
-- **SessionListViewed**: Therapist lists sessions (`client_id` optional)
-- **SessionDetailViewed**: Therapist opens session (`session_id`, `client_id`)
+- v **ScreenViewed**: Any screen rendered (`screen_name`, `referrer_screen`, `via`)
+- v **ClientListViewed**: Therapist opens client list 
+- v **ClientProfileViewed**: Therapist opens profile (`client_id`)
+- v **SessionListViewed**: Therapist lists sessions (`client_id` optional)
+- v **SessionDetailViewed**: Therapist opens session (`session_id`, `client_id`)
 
 ### 3. Client Management Events
-- **ClientCreated**: Therapist adds client (`client_id`, `source`)
-- **ClientUpdated**: Profile edited (`client_id`, `fields_changed`)
+- v **ClientCreated**: Therapist adds client (`client_id`, `source`)
+- v **ClientUpdated**: Profile edited (`client_id`, `fields_changed`)
 
 ### 4. Recording Events
-- **RecordingStarted**: User starts a new recording (`client_id`)
-- **RecordingPaused**: User pauses a recording (`client_id`)
-- **RecordingResumed**: User resumes a recording (`client_id`)
-- **RecordingCompleted**: A recording is successfully completed (`session_id`, `client_id`, `duration_minutes`)
-- **RecordingAborted**: User abandons a recording in progress (`client_id`)
-- **RecordingFileImported**: User imports an audio file for a session (`session_id`, `client_id`)
+- v **RecordingStarted**: User starts a new recording (`client_id`)
+- v **RecordingPaused**: User pauses a recording (`client_id`)
+- v **RecordingResumed**: User resumes a recording (`client_id`)
+- v **RecordingCompleted**: A recording is successfully completed (`session_id`, `client_id`, `duration_minutes`)
+- v **RecordingAborted**: User abandons a recording in progress (`client_id`)
+- v **RecordingFileImported**: User imports an audio file for a session (`session_id`, `client_id`)
 
 ### 5. Settings Events
-- **SettingsViewed**: User views the settings page
-- **SettingsUpdated**: User updates a field in the settings (`field_changed`)
+- v **SettingsViewed**: User views the settings page
+- v **SettingsUpdated**: User updates a field in the settings (`field_changed`)
 
 ### 6. Artifact Events
 - **ArtifactViewed**: Artifact opened (`artifact_id`, `artifact_type`, `via`)
