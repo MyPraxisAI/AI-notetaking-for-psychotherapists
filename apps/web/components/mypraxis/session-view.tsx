@@ -4,6 +4,8 @@ import "../../styles/markdown.css"
 import { useEffect, useRef, useState, useTransition } from "react"
 import { useTranslation } from "react-i18next"
 import { useQueryClient } from "@tanstack/react-query"
+import { useAppEvents } from '@kit/shared/events'
+import type { AppEvents } from '../../lib/app-events'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@kit/ui/tabs"
 import { SessionMetadata } from "../../types/session"
 import { Textarea } from "@kit/ui/textarea"
@@ -149,6 +151,7 @@ interface SessionViewProps {
 
 export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: SessionViewProps) {
   const { t } = useTranslation();
+  const { emit } = useAppEvents<AppEvents>();
   const [userNote, setUserNote] = useState("")
   const [isEditing, setIsEditing] = useState(false)
   const [noteHeight, setNoteHeight] = useState<number>(150)
@@ -177,6 +180,9 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
 
   // Use the session hook from Supabase to load session data
   const { data: sessionData, isLoading: isLoadingSession } = useSession(sessionId)
+  
+  // Track if we've emitted the initial therapist summary view event
+  const [hasEmittedInitialView, setHasEmittedInitialView] = useState(false)
   
   // Always fetch both summaries regardless of active tab
   const { 
@@ -281,6 +287,36 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
       setIsLoadingTherapistSummary(true)
     }
   }, [therapistSummaryData])
+
+  // Emit initial ArtifactViewed event for default therapist summary
+  useEffect(() => {
+    if (
+      !hasEmittedInitialView &&
+      activeTab === "summary" &&
+      summaryView === "therapist" &&
+      therapistSummary &&
+      !isLoadingTherapistSummary
+    ) {
+      emit({
+        type: 'ArtifactViewed',
+        payload: {
+          client_id: clientId,
+          session_id: sessionId,
+          artifact_type: 'session_therapist_summary'
+        },
+      });
+      setHasEmittedInitialView(true);
+    }
+  }, [
+    hasEmittedInitialView,
+    activeTab,
+    summaryView,
+    therapistSummary,
+    isLoadingTherapistSummary,
+    emit,
+    clientId,
+    sessionId
+  ])
   
   useEffect(() => {
     if (clientSummaryData) {
@@ -523,6 +559,18 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
     if (!text) return;
     
     navigator.clipboard.writeText(text)
+    
+    // Emit analytics event for artifact copy (only for summaries, not notes)
+    if (type === 'therapist' || type === 'client') {
+      emit({
+        type: 'ArtifactCopied',
+        payload: {
+          client_id: clientId,
+          session_id: sessionId,
+          artifact_type: type === 'therapist' ? 'session_therapist_summary' : 'session_client_summary'
+        },
+      });
+    }
     
     if (type === 'client') {
       setIsClientSummaryCopied(true)
@@ -795,7 +843,19 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
             <div className="space-y-3">
               <Tabs
                 value={summaryView}
-                onValueChange={(v) => setSummaryView(v as "therapist" | "client")}
+                onValueChange={(v) => {
+                  setSummaryView(v as "therapist" | "client");
+                  
+                  // Emit analytics event for artifact view
+                  emit({
+                    type: 'ArtifactViewed',
+                    payload: {
+                      client_id: clientId,
+                      session_id: sessionId,
+                      artifact_type: v === "therapist" ? 'session_therapist_summary' : 'session_client_summary'
+                    },
+                  });
+                }}
                 className="w-full"
               >
                 <TabsList className="w-full justify-start border-b rounded-none h-auto p-0 bg-transparent">
