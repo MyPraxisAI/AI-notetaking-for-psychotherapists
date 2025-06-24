@@ -25,7 +25,14 @@ Implement Google Analytics event reporting throughout the application according 
 - v **ClientCreated**: Therapist adds client (`client_id`, `source`)
 - v **ClientUpdated**: Profile edited (`client_id`, `fields_changed`)
 
-### 4. Recording Events
+### 4. Session Management Events
+- v **SessionDeleted**: User deletes a session (`session_id`)
+- **SessionNoteUpdated**: User updates session notes (`session_id`, `change_size_chars`)
+- v **SessionTranscriptViewed**: User views session transcript (`session_id`, `client_id`)
+- **SessionTranscriptCopied**: User copies session transcript (`session_id`, `client_id`)
+- v **SessionSummaryViewed**: User views session summary tab (`session_id`, `client_id`)
+
+### 5. Recording Events
 - v **RecordingStarted**: User starts a new recording (`client_id`)
 - v **RecordingPaused**: User pauses a recording (`client_id`)
 - v **RecordingResumed**: User resumes a recording (`client_id`)
@@ -33,13 +40,13 @@ Implement Google Analytics event reporting throughout the application according 
 - v **RecordingAborted**: User abandons a recording in progress (`client_id`)
 - v **RecordingFileImported**: User imports an audio file for a session (`session_id`, `client_id`)
 
-### 5. Settings Events
+### 6. Settings Events
 - v **SettingsViewed**: User views the settings page
 - v **SettingsUpdated**: User updates a field in the settings (`field_changed`)
 
-### 6. Artifact Events
-- **ArtifactViewed**: Artifact opened (`client_id`, `session_id` (optional), `artifact_type`)
-- **ArtifactCopied**: User copies artifact text (`client_id`, `session_id` (optional), `artifact_type`)
+### 7. Artifact Events
+- v **ArtifactViewed**: Artifact opened (`client_id`, `session_id` (optional), `artifact_type`)
+- v **ArtifactCopied**: User copies artifact text (`client_id`, `session_id` (optional), `artifact_type`)
 
 ### 8. Property Reference
 See PRD for full property definitions and types.

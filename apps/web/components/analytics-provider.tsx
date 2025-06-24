@@ -52,18 +52,18 @@ function useAnalyticsMapping<T extends ConsumerProvidedEventTypes>(
 const analyticsMapping: AnalyticsMapping<AppEvents> = {
   // Auth
   UserSignedIn: (event) => {
-    const { userId, ...traits } = event.payload as { userId: string };
-
-    if (userId) {
-      return analytics.identify(userId, traits);
-    }
+    // Our custom UserSignedIn event only has method, not userId
+    // User identification happens through the built-in 'user.signedIn' event
+    return analytics.trackEvent(event.type, event.payload);
   },
   UserSignedUp: (event) => analytics.trackEvent(event.type, event.payload),
   UserSignedOut: (event) => analytics.trackEvent(event.type),
   UserPasswordResetRequested: (event) => analytics.trackEvent(event.type),
   UserPasswordResetCompleted: (event) => analytics.trackEvent(event.type),
   UserSessionExpired: (event) =>
-    analytics.trackEvent(event.type, event.payload),
+    analytics.trackEvent(event.type, {
+      inactivityMinutes: event.payload.inactivityMinutes.toString(),
+    }),
 
   // Navigation
   ScreenViewed: (event) => analytics.trackEvent(event.type, event.payload),
@@ -81,8 +81,16 @@ const analyticsMapping: AnalyticsMapping<AppEvents> = {
 
   // Session Management
   SessionDeleted: (event) => analytics.trackEvent(event.type, event.payload),
-  SessionNoteAdded: (event) => analytics.trackEvent(event.type, event.payload),
   SessionNoteUpdated: (event) =>
+    analytics.trackEvent(event.type, {
+      session_id: event.payload.session_id,
+      change_size_chars: event.payload.change_size_chars.toString(),
+    }),
+  SessionTranscriptViewed: (event) =>
+    analytics.trackEvent(event.type, event.payload),
+  SessionTranscriptCopied: (event) =>
+    analytics.trackEvent(event.type, event.payload),
+  SessionSummaryViewed: (event) =>
     analytics.trackEvent(event.type, event.payload),
 
   // Recording
@@ -93,7 +101,11 @@ const analyticsMapping: AnalyticsMapping<AppEvents> = {
   RecordingResumed: (event) =>
     analytics.trackEvent(event.type, event.payload),
   RecordingCompleted: (event) =>
-    analytics.trackEvent(event.type, event.payload),
+    analytics.trackEvent(event.type, {
+      session_id: event.payload.session_id,
+      client_id: event.payload.client_id,
+      duration_minutes: event.payload.duration_minutes.toString(),
+    }),
   RecordingAborted: (event) =>
     analytics.trackEvent(event.type, event.payload),
   RecordingFileImported: (event) =>

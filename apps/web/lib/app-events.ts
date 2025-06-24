@@ -52,15 +52,25 @@ export interface AppEvents extends ConsumerProvidedEventTypes {
 
   // Session Management
   SessionDeleted: {
+    client_id: string;
     session_id: string;
-  };
-  SessionNoteAdded: {
-    session_id: string;
-    note_length_chars: number;
   };
   SessionNoteUpdated: {
+    client_id: string;
     session_id: string;
     change_size_chars: number;
+  };
+  SessionTranscriptViewed: {
+    session_id: string;
+    client_id: string;
+  };
+  SessionTranscriptCopied: {
+    session_id: string;
+    client_id: string;
+  };
+  SessionSummaryViewed: {
+    session_id: string;
+    client_id: string;
   };
 
   // Recording

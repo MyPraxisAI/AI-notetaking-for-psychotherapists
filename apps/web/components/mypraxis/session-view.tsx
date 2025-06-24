@@ -171,7 +171,31 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
   const [session, setSession] = useState<Session | null>(null)
   const [isEditingTitle, setIsEditingTitle] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
-  const [activeTab, setActiveTab] = useState<"summary" | "transcript">("summary")
+  const [activeTab, setActiveTabState] = useState<"summary" | "transcript">("summary")
+  
+  // Wrapper function to emit analytics when tab changes
+  const setActiveTab = (tab: "summary" | "transcript") => {
+    setActiveTabState(tab);
+    
+    // Emit analytics events when tabs are viewed
+    if (tab === "transcript") {
+      emit({
+        type: 'SessionTranscriptViewed',
+        payload: {
+          session_id: sessionId,
+          client_id: clientId,
+        },
+      });
+    } else if (tab === "summary") {
+      emit({
+        type: 'SessionSummaryViewed',
+        payload: {
+          session_id: sessionId,
+          client_id: clientId,
+        },
+      });
+    }
+  };
   const [isTitleSaved, setIsTitleSaved] = useState(false)
   const _saveTimeout = useRef<NodeJS.Timeout | undefined>(undefined)
   const copyTimeout = useRef<NodeJS.Timeout | undefined>(undefined)
@@ -605,6 +629,15 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
   const handleDeleteSession = () => {
     deleteSession.mutate({ sessionId, clientId }, {
       onSuccess: () => {
+        // Emit analytics event for session deletion
+        emit({
+          type: 'SessionDeleted',
+          payload: {
+            session_id: sessionId,
+            client_id: clientId,
+          },
+        });
+
         // Clear selected session if it's the current one
         const selectedSession = localStorage.getItem("selectedSession")
         if (selectedSession) {
