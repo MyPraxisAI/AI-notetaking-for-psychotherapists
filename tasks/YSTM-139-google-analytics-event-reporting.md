@@ -27,7 +27,7 @@ Implement Google Analytics event reporting throughout the application according 
 
 ### 4. Session Management Events
 - v **SessionDeleted**: User deletes a session (`session_id`)
-- **SessionNoteUpdated**: User updates session notes (`session_id`, `change_size_chars`)
+- v **SessionNoteUpdated**: User updates session notes (`session_id`, `change_size_chars`)
 - v **SessionTranscriptViewed**: User views session transcript (`session_id`, `client_id`)
 - **SessionTranscriptCopied**: User copies session transcript (`session_id`, `client_id`)
 - v **SessionSummaryViewed**: User views session summary tab (`session_id`, `client_id`)

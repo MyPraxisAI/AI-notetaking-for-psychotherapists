@@ -524,6 +524,9 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
         return;
       }
       
+      // Calculate the change in character count for analytics
+      const changeSizeChars = note.length - currentNote.length;
+      
       // Optimistically update the UI
       const previousSession = { ...session };
       
@@ -548,6 +551,16 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
           
           // Update the session with the returned data
           handleSessionUpdate(result, session);
+          
+          // Emit analytics event for session note update
+          emit({
+            type: 'SessionNoteUpdated',
+            payload: {
+              session_id: sessionId,
+              client_id: clientId,
+              change_size_chars: changeSizeChars,
+            },
+          });
           
           // Success handling
           toast.success("Note saved");
