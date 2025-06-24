@@ -92,6 +92,8 @@ const analyticsMapping: AnalyticsMapping<AppEvents> = {
     analytics.trackEvent(event.type, event.payload),
   SessionSummaryViewed: (event) =>
     analytics.trackEvent(event.type, event.payload),
+  SessionNoteCopied: (event) =>
+    analytics.trackEvent(event.type, event.payload),
 
   // Recording
   RecordingStarted: (event) =>
@@ -124,9 +126,14 @@ const analyticsMapping: AnalyticsMapping<AppEvents> = {
 
   // Default Makerkit events
   'user.signedIn': (event) => {
-    const { userId, ...traits } = event.payload;
+    const { userId, email, ...rawTraits } = event.payload as { userId: string; email?: string; [key: string]: string | undefined };
 
     if (userId) {
+      // Filter out email and other PII, and remove undefined values to comply with Google Analytics policies
+      const traits = Object.fromEntries(
+        Object.entries(rawTraits).filter(([_, value]) => value !== undefined)
+      ) as Record<string, string>;
+      
       return analytics.identify(userId, traits);
     }
   },

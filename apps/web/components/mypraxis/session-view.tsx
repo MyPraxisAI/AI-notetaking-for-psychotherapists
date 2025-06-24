@@ -37,6 +37,8 @@ interface TranscriptContentProps {
       metadata: unknown;
     } 
   }, currentSession: Session) => void
+  handleCopyText: (text: string | undefined, type: 'therapist' | 'client' | 'note' | 'transcript') => void
+  isTranscriptCopied: boolean
 }
 
 /**
@@ -45,7 +47,7 @@ interface TranscriptContentProps {
  * 2. Recording is processing - show "Transcription in progress..."
  * 3. No transcript or recording - show empty state
  */
-function TranscriptContent({ clientId, sessionId, session, handleSessionUpdate }: TranscriptContentProps) {
+function TranscriptContent({ clientId, sessionId, session, handleSessionUpdate, handleCopyText, isTranscriptCopied }: TranscriptContentProps) {
   const { t } = useTranslation();
   
   // Disable polling if we already have a transcript
@@ -94,7 +96,7 @@ function TranscriptContent({ clientId, sessionId, session, handleSessionUpdate }
   // If we have a transcript, show it
   if (session?.transcript) {
     return (
-      <div className="relative">
+      <div className="relative group">
         <div 
           className="rounded-lg bg-[#FFF9E8] px-6 pb-3 pt-3.5 text-[14px] leading-[1.6]" 
           data-test="session-transcript-value"
@@ -102,6 +104,17 @@ function TranscriptContent({ clientId, sessionId, session, handleSessionUpdate }
           <ReactMarkdown>
             {session.transcript.content}
           </ReactMarkdown>
+        </div>
+        <div className="absolute right-2 top-2 flex gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6 hover:bg-transparent"
+            onClick={() => handleCopyText(session?.transcript?.content, 'transcript')}
+            data-test="copy-transcript-button"
+          >
+            {isTranscriptCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+          </Button>
         </div>
       </div>
     )
@@ -161,6 +174,7 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
   const [isCopied, setIsCopied] = useState(false)
   const [isClientSummaryCopied, setIsClientSummaryCopied] = useState(false)
   const [isNoteCopied, setIsNoteCopied] = useState(false)
+  const [isTranscriptCopied, setIsTranscriptCopied] = useState(false)
   const [summaryView, setSummaryView] = useState<"therapist" | "client">("therapist")
   const [therapistSummary, setTherapistSummary] = useState<string | null>(null)
   const [clientSummary, setClientSummary] = useState<string | null>(null)
@@ -592,7 +606,7 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
     }
   }
 
-  const handleCopyText = (text: string | undefined, type: 'therapist' | 'client' | 'note' = 'therapist') => {
+  const handleCopyText = (text: string | undefined, type: 'therapist' | 'client' | 'note' | 'transcript' = 'therapist') => {
     if (!text) return;
     
     navigator.clipboard.writeText(text)
@@ -605,6 +619,24 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
           client_id: clientId,
           session_id: sessionId,
           artifact_type: type === 'therapist' ? 'session_therapist_summary' : 'session_client_summary'
+        },
+      });
+    } else if (type === 'transcript') {
+      // Emit analytics event for transcript copy
+      emit({
+        type: 'SessionTranscriptCopied',
+        payload: {
+          session_id: sessionId,
+          client_id: clientId,
+        },
+      });
+    } else if (type === 'note') {
+      // Emit analytics event for note copy
+      emit({
+        type: 'SessionNoteCopied',
+        payload: {
+          session_id: sessionId,
+          client_id: clientId,
         },
       });
     }
@@ -624,6 +656,14 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
       }
       titleSaveTimeout.current = setTimeout(() => {
         setIsNoteCopied(false)
+      }, 2000)
+    } else if (type === 'transcript') {
+      setIsTranscriptCopied(true)
+      if (copyTimeout.current) {
+        clearTimeout(copyTimeout.current)
+      }
+      copyTimeout.current = setTimeout(() => {
+        setIsTranscriptCopied(false)
       }, 2000)
     } else {
       setIsCopied(true)
@@ -1021,6 +1061,8 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
             sessionId={sessionId}
             session={session}
             handleSessionUpdate={handleSessionUpdate}
+            handleCopyText={handleCopyText}
+            isTranscriptCopied={isTranscriptCopied}
           />
         </TabsContent>
       </Tabs>

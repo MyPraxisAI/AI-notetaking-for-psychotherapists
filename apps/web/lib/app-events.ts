@@ -72,6 +72,10 @@ export interface AppEvents extends ConsumerProvidedEventTypes {
     session_id: string;
     client_id: string;
   };
+  SessionNoteCopied: {
+    session_id: string;
+    client_id: string;
+  };
 
   // Recording
   RecordingStarted: {

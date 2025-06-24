@@ -138,74 +138,85 @@ export default function Page() {
 
   // Centralized function to handle menu item selection with analytics
   const selectMenuItem = useCallback((item: MenuItem) => {
-    // Emit analytics event for clients view
-    if (item === "clients") {
-      emit({ type: 'ClientListViewed', payload: {} });
+    // Only emit analytics event if the selected item is actually changing
+    if (item !== selectedItem) {
+      if (item === "clients") {
+        emit({ type: 'ClientListViewed', payload: {} });
+      }
     }
 
     setSelectedItem(item);
     localStorage.setItem("selectedMenuItem", item);
-  }, [emit])
+  }, [emit, selectedItem])
 
   // Centralized function to handle client selection with analytics
   const selectClient = useCallback((clientId: string) => {
-    emit({
-      type: 'SessionListViewed',
-      payload: { client_id: clientId },
-    });
-
-    setSelectedClient(setClientId(clientId));
-    localStorage.setItem("selectedClient", clientId);
-  }, [emit])
-
-  // Centralized function to handle session selection with analytics
-  const selectSession = useCallback((sessionId: string) => {
-    emit({
-      type: 'SessionDetailViewed',
-      payload: {
-        session_id: sessionId,
-        client_id: selectedClient,
-      },
-    });
-
-    setSelectedSessionState(sessionId);
-  }, [emit, selectedClient])
-
-  // Centralized function to handle detail item selection with analytics
-  const selectDetailItem = useCallback((item: DetailItem) => {
-    // Emit analytics event for profile view
-    if (item === "profile") {
+    // Only emit analytics event if the selected client is actually changing
+    if (clientId !== selectedClient) {
       emit({
-        type: 'ClientProfileViewed',
-        payload: { client_id: selectedClient },
+        type: 'SessionListViewed',
+        payload: { client_id: clientId },
       });
     }
 
-    // Emit analytics event for client artifact views
-    if (item === "prep-note") {
+    setSelectedClient(setClientId(clientId));
+    localStorage.setItem("selectedClient", clientId);
+  }, [emit, selectedClient])
+
+  // Centralized function to handle session selection with analytics
+  const selectSession = useCallback((sessionId: string) => {
+    // Only emit analytics event if the selected session is actually changing
+    if (sessionId !== _selectedSession) {
       emit({
-        type: 'ArtifactViewed',
-        payload: { 
-          client_id: selectedClient, 
-          artifact_type: 'client_prep_note'
+        type: 'SessionDetailViewed',
+        payload: {
+          session_id: sessionId,
+          client_id: selectedClient,
         },
       });
-    } else if (item === "client-bio") {
-      emit({
-        type: 'ArtifactViewed',
-        payload: { 
-          client_id: selectedClient, 
-          artifact_type: 'client_bio'
-        },
-      });
-    } else if (item === "overview") {
-      emit({
-        type: 'ArtifactViewed',
-        payload: { 
-          client_id: selectedClient, 
-          artifact_type: 'client_conceptualization'
-        },
-      });
+    }
+
+    setSelectedSessionState(sessionId);
+  }, [emit, selectedClient, _selectedSession])
+
+  // Centralized function to handle detail item selection with analytics
+  const selectDetailItem = useCallback((item: DetailItem) => {
+    // Only emit analytics events if the selected detail item is actually changing
+    if (item !== selectedDetailItem) {
+      // Emit analytics event for profile view
+      if (item === "profile") {
+        emit({
+          type: 'ClientProfileViewed',
+          payload: { client_id: selectedClient },
+        });
+      }
+
+      // Emit analytics event for client artifact views
+      if (item === "prep-note") {
+        emit({
+          type: 'ArtifactViewed',
+          payload: { 
+            client_id: selectedClient, 
+            artifact_type: 'client_prep_note'
+          },
+        });
+      } else if (item === "client-bio") {
+        emit({
+          type: 'ArtifactViewed',
+          payload: { 
+            client_id: selectedClient, 
+            artifact_type: 'client_bio'
+          },
+        });
+      } else if (item === "overview") {
+        emit({
+          type: 'ArtifactViewed',
+          payload: { 
+            client_id: selectedClient, 
+            artifact_type: 'client_conceptualization'
+          },
+        });
+      }
     }
 
     setSelectedDetailItem(item)
@@ -215,7 +226,7 @@ export default function Page() {
     if (sessions.find((s) => s.id === item)) {
       selectSession(item)
     }
-  }, [emit, selectedClient, sessions, selectSession])
+  }, [emit, selectedClient, selectedDetailItem, sessions, selectSession])
 
   useEffect(() => {
     // Load selected menu item from localStorage
