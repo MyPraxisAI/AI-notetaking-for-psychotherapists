@@ -46,7 +46,6 @@ export function useUpdateUserName() {
       window.dispatchEvent(new CustomEvent(NAME_UPDATED_EVENT, {
         detail: { fullName: displayName }
       }));
-      toast.success(t('hooks.userProfile.nameUpdatedSuccess'));
     },
     onError: (error) => {
       console.error('Error updating name:', error);

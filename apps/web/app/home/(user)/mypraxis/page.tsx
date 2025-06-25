@@ -149,20 +149,6 @@ export default function Page() {
     localStorage.setItem("selectedMenuItem", item);
   }, [emit, selectedItem])
 
-  // Centralized function to handle client selection with analytics
-  const selectClient = useCallback((clientId: string) => {
-    // Only emit analytics event if the selected client is actually changing
-    if (clientId !== selectedClient) {
-      emit({
-        type: 'SessionListViewed',
-        payload: { client_id: clientId },
-      });
-    }
-
-    setSelectedClient(setClientId(clientId));
-    localStorage.setItem("selectedClient", clientId);
-  }, [emit, selectedClient])
-
   // Centralized function to handle session selection with analytics
   const selectSession = useCallback((sessionId: string) => {
     // Only emit analytics event if the selected session is actually changing
@@ -180,9 +166,9 @@ export default function Page() {
   }, [emit, selectedClient, _selectedSession])
 
   // Centralized function to handle detail item selection with analytics
-  const selectDetailItem = useCallback((item: DetailItem) => {
-    // Only emit analytics events if the selected detail item is actually changing
-    if (item !== selectedDetailItem) {
+  const selectDetailItem = useCallback((item: DetailItem, forceEmit = false) => {
+    // Emit analytics events if the selected detail item is changing OR if forced
+    if (item !== selectedDetailItem || forceEmit) {
       // Emit analytics event for profile view
       if (item === "profile") {
         emit({
@@ -227,6 +213,27 @@ export default function Page() {
       selectSession(item)
     }
   }, [emit, selectedClient, selectedDetailItem, sessions, selectSession])
+
+  // Centralized function to handle client selection with analytics
+  const selectClient = useCallback((clientId: string) => {
+    const isClientChanging = clientId !== selectedClient;
+    
+    setSelectedClient(setClientId(clientId));
+    localStorage.setItem("selectedClient", clientId);
+    
+    if (isClientChanging) {
+      emit({
+        type: 'SessionListViewed',
+        payload: { client_id: clientId },
+      });
+
+      // When client changes, re-emit analytics for the current detail item with the new client
+      if (selectedDetailItem) {
+        selectDetailItem(selectedDetailItem, true);
+      }
+    }
+
+  }, [emit, selectedClient, selectedDetailItem, selectDetailItem])
 
   useEffect(() => {
     // Load selected menu item from localStorage

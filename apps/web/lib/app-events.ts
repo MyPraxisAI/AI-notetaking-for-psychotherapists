@@ -35,7 +35,7 @@ export interface AppEvents extends ConsumerProvidedEventTypes {
     client_id: string;
   };
   SessionListViewed: {
-    client_id?: string;
+    client_id: string;
   };
   SessionDetailViewed: {
     session_id: string;
