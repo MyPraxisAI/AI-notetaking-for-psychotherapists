@@ -1094,7 +1094,7 @@ export function RecordingModal({
                     type="file" 
                     ref={fileInputRef}
                     className="hidden" 
-                    accept="audio/mp3,audio/mpeg,.mp3,audio/wav,audio/vnd.wav,.wav,audio/mp4,.m4a,.mp4,audio/aac,.aac,audio/flac,.flac,audio/ogg,.ogg,audio/aiff,audio/x-aiff,.aiff,audio/webm,.webm,audio/midi,audio/x-midi,.midi,.mid,audio/x-ms-wma,.wma"
+                    accept="audio/mp3,audio/mpeg,.mp3,audio/wav,audio/vnd.wav,.wav,audio/mp4,.m4a,.mp4,audio/aac,.aac,audio/flac,.flac,audio/ogg,.ogg,audio/aiff,audio/x-aiff,.aiff,audio/webm,.webm,audio/x-ms-wma,.wma"
                     onChange={handleFileSelected}
                   />
                 </div>

@@ -9,6 +9,7 @@ export function remapUncommonExtensions(extension: string): string {
     '.weba': '.webm', // WebM Audio should use .webm for FFmpeg
     '.mpga': '.mp3', // MPEG-1 Audio Layer I/II should use .mp3 for FFmpeg
     '.aif': '.aiff', // AIFF audio should use .aiff for FFmpeg
+    '.oga': '.ogg', // Ogg Audio should use .ogg for FFmpeg
   };
 
   return extensionMap[extension] || extension;
