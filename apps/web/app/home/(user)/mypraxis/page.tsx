@@ -136,6 +136,9 @@ export default function Page() {
   // Track newly created clients
   const [_newClientIds, setNewClientIds] = useState<Set<string>>(new Set())
 
+  // Add a ref to ensure restoration only happens once
+  const hasRestored = useRef(false);
+
   // Centralized function to handle menu item selection with analytics
   const selectMenuItem = useCallback((item: MenuItem) => {
     // Only emit analytics event if the selected item is actually changing
@@ -236,20 +239,17 @@ export default function Page() {
   }, [emit, selectedClient, selectedDetailItem, selectDetailItem])
 
   useEffect(() => {
+    if (hasRestored.current) return;
     // Load selected menu item from localStorage
     const savedMenuItem = localStorage.getItem("selectedMenuItem")
     if (savedMenuItem && isMenuItem(savedMenuItem)) {
       selectMenuItem(savedMenuItem as MenuItem)
     }
 
-    // Load selected detail item from localStorage
-    const savedDetailItem = localStorage.getItem("selectedDetailItem")
-    if (savedDetailItem && isDetailItem(savedDetailItem)) {
-      selectDetailItem(savedDetailItem as DetailItem)
-    }
-
     // Handle client selection with validation against available clients
     if (clients.length > 0) {
+      hasRestored.current = true;
+
       const savedClient = localStorage.getItem("selectedClient")
       
       // Check if the saved client exists in the available clients
@@ -267,25 +267,11 @@ export default function Page() {
         }
       }
     }
-    
-    // Load selected session from localStorage
-    const savedSession = localStorage.getItem("selectedSession")
-    if (savedSession) {
-      try {
-        const parsedSession = JSON.parse(savedSession)
-        if (parsedSession && parsedSession.clientId && parsedSession.sessionId) {
-          // Check if the client exists in our list
-          const clientExists = clients.some(client => client.id === parsedSession.clientId)
-          if (clientExists) {
-            // Navigate to the session (this will also handle setting the detail item)
-            navigateToSession(parsedSession.sessionId)
-            console.log(`Restored session from localStorage: ${parsedSession.sessionId}`)
-          }
-        }
-      } catch (error) {
-        console.error("Error parsing saved session:", error)
-        localStorage.removeItem("selectedSession") // Clear invalid data
-      }
+
+    // Load selected detail item from localStorage
+    const savedDetailItem = localStorage.getItem("selectedDetailItem")
+    if (savedDetailItem) {
+      selectDetailItem(savedDetailItem as DetailItem)
     }
   }, [clients, selectMenuItem, selectClient, selectSession, selectDetailItem]) // eslint-disable-line react-hooks/exhaustive-deps
   // We're intentionally omitting navigateToSession and isDetailItem from the deps array
@@ -295,8 +281,6 @@ export default function Page() {
     const handleSessionTitleChange = (event: CustomEvent) => {
       const { clientId: _clientId, sessionId, title } = event.detail
       setSessions((prev) => prev.map((s) => (s.id === sessionId ? { ...s, title } : s)))
-
-      // No need to update demo sessions anymore as they've been removed
     }
 
     window.addEventListener("sessionTitleChanged", handleSessionTitleChange as EventListener)
@@ -313,7 +297,6 @@ export default function Page() {
   const isDetailItem = (item: string): item is DetailItem => {
     return (
       ["profile", "prep-note", "overview", "client-bio"].includes(item) ||
-      /^\d{4}-\d{2}-\d{2}$/.test(item) || // Match date format YYYY-MM-DD
       sessions.some((session) => session.id === item) // Match session IDs
     )
   }
@@ -684,14 +667,6 @@ export default function Page() {
       )
     }
 
-    // Check if the selected detail item is a demo date
-    if (selectedDetailItem.match(/^\d{4}-\d{2}-\d{2}$/)) {
-      // Find the client to check if it's a demo client
-      const client = clients.find(c => c.id === selectedClient)
-      return <SessionView clientId={selectedClient} sessionId={selectedDetailItem} isDemo={client?.demo || false} />
-    }
-
-
     // Using static imports with stable keys to prevent remounting
     // Each component gets a stable key based on the client ID, not the selected tab
     return (
@@ -793,6 +768,18 @@ export default function Page() {
     }
     // For mandatory mode, no state to update since we're using settings directly
   }, [isTestOnboardingOpen])
+
+  useEffect(() => {
+    // If selectedDetailItem is a session ID and exists in sessions, ensure it is selected
+    // This is for restoring the session view after sessions were loaded
+    if (
+      selectedDetailItem &&
+      sessions.some((session) => session.id === selectedDetailItem)
+    ) {
+
+      selectDetailItem(selectedDetailItem);
+    }
+  }, [sessions, selectDetailItem]);
 
   return (
     <div className="flex h-screen w-full relative">
