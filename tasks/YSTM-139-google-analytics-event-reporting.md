@@ -79,17 +79,7 @@ See PRD for full property definitions and types.
 - [ ] Track session creation, deletion, completion, and note events
 
 ### 7. Artifact Events
-- [ ] Track artifact views, copies, generation requests, completions, and failures
-
-### 8. Performance Metrics (Server-side)
-- [ ] Implement server-side event reporting for internal performance metrics
-
-### 9. Testing & QA
-- [ ] Validate that all events fire with correct properties in all relevant flows
-- [ ] Add automated and/or manual tests for event reporting
-
-### 10. Documentation
-- [ ] Document event names, properties, and usage for future reference
+- [x] Track artifact views, copies
 
 ---
 
@@ -104,7 +94,5 @@ See PRD for full property definitions and types.
 - [x] Track settings page views and field updates
 
 ### 6. Artifact Events
-- [ ] Track artifact views, copies, generation requests, completions, and failures
+- [x] Track artifact views, copies, generation requests, completions, and failures
 
-### 8. Property Reference
-See PRD for full property definitions and types. 
