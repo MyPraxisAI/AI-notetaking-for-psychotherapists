@@ -7,14 +7,17 @@ import { useSupabase } from '@kit/supabase/hooks/use-supabase';
 import { useTranslation } from 'react-i18next';
 import { useUserWorkspace } from '@kit/accounts/hooks/use-user-workspace';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useAppEvents } from '@kit/shared/events';
+import type { AppEvents } from '~/lib/app-events';
 
 const AVATARS_BUCKET = 'account_image';
 
 export function useUpdateAvatar() {
-  const { t } = useTranslation();
+  const { t } = useTranslation('mypraxis');
   const client = useSupabase();
   const { user } = useUserWorkspace();
   const queryClient = useQueryClient();
+  const { emit } = useAppEvents<AppEvents>();
   
   // Track the current picture URL in client state
   const [currentPictureUrl, setCurrentPictureUrl] = useState<string | null>(user?.user_metadata?.avatar_url || null);
@@ -85,6 +88,13 @@ export function useUpdateAvatar() {
       // Invalidate both user data queries
       queryClient.invalidateQueries({ queryKey: ['user'] });
       queryClient.invalidateQueries({ queryKey: ['mypraxis-user'] });
+
+      emit({
+        type: 'SettingsUpdated',
+        payload: {
+          field: 'avatar',
+        },
+      });
     },
   });
 
@@ -104,9 +114,9 @@ export function useUpdateAvatar() {
           return result;
         },
         {
-          loading: t('Updating profile picture...'),
-          success: t('Profile picture updated successfully'),
-          error: (err) => `${t('Failed to update profile picture')}: ${err.message}`,
+          loading: t('hooks.userProfile.avatar.updating'),
+          success: t('hooks.userProfile.avatar.success'),
+          error: (err) => `${t('hooks.userProfile.avatar.error')}: ${err.message}`,
         }
       );
     },

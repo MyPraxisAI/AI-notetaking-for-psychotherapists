@@ -1,5 +1,5 @@
 {
-  "name": "@kit/analytics",
+  "name": "@kit/google-analytics",
   "private": true,
   "version": "0.1.0",
   "scripts": {
@@ -10,14 +10,21 @@
   },
   "prettier": "@kit/prettier-config",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./server": "./src/server.ts"
   },
   "devDependencies": {
     "@kit/eslint-config": "workspace:*",
-    "@kit/google-analytics": "workspace:^",
     "@kit/prettier-config": "workspace:*",
     "@kit/tsconfig": "workspace:*",
     "@types/node": "^22.13.4"
+  },
+  "eslintConfig": {
+    "root": true,
+    "extends": [
+      "@kit/eslint-config/base",
+      "@kit/eslint-config/react"
+    ]
   },
   "typesVersions": {
     "*": {

@@ -3,6 +3,8 @@ import { z } from 'zod';
 import { toast } from 'sonner';
 import { useSupabase } from '@kit/supabase/hooks/use-supabase';
 import { useTranslation } from 'react-i18next';
+import { useAppEvents } from '@kit/shared/events';
+import type { AppEvents } from '~/lib/app-events';
 
 // Password validation schema
 export const PasswordSchema = z
@@ -46,6 +48,7 @@ export type PasswordFormValues = z.infer<typeof PasswordSchema>;
 export function useUpdatePassword() {
   const client = useSupabase();
   const { t } = useTranslation('mypraxis');
+  const { emit } = useAppEvents<AppEvents>();
 
   return useMutation({
     mutationFn: async (password: string) => {
@@ -60,6 +63,13 @@ export function useUpdatePassword() {
       return { success: true };
     },
     onSuccess: () => {
+      emit({
+        type: 'SettingsUpdated',
+        payload: {
+          field: 'password',
+        },
+      });
+
       toast.success(t('hooks.userProfile.passwordUpdatedSuccess'));
     },
     onError: (error) => {
