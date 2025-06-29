@@ -356,7 +356,12 @@
       "passwordRequirements": "Password must include uppercase, lowercase, number and special character",
       "passwordsDoNotMatch": "Passwords do not match",
       "passwordUpdatedSuccess": "Password updated successfully",
-      "passwordUpdatedError": "Failed to update password. Please try again."
+      "passwordUpdatedError": "Failed to update password. Please try again.",
+      "avatar": {
+        "updating": "Updating profile picture...",
+        "success": "Profile picture updated successfully",
+        "error": "Failed to update profile picture"
+      }
     }
   },
   "sessionView": {

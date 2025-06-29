@@ -1,9 +1,11 @@
 "use client"
 
 import "../../styles/markdown.css"
-import { useEffect, useRef, useState, useTransition } from "react"
+import { useEffect, useRef, useState, useTransition, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { useQueryClient } from "@tanstack/react-query"
+import { useAppEvents } from '@kit/shared/events'
+import type { AppEvents } from '../../lib/app-events'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@kit/ui/tabs"
 import { SessionMetadata } from "../../types/session"
 import { Textarea } from "@kit/ui/textarea"
@@ -35,6 +37,8 @@ interface TranscriptContentProps {
       metadata: unknown;
     } 
   }, currentSession: Session) => void
+  handleCopyText: (text: string | undefined, type: 'therapist' | 'client' | 'note' | 'transcript') => void
+  isTranscriptCopied: boolean
 }
 
 /**
@@ -43,7 +47,7 @@ interface TranscriptContentProps {
  * 2. Recording is processing - show "Transcription in progress..."
  * 3. No transcript or recording - show empty state
  */
-function TranscriptContent({ clientId, sessionId, session, handleSessionUpdate }: TranscriptContentProps) {
+function TranscriptContent({ clientId, sessionId, session, handleSessionUpdate, handleCopyText, isTranscriptCopied }: TranscriptContentProps) {
   const { t } = useTranslation();
   
   // Disable polling if we already have a transcript
@@ -92,7 +96,7 @@ function TranscriptContent({ clientId, sessionId, session, handleSessionUpdate }
   // If we have a transcript, show it
   if (session?.transcript) {
     return (
-      <div className="relative">
+      <div className="relative group">
         <div 
           className="rounded-lg bg-[#FFF9E8] px-6 pb-3 pt-3.5 text-[14px] leading-[1.6]" 
           data-test="session-transcript-value"
@@ -100,6 +104,17 @@ function TranscriptContent({ clientId, sessionId, session, handleSessionUpdate }
           <ReactMarkdown>
             {session.transcript.content}
           </ReactMarkdown>
+        </div>
+        <div className="absolute right-2 top-2 flex gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6 hover:bg-transparent"
+            onClick={() => handleCopyText(session?.transcript?.content, 'transcript')}
+            data-test="copy-transcript-button"
+          >
+            {isTranscriptCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+          </Button>
         </div>
       </div>
     )
@@ -149,6 +164,7 @@ interface SessionViewProps {
 
 export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: SessionViewProps) {
   const { t } = useTranslation();
+  const { emit } = useAppEvents<AppEvents>();
   const [userNote, setUserNote] = useState("")
   const [isEditing, setIsEditing] = useState(false)
   const [noteHeight, setNoteHeight] = useState<number>(150)
@@ -158,6 +174,7 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
   const [isCopied, setIsCopied] = useState(false)
   const [isClientSummaryCopied, setIsClientSummaryCopied] = useState(false)
   const [isNoteCopied, setIsNoteCopied] = useState(false)
+  const [isTranscriptCopied, setIsTranscriptCopied] = useState(false)
   const [summaryView, setSummaryView] = useState<"therapist" | "client">("therapist")
   const [therapistSummary, setTherapistSummary] = useState<string | null>(null)
   const [clientSummary, setClientSummary] = useState<string | null>(null)
@@ -168,7 +185,12 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
   const [session, setSession] = useState<Session | null>(null)
   const [isEditingTitle, setIsEditingTitle] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
-  const [activeTab, setActiveTab] = useState<"summary" | "transcript">("summary")
+  const [activeTab, setActiveTabState] = useState<"summary" | "transcript">("summary")
+  
+  const setActiveTab = useCallback((tab: "summary" | "transcript") => {
+    setActiveTabState(tab);
+  }, []);
+  
   const [isTitleSaved, setIsTitleSaved] = useState(false)
   const _saveTimeout = useRef<NodeJS.Timeout | undefined>(undefined)
   const copyTimeout = useRef<NodeJS.Timeout | undefined>(undefined)
@@ -177,6 +199,9 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
 
   // Use the session hook from Supabase to load session data
   const { data: sessionData, isLoading: isLoadingSession } = useSession(sessionId)
+  
+  // Track if we've emitted the initial therapist summary view event
+  const [hasEmittedInitialView, setHasEmittedInitialView] = useState(false)
   
   // Always fetch both summaries regardless of active tab
   const { 
@@ -250,7 +275,7 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
     return () => {
       window.removeEventListener('sessionTabChange', handleTabChange as EventListener);
     };
-  }, [sessionId])
+  }, [sessionId, setActiveTab])
   
   // Effect to measure the displayed note's height when switching to edit mode
   useEffect(() => {
@@ -281,6 +306,36 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
       setIsLoadingTherapistSummary(true)
     }
   }, [therapistSummaryData])
+
+  // Emit initial ArtifactViewed event for default therapist summary
+  useEffect(() => {
+    if (
+      !hasEmittedInitialView &&
+      activeTab === "summary" &&
+      summaryView === "therapist" &&
+      therapistSummary &&
+      !isLoadingTherapistSummary
+    ) {
+      emit({
+        type: 'ArtifactViewed',
+        payload: {
+          client_id: clientId,
+          session_id: sessionId,
+          artifact_type: 'session_therapist_summary'
+        },
+      });
+      setHasEmittedInitialView(true);
+    }
+  }, [
+    hasEmittedInitialView,
+    activeTab,
+    summaryView,
+    therapistSummary,
+    isLoadingTherapistSummary,
+    emit,
+    clientId,
+    sessionId
+  ])
   
   useEffect(() => {
     if (clientSummaryData) {
@@ -464,6 +519,9 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
         return;
       }
       
+      // Calculate the change in character count for analytics
+      const changeSizeChars = note.length - currentNote.length;
+      
       // Optimistically update the UI
       const previousSession = { ...session };
       
@@ -488,6 +546,16 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
           
           // Update the session with the returned data
           handleSessionUpdate(result, session);
+          
+          // Emit analytics event for session note update
+          emit({
+            type: 'SessionNoteUpdated',
+            payload: {
+              session_id: sessionId,
+              client_id: clientId,
+              change_size_chars: changeSizeChars,
+            },
+          });
           
           // Success handling
           toast.success("Note saved");
@@ -519,10 +587,40 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
     }
   }
 
-  const handleCopyText = (text: string | undefined, type: 'therapist' | 'client' | 'note' = 'therapist') => {
+  const handleCopyText = (text: string | undefined, type: 'therapist' | 'client' | 'note' | 'transcript' = 'therapist') => {
     if (!text) return;
     
     navigator.clipboard.writeText(text)
+    
+    // Emit analytics event for artifact copy (only for summaries, not notes)
+    if (type === 'therapist' || type === 'client') {
+      emit({
+        type: 'ArtifactCopied',
+        payload: {
+          client_id: clientId,
+          session_id: sessionId,
+          artifact_type: type === 'therapist' ? 'session_therapist_summary' : 'session_client_summary'
+        },
+      });
+    } else if (type === 'transcript') {
+      // Emit analytics event for transcript copy
+      emit({
+        type: 'SessionTranscriptCopied',
+        payload: {
+          session_id: sessionId,
+          client_id: clientId,
+        },
+      });
+    } else if (type === 'note') {
+      // Emit analytics event for note copy
+      emit({
+        type: 'SessionNoteCopied',
+        payload: {
+          session_id: sessionId,
+          client_id: clientId,
+        },
+      });
+    }
     
     if (type === 'client') {
       setIsClientSummaryCopied(true)
@@ -539,6 +637,14 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
       }
       titleSaveTimeout.current = setTimeout(() => {
         setIsNoteCopied(false)
+      }, 2000)
+    } else if (type === 'transcript') {
+      setIsTranscriptCopied(true)
+      if (copyTimeout.current) {
+        clearTimeout(copyTimeout.current)
+      }
+      copyTimeout.current = setTimeout(() => {
+        setIsTranscriptCopied(false)
       }, 2000)
     } else {
       setIsCopied(true)
@@ -557,6 +663,15 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
   const handleDeleteSession = () => {
     deleteSession.mutate({ sessionId, clientId }, {
       onSuccess: () => {
+        // Emit analytics event for session deletion
+        emit({
+          type: 'SessionDeleted',
+          payload: {
+            session_id: sessionId,
+            client_id: clientId,
+          },
+        });
+
         // Clear selected session if it's the current one
         const selectedSession = localStorage.getItem("selectedSession")
         if (selectedSession) {
@@ -795,7 +910,19 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
             <div className="space-y-3">
               <Tabs
                 value={summaryView}
-                onValueChange={(v) => setSummaryView(v as "therapist" | "client")}
+                onValueChange={(v) => {
+                  setSummaryView(v as "therapist" | "client");
+                  
+                  // Emit analytics event for artifact view
+                  emit({
+                    type: 'ArtifactViewed',
+                    payload: {
+                      client_id: clientId,
+                      session_id: sessionId,
+                      artifact_type: v === "therapist" ? 'session_therapist_summary' : 'session_client_summary'
+                    },
+                  });
+                }}
                 className="w-full"
               >
                 <TabsList className="w-full justify-start border-b rounded-none h-auto p-0 bg-transparent">
@@ -915,6 +1042,8 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
             sessionId={sessionId}
             session={session}
             handleSessionUpdate={handleSessionUpdate}
+            handleCopyText={handleCopyText}
+            isTranscriptCopied={isTranscriptCopied}
           />
         </TabsContent>
       </Tabs>

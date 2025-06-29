@@ -6,10 +6,10 @@ import { Avatar, AvatarFallback } from "@kit/ui/avatar"
 import { Badge } from "@kit/ui/badge"
 import { Button } from "@kit/ui/button"
 import { useSignOut } from '@kit/supabase/hooks/use-sign-out'
+import { useAppEvents } from '@kit/shared/events';
 import { useUserData } from './_lib/hooks/use-user-data'
 import { toast } from "sonner"
 import { useCreateSession, useSessions } from "./_lib/hooks/use-sessions"
-import { usePrefetchSessionArtifacts } from './_lib/hooks/use-session-artifacts'
 import { usePrefetchClientArtifacts } from "./_lib/hooks/use-client-artifacts"
 import { SessionWithId } from "./_lib/schemas/session"
 import {
@@ -45,6 +45,7 @@ import { OnboardingModal } from "../../../../components/mypraxis/onboarding-moda
 import { useUserSettings } from "./_lib/hooks/use-user-settings"
 import { ClientCreationModal } from "../../../../components/mypraxis/client-creation-modal"
 import { useIsSuperAdmin } from "../../../../lib/client/utils/is-super-admin"
+import { AppEvents } from "../../../../lib/app-events";
 
 // Menu item type
 type MenuItem = "clients" | "settings" | "billing" | "help" | "gift" | "logout" | "admin" | "onboarding"
@@ -68,6 +69,7 @@ interface Session {
 
 export default function Page() {
   const { t } = useTranslation();
+  const { emit } = useAppEvents<AppEvents>();
   const { data: isSuperAdmin = false } = useIsSuperAdmin();
   const [selectedItem, setSelectedItem] = useState<MenuItem>("clients")
   const [selectedClient, setSelectedClient] = useState<ClientId>("")
@@ -119,7 +121,7 @@ export default function Page() {
       }))
       setSessions(mappedSessions)
     }
-  }, [sessionsData])
+  }, [sessionsData, selectedClient, emit])
   const [_selectedSession, setSelectedSessionState] = useState<string | null>(null)
   const [_isDeleteModalOpen, _setIsDeleteModalOpen] = useState(false)
   const [isNavVisible, setIsNavVisible] = useState(true)
@@ -133,21 +135,120 @@ export default function Page() {
   // Track newly created clients
   const [_newClientIds, setNewClientIds] = useState<Set<string>>(new Set())
 
+  // Add a ref to ensure restoration only happens once
+  const hasRestored = useRef(false);
+
+  // Centralized function to handle menu item selection with analytics
+  const selectMenuItem = useCallback((item: MenuItem) => {
+    // Only emit analytics event if the selected item is actually changing
+    if (item !== selectedItem) {
+      if (item === "clients") {
+        emit({ type: 'ClientListViewed', payload: {} });
+      }
+    }
+
+    setSelectedItem(item);
+    localStorage.setItem("selectedMenuItem", item);
+  }, [emit, selectedItem])
+
+  // Centralized function to handle session selection with analytics
+  const selectSession = useCallback((sessionId: string) => {
+    // Only emit analytics event if the selected session is actually changing
+    if (sessionId !== _selectedSession) {
+      emit({
+        type: 'SessionDetailViewed',
+        payload: {
+          session_id: sessionId,
+          client_id: selectedClient,
+        },
+      });
+    }
+
+    setSelectedSessionState(sessionId);
+  }, [emit, selectedClient, _selectedSession])
+
+  // Centralized function to handle detail item selection with analytics
+  const selectDetailItem = useCallback((item: DetailItem, forceEmit = false) => {
+    // Emit analytics events if the selected detail item is changing OR if forced
+    if (item !== selectedDetailItem || forceEmit) {
+      // Emit analytics event for profile view
+      if (item === "profile") {
+        emit({
+          type: 'ClientProfileViewed',
+          payload: { client_id: selectedClient },
+        });
+      }
+
+      // Emit analytics event for client artifact views
+      if (item === "prep-note") {
+        emit({
+          type: 'ArtifactViewed',
+          payload: { 
+            client_id: selectedClient, 
+            artifact_type: 'client_prep_note'
+          },
+        });
+      } else if (item === "client-bio") {
+        emit({
+          type: 'ArtifactViewed',
+          payload: { 
+            client_id: selectedClient, 
+            artifact_type: 'client_bio'
+          },
+        });
+      } else if (item === "overview") {
+        emit({
+          type: 'ArtifactViewed',
+          payload: { 
+            client_id: selectedClient, 
+            artifact_type: 'client_conceptualization'
+          },
+        });
+      }
+    }
+
+    setSelectedDetailItem(item)
+    localStorage.setItem("selectedDetailItem", item)
+
+    // If the item is a session ID, update selected session with analytics
+    if (sessions.find((s) => s.id === item)) {
+      selectSession(item)
+    }
+  }, [emit, selectedClient, selectedDetailItem, sessions, selectSession])
+
+  // Centralized function to handle client selection with analytics
+  const selectClient = useCallback((clientId: string) => {
+    const isClientChanging = clientId !== selectedClient;
+    
+    setSelectedClient(setClientId(clientId));
+    localStorage.setItem("selectedClient", clientId);
+    
+    if (isClientChanging) {
+      emit({
+        type: 'SessionListViewed',
+        payload: { client_id: clientId },
+      });
+
+      // When client changes, re-emit analytics for the current detail item with the new client
+      if (selectedDetailItem) {
+        selectDetailItem(selectedDetailItem, true);
+      }
+    }
+
+  }, [emit, selectedClient, selectedDetailItem, selectDetailItem])
+
   useEffect(() => {
+    if (hasRestored.current) return;
     // Load selected menu item from localStorage
     const savedMenuItem = localStorage.getItem("selectedMenuItem")
     if (savedMenuItem && isMenuItem(savedMenuItem)) {
-      setSelectedItem(savedMenuItem as MenuItem)
-    }
-
-    // Load selected detail item from localStorage
-    const savedDetailItem = localStorage.getItem("selectedDetailItem")
-    if (savedDetailItem && isDetailItem(savedDetailItem)) {
-      setSelectedDetailItem(savedDetailItem as DetailItem)
+      selectMenuItem(savedMenuItem as MenuItem)
     }
 
     // Handle client selection with validation against available clients
     if (clients.length > 0) {
+      hasRestored.current = true;
+
       const savedClient = localStorage.getItem("selectedClient")
       
       // Check if the saved client exists in the available clients
@@ -155,47 +256,28 @@ export default function Page() {
       
       if (savedClientExists) {
         // If saved client exists, select it
-        setSelectedClient(setClientId(savedClient!))
+        selectClient(savedClient!)
       } else {
         // If no valid saved client or no selection, select the first available client
         const initialClient = clients[0]
         if (initialClient) {
-          setSelectedClient(setClientId(initialClient.id))
-          localStorage.setItem("selectedClient", initialClient.id)
+          selectClient(initialClient.id)
           console.log(`Auto-selected first available client: ${initialClient.id}`)
         }
       }
     }
-    
-    // Load selected session from localStorage
-    const savedSession = localStorage.getItem("selectedSession")
-    if (savedSession) {
-      try {
-        const parsedSession = JSON.parse(savedSession)
-        if (parsedSession && parsedSession.clientId && parsedSession.sessionId) {
-          // Check if the client exists in our list
-          const clientExists = clients.some(client => client.id === parsedSession.clientId)
-          if (clientExists) {
-            // Navigate to the session (this will also handle setting the detail item)
-            navigateToSession(parsedSession.sessionId)
-            console.log(`Restored session from localStorage: ${parsedSession.sessionId}`)
-          }
-        }
-      } catch (error) {
-        console.error("Error parsing saved session:", error)
-        localStorage.removeItem("selectedSession") // Clear invalid data
-      }
+
+    // Load selected detail item from localStorage
+    const savedDetailItem = localStorage.getItem("selectedDetailItem")
+    if (savedDetailItem) {
+      selectDetailItem(savedDetailItem as DetailItem)
     }
-  }, [clients]) // eslint-disable-line react-hooks/exhaustive-deps
-  // We're intentionally omitting navigateToSession and isDetailItem from the deps array
-  // because they're defined later in the file and would cause circular dependencies
+  }, [clients, selectMenuItem, selectClient, selectSession, selectDetailItem])
 
   useEffect(() => {
     const handleSessionTitleChange = (event: CustomEvent) => {
       const { clientId: _clientId, sessionId, title } = event.detail
       setSessions((prev) => prev.map((s) => (s.id === sessionId ? { ...s, title } : s)))
-
-      // No need to update demo sessions anymore as they've been removed
     }
 
     window.addEventListener("sessionTitleChanged", handleSessionTitleChange as EventListener)
@@ -209,16 +291,14 @@ export default function Page() {
     return ["clients", "settings", "billing", "help", "gift", "logout"].includes(item)
   }
 
-  const isDetailItem = (item: string): item is DetailItem => {
-    return (
-      ["profile", "prep-note", "overview", "client-bio"].includes(item) ||
-      /^\d{4}-\d{2}-\d{2}$/.test(item) || // Match date format YYYY-MM-DD
-      sessions.some((session) => session.id === item) // Match session IDs
-    )
-  }
-
   // Initialize the sign out mutation from Makerkit
   const signOut = useSignOut();
+
+  const handleSignOut = useCallback(() => {
+    signOut.mutateAsync().then(() => {
+      emit({ type: 'UserSignedOut', payload: {} });
+    });
+  }, [signOut, emit]);
 
   const handleMenuClick = (item: MenuItem) => {
     // Always close navigation on small screens, regardless of whether the item is already selected
@@ -233,18 +313,18 @@ export default function Page() {
     
     // Handle special menu items
     if (item === "help") {
+      emit({ type: 'HelpRequested', payload: {} });
       window.location.href = "mailto:hello@mypraxis.ai";
       return;
     }
 
     // Handle logout
     if (item === "logout") {
-      void signOut.mutateAsync(); // Correctly call mutateAsync
+      handleSignOut();
       return;
     }
     
-    setSelectedItem(item);
-    localStorage.setItem("selectedMenuItem", item);
+    selectMenuItem(item);
     
     // Only hide client list on small screens when switching to a different item
     if (window.innerWidth <= 1430) {
@@ -253,12 +333,10 @@ export default function Page() {
   }
 
   const handleClientClick = (clientId: string) => {
-    setSelectedClient(setClientId(clientId))
-    localStorage.setItem("selectedClient", clientId)
+    selectClient(clientId)
     
     // Always set detail item to prep-note when selecting a client
-    setSelectedDetailItem("prep-note")
-    localStorage.setItem("selectedDetailItem", "prep-note")
+    selectDetailItem("prep-note")
     
     // Prefetch client artifacts to avoid loading flash
     prefetchClientArtifacts(clientId);
@@ -270,13 +348,7 @@ export default function Page() {
   }
 
   const handleDetailItemClick = (item: DetailItem) => {
-    setSelectedDetailItem(item)
-    localStorage.setItem("selectedDetailItem", item)
-
-    // If the item is a session ID, update selected session
-    if (sessions.find((s) => s.id === item)) {
-      setSelectedSessionState(item)
-    }
+    selectDetailItem(item)
   }
 
   const createClient = useCreateClient()
@@ -298,10 +370,8 @@ export default function Page() {
         setNewClientIds((prev) => new Set(prev).add(newClient.id))
 
         // Select the new client and switch to profile view
-        setSelectedClient(setClientId(newClient.id))
-        setSelectedDetailItem("profile")
-        localStorage.setItem("selectedClient", newClient.id)
-        localStorage.setItem("selectedDetailItem", "profile")
+        selectClient(newClient.id)
+        selectDetailItem("profile")
 
         // Close client list on small screens when new client button is clicked
         if (window.innerWidth <= 1050) {
@@ -319,20 +389,13 @@ export default function Page() {
   // Client creation modal state
   const [isClientCreationModalOpen, setIsClientCreationModalOpen] = useState(false)
 
-  // Get the prefetch function from our custom hook
-  const prefetchSessionArtifacts = usePrefetchSessionArtifacts();
-
   /**
    * Navigate to a specific session and optionally open a specific tab
    */
   const navigateToSession = async (sessionId: string, openTab?: 'transcript' | 'notes') => {
-    console.log(`Navigating to session ${sessionId}${openTab ? ` (${openTab} tab)` : ''}`)
-    
-    // Prefetch session artifacts to avoid loading flash
-    prefetchSessionArtifacts(sessionId);
-    
-    // First, ensure we have the session in our sessions list
+    // Check if the session belongs to the currently selected client
     const sessionExists = sessions.some(s => s.id === sessionId);
+
     if (!sessionExists) {
       console.log('Session not found in sessions list, fetching it');
       // Trigger a refetch of sessions to ensure the new session is loaded
@@ -342,10 +405,8 @@ export default function Page() {
       await new Promise(resolve => setTimeout(resolve, 300));
     }
     
-    // Update selected session state - this is what triggers the view change
-    setSelectedSessionState(sessionId);
-    setSelectedDetailItem(sessionId);
-    localStorage.setItem("selectedDetailItem", sessionId);
+    // Update selected session state and detail item - this triggers the view change and analytics
+    selectDetailItem(sessionId);
 
     // Save selected session to localStorage for UI state
     const sessionData = {
@@ -444,10 +505,8 @@ export default function Page() {
           if (remainingClients.length > 0) {
             const nextClient = remainingClients[0]
             if (nextClient) {
-              setSelectedClient(setClientId(nextClient.id))
-              localStorage.setItem("selectedClient", nextClient.id)
-              setSelectedDetailItem("prep-note")
-              localStorage.setItem("selectedDetailItem", "prep-note")
+              selectClient(nextClient.id)
+              selectDetailItem("prep-note")
             }
           }
         }
@@ -527,10 +586,9 @@ export default function Page() {
 
     // Navigate to next session or prep-note
     if (nextSessionId) {
-      setSelectedDetailItem(nextSessionId)
-      setSelectedSessionState(nextSessionId)
+      selectDetailItem(nextSessionId)
     } else {
-      setSelectedDetailItem("prep-note")
+      selectDetailItem("prep-note")
       setSelectedSessionState(null)
     }
   }
@@ -595,14 +653,6 @@ export default function Page() {
         />
       )
     }
-
-    // Check if the selected detail item is a demo date
-    if (selectedDetailItem.match(/^\d{4}-\d{2}-\d{2}$/)) {
-      // Find the client to check if it's a demo client
-      const client = clients.find(c => c.id === selectedClient)
-      return <SessionView clientId={selectedClient} sessionId={selectedDetailItem} isDemo={client?.demo || false} />
-    }
-
 
     // Using static imports with stable keys to prevent remounting
     // Each component gets a stable key based on the client ID, not the selected tab
@@ -705,6 +755,18 @@ export default function Page() {
     }
     // For mandatory mode, no state to update since we're using settings directly
   }, [isTestOnboardingOpen])
+
+  useEffect(() => {
+    // If selectedDetailItem is a session ID and exists in sessions, ensure it is selected
+    // This is for restoring the session view after sessions were loaded
+    if (
+      selectedDetailItem &&
+      sessions.some((session) => session.id === selectedDetailItem)
+    ) {
+
+      selectDetailItem(selectedDetailItem);
+    }
+  }, [sessions, selectDetailItem, selectedDetailItem]);
 
   return (
     <div className="flex h-screen w-full relative">
@@ -892,7 +954,7 @@ export default function Page() {
                   handleMenuClick("logout"); // Call the main handler
                   // Add direct call as fallback with delay
                   setTimeout(() => {
-                    void signOut.mutateAsync(); // Correctly call mutateAsync
+                    handleSignOut();
                   }, 100);
                 }}
               >

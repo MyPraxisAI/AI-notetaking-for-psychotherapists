@@ -7,6 +7,8 @@ import { Button } from '@kit/ui/button';
 import { Badge } from '@kit/ui/badge';
 import { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useAppEvents } from '@kit/shared/events';
+import type { AppEvents } from '../../lib/app-events';
 
 interface ClientBioProps {
   clientId: string;
@@ -15,6 +17,7 @@ interface ClientBioProps {
 
 export function ClientBio({ clientId }: ClientBioProps) {
   const { t } = useTranslation();
+  const { emit } = useAppEvents<AppEvents>();
   
   // Fetch the bio for the client
   const { 
@@ -42,6 +45,15 @@ export function ClientBio({ clientId }: ClientBioProps) {
     
     navigator.clipboard.writeText(text);
     setIsCopied(true);
+    
+    // Emit analytics event for artifact copy
+    emit({
+      type: 'ArtifactCopied',
+      payload: {
+        client_id: clientId,
+        artifact_type: 'client_bio'
+      },
+    });
     
     if (copyTimeout.current) {
       clearTimeout(copyTimeout.current);
