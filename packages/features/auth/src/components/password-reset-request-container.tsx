@@ -19,7 +19,6 @@ import {
 import { If } from '@kit/ui/if';
 import { Input } from '@kit/ui/input';
 import { Trans } from '@kit/ui/trans';
-import { useAppEvents } from '@kit/shared/events';
 
 import { useCaptchaToken } from '../captcha/client';
 import { AuthErrorAlert } from './auth-error-alert';
@@ -34,7 +33,6 @@ export function PasswordResetRequestContainer(params: {
   const { t } = useTranslation('auth');
   const resetPasswordMutation = useRequestResetPassword();
   const { captchaToken, resetCaptchaToken } = useCaptchaToken();
-  const { emit } = useAppEvents();
 
   const error = resetPasswordMutation.error;
   const success = resetPasswordMutation.data;
