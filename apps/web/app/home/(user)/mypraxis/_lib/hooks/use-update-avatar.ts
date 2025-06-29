@@ -9,7 +9,6 @@ import { useUserWorkspace } from '@kit/accounts/hooks/use-user-workspace';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAppEvents } from '@kit/shared/events';
 import type { AppEvents } from '~/lib/app-events';
-import { useUser } from '@kit/supabase/hooks/use-user';
 
 const AVATARS_BUCKET = 'account_image';
 
@@ -121,7 +120,7 @@ export function useUpdateAvatar() {
         }
       );
     },
-    [updateAvatarMutation, t, currentPictureUrl, emit]
+    [updateAvatarMutation, t, currentPictureUrl]
   );
 
   return {

@@ -125,10 +125,10 @@ const analyticsMapping: AnalyticsMapping<AppEvents> = {
 
   // Default Makerkit events
   'user.signedIn': (event) => {
-    const { userId, email, ...rawTraits } = event.payload as { userId: string; email?: string; [key: string]: string | undefined };
+    const { userId, ...rawTraits } = event.payload as { userId: string; [key: string]: string | undefined };
 
     if (userId) {
-      // Filter out email and other PII, and remove undefined values to comply with Google Analytics policies
+      // Filter out undefined values to comply with Google Analytics policies
       const traits = Object.fromEntries(
         Object.entries(rawTraits).filter(([_, value]) => value !== undefined)
       ) as Record<string, string>;

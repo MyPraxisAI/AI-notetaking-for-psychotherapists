@@ -1,7 +1,7 @@
 "use client"
 
 import "../../styles/markdown.css"
-import { useEffect, useRef, useState, useTransition } from "react"
+import { useEffect, useRef, useState, useTransition, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { useQueryClient } from "@tanstack/react-query"
 import { useAppEvents } from '@kit/shared/events'
@@ -187,29 +187,10 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [activeTab, setActiveTabState] = useState<"summary" | "transcript">("summary")
   
-  // Wrapper function to emit analytics when tab changes
-  const setActiveTab = (tab: "summary" | "transcript") => {
+  const setActiveTab = useCallback((tab: "summary" | "transcript") => {
     setActiveTabState(tab);
-    
-    // Emit analytics events when tabs are viewed
-    if (tab === "transcript") {
-      emit({
-        type: 'SessionTranscriptViewed',
-        payload: {
-          session_id: sessionId,
-          client_id: clientId,
-        },
-      });
-    } else if (tab === "summary") {
-      emit({
-        type: 'SessionSummaryViewed',
-        payload: {
-          session_id: sessionId,
-          client_id: clientId,
-        },
-      });
-    }
-  };
+  }, []);
+  
   const [isTitleSaved, setIsTitleSaved] = useState(false)
   const _saveTimeout = useRef<NodeJS.Timeout | undefined>(undefined)
   const copyTimeout = useRef<NodeJS.Timeout | undefined>(undefined)
@@ -294,7 +275,7 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
     return () => {
       window.removeEventListener('sessionTabChange', handleTabChange as EventListener);
     };
-  }, [sessionId])
+  }, [sessionId, setActiveTab])
   
   // Effect to measure the displayed note's height when switching to edit mode
   useEffect(() => {

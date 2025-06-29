@@ -10,7 +10,6 @@ import { useAppEvents } from '@kit/shared/events';
 import { useUserData } from './_lib/hooks/use-user-data'
 import { toast } from "sonner"
 import { useCreateSession, useSessions } from "./_lib/hooks/use-sessions"
-import { usePrefetchSessionArtifacts } from './_lib/hooks/use-session-artifacts'
 import { usePrefetchClientArtifacts } from "./_lib/hooks/use-client-artifacts"
 import { SessionWithId } from "./_lib/schemas/session"
 import {
@@ -273,9 +272,7 @@ export default function Page() {
     if (savedDetailItem) {
       selectDetailItem(savedDetailItem as DetailItem)
     }
-  }, [clients, selectMenuItem, selectClient, selectSession, selectDetailItem]) // eslint-disable-line react-hooks/exhaustive-deps
-  // We're intentionally omitting navigateToSession and isDetailItem from the deps array
-  // because they're defined later in the file and would cause circular dependencies
+  }, [clients, selectMenuItem, selectClient, selectSession, selectDetailItem])
 
   useEffect(() => {
     const handleSessionTitleChange = (event: CustomEvent) => {
@@ -292,13 +289,6 @@ export default function Page() {
   // Type guards
   const isMenuItem = (item: string): item is MenuItem => {
     return ["clients", "settings", "billing", "help", "gift", "logout"].includes(item)
-  }
-
-  const isDetailItem = (item: string): item is DetailItem => {
-    return (
-      ["profile", "prep-note", "overview", "client-bio"].includes(item) ||
-      sessions.some((session) => session.id === item) // Match session IDs
-    )
   }
 
   // Initialize the sign out mutation from Makerkit
@@ -398,9 +388,6 @@ export default function Page() {
   
   // Client creation modal state
   const [isClientCreationModalOpen, setIsClientCreationModalOpen] = useState(false)
-
-  // Get the prefetch function from our custom hook
-  const prefetchSessionArtifacts = usePrefetchSessionArtifacts();
 
   /**
    * Navigate to a specific session and optionally open a specific tab
@@ -779,7 +766,7 @@ export default function Page() {
 
       selectDetailItem(selectedDetailItem);
     }
-  }, [sessions, selectDetailItem]);
+  }, [sessions, selectDetailItem, selectedDetailItem]);
 
   return (
     <div className="flex h-screen w-full relative">

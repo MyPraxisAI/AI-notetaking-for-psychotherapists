@@ -19,7 +19,6 @@ import { toast } from "sonner"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@kit/ui/select"
 import { HeadphoneWarning } from "./utils/recording/headphone-warning"
 import { AppEvents } from '~/lib/app-events';
-import { useCreateSession } from '../../app/home/(user)/mypraxis/_lib/hooks/use-sessions';
 
 const overlayStyles = `
   .recording-modal-overlay {
@@ -60,7 +59,6 @@ export function RecordingModal({
   const queryClient = useQueryClient()
   const { t } = useTranslation("mypraxis")
   const { emit } = useAppEvents<AppEvents>();
-  const createSession = useCreateSession();
   const [modalState, setModalState] = useState<
     "initial" | "soundCheck" | "recording" | "paused" | "saving"
   >("initial")
