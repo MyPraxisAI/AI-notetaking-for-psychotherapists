@@ -1299,7 +1299,7 @@ export function SettingsForm({ setIsNavVisible, isSmallScreen }: SettingsFormPro
                     });
 
                     emit({
-                      type: 'UserPasswordResetCompleted',
+                      type: 'UserPasswordChanged',
                       payload: {},
                     });
 

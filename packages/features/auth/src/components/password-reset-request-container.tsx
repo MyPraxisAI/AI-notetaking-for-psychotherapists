@@ -71,11 +71,6 @@ export function PasswordResetRequestContainer(params: {
                   redirectTo,
                   captchaToken,
                 })
-                .then(() => {
-                  emit({
-                    type: 'UserPasswordResetRequested',
-                  });
-                })
                 .catch(() => {
                   resetCaptchaToken();
                 });

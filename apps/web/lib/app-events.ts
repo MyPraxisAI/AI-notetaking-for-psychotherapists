@@ -18,8 +18,7 @@ export interface AppEvents extends ConsumerProvidedEventTypes {
     method: Method;
   };
   UserSignedOut: Record<string, never>;
-  UserPasswordResetRequested: Record<string, never>;
-  UserPasswordResetCompleted: Record<string, never>;
+  UserPasswordChanged: Record<string, never>;
   UserSessionExpired: {
     inactivityMinutes: number;
   };

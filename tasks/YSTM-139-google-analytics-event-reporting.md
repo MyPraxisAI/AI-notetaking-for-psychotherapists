@@ -11,8 +11,7 @@ Implement Google Analytics event reporting throughout the application according 
 - (x - part of Makerkit) **UserSignedUp**: Account created (`method`)
 - (x - part of Makerkit) **UserSignedIn**: Login success (`method`)
 - v **UserSignedOut**: User clicks sign-out
-- v **UserPasswordResetRequested**: "Forgot password" clicked
-- v **UserPasswordResetCompleted**: Password reset finished
+- v **UserPasswordChanged**: Password reset finished
 
 ### 2. Navigation Events
 - v **ScreenViewed**: Any screen rendered (`screen_name`, `referrer_screen`, `via`)

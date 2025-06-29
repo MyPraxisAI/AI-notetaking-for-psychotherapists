@@ -58,8 +58,7 @@ const analyticsMapping: AnalyticsMapping<AppEvents> = {
   },
   UserSignedUp: (event) => analytics.trackEvent(event.type, event.payload),
   UserSignedOut: (event) => analytics.trackEvent(event.type),
-  UserPasswordResetRequested: (event) => analytics.trackEvent(event.type),
-  UserPasswordResetCompleted: (event) => analytics.trackEvent(event.type),
+  UserPasswordChanged: (event) => analytics.trackEvent(event.type),
   UserSessionExpired: (event) =>
     analytics.trackEvent(event.type, {
       inactivityMinutes: event.payload.inactivityMinutes.toString(),
