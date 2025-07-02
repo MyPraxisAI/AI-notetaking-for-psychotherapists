@@ -35,9 +35,8 @@ export class YandexTranscriptionProvider extends BaseTranscriptionProvider {
    * @returns Transcription result
    */
   public async transcribeAudio(
-    client: SupabaseClient,
     audioFilePath: string,
-    transcriptionOptions: YandexV3TranscriptionOptions
+    options?: YandexV3TranscriptionOptions & { supabaseClient?: SupabaseClient }
   ): Promise<TranscriptionResult> {
     // Check file size to determine which API to use
     const stats = fs.statSync(audioFilePath);
@@ -50,14 +49,13 @@ export class YandexTranscriptionProvider extends BaseTranscriptionProvider {
     const convertedFilePath = await convertToSupportedFormat(audioFilePath);
     
     // Determine which API version to use
-    const apiVersion = transcriptionOptions.version;
+    const apiVersion = options?.version;
     switch (apiVersion) {
       case 'v3':
         console.log('Using long audio API (v3) with speaker identification');
         return this.longAudioV3Provider.transcribeLongAudio(
-          client,
           convertedFilePath,
-          transcriptionOptions
+          options as YandexV3TranscriptionOptions & { supabaseClient?: SupabaseClient }
         );
       default:
         throw new Error(`Unsupported API version: ${apiVersion}`);

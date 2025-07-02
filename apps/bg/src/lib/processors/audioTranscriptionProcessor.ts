@@ -10,7 +10,8 @@ import { combineAudioChunks } from '../util/audio';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
-import { regenerateArtifactsForSession } from '@kit/web-bg-common';
+import { regenerateArtifactsForSession, TRANSCRIPTION_ENGINES, TRANSCRIPTION_ENGINE_DEFAULT } from '@kit/web-bg-common';
+import { defaultAssemblyAITranscriptionOptions } from '../util/transcription/assemblyai';
 
 /**
  * Audio Processing Task Data
@@ -117,26 +118,33 @@ export class AudioTranscriptionProcessor {
       console.log(`Combined audio chunks into ${finalOutputPath}`);
             
       // Get the transcription engine from the recording info
-      const transcriptionEngine = recordingInfo.transcription_engine || 'yandex-v3-ru';
+      let transcriptionEngine = recordingInfo.transcription_engine || 'assemblyai-universal-auto';
       console.log(`Using transcription engine: ${transcriptionEngine}`);
       
       let result: TranscriptionResult;
       
-      // Currently only yandex-v3-ru is supported
+      if (!TRANSCRIPTION_ENGINES.includes(transcriptionEngine)) {
+        console.error(`Unsupported transcription engine: ${transcriptionEngine}, falling back to ${TRANSCRIPTION_ENGINE_DEFAULT}`);
+        transcriptionEngine = TRANSCRIPTION_ENGINE_DEFAULT;
+      }
+        
       if (transcriptionEngine === 'yandex-v3-ru') {
         // Use Yandex SpeechKit V3 with default options for Russian language
         console.log('Using Yandex SpeechKit V3 (Russian) for transcription');
         result = await transcribeAudio(this.supabase, finalOutputPath, YandexV3RuOptions, 'yandex');
+      } else if (transcriptionEngine === 'assemblyai-universal-auto') {
+        // Use AssemblyAI for transcription
+        console.log('Using AssemblyAI for transcription');
+        result = await transcribeAudio(this.supabase, finalOutputPath, defaultAssemblyAITranscriptionOptions, 'assemblyai');
       } else {
-        // Fallback to Yandex V3 if an unsupported engine is specified
-        console.log(`Unsupported transcription engine: ${transcriptionEngine}, falling back to yandex-v3-ru`);
-        result = await transcribeAudio(this.supabase, finalOutputPath, YandexV3RuOptions, 'yandex');
+        // just for type safety
+        throw new Error(`Unsupported transcription engine: ${transcriptionEngine}`);
       }
       
       console.log(`Transcription completed using ${transcriptionEngine} engine`);
       console.log(`Transcription result length: ${result.text.length} characters`);
       
-      // Return the transcription result
+      result.model = transcriptionEngine;
       
       return result;
     } catch (error) {

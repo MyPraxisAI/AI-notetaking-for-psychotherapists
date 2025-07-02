@@ -290,8 +290,7 @@
     },
     "transcription": {
       "label": "Транскрипция",
-      "select": "Выберите модель",
-      "yandex": "Yandex SpeechKit v3 (Русский)"
+      "select": "Дефолтный движок"
     },
     "recording": {
       "start": "Начать запись",

@@ -75,7 +75,6 @@ export abstract class BaseTranscriptionProvider {
    * @returns Transcription result
    */
   abstract transcribeAudio(
-    client: SupabaseClient,
     audioFilePath: string,
     options?: TranscriptionOptions
   ): Promise<TranscriptionResult>;
@@ -114,7 +113,7 @@ export abstract class BaseTranscriptionProvider {
 }
 
 // Provider type for type safety
-export type TranscriptionProvider = 'openai' | 'yandex';
+export type TranscriptionProvider = 'openai' | 'yandex' | 'assemblyai';
 
 // Provider instances cache
 const providers: Record<string, BaseTranscriptionProvider> = {};
@@ -155,6 +154,18 @@ export async function getTranscriptionProvider(provider: TranscriptionProvider):
         throw new Error(`Failed to load Yandex transcription provider: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
       break;
+    case 'assemblyai':
+      try {
+        const mod = await import('./transcription/assemblyai.js');
+        providerInstance = new mod.AssemblyAITranscriptionProvider() as BaseTranscriptionProvider;
+      } catch (error: unknown) {
+        const loggerPromise = getBackgroundLogger();
+        loggerPromise.then(logger => {
+          logger.error(createLoggerContext('transcription', { error }), 'Error loading AssemblyAI transcription provider');
+        });
+        throw new Error(`Failed to load AssemblyAI transcription provider: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
+      break;
     default:
       throw new Error(`Unsupported transcription provider: ${provider}`);
   }
@@ -167,52 +178,66 @@ export async function getTranscriptionProvider(provider: TranscriptionProvider):
 
 import { YandexTranscriptionOptions } from './transcription/yandex/common';
 import { OpenAITranscriptionOptions } from './transcription/openai';
+import { AssemblyAITranscriptionOptions } from './transcription/assemblyai';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { formatTimestamp } from '@kit/web-bg-common';
+import { classifySpeakerRoles } from './transcription/role_classification';
 
 /**
  * Union type for all supported transcription options
  */
-export type TranscriptionOptions = YandexTranscriptionOptions | OpenAITranscriptionOptions;
+export type TranscriptionOptions = YandexTranscriptionOptions | OpenAITranscriptionOptions | AssemblyAITranscriptionOptions;
 
 /**
  * Transcribe an audio file using the specified provider
  * 
- * @param client - Supabase client for API access
+ * @param supabaseClient - Supabase client for API access
  * @param audioFilePath - Path to the audio file to transcribe
  * @param options - Provider-specific options for transcription
  * @param provider - Provider name (defaults to 'yandex')
  * @returns Transcription result
  */
 export async function transcribeAudio(
-  client: SupabaseClient,
+  supabaseClient: SupabaseClient,
   audioFilePath: string,
   options?: TranscriptionOptions,
   provider: TranscriptionProvider = 'yandex'
 ): Promise<TranscriptionResult> {
   const transcriptionProvider = await getTranscriptionProvider(provider);
-  
-  // Type narrowing based on the provider to ensure type safety
   let transcriptionResult: TranscriptionResult;
   switch (provider) {
     case 'openai':
-      // For OpenAI, ensure options match OpenAI-specific options
-      transcriptionResult = await transcriptionProvider.transcribeAudio(client, audioFilePath, options as OpenAITranscriptionOptions);
+      transcriptionResult = await transcriptionProvider.transcribeAudio(audioFilePath, options as OpenAITranscriptionOptions);
       break;
     case 'yandex':
-      // For Yandex, ensure options match Yandex-specific options
-      transcriptionResult = await transcriptionProvider.transcribeAudio(client, audioFilePath, options as YandexTranscriptionOptions);
+      transcriptionResult = await transcriptionProvider.transcribeAudio(audioFilePath, options as YandexTranscriptionOptions);
+      break;
+    case 'assemblyai':
+      transcriptionResult = await transcriptionProvider.transcribeAudio(audioFilePath, options as AssemblyAITranscriptionOptions);
       break;
     default:
       throw new Error(`Unsupported transcription provider: ${provider}`);
   }
-  
+
+  // Classify speaker roles if segments exist and not already classified
+  if (
+    transcriptionResult.content_json?.segments &&
+    transcriptionResult.content_json.segments.length > 0 &&
+    !transcriptionResult.content_json.classified
+  ) {
+    try {
+      transcriptionResult = await classifySpeakerRoles(supabaseClient, transcriptionResult);
+    } catch (error) {
+      const logger = await getBackgroundLogger();
+      logger.error(createLoggerContext('transcription', { error }), 'Error during speaker role classification');
+      // Continue with unclassified roles if there is an error
+    }
+  }
+
   // Format the combined text with timestamps if segments are available
   if (transcriptionResult.content_json?.segments && transcriptionResult.content_json.segments.length > 0) {
-    // TODO: Do not store text in db, it should be generated from content_json
-    // Format the combined text with timestamps
     const combinedText = transcriptionResult.content_json.segments
-      .filter(segment => segment.content.trim().length > 0) // Filter out empty segments
+      .filter(segment => segment.content.trim().length > 0)
       .map(segment => {
         const startTimeFormatted = formatTimestamp(segment.start_ms / 1000);
         const endTimeFormatted = formatTimestamp(segment.end_ms / 1000);
@@ -222,8 +247,7 @@ export async function transcribeAudio(
 
     transcriptionResult.text = combinedText;
   }
-  
+
   return transcriptionResult;
 }
-
 
