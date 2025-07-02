@@ -48,6 +48,11 @@ interface RecordingModalProps {
   clientName: string
 }
 
+const TRANSCRIPTION_ENGINES = [
+  'assemblyai-universal-auto',
+  'yandex-v3-ru',
+];
+
 export function RecordingModal({
   isOpen,
   onClose,
@@ -70,7 +75,7 @@ export function RecordingModal({
   const [availableMicrophones, setAvailableMicrophones] = useState<MicrophoneDevice[]>([])
   const [isLoadingMicrophones, setIsLoadingMicrophones] = useState(false)
   const { data: isSuperAdmin = false } = useIsSuperAdmin()
-  const [selectedTranscriptionEngine, setSelectedTranscriptionEngine] = useState("yandex-v3-ru")
+  const [selectedTranscriptionEngine, setSelectedTranscriptionEngine] = useState<string | undefined>(undefined)
   const [timer, setTimer] = useState(0)
   const [isRecording, setIsRecording] = useState(false)
   const [recordingId, setRecordingId] = useState<string | null>(null)
@@ -206,11 +211,14 @@ export function RecordingModal({
       setIsProcessing(true)
       setError(null)
       
-      const result = await RecordingAPI.startRecording({
+      const startRecordingPayload: any = {
         clientId: selectedClient,
-        transcriptionEngine: selectedTranscriptionEngine,
         standaloneChunks: options.standaloneChunks
-      })
+      };
+      if (selectedTranscriptionEngine) {
+        startRecordingPayload.transcriptionEngine = selectedTranscriptionEngine;
+      }
+      const result = await RecordingAPI.startRecording(startRecordingPayload);
       
       if (!result) {
         throw new Error('Failed to start recording')
@@ -1027,9 +1035,11 @@ export function RecordingModal({
                           <SelectValue placeholder={t("recordingModal.transcription.select")} />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="yandex-v3-ru" data-test="transcription-engine-option-yandex-v3-ru">
-                            {t("recordingModal.transcription.yandex")}
+                          {TRANSCRIPTION_ENGINES.map((engine: string) => (
+                            <SelectItem key={engine} value={engine} data-test={`transcription-engine-option-${engine}`}>
+                              {engine}
                           </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </div>

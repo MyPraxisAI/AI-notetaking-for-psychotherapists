@@ -1,0 +1,1 @@
+export const TRANSCRIPTION_ENGINE_DEFAULT = 'assemblyai-universal-auto'; 

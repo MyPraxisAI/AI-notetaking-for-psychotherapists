@@ -86,7 +86,6 @@ export class OpenAITranscriptionProvider extends BaseTranscriptionProvider {
    * @returns Transcription result
    */
   async transcribeAudio(
-    client: SupabaseClient,
     audioFilePath: string,
     options?: OpenAITranscriptionOptions
   ): Promise<TranscriptionResult> {

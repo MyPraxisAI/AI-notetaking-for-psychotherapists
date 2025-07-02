@@ -24,28 +24,66 @@ interface TranscriptContent {
 }
 
 /**
+ * Cleans up LLM responses by removing matching markdown code blocks, bold/italic, and stray quotes from the start and end only if they match.
+ * @param text The LLM response to clean
+ * @returns The cleaned response
+ */
+export function cleanLLMResponse(text: string): string {
+  if (!text) return text;
+  let cleaned = text.trim();
+
+  // Remove matching code block markers (```lang\n ... ``` or just ``` ... ```)
+  if (/^```[a-z]*\n?/i.test(cleaned) && /```$/i.test(cleaned)) {
+    cleaned = cleaned.replace(/^```[a-z]*\n?/i, '');
+    cleaned = cleaned.replace(/```$/i, '');
+    cleaned = cleaned.trim();
+  }
+
+  // Remove matching bold/italic markdown (**text**, *text*, __text__, _text_) only if they match at start and end
+  const markdownPairs = [
+    ['**', '**'],
+    ['*', '*'],
+    ['__', '__'],
+    ['_', '_'],
+  ];
+  for (const [start, end] of markdownPairs) {
+    if (cleaned.startsWith(start) && cleaned.endsWith(end) && cleaned.length > start.length + end.length) {
+      cleaned = cleaned.slice(start.length, cleaned.length - end.length).trim();
+      break;
+    }
+  }
+
+  // Remove matching leading/trailing quotes/backticks only if they match
+  const quotePairs = [
+    ['"', '"'],
+    ['"', ''],
+    ['"', ''],
+    ["'", "'"],
+    ['`', '`'],
+  ];
+  for (const [start, end] of quotePairs) {
+    if (cleaned.startsWith(start) && cleaned.endsWith(end) && cleaned.length > start.length + end.length) {
+      cleaned = cleaned.slice(start.length, cleaned.length - end.length).trim();
+      break;
+    }
+  }
+
+  return cleaned.trim();
+}
+
+/**
+ * @deprecated Use cleanLLMResponse instead. This only removes outer code block markers if they match.
  * Cleans up markdown code block markers from LLM responses
  * @param content The content to clean up
  * @returns The cleaned content without markdown code block markers
  */
 export function cleanupMarkdownCodeBlocks(content: string): string {
   const trimmedContent = content.trim();
-  
-  // Check if content starts with ```markdown (or other language specifier) and ends with ```
-  if (trimmedContent.startsWith('```') && trimmedContent.endsWith('```')) {
-    // Find the first newline to skip the opening marker line
-    const firstNewline = trimmedContent.indexOf('\n');
-    if (firstNewline !== -1) {
-      // Find the last ``` marker
-      const lastMarkerPos = trimmedContent.lastIndexOf('```');
-      
-      // Extract the content between the markers
-      const innerContent = trimmedContent.substring(firstNewline + 1, lastMarkerPos).trim();
-      return innerContent;
-    }
+  if (/^```[a-z]*\n?/i.test(trimmedContent) && /```$/i.test(trimmedContent)) {
+    let cleaned = trimmedContent.replace(/^```[a-z]*\n?/i, '');
+    cleaned = cleaned.replace(/```$/i, '');
+    return cleaned.trim();
   }
-  
-  // If not wrapped in code blocks or format doesn't match, return original
   return content;
 }
 

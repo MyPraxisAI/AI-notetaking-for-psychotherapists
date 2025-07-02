@@ -4,7 +4,7 @@ import { generateLLMResponse } from './models';
 import { createPromptApi, getUserLanguage } from '..';
 import { getLogger } from '@kit/shared-common';
 import { generateVariableData, extractTemplateVariables, canGenerateVariable } from './artifact-vars';
-import { cleanupMarkdownCodeBlocks } from './artifact-utils';
+import { cleanupMarkdownCodeBlocks, cleanLLMResponse } from './artifact-utils';
 import { getArtifact, saveArtifact } from '../db/artifact-api';
 import { invalidateSessionAndClientArtifacts } from '../db/artifact-api';
 import { aws } from '..';
@@ -141,8 +141,8 @@ export async function generateContent(
       totalTokens: result.totalTokens
     });
 
-    // Clean up the content by removing markdown code block markers if they exist
-    const cleanedContent = cleanupMarkdownCodeBlocks(result.content);
+    // Clean up the content by removing markdown, bold/italic, and stray quotes
+    const cleanedContent = cleanLLMResponse(result.content);
 
     return cleanedContent;
   } catch (error) {
