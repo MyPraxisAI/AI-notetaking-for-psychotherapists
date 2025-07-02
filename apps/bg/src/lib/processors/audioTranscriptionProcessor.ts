@@ -10,7 +10,7 @@ import { combineAudioChunks } from '../util/audio';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
-import { regenerateArtifactsForSession, TRANSCRIPTION_ENGINE_DEFAULT } from '@kit/web-bg-common';
+import { regenerateArtifactsForSession, TRANSCRIPTION_ENGINES, TRANSCRIPTION_ENGINE_DEFAULT } from '@kit/web-bg-common';
 import { defaultAssemblyAITranscriptionOptions } from '../util/transcription/assemblyai';
 
 /**
@@ -123,6 +123,11 @@ export class AudioTranscriptionProcessor {
       
       let result: TranscriptionResult;
       
+      if (!TRANSCRIPTION_ENGINES.includes(transcriptionEngine)) {
+        console.error(`Unsupported transcription engine: ${transcriptionEngine}, falling back to ${TRANSCRIPTION_ENGINE_DEFAULT}`);
+        transcriptionEngine = TRANSCRIPTION_ENGINE_DEFAULT;
+      }
+        
       if (transcriptionEngine === 'yandex-v3-ru') {
         // Use Yandex SpeechKit V3 with default options for Russian language
         console.log('Using Yandex SpeechKit V3 (Russian) for transcription');
@@ -132,17 +137,14 @@ export class AudioTranscriptionProcessor {
         console.log('Using AssemblyAI for transcription');
         result = await transcribeAudio(this.supabase, finalOutputPath, defaultAssemblyAITranscriptionOptions, 'assemblyai');
       } else {
-        // Fallback to Yandex V3 if an unsupported engine is specified
-        console.log(`Unsupported transcription engine: ${transcriptionEngine}, falling back to ${TRANSCRIPTION_ENGINE_DEFAULT}`);
-        transcriptionEngine = TRANSCRIPTION_ENGINE_DEFAULT;
-        result = await transcribeAudio(this.supabase, finalOutputPath, defaultAssemblyAITranscriptionOptions, 'assemblyai');
+        // just for type safety
+        throw new Error(`Unsupported transcription engine: ${transcriptionEngine}`);
       }
       
       console.log(`Transcription completed using ${transcriptionEngine} engine`);
       console.log(`Transcription result length: ${result.text.length} characters`);
       
       result.model = transcriptionEngine;
-      // Return the transcription result
       
       return result;
     } catch (error) {

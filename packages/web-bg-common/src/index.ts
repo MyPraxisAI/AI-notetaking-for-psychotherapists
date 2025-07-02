@@ -55,4 +55,4 @@ export * from './utils/time';
 export * from './utils/mime';
 
 // Re-export transcription engine default
-export { TRANSCRIPTION_ENGINE_DEFAULT } from './transcription';
+export { TRANSCRIPTION_ENGINES, TRANSCRIPTION_ENGINE_DEFAULT } from './transcription';

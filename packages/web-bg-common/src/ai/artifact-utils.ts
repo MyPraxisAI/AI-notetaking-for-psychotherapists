@@ -72,22 +72,6 @@ export function cleanLLMResponse(text: string): string {
 }
 
 /**
- * @deprecated Use cleanLLMResponse instead. This only removes outer code block markers if they match.
- * Cleans up markdown code block markers from LLM responses
- * @param content The content to clean up
- * @returns The cleaned content without markdown code block markers
- */
-export function cleanupMarkdownCodeBlocks(content: string): string {
-  const trimmedContent = content.trim();
-  if (/^```[a-z]*\n?/i.test(trimmedContent) && /```$/i.test(trimmedContent)) {
-    let cleaned = trimmedContent.replace(/^```[a-z]*\n?/i, '');
-    cleaned = cleaned.replace(/```$/i, '');
-    return cleaned.trim();
-  }
-  return content;
-}
-
-/**
  * Format a timestamp in seconds to a human-readable format (MM:SS)
  * 
  * @param seconds - Time in seconds

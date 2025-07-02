@@ -4,7 +4,7 @@ import { generateLLMResponse } from './models';
 import { createPromptApi, getUserLanguage } from '..';
 import { getLogger } from '@kit/shared-common';
 import { generateVariableData, extractTemplateVariables, canGenerateVariable } from './artifact-vars';
-import { cleanupMarkdownCodeBlocks, cleanLLMResponse } from './artifact-utils';
+import { cleanLLMResponse } from './artifact-utils';
 import { getArtifact, saveArtifact } from '../db/artifact-api';
 import { invalidateSessionAndClientArtifacts } from '../db/artifact-api';
 import { aws } from '..';
