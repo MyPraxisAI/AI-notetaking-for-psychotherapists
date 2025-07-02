@@ -4,7 +4,6 @@
 
 import * as fs from 'fs';
 import { BaseTranscriptionProvider, TranscriptionResult } from '../transcription';
-import { SupabaseClient } from '@supabase/supabase-js';
 import { getBackgroundLogger, createLoggerContext } from '../../logger';
 
 /**

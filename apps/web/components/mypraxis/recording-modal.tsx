@@ -211,13 +211,11 @@ export function RecordingModal({
       setIsProcessing(true)
       setError(null)
       
-      const startRecordingPayload: any = {
+      const startRecordingPayload: RecordingAPI.StartRecordingOptions = {
         clientId: selectedClient,
+        transcriptionEngine: selectedTranscriptionEngine || '',
         standaloneChunks: options.standaloneChunks
       };
-      if (selectedTranscriptionEngine) {
-        startRecordingPayload.transcriptionEngine = selectedTranscriptionEngine;
-      }
       const result = await RecordingAPI.startRecording(startRecordingPayload);
       
       if (!result) {
