@@ -87,6 +87,14 @@ output "secrets" {
     {
       name = "YANDEX_SECRET_ACCESS_KEY",
       valueFrom = "arn:aws:ssm:${var.aws_region}:${var.aws_account_id}:parameter/${var.environment}/${var.app_name}/YANDEX_SECRET_ACCESS_KEY"
+    },
+    {
+      name = "SENTRY_DSN",
+      valueFrom = "arn:aws:ssm:${var.aws_region}:${var.aws_account_id}:parameter/${var.environment}/${var.app_name}/SENTRY_DSN"
+    },
+    {
+      name = "ASSEMBLYAI_API_KEY",
+      valueFrom = "arn:aws:ssm:${var.aws_region}:${var.aws_account_id}:parameter/${var.environment}/${var.app_name}/ASSEMBLYAI_API_KEY"
     }
   ]
 }

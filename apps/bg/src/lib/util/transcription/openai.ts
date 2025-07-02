@@ -4,7 +4,6 @@
 
 import * as fs from 'fs';
 import { BaseTranscriptionProvider, TranscriptionResult } from '../transcription';
-import { SupabaseClient } from '@supabase/supabase-js';
 import { getBackgroundLogger, createLoggerContext } from '../../logger';
 
 /**
@@ -86,7 +85,6 @@ export class OpenAITranscriptionProvider extends BaseTranscriptionProvider {
    * @returns Transcription result
    */
   async transcribeAudio(
-    client: SupabaseClient,
     audioFilePath: string,
     options?: OpenAITranscriptionOptions
   ): Promise<TranscriptionResult> {

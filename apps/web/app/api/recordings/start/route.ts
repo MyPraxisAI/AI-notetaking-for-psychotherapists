@@ -6,6 +6,7 @@ import { SupabaseClient } from '@supabase/supabase-js';
 import { getSupabaseServerClient } from '@kit/supabase/server-client';
 import { getUserPersonalAccount } from '../../_lib/get-user-account';
 import { z } from 'zod';
+import { getUserLanguage, TRANSCRIPTION_ENGINE_DEFAULT } from '@kit/web-bg-common';
 
 // Initialize logger properly with await
 const logger = await getLogger();
@@ -19,8 +20,15 @@ type CustomClient = SupabaseClient & {
 const StartRecordingSchema = z.object({
   clientId: z.string().uuid(),
   standaloneChunks: z.boolean().optional().default(false),
-  transcriptionEngine: z.string().optional().default('yandex-v3-ru')
+  transcriptionEngine: z.string().optional()
 });
+
+function selectTranscriptionEngine(accountLanguage: string | undefined): string {
+  if (accountLanguage === 'ru') {
+    return 'yandex-v3-ru';
+  }
+  return TRANSCRIPTION_ENGINE_DEFAULT;
+}
 
 // POST /api/recordings/start - Start a new recording
 export const POST = enhanceRouteHandler(
@@ -54,6 +62,13 @@ export const POST = enhanceRouteHandler(
       }
       
       const { clientId, standaloneChunks, transcriptionEngine } = result.data;
+      
+      // Determine transcription engine if not provided
+      let finalTranscriptionEngine = transcriptionEngine;
+      if (!finalTranscriptionEngine) {
+        const accountLanguage = await getUserLanguage(client);
+        finalTranscriptionEngine = selectTranscriptionEngine(accountLanguage);
+      }
       
       // Check if there's already an active recording
       const { data: existingRecording, error: checkError } = await client
@@ -93,7 +108,7 @@ export const POST = enhanceRouteHandler(
           status: 'recording',
           last_heartbeat_at: new Date().toISOString(),
           standalone_chunks: standaloneChunks,  // Map client param to DB column
-          transcription_engine: transcriptionEngine  // Map client param to DB column
+          transcription_engine: finalTranscriptionEngine  // Use selected engine
         })
         .select()
         .single();

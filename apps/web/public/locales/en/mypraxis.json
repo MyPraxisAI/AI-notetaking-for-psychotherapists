@@ -271,8 +271,7 @@
     },
     "transcription": {
       "label": "Transcription",
-      "select": "Select engine",
-      "yandex": "Yandex SpeechKit v3 (Russian)"
+      "select": "Default engine"
     },
     "recording": {
       "start": "Record",

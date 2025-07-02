@@ -78,15 +78,13 @@ export class YandexLongAudioV3Provider extends YandexBaseProvider {
   /**
    * Transcribe a long audio file using Yandex SpeechKit asynchronous API v3 with speaker identification
    * 
-   * @param client - Supabase client
    * @param audioFilePath - Path to the audio file to transcribe
    * @param transcriptionOptions - Options for transcription
    * @returns Transcription result
    */
   public async transcribeLongAudio(
-    client: SupabaseClient,
     audioFilePath: string,
-    transcriptionOptions: YandexV3TranscriptionOptions
+    transcriptionOptions: YandexV3TranscriptionOptions & { supabaseClient?: SupabaseClient }
   ): Promise<TranscriptionResult> {
     const startTime = Date.now();
     let storageUri: string | null = null;
@@ -130,14 +128,6 @@ export class YandexLongAudioV3Provider extends YandexBaseProvider {
       
       // Process the result to extract text, speakers, and segments
       const transcriptionResult = await this.processTranscriptionResult(result, processingTime, transcriptionOptions);
-      // Classify speaker roles and update the transcription
-      try {
-        await classifySpeakerRoles(client, transcriptionResult);
-      } catch (error) {
-        const logger = await getBackgroundLogger();
-        logger.error(createLoggerContext('transcription-yandex-long-audio-v3', { error }), 'Error during speaker role classification');
-        // Continue with unclassified roles if there's an error
-      }
       // Text formatting is now handled in the transcribeAudio function
       return transcriptionResult;
     } catch (error) {
@@ -832,14 +822,13 @@ export class YandexLongAudioV3Provider extends YandexBaseProvider {
       text: '',
       content_json: {
         segments: segments
-          .filter(segment => segment.text.trim().length > 0) // Filter out empty segments
+          .filter(segment => segment.text.trim().length > 0)
           .map(segment => ({
             start_ms: Math.round(segment.start * 1000),
             end_ms: Math.round(segment.end * 1000),
-            speaker: segment.speaker || 'speaker', // Will be updated by classification
+            speaker: segment.speaker || 'speaker',
             content: segment.text
           })),
-        classified: false // Initially not classified
       },
       rawResponse: result
     };
