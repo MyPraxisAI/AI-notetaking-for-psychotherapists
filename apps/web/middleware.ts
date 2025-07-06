@@ -15,9 +15,10 @@ import { handleLanguageInMiddleware } from '~/lib/i18n/i18n-middleware';
 const CSRF_SECRET_COOKIE = 'csrfSecret';
 const NEXT_ACTION_HEADER = 'next-action';
 
+// ingest/* is a special route that is used to send events to PostHog
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|images|locales|assets|api/*).*)'],
-};
+  matcher: ['/((?!_next/static|_next/image|images|locales|assets|ingest/*|api/*).*)'],
+ };
 
 const getUser = (request: NextRequest, response: NextResponse) => {
   const supabase = createMiddlewareClient(request, response);

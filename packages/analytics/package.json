@@ -15,6 +15,7 @@
   "devDependencies": {
     "@kit/eslint-config": "workspace:*",
     "@kit/google-analytics": "workspace:^",
+    "@kit/posthog": "workspace:^",
     "@kit/prettier-config": "workspace:*",
     "@kit/tsconfig": "workspace:*",
     "@types/node": "^22.13.4"
