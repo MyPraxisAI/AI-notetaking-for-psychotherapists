@@ -3,6 +3,7 @@ import withBundleAnalyzer from '@next/bundle-analyzer';
 const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const ENABLE_REACT_COMPILER = process.env.ENABLE_REACT_COMPILER === 'true';
+const isDev = process.env.NODE_ENV === 'development';
 
 const INTERNAL_PACKAGES = [
   '@kit/ui',
@@ -42,14 +43,31 @@ const config = {
     '/*': ['./content/**/*'],
   },
   redirects: getRedirects,
+  ...(isDev && { skipTrailingSlashRedirect: true }),
   // Add rewrites to make /home render the content from /home/mypraxis
   async rewrites() {
-    return [
+    const rewrites = [
+      // /home render the content from /home/mypraxis
       {
         source: '/home',
         destination: '/home/mypraxis',
       },
     ];
+
+    if (isDev) {
+      rewrites.push(
+        {
+          source: '/ingest/static/:path*',
+          destination: 'https://us-assets.i.posthog.com/static/:path*'
+        },
+        {
+          source: '/ingest/:path*',
+          destination: 'https://us.i.posthog.com/:path*'
+        }
+      );
+    }
+
+    return rewrites;
   },
   experimental: {
     mdxRs: true,
