@@ -96,7 +96,7 @@ export function useSession(sessionId: string | null) {
         // Fetch transcript content using the server action
         let transcript = null;
         try {
-          const { success, content } = await getTranscriptContent(sessionId, i18n.language as 'en' | 'ru');
+          const { success, content } = await getTranscriptContent(sessionId);
           if (success && content) {
             transcript = content;
           }

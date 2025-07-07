@@ -40,10 +40,13 @@ CREATE POLICY "audit_log_read_service_role" ON public.audit_log
   FOR SELECT TO service_role
   USING (true);
 
--- Policy: Only service_role can insert into audit_log for action_type=READ
+-- Policy: Only service_role can insert into audit_log for action_type=READ or table_name='auth.users'
 CREATE POLICY "audit_log_insert_service_role" ON public.audit_log
   FOR INSERT TO service_role
-  WITH CHECK (action_type = 'READ');
+  WITH CHECK (
+    action_type = 'READ'
+    OR table_name = 'auth.users'
+  );
 
 -- SECURITY DEFINER trigger function for audit logging
 CREATE OR REPLACE FUNCTION public.audit_log_trigger_fn()
@@ -56,12 +59,7 @@ DECLARE
 BEGIN
   SET search_path = public, pg_temp;
 
-  -- Determine account_id logic
-  IF TG_TABLE_NAME = 'users' THEN
-    v_account_id := COALESCE(NEW.id, OLD.id);
-  ELSE
-    v_account_id := (to_jsonb(COALESCE(NEW, OLD)) ->> 'account_id')::uuid;
-  END IF;
+  v_account_id := (to_jsonb(COALESCE(NEW, OLD)) ->> 'account_id')::uuid;
 
   INSERT INTO public.audit_log (
     acting_user_id,
@@ -88,9 +86,9 @@ BEGIN
     true,
     NULL,
     NULL,
-    'web',
-    CASE WHEN TG_TABLE_NAME = 'users' THEN to_jsonb(OLD) ELSE NULL END,
-    CASE WHEN TG_TABLE_NAME = 'users' THEN to_jsonb(NEW) ELSE NULL END
+    'trigger',
+    NULL,
+    NULL
   );
   RETURN NULL;
 END;
@@ -146,17 +144,4 @@ FOR EACH ROW EXECUTE FUNCTION public.audit_log_trigger_fn();
 
 CREATE TRIGGER audit_log_artifacts_delete
 AFTER DELETE ON public.artifacts
-FOR EACH ROW EXECUTE FUNCTION public.audit_log_trigger_fn();
-
--- Triggers for auth.users
-CREATE TRIGGER audit_log_auth_users_insert
-AFTER INSERT ON auth.users
-FOR EACH ROW EXECUTE FUNCTION public.audit_log_trigger_fn();
-
-CREATE TRIGGER audit_log_auth_users_update
-AFTER UPDATE ON auth.users
-FOR EACH ROW EXECUTE FUNCTION public.audit_log_trigger_fn();
-
-CREATE TRIGGER audit_log_auth_users_delete
-AFTER DELETE ON auth.users
 FOR EACH ROW EXECUTE FUNCTION public.audit_log_trigger_fn();

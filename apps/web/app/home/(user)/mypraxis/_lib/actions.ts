@@ -1,18 +1,15 @@
 /**
  * Client-side wrappers for server actions
  */
-import { getTranscriptContentAction } from './server/transcript-actions';
 
 /**
- * Get transcript content for a session
+ * Get transcript content for a session via API route
  * 
  * @param sessionId The session ID to get transcript content for
- * @param language Optional language code (en or ru)
  * @returns The formatted transcript content
  */
-export async function getTranscriptContent(sessionId: string, language?: 'en' | 'ru') {
-  return getTranscriptContentAction({
-    sessionId,
-    language
-  });
+export async function getTranscriptContent(sessionId: string) {
+  const res = await fetch(`/api/transcript/${sessionId}`);
+  if (!res.ok) throw new Error('Failed to fetch transcript content');
+  return res.json();
 }
