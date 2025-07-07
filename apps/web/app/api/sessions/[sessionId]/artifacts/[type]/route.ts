@@ -7,12 +7,12 @@ import {
   getSessionContent
 } from '@kit/web-bg-common';
 import type { ArtifactType } from '@kit/web-bg-common/types';
+import { logAuditLogRead, extractClientIp } from '~/_lib/server/audit-log';
 
 // This route handler returns artifacts for a session
 // It will be enhanced with authentication and error handling
 export const GET = enhanceRouteHandler(
-  async (req) => {
-    const { params } = req;
+  async ({ params, user, request }) => {
     const { sessionId, type } = params as { sessionId: string; type: string };
 
     // Validate the artifact type
@@ -32,75 +32,30 @@ export const GET = enhanceRouteHandler(
     
     try {
       // Get the artifact from the database
-      const artifact = await getArtifact(
+      let artifact = await getArtifact(
         client,
         sessionId,
         'session',
         artifactType
       );
       
-      // If the artifact doesn't exist, trigger regeneration and return a 404 response
       if (!artifact) {
-        
-        // Temporary Code: trigger generation of session artifacts (since they might not have been eagerly generated before)
-        // Later we can remove this (or just pregenerate all the artifacts using a script)
-
-        try {
-          // Check if the session has a transcript or note before generating
-          const session = await getSessionContent(client, sessionId);
-
-          // Only generate if we have content to generate from
-          if (session && (session.transcript || session.note)) {
-            // Check if session was created before June 6, 2025 (Stas's old sessions)
-            const cutoffDate = new Date('2025-06-06T00:00:00Z');
-            const sessionCreatedAt = new Date(session.created_at);
-
-            if (sessionCreatedAt >= cutoffDate) {
-              console.log(`Skipping artifact generation for session ${sessionId} (created after ${cutoffDate.toISOString()})`);
-              return NextResponse.json(
-                { error: 'Artifact not found' },
-                { status: 404 }
-              );      
-            }
-
-            console.log(`Session ${sessionId} has content, attempting to create artifact`);
-            
-            // Use getOrCreateArtifact to generate the specific artifact
-            const result = await getOrCreateArtifact(
-              client,
-              sessionId,
-              'session',
-              artifactType
-            );
-            
-            if (result && result.content) {
-              // If we successfully created the artifact, return it immediately
-              console.log(`Successfully created artifact for session ${sessionId}`);
-              return NextResponse.json({
-                content: result.content,
-                language: result.language,
-                stale: false,
-                dataTest: `session-artifact-${artifactType}`
-              });
-            }
-          } else {
-            console.log(`Session ${sessionId} has no content yet, skipping artifact generation`);
-            return NextResponse.json(
-              { error: 'Session has no content yet' },
-              { status: 404 }
-            );
-          }
-        } catch (genError) {
-          // Log the error but continue to return 404
-          console.error(`Error generating artifact for session ${sessionId}:`, genError);
-        }
-
         return NextResponse.json(
           { error: 'Artifact not found' },
           { status: 404 }
         );
       }
-      
+
+      // Log the read to audit_log
+      if (user?.id) {
+        await logAuditLogRead({
+          actingUserId: user.id,
+          tableName: 'artifacts',
+          recordId: artifact.id,
+          ipAddress: extractClientIp(request),
+          details: { artifactType },
+        });
+      }
       // Return the artifact with all its data including the stale field
       return NextResponse.json({
         ...artifact,

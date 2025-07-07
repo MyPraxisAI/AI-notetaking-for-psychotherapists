@@ -239,6 +239,57 @@ export type Database = {
           },
         ]
       }
+      audit_log: {
+        Row: {
+          access_reason: string | null
+          account_id: string
+          acting_user_id: string
+          action_type: Database["public"]["Enums"]["audit_action_type"]
+          application: string | null
+          details: Json | null
+          id: string
+          ip_address: unknown | null
+          new_values: Json | null
+          old_values: Json | null
+          phi_accessed: boolean | null
+          record_id: string | null
+          table_name: string
+          timestamp: string
+        }
+        Insert: {
+          access_reason?: string | null
+          account_id: string
+          acting_user_id: string
+          action_type: Database["public"]["Enums"]["audit_action_type"]
+          application?: string | null
+          details?: Json | null
+          id?: string
+          ip_address?: unknown | null
+          new_values?: Json | null
+          old_values?: Json | null
+          phi_accessed?: boolean | null
+          record_id?: string | null
+          table_name: string
+          timestamp?: string
+        }
+        Update: {
+          access_reason?: string | null
+          account_id?: string
+          acting_user_id?: string
+          action_type?: Database["public"]["Enums"]["audit_action_type"]
+          application?: string | null
+          details?: Json | null
+          id?: string
+          ip_address?: unknown | null
+          new_values?: Json | null
+          old_values?: Json | null
+          phi_accessed?: boolean | null
+          record_id?: string | null
+          table_name?: string
+          timestamp?: string
+        }
+        Relationships: []
+      }
       billing_customers: {
         Row: {
           account_id: string
@@ -2005,6 +2056,7 @@ export type Database = {
         | "client_conceptualization"
         | "client_bio"
         | "session_speaker_roles_classification"
+      audit_action_type: "CREATE" | "READ" | "UPDATE" | "DELETE"
       billing_provider: "stripe" | "lemon-squeezy" | "paddle"
       invite_status: "pending" | "accepted" | "revoked"
       language: "en" | "ru"
