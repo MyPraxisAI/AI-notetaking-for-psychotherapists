@@ -4,6 +4,7 @@ import { getLogger } from '@kit/shared-common/logger';
 import { logAuditLogRead, extractClientIpFromHeaders } from '@kit/audit-log';
 import { enhanceRouteHandler } from '@kit/next/routes';
 import { SessionWithId } from '../../home/(user)/mypraxis/_lib/schemas/session';
+import { Tables } from '~/lib/database.types';
 
 export const GET = enhanceRouteHandler(
     async ({ params, request, user }) => {
@@ -41,7 +42,7 @@ export const GET = enhanceRouteHandler(
       });
     }
     // Transform to SessionWithId format
-    const result: SessionWithId[] = (sessionsData || []).map((record: any) => ({
+    const result: SessionWithId[] = (sessionsData || []).map((record: Tables<'sessions'>) => ({
       id: record.id,
       clientId: record.client_id,
       title: record.title || '',

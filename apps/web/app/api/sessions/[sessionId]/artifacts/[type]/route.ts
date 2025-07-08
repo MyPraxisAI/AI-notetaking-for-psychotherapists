@@ -2,9 +2,7 @@ import { NextResponse } from 'next/server';
 import { enhanceRouteHandler } from '@kit/next/routes';
 import { getSupabaseServerClient } from '@kit/supabase/server-client';
 import { 
-  getOrCreateArtifact,
   getArtifact,
-  getSessionContent
 } from '@kit/web-bg-common';
 import type { ArtifactType } from '@kit/web-bg-common/types';
 import { logAuditLogRead, extractClientIpFromHeaders } from '@kit/audit-log';
@@ -32,7 +30,7 @@ export const GET = enhanceRouteHandler(
     
     try {
       // Get the artifact from the database
-      let artifact = await getArtifact(
+      const artifact = await getArtifact(
         client,
         sessionId,
         'session',
