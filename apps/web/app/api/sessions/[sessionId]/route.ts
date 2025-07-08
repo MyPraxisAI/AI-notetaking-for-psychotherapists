@@ -49,13 +49,24 @@ async function fetchFormattedTranscript(
     // If content_json exists, render it to text
     if (transcript.content_json) {
       try {
-        const contentJson = transcript.content_json as { segments: TranscriptSegment[] };
+        let contentJson: { segments: TranscriptSegment[] } | null = null;
+        const rawContentJson = transcript.content_json as unknown;
+        if (
+          rawContentJson &&
+          typeof rawContentJson === 'object' &&
+          'segments' in rawContentJson &&
+          Array.isArray((rawContentJson as any).segments)
+        ) {
+          contentJson = rawContentJson as { segments: TranscriptSegment[] };
+        } else {
+          contentJson = null;
+        }
         // Define speaker labels using i18n
         const speakerLabels = {
           therapist: `**${t('mypraxis:sessionView.transcript.speakerLabels.therapist')}**`,
           client: `**${t('mypraxis:sessionView.transcript.speakerLabels.client')}**`
         };
-        if (!contentJson.segments || contentJson.segments.length === 0) {
+        if (!contentJson || !contentJson.segments || contentJson.segments.length === 0) {
           transcriptContent = t('mypraxis:sessionView.transcript.errors.noContent');
         } else {
           transcriptContent = contentJson.segments
