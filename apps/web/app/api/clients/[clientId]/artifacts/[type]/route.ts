@@ -4,7 +4,6 @@ import { getSupabaseServerClient } from '@kit/supabase/server-client';
 import { getArtifact } from '@kit/web-bg-common';
 import type { ArtifactType } from '@kit/web-bg-common/types';
 import { logAuditLogRead, extractClientIp } from '@kit/audit-log';
-import { createAccountsApi } from '@kit/web-bg-common';
 
 // This route handler returns artifacts for a client
 export const GET = enhanceRouteHandler(

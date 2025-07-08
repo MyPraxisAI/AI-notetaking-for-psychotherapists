@@ -19,8 +19,8 @@ CREATE TABLE public.audit_log (
 );
 
 -- Indexes for efficient querying
-CREATE INDEX IF NOT EXISTS audit_log_user_id_idx ON public.audit_log (acting_user_id);
-CREATE INDEX IF NOT EXISTS audit_log_account_id_idx ON public.audit_log (account_id);
+CREATE INDEX IF NOT EXISTS audit_log_user_id_timestamp_idx ON public.audit_log (acting_user_id, timestamp DESC);
+CREATE INDEX IF NOT EXISTS audit_log_account_id_timestamp_idx ON public.audit_log (account_id, timestamp DESC);
 CREATE INDEX IF NOT EXISTS audit_log_table_name_idx ON public.audit_log (table_name);
 CREATE INDEX IF NOT EXISTS audit_log_timestamp_idx ON public.audit_log (timestamp DESC);
 CREATE INDEX IF NOT EXISTS audit_log_phi_accessed_idx ON public.audit_log (phi_accessed);
