@@ -3,7 +3,7 @@
 import { NextResponse } from 'next/server';
 import { enhanceRouteHandler } from '@kit/next/routes';
 import { getSupabaseServerClient } from '@kit/supabase/server-client';
-import { extractClientIp, logAuditLogRead } from '../../../_lib/server/audit-log';
+import { logAuditLogRead, extractClientIp } from '@kit/audit-log';
 import { createI18nServerInstance } from '~/lib/i18n/i18n.server';
 
 function formatTimestamp(seconds: number): string {

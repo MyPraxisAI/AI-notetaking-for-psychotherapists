@@ -14,9 +14,8 @@ CREATE TABLE public.audit_log (
     phi_accessed BOOLEAN DEFAULT FALSE,
     access_reason TEXT,
     details JSONB,
-    application TEXT,
-    old_values JSONB,
-    new_values JSONB
+    changes JSONB,
+    application TEXT
 );
 
 -- Indexes for efficient querying
@@ -71,8 +70,7 @@ BEGIN
     access_reason,
     details,
     application,
-    old_values,
-    new_values
+    changes
   ) VALUES (
     COALESCE(auth.uid(), '00000000-0000-0000-0000-000000000000'::uuid),
     v_account_id,
@@ -86,8 +84,7 @@ BEGIN
     true,
     NULL,
     NULL,
-    'trigger',
-    NULL,
+    'database-triggers',
     NULL
   );
   RETURN NULL;

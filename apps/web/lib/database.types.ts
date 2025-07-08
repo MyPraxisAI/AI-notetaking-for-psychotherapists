@@ -246,11 +246,10 @@ export type Database = {
           acting_user_id: string
           action_type: Database["public"]["Enums"]["audit_action_type"]
           application: string | null
+          changes: Json | null
           details: Json | null
           id: string
           ip_address: unknown | null
-          new_values: Json | null
-          old_values: Json | null
           phi_accessed: boolean | null
           record_id: string | null
           table_name: string
@@ -262,11 +261,10 @@ export type Database = {
           acting_user_id: string
           action_type: Database["public"]["Enums"]["audit_action_type"]
           application?: string | null
+          changes?: Json | null
           details?: Json | null
           id?: string
           ip_address?: unknown | null
-          new_values?: Json | null
-          old_values?: Json | null
           phi_accessed?: boolean | null
           record_id?: string | null
           table_name: string
@@ -278,11 +276,10 @@ export type Database = {
           acting_user_id?: string
           action_type?: Database["public"]["Enums"]["audit_action_type"]
           application?: string | null
+          changes?: Json | null
           details?: Json | null
           id?: string
           ip_address?: unknown | null
-          new_values?: Json | null
-          old_values?: Json | null
           phi_accessed?: boolean | null
           record_id?: string | null
           table_name?: string

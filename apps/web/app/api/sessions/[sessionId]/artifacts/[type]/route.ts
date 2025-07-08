@@ -7,7 +7,7 @@ import {
   getSessionContent
 } from '@kit/web-bg-common';
 import type { ArtifactType } from '@kit/web-bg-common/types';
-import { logAuditLogRead, extractClientIp } from '~/_lib/server/audit-log';
+import { logAuditLogRead, extractClientIp } from '@kit/audit-log';
 
 // This route handler returns artifacts for a session
 // It will be enhanced with authentication and error handling

@@ -16,6 +16,7 @@ export async function getArtifact(
   referenceType: 'session' | 'client',
   type: ArtifactType
 ) {
+  
   const logger = await getLogger();
   const ctx = {
     name: 'get-artifact',
@@ -35,7 +36,14 @@ export async function getArtifact(
       .eq('type', type)
       .maybeSingle();
     
-    if (error) throw error;
+    if (error) {
+      // PGRST116: No rows found
+      if (error.code === 'PGRST116') {
+        logger.info(ctx, `Artifact not found`);
+        return null;
+      }
+      throw error;
+    }
     
     return data;
   } catch (error) {

@@ -1,5 +1,6 @@
 import { SupabaseClient } from '@supabase/supabase-js';
 import { AsyncLocalStorage } from 'async_hooks';
+import { getLogger } from '@kit/shared-common';
 
 // Define the type for our context store
 type ContextStore = Map<string, string | null>;
@@ -18,7 +19,9 @@ const ACCOUNT_ID_KEY = 'accountId';
  * @param fn The function to execute within this context
  * @returns The result of the function execution
  */
-export async function withCurrentAccountId<T>(accountId: string, fn: () => Promise<T>): Promise<T> {
+export async function withCurrentAccountId<T>(accountId: string | null, fn: () => Promise<T>): Promise<T> {
+  if (!accountId) return fn();  
+  
   return contextStorage.run(new Map([[ACCOUNT_ID_KEY, accountId]]), fn);
 }
 
@@ -32,6 +35,13 @@ export function getCurrentAccountIdFromContext(): string | null {
     return store.get(ACCOUNT_ID_KEY) as string;
   }
   return null;
+}
+
+export class NoAccountIdError extends Error {
+  constructor() {
+    super('No account ID found for current user');
+    this.name = 'NoAccountIdError';
+  }
 }
 
 /**
@@ -60,9 +70,11 @@ export function createAccountsApi(client: SupabaseClient) {
       .single();
 
     if (error) {
+      if (error.code === 'PGRST116') {
+        throw new NoAccountIdError();
+      }
       throw error;
     }
-
     return data.id;
   }
 

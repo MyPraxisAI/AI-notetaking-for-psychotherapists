@@ -1,8 +1,9 @@
 import { getSupabaseServerAdminClient } from '@kit/supabase/server-admin-client';
 import { createAccountsApi } from '@kit/web-bg-common';
 import { getLogger } from '@kit/shared/logger';
+import { insertAuditLog } from './insert-audit-log';
 
-interface LogAuditReadParams {
+export interface LogAuditReadParams {
   actingUserId: string;
   accountId?: string;
   tableName: string;
@@ -31,10 +32,10 @@ export async function logAuditLogRead({
     accountId = await accountsApi.getCurrentAccountId();
   }
 
-  const { error } = await adminClient.from('audit_log').insert([
-    {
+  try {
+    await insertAuditLog({
       acting_user_id: actingUserId,
-      account_id: accountId,
+      account_id: accountId!,
       action_type: 'READ',
       table_name: tableName,
       record_id: recordId ?? null,
@@ -43,17 +44,8 @@ export async function logAuditLogRead({
       access_reason: accessReason,
       details: details ?? null,
       application: application ?? null,
-    },
-  ]);
-  if (error) {
+    }, adminClient);
+  } catch (error) {
     logger.error('Failed to log audit_log read:', error);
   }
-}
-
-export function extractClientIp(request: Request): string | undefined {
-  return (
-    request.headers.get('x-forwarded-for') ||
-    request.headers.get('x-real-ip') ||
-    undefined
-  );
 } 
