@@ -1,7 +1,9 @@
-export function extractClientIp(request: Request): string | undefined {
+export function extractClientIpFromHeaders(headers: Headers): string | undefined {
   return (
-    request.headers.get('x-forwarded-for') ||
-    request.headers.get('x-real-ip') ||
+    headers.get('x-forwarded-for') ||
+    headers.get('x-real-ip') ||
     undefined
   );
-} 
+}
+
+export const NULL_UUID = '00000000-0000-0000-0000-000000000000'; 

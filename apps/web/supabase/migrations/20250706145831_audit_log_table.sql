@@ -1,5 +1,5 @@
 -- Create ENUM for action_type
-CREATE TYPE public.audit_action_type AS ENUM ('CREATE', 'READ', 'UPDATE', 'DELETE');
+CREATE TYPE public.audit_action_type AS ENUM ('CREATE', 'READ', 'UPDATE', 'DELETE', 'IMPERSONATE');
 
 -- Create audit_log table
 CREATE TABLE public.audit_log (

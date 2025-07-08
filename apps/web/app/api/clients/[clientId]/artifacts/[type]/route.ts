@@ -3,7 +3,7 @@ import { enhanceRouteHandler } from '@kit/next/routes';
 import { getSupabaseServerClient } from '@kit/supabase/server-client';
 import { getArtifact } from '@kit/web-bg-common';
 import type { ArtifactType } from '@kit/web-bg-common/types';
-import { logAuditLogRead, extractClientIp } from '@kit/audit-log';
+import { logAuditLogRead, extractClientIpFromHeaders } from '@kit/audit-log';
 
 // This route handler returns artifacts for a client
 export const GET = enhanceRouteHandler(
@@ -46,7 +46,7 @@ export const GET = enhanceRouteHandler(
           actingUserId: user.id,
           tableName: 'artifacts',
           recordId: artifact.id,
-          ipAddress: extractClientIp(request),
+          ipAddress: extractClientIpFromHeaders(request.headers),
           details: { artifactType },
         });
       }

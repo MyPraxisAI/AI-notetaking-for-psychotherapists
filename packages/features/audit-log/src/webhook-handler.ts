@@ -1,6 +1,7 @@
 import { AuthUsersWebhookPayloadSchema, AuditLogInsert } from './types';
 import { insertAuditLog } from './insert-audit-log';
 import { create } from 'jsondiffpatch';
+import { NULL_UUID } from './util';
 
 const jsondiffpatch = create();
 
@@ -37,18 +38,19 @@ export async function handleAuthUsersDatabaseWebhook(body: unknown) {
     }
 
     const delta = computeDelta(payload.record, payload.old_record);
+    const safeDelta = delta ? JSON.parse(JSON.stringify(delta)) : null;
 
     // Compose audit log entry
     const entry: AuditLogInsert = {
-        acting_user_id: payload.record?.id || '00000000-0000-0000-0000-000000000000',
-        account_id: '00000000-0000-0000-0000-000000000000',
+        acting_user_id: payload.record?.id || NULL_UUID,
+        account_id: NULL_UUID,
         action_type,
         table_name: 'auth.users',
         record_id: payload.record?.id || null,
         ip_address: null, // Not available from webhook
         phi_accessed: false, // This is not PHI data right now, it's needed to establish the WHO later on of who did access
         details: null,
-        changes: delta ?? null,
+        changes: safeDelta ?? null,
         application: 'database-auth',
     };
 

@@ -17,6 +17,7 @@
   },
   "devDependencies": {
     "@kit/tsconfig": "workspace:*",
+    "@supabase/supabase-js": "2.49.1",
     "typescript": "^5.8.2"
   },
   "exports": {

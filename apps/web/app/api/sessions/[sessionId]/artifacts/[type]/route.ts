@@ -7,7 +7,7 @@ import {
   getSessionContent
 } from '@kit/web-bg-common';
 import type { ArtifactType } from '@kit/web-bg-common/types';
-import { logAuditLogRead, extractClientIp } from '@kit/audit-log';
+import { logAuditLogRead, extractClientIpFromHeaders } from '@kit/audit-log';
 
 // This route handler returns artifacts for a session
 // It will be enhanced with authentication and error handling
@@ -52,7 +52,7 @@ export const GET = enhanceRouteHandler(
           actingUserId: user.id,
           tableName: 'artifacts',
           recordId: artifact.id,
-          ipAddress: extractClientIp(request),
+          ipAddress: extractClientIpFromHeaders(request.headers),
           details: { artifactType },
         });
       }

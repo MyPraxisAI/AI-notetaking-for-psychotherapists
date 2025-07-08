@@ -2053,7 +2053,7 @@ export type Database = {
         | "client_conceptualization"
         | "client_bio"
         | "session_speaker_roles_classification"
-      audit_action_type: "CREATE" | "READ" | "UPDATE" | "DELETE"
+      audit_action_type: "CREATE" | "READ" | "UPDATE" | "DELETE" | "IMPERSONATE"
       billing_provider: "stripe" | "lemon-squeezy" | "paddle"
       invite_status: "pending" | "accepted" | "revoked"
       language: "en" | "ru"

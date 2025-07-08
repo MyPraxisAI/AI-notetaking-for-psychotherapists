@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseServerClient } from '@kit/supabase/server-client';
 import { getLogger } from '@kit/shared-common/logger';
-import { logAuditLogRead, extractClientIp } from '@kit/audit-log';
+import { logAuditLogRead, extractClientIpFromHeaders } from '@kit/audit-log';
 import { enhanceRouteHandler } from '@kit/next/routes';
 import { SessionWithId } from '../../home/(user)/mypraxis/_lib/schemas/session';
 
@@ -36,7 +36,7 @@ export const GET = enhanceRouteHandler(
         actingUserId: user.id,
         tableName: 'sessions',
         recordId: undefined,
-        ipAddress: extractClientIp(request),
+        ipAddress: extractClientIpFromHeaders(request.headers),
         details: { num_records: sessionsData.length },
       });
     }

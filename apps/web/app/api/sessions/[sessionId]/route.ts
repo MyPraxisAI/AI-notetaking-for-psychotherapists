@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseServerClient } from '@kit/supabase/server-client';
 import { getLogger } from '@kit/shared-common/logger';
-import { logAuditLogRead, extractClientIp } from '@kit/audit-log';
+import { logAuditLogRead, extractClientIpFromHeaders } from '@kit/audit-log';
 import { SessionWithId } from '../../../home/(user)/mypraxis/_lib/schemas/session';
 import { enhanceRouteHandler } from '@kit/next/routes';
 import { createI18nServerInstance } from '~/lib/i18n/i18n.server';
@@ -34,7 +34,7 @@ async function fetchFormattedTranscript(client: any, sessionId: string, user: an
         actingUserId: user.id,
         tableName: 'transcripts',
         recordId: transcript.id,
-        ipAddress: extractClientIp(request)
+        ipAddress: extractClientIpFromHeaders(request.headers)
       });
     }
     // If content_json exists, render it to text
@@ -98,7 +98,7 @@ export const GET = enhanceRouteHandler(
       actingUserId: user.id,
       tableName: 'sessions',
       recordId: sessionData.id,
-      ipAddress: extractClientIp(request)
+      ipAddress: extractClientIpFromHeaders(request.headers)
     });
     // Fetch transcript content using the helper
     const transcriptContent = await fetchFormattedTranscript(client, sessionId, user, request, logger);

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseServerClient } from '@kit/supabase/server-client';
 import { getLogger } from '@kit/shared-common/logger';
-import { logAuditLogRead, extractClientIp } from '@kit/audit-log';
+import { logAuditLogRead, extractClientIpFromHeaders } from '@kit/audit-log';
 import { enhanceRouteHandler } from '@kit/next/routes';
 import { ClientWithId } from '../../../home/(user)/mypraxis/_lib/schemas/client';
 import { createAccountsApi } from '@kit/web-bg-common';
@@ -37,7 +37,7 @@ export const GET = enhanceRouteHandler(
       actingUserId: user.id,
       tableName: 'clients',
       recordId: clientId,
-      ipAddress: extractClientIp(request),
+      ipAddress: extractClientIpFromHeaders(request.headers),
     });
     const record = clientData;
     const result: ClientWithId = {
