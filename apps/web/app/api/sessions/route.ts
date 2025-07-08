@@ -7,7 +7,7 @@ import { SessionWithId } from '../../home/(user)/mypraxis/_lib/schemas/session';
 import { Tables } from '~/lib/database.types';
 
 export const GET = enhanceRouteHandler(
-    async ({ params, request, user }) => {
+    async ({ request, user }) => {
   const logger = await getLogger();
   const url = new URL(request.url);
   const clientId = url.searchParams.get('clientId');

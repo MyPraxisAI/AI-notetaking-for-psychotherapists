@@ -1,12 +1,21 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseServerClient } from '@kit/supabase/server-client';
-import { getLogger } from '@kit/shared-common/logger';
+import { getLogger, Logger} from '@kit/shared-common/logger';
 import { logAuditLogRead, extractClientIpFromHeaders } from '@kit/audit-log';
 import { SessionWithId } from '../../../home/(user)/mypraxis/_lib/schemas/session';
 import { enhanceRouteHandler } from '@kit/next/routes';
 import { createI18nServerInstance } from '~/lib/i18n/i18n.server';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import type { Database } from '~/lib/database.types';
+import type { TranscriptSegment } from '@kit/web-bg-common';
 
-async function fetchFormattedTranscript(client: any, sessionId: string, user: any, request: any, logger: any) {
+async function fetchFormattedTranscript(
+  client: SupabaseClient<Database>,
+  sessionId: string,
+  user: { id: string },
+  request: Request,
+  logger: Logger
+) {
   const { t } = await createI18nServerInstance();
   function formatTimestamp(seconds: number): string {
     const minutes = Math.floor(seconds / 60);
@@ -40,7 +49,7 @@ async function fetchFormattedTranscript(client: any, sessionId: string, user: an
     // If content_json exists, render it to text
     if (transcript.content_json) {
       try {
-        const contentJson = transcript.content_json as { segments: any[] };
+        const contentJson = transcript.content_json as { segments: TranscriptSegment[] };
         // Define speaker labels using i18n
         const speakerLabels = {
           therapist: `**${t('mypraxis:sessionView.transcript.speakerLabels.therapist')}**`,
@@ -71,7 +80,7 @@ async function fetchFormattedTranscript(client: any, sessionId: string, user: an
 }
 
 export const GET = enhanceRouteHandler(
-    async ({ params, request, user }) => {
+    async ({ params, request, user }: { params: Record<string, string>, request: Request, user: { id: string } }) => {
   const logger = await getLogger();
   const { sessionId } = params;
 

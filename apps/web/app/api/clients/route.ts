@@ -5,9 +5,10 @@ import { logAuditLogRead, extractClientIpFromHeaders } from '@kit/audit-log';
 import { enhanceRouteHandler } from '@kit/next/routes';
 import { ClientWithId } from '../../home/(user)/mypraxis/_lib/schemas/client';
 import { createAccountsApi } from '@kit/web-bg-common';
+import { Tables } from '~/lib/database.types';
 
 export const GET = enhanceRouteHandler(
-    async ({ params, request, user }) => {
+    async ({ request, user }) => {
   const logger = await getLogger();
   try {
     if (!user) {
@@ -44,7 +45,7 @@ export const GET = enhanceRouteHandler(
         details: { num_records: clientsData.length },
       });
     }
-    const result: ClientWithId[] = (clientsData || []).map((record: any) => ({
+    const result: ClientWithId[] = (clientsData || []).map((record: Tables<'clients'>) => ({
       id: record.id,
       fullName: record.full_name,
       email: record.email || '',
