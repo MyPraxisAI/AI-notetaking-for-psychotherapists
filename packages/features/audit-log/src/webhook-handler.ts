@@ -2,10 +2,11 @@ import { AuthUsersWebhookPayloadSchema, AuditLogInsert } from './types';
 import { insertAuditLog } from './insert-audit-log';
 import { create } from 'jsondiffpatch';
 import { NULL_UUID } from './util';
+import { Json } from '@kit/supabase/database';
 
 const jsondiffpatch = create();
 
-function computeDelta(record: Record<string, any> | null, oldRecord: Record<string, any> | null) {
+function computeDelta(record: Record<string, Json> | null, oldRecord: Record<string, Json> | null) {
   record ||= {};
   oldRecord ||= {};
   const patch = jsondiffpatch.diff(oldRecord, record);

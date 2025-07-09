@@ -1,6 +1,5 @@
 import { SupabaseClient } from '@supabase/supabase-js';
 import { AsyncLocalStorage } from 'async_hooks';
-import { getLogger } from '@kit/shared-common';
 
 // Define the type for our context store
 type ContextStore = Map<string, string | null>;

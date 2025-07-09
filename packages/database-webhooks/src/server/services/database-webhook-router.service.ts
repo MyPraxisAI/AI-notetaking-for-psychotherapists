@@ -2,7 +2,7 @@ import { SupabaseClient } from '@supabase/supabase-js';
 
 import { Database } from '@kit/supabase/database';
 
-import { RecordChange, Tables } from '../record-change.type';
+import { RecordChange } from '../record-change.type';
 import type { AuthUsersWebhookPayload } from '@kit/audit-log';
 
 export function createDatabaseWebhookRouterService(
@@ -23,7 +23,7 @@ class DatabaseWebhookRouterService {
    * @description Handle the webhook event
    * @param body
    */
-  async handleWebhook(body: RecordChange<any, any, any> | AuthUsersWebhookPayload) {
+  async handleWebhook(body: Partial<RecordChange> & { table: string, schema?: string } | AuthUsersWebhookPayload) {
     switch (body.table) {
       case 'invitations': {
         const payload = body as RecordChange<'public', 'invitations'>;
@@ -42,7 +42,7 @@ class DatabaseWebhookRouterService {
         return this.handleAccountsWebhook(payload);
       }
       case 'users': {
-        if ((body as any).schema === 'auth') {
+        if ('schema' in body && body.schema === 'auth') {
           return this.handleAuthUsersWebhook(body as AuthUsersWebhookPayload);
         }
         return;

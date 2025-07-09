@@ -19,7 +19,7 @@ import {
 import { createAdminAccountsService } from './services/admin-accounts.service';
 import { createAdminAuthUserService } from './services/admin-auth-user.service';
 import { adminAction } from './utils/admin-action';
-import { logAuditLogRead, extractClientIpFromHeaders, logImpersonateUser } from '@kit/audit-log';
+import { extractClientIpFromHeaders, logImpersonateUser } from '@kit/audit-log';
 
 /**
  * @name banUserAction

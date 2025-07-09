@@ -10,7 +10,7 @@ import { z } from 'zod';
 import { verifyCaptchaToken } from '@kit/auth/captcha/server';
 import { requireUser } from '@kit/supabase/require-user';
 import { getSupabaseServerClient } from '@kit/supabase/server-client';
-import { createAccountsApi, withCurrentAccountId, NoAccountIdError } from '@kit/web-bg-common';
+import { createAccountsApi, withCurrentAccountId } from '@kit/web-bg-common';
 import { getLogger } from '@kit/shared/logger';
 
 import { zodParseFactory } from '../utils';

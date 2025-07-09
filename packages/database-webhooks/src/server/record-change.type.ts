@@ -5,7 +5,7 @@ export type TablesForSchema<S extends Schemas> = Database[S]['Tables'];
 
 // Only keys with a Row property
 export type TableWithRow<S extends Schemas> = {
-  [K in keyof TablesForSchema<S>]: TablesForSchema<S>[K] extends { Row: any } ? K : never
+  [K in keyof TablesForSchema<S>]: TablesForSchema<S>[K] extends { Row: Record<string, unknown> } ? K : never
 }[keyof TablesForSchema<S>];
 
 // Add this for compatibility with existing code

@@ -2,6 +2,7 @@ import { getSupabaseServerAdminClient } from '@kit/supabase/server-admin-client'
 import { createAccountsApi } from '@kit/web-bg-common';
 import { getLogger } from '@kit/shared/logger';
 import { insertAuditLog } from './insert-audit-log';
+import { Json } from '@kit/supabase/database';
 
 export interface LogAuditReadParams {
   actingUserId: string;
@@ -10,7 +11,7 @@ export interface LogAuditReadParams {
   recordId?: string;
   ipAddress?: string;
   accessReason?: string;
-  details?: any;
+  details?: Json;
   application?: string;
 }
 

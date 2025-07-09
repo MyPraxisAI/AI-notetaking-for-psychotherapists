@@ -1,6 +1,7 @@
 import 'server-only';
 
 import { NextRequest, NextResponse } from 'next/server';
+import { User } from '@supabase/supabase-js';
 import { createAccountsApi, withCurrentAccountId, NoAccountIdError } from '@kit/web-bg-common';
 import { getLogger } from '@kit/shared/logger';
 import { getSupabaseServerClient } from '@kit/supabase/server-client';
@@ -31,7 +32,7 @@ export function enhanceRouteHandlerWithAccountContext<
 >(
   handler: (params: {
     request: NextRequest;
-    user: Params['auth'] extends false ? undefined : any;
+    user: Params['auth'] extends false ? undefined : User;
     body: Params['schema'] extends z.ZodType ? z.infer<Params['schema']> : undefined;
     params: Record<string, string>;
     accountId: string | null;
@@ -94,7 +95,7 @@ export function enhanceRouteHandlerRequiringAccountContext<
 >(
   handler: (params: {
     request: NextRequest;
-    user: Params['auth'] extends false ? undefined : any;
+    user: Params['auth'] extends false ? undefined : User;
     body: Params['schema'] extends z.ZodType ? z.infer<Params['schema']> : undefined;
     params: Record<string, string>;
     accountId: string; // Notice: this is not nullable!
