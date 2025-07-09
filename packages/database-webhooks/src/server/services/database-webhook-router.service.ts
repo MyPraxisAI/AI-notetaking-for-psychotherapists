@@ -23,7 +23,7 @@ class DatabaseWebhookRouterService {
    * @description Handle the webhook event
    * @param body
    */
-  async handleWebhook(body: Partial<RecordChange> & { table: string, schema?: string } | AuthUsersWebhookPayload) {
+  async handleWebhook(body: (RecordChange & { table: string, schema?: string }) | AuthUsersWebhookPayload) {
     switch (body.table) {
       case 'invitations': {
         const payload = body as RecordChange<'public', 'invitations'>;

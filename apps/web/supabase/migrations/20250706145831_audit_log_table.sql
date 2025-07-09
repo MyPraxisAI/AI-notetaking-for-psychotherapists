@@ -28,25 +28,15 @@ CREATE INDEX IF NOT EXISTS audit_log_phi_accessed_idx ON public.audit_log (phi_a
 -- Enable Row Level Security
 ALTER TABLE public.audit_log ENABLE ROW LEVEL SECURITY;
 
--- Revoke all privileges from all common roles
-REVOKE ALL ON public.audit_log FROM PUBLIC, authenticated, anon;
+-- Revoke all privileges from all roles
+REVOKE ALL ON public.audit_log FROM PUBLIC, authenticated, anon, service_role;
+
+-- Grant only SELECT and INSERT to service_role (no UPDATE/DELETE for immutability)
+GRANT SELECT, INSERT ON public.audit_log TO service_role;
 
 -- action_type=READ are only allowed to be inserted by service_role from app code
 -- action_type=CREATE, UPDATE, DELETE are inserted via triggers (with security definer)
-
--- Policy: Only service_role can read all audit_log rows
-CREATE POLICY "audit_log_read_service_role" ON public.audit_log
-  FOR SELECT TO service_role
-  USING (true);
-
--- Policy: Only service_role can insert into audit_log for action_type=READ or table_name='auth.users'
--- auth.users events are logged via audit-log webhooks
-CREATE POLICY "audit_log_insert_service_role" ON public.audit_log
-  FOR INSERT TO service_role
-  WITH CHECK (
-    action_type = 'READ'
-    OR table_name = 'auth.users'
-  );
+-- except for auth.users events, which are inserted by service_role via webhooks
 
 -- SECURITY DEFINER trigger function for audit logging
 CREATE OR REPLACE FUNCTION public.audit_log_trigger_fn()

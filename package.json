@@ -36,6 +36,7 @@
     "db:reset": "pnpm supabase:web:reset",
     "db:migrate": "pnpm --filter web supabase migration up --local --include-all",
     "supabase:web:test": "pnpm --filter web supabase:test",
+    "db:test": "pnpm supabase:web:test",
     "supabase:regen": "pnpm run supabase:web:reset && pnpm run supabase:web:typegen",
     "db:regen": "pnpm supabase:regen",
     "stripe:listen": "pnpm --filter '@kit/stripe' start",
