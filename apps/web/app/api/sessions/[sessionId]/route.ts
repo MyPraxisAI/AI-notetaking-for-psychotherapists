@@ -55,7 +55,7 @@ async function fetchFormattedTranscript(
           rawContentJson &&
           typeof rawContentJson === 'object' &&
           'segments' in rawContentJson &&
-          Array.isArray((rawContentJson as any).segments)
+          Array.isArray((rawContentJson as { segments?: unknown }).segments)
         ) {
           contentJson = rawContentJson as { segments: TranscriptSegment[] };
         } else {

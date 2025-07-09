@@ -40,6 +40,7 @@ CREATE POLICY "audit_log_read_service_role" ON public.audit_log
   USING (true);
 
 -- Policy: Only service_role can insert into audit_log for action_type=READ or table_name='auth.users'
+-- auth.users events are logged via audit-log webhooks
 CREATE POLICY "audit_log_insert_service_role" ON public.audit_log
   FOR INSERT TO service_role
   WITH CHECK (
@@ -52,11 +53,11 @@ CREATE OR REPLACE FUNCTION public.audit_log_trigger_fn()
 RETURNS trigger
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public, pg_temp
 AS $$
 DECLARE
   v_account_id UUID;
 BEGIN
-  SET search_path = public, pg_temp;
 
   v_account_id := (to_jsonb(COALESCE(NEW, OLD)) ->> 'account_id')::uuid;
 
