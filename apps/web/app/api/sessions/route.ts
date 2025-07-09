@@ -38,7 +38,7 @@ export const GET = enhanceRouteHandler(
         tableName: 'sessions',
         recordId: undefined,
         ipAddress: extractClientIpFromHeaders(request.headers),
-        details: { num_records: sessionsData.length },
+        details: { num_records: sessionsData.length, client_id: clientId },
       });
     }
     // Transform to SessionWithId format
