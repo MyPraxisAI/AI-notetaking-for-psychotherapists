@@ -74,7 +74,11 @@ export function useUpdatePassword() {
     },
     onError: (error) => {
       console.error('Error updating password:', error);
-      toast.error(t('hooks.userProfile.passwordUpdatedError'));
+      let message = '';
+      if (error && typeof error === 'object' && 'message' in error && error.message) {
+        message = ': ' + error.message;
+      }
+      toast.error(t('hooks.userProfile.passwordUpdatedError', { message }));
     },
   });
 }
