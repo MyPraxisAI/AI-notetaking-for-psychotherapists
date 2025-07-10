@@ -12,7 +12,7 @@ import { getDatabaseWebhookVerifier } from './verifier';
  * @description Payload for the database change event. Useful for handling custom webhooks.
  */
 export type DatabaseChangePayload<Table extends keyof Tables> =
-  RecordChange<Table>;
+  RecordChange<'public', Table>;
 
 export function getDatabaseWebhookHandlerService() {
   return new DatabaseWebhookHandlerService();
@@ -31,7 +31,7 @@ class DatabaseWebhookHandlerService {
    * @param params
    */
   async handleWebhook(params: {
-    body: RecordChange<keyof Tables>;
+    body: RecordChange<'public', keyof Tables>;
     signature: string;
     handleEvent?<Table extends keyof Tables>(
       payload: Table extends keyof Tables

@@ -2,7 +2,8 @@ import { SupabaseClient } from '@supabase/supabase-js';
 
 import { Database } from '@kit/supabase/database';
 
-import { RecordChange, Tables } from '../record-change.type';
+import { RecordChange } from '../record-change.type';
+import type { AuthUsersWebhookPayload } from '@kit/audit-log';
 
 export function createDatabaseWebhookRouterService(
   adminClient: SupabaseClient<Database>,
@@ -22,39 +23,37 @@ class DatabaseWebhookRouterService {
    * @description Handle the webhook event
    * @param body
    */
-  async handleWebhook(body: RecordChange<keyof Tables>) {
+  async handleWebhook(body: (RecordChange & { table: string, schema?: string }) | AuthUsersWebhookPayload) {
     switch (body.table) {
       case 'invitations': {
-        const payload = body as RecordChange<typeof body.table>;
-
+        const payload = body as RecordChange<'public', 'invitations'>;
         return this.handleInvitationsWebhook(payload);
       }
-
       case 'personal_invites': {
-        const payload = body as RecordChange<typeof body.table>;
-
+        const payload = body as RecordChange<'public', 'personal_invites'>;
         return this.handlePersonalInvitesWebhook(payload);
       }
-
       case 'subscriptions': {
-        const payload = body as RecordChange<typeof body.table>;
-
+        const payload = body as RecordChange<'public', 'subscriptions'>;
         return this.handleSubscriptionsWebhook(payload);
       }
-
       case 'accounts': {
-        const payload = body as RecordChange<typeof body.table>;
-
+        const payload = body as RecordChange<'public', 'accounts'>;
         return this.handleAccountsWebhook(payload);
       }
-
+      case 'users': {
+        if ('schema' in body && body.schema === 'auth') {
+          return this.handleAuthUsersWebhook(body as AuthUsersWebhookPayload);
+        }
+        return;
+      }
       default: {
         return;
       }
     }
   }
 
-  private async handleInvitationsWebhook(body: RecordChange<'invitations'>) {
+  private async handleInvitationsWebhook(body: RecordChange<'public', 'invitations'>) {
     const { createAccountInvitationsWebhookService } = await import(
       '@kit/team-accounts/webhooks'
     );
@@ -65,7 +64,7 @@ class DatabaseWebhookRouterService {
   }
 
   private async handleSubscriptionsWebhook(
-    body: RecordChange<'subscriptions'>,
+    body: RecordChange<'public', 'subscriptions'>,
   ) {
     if (body.type === 'DELETE' && body.old_record) {
       const { createBillingWebhooksService } = await import(
@@ -78,7 +77,7 @@ class DatabaseWebhookRouterService {
     }
   }
 
-  private async handleAccountsWebhook(body: RecordChange<'accounts'>) {
+  private async handleAccountsWebhook(body: RecordChange<'public', 'accounts'>) {
     if (body.type === 'DELETE' && body.old_record) {
       const { createAccountWebhooksService } = await import(
         '@kit/team-accounts/webhooks'
@@ -90,7 +89,7 @@ class DatabaseWebhookRouterService {
     }
   }
 
-  private async handlePersonalInvitesWebhook(body: RecordChange<'personal_invites'>) {
+  private async handlePersonalInvitesWebhook(body: RecordChange<'public', 'personal_invites'>) {
     if (body.type === 'INSERT' && body.record) {
       // Dynamic import to avoid circular dependencies
       const { createPersonalInviteWebhookService } = await import(
@@ -101,5 +100,11 @@ class DatabaseWebhookRouterService {
 
       return service.handlePersonalInviteCreatedWebhook(body.record);
     }
+  }
+
+  private async handleAuthUsersWebhook(body: AuthUsersWebhookPayload) {
+    // Dynamic import to avoid circular dependencies
+    const { handleAuthUsersDatabaseWebhook } = await import('@kit/audit-log');
+    return handleAuthUsersDatabaseWebhook(body);
   }
 }

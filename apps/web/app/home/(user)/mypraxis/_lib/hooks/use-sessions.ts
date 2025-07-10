@@ -6,7 +6,6 @@ import { useUserWorkspace } from '@kit/accounts/hooks/use-user-workspace';
 import { SessionData, SessionWithId } from '../schemas/session';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { getTranscriptContent } from '../actions';
 
 /**
  * Hook to fetch all sessions for a specific client
@@ -14,42 +13,19 @@ import { getTranscriptContent } from '../actions';
 export function useSessions(clientId: string | null) {
   const { workspace } = useUserWorkspace();
   const accountId = workspace?.id;
-  const client = useSupabase();
-
   const queryKey = ['sessions', clientId, accountId];
 
   return useQuery({
     queryKey,
     queryFn: async (): Promise<SessionWithId[]> => {
       if (!accountId || !clientId) return [];
-
       try {
-        const { data: sessionsData, error: sessionsError } = await client
-          .from('sessions')
-          .select('*')
-          .eq('client_id', clientId)
-          .eq('account_id', accountId)
-          .order('created_at', { ascending: false });
-
-        if (sessionsError) {
-          throw sessionsError;
+        const res = await fetch(`/api/sessions?clientId=${encodeURIComponent(clientId)}`);
+        if (!res.ok) {
+          throw new Error('Failed to fetch sessions');
         }
-
-        // Transform the data from database format to our schema format
-        return (sessionsData || []).map((record: {
-          id: string;
-          client_id: string;
-          title: string | null;
-          note: string | null;
-          created_at: string;
-        }) => ({
-          id: record.id,
-          clientId: record.client_id,
-          title: record.title || '',
-          note: record.note || undefined,
-          transcript: undefined, // Keep for backward compatibility with UI
-          createdAt: record.created_at
-        }));
+        const data = await res.json();
+        return data;
       } catch (error) {
         console.error('Error fetching sessions:', error);
         throw error;
@@ -66,54 +42,20 @@ export function useSessions(clientId: string | null) {
 export function useSession(sessionId: string | null) {
   const { workspace } = useUserWorkspace();
   const accountId = workspace?.id;
-  const client = useSupabase();
-  const { i18n } = useTranslation('mypraxis'); // t removed - not used in this function
-
   const queryKey = ['session', sessionId, accountId];
 
   return useQuery({
     queryKey,
     queryFn: async (): Promise<SessionWithId | null> => {
       if (!accountId || !sessionId) return null;
-
       try {
-        // Fetch session data
-        const { data: sessionData, error: sessionError } = await client
-          .from('sessions')
-          .select('*')
-          .eq('id', sessionId)
-          .eq('account_id', accountId)
-          .single();
-
-        if (sessionError) {
-          throw sessionError;
+        const res = await fetch(`/api/sessions/${encodeURIComponent(sessionId)}`);
+        if (!res.ok) {
+          if (res.status === 404) return null;
+          throw new Error('Failed to fetch session');
         }
-
-        if (!sessionData) {
-          return null;
-        }
-        
-        // Fetch transcript content using the server action
-        let transcript = null;
-        try {
-          const { success, content } = await getTranscriptContent(sessionId, i18n.language as 'en' | 'ru');
-          if (success && content) {
-            transcript = content;
-          }
-        } catch (error) {
-          console.error('Error fetching transcript content:', error);
-          // Don't throw here, as we can still return the session without transcript
-        }
-
-        // Transform the data using the same interface we defined earlier
-        return {
-          id: sessionData.id,
-          clientId: sessionData.client_id,
-          title: sessionData.title || '',
-          note: sessionData.note || undefined,
-          transcript: transcript || undefined, // Use transcript from the transcripts table
-          createdAt: sessionData.created_at
-        };
+        const data = await res.json();
+        return data;
       } catch (error) {
         console.error('Error fetching session:', error);
         throw error;

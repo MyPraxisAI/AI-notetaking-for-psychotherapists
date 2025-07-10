@@ -7,6 +7,7 @@ import { enhanceAction } from '@kit/next/actions';
 import { getLogger } from '@kit/shared/logger';
 import { getSupabaseServerAdminClient } from '@kit/supabase/server-admin-client';
 import { getSupabaseServerClient } from '@kit/supabase/server-client';
+import { headers } from 'next/headers'
 
 import {
   BanUserSchema,
@@ -18,6 +19,7 @@ import {
 import { createAdminAccountsService } from './services/admin-accounts.service';
 import { createAdminAuthUserService } from './services/admin-auth-user.service';
 import { adminAction } from './utils/admin-action';
+import { extractClientIpFromHeaders, logImpersonateUser } from '@kit/audit-log';
 
 /**
  * @name banUserAction
@@ -81,12 +83,22 @@ export const reactivateUserAction = adminAction(
  */
 export const impersonateUserAction = adminAction(
   enhanceAction(
-    async ({ userId }) => {
+    async ({ userId, accessReason }: { userId: string; accessReason: string }) => {
       const service = getAdminAuthService();
       const logger = await getLogger();
-
+      const supabase = getSupabaseServerClient();
+      const { data } = await supabase.auth.getUser();
+      const currentUserId = data.user?.id;
+      if (!currentUserId) {
+        throw new Error('Super admin user not authenticated');
+      }
+      await logImpersonateUser({
+        actingUserId: currentUserId,
+        recordId: userId,
+        ipAddress: extractClientIpFromHeaders(await headers()) || 'unknown',
+        accessReason,
+      });
       logger.info({ userId }, `Super Admin is impersonating user...`);
-
       return await service.impersonateUser(userId);
     },
     {

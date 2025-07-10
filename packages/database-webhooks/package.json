@@ -13,6 +13,7 @@
     ".": "./src/index.ts"
   },
   "devDependencies": {
+    "@kit/audit-log": "workspace:*",
     "@kit/billing": "workspace:*",
     "@kit/billing-gateway": "workspace:*",
     "@kit/eslint-config": "workspace:*",

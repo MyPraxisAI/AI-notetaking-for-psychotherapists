@@ -10,7 +10,9 @@ const UserIdSchema = ConfirmationSchema.extend({
 
 export const BanUserSchema = UserIdSchema;
 export const ReactivateUserSchema = UserIdSchema;
-export const ImpersonateUserSchema = UserIdSchema;
+export const ImpersonateUserSchema = UserIdSchema.extend({
+  accessReason: z.string().min(1, 'Access reason is required'),
+});
 export const DeleteUserSchema = UserIdSchema;
 
 export const DeleteAccountSchema = ConfirmationSchema.extend({

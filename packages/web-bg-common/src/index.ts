@@ -44,6 +44,7 @@ export {
 
 // Re-export types for convenience in server contexts
 export * from './types';
+export * from './types/types';
 
 // Re-export AWS utilities
 export * as aws from './aws';

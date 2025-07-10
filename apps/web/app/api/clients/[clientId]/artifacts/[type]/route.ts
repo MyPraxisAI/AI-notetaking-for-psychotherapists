@@ -3,11 +3,11 @@ import { enhanceRouteHandler } from '@kit/next/routes';
 import { getSupabaseServerClient } from '@kit/supabase/server-client';
 import { getArtifact } from '@kit/web-bg-common';
 import type { ArtifactType } from '@kit/web-bg-common/types';
+import { logAuditLogRead, extractClientIpFromHeaders } from '@kit/audit-log';
 
 // This route handler returns artifacts for a client
 export const GET = enhanceRouteHandler(
-  async (req) => {
-    const { params } = req;
+  async ({ params, user, request }) => {
     const { clientId, type } = params as { clientId: string; type: string };
     // Validate the artifact type
     if (!['client_prep_note', 'client_conceptualization', 'client_bio'].includes(type)) {
@@ -22,7 +22,6 @@ export const GET = enhanceRouteHandler(
 
     // Get the Supabase client for database access
     const client = getSupabaseServerClient();
-    
     
     try {
       // Get the artifact from the database
@@ -39,6 +38,17 @@ export const GET = enhanceRouteHandler(
           { error: 'Artifact not found' },
           { status: 404 }
         );
+      }
+
+      // Log the read to audit_log
+      if (user?.id) {
+        await logAuditLogRead({
+          actingUserId: user.id,
+          tableName: 'artifacts',
+          recordId: artifact.id,
+          ipAddress: extractClientIpFromHeaders(request.headers),
+          details: { artifactType },
+        });
       }
       
       // Return the artifact with all its data including the stale field

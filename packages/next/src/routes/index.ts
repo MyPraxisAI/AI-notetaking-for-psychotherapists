@@ -10,6 +10,8 @@ import { z } from 'zod';
 import { verifyCaptchaToken } from '@kit/auth/captcha/server';
 import { requireUser } from '@kit/supabase/require-user';
 import { getSupabaseServerClient } from '@kit/supabase/server-client';
+import { createAccountsApi, withCurrentAccountId } from '@kit/web-bg-common';
+import { getLogger } from '@kit/shared/logger';
 
 import { zodParseFactory } from '../utils';
 
@@ -27,6 +29,7 @@ interface HandlerParams<
   user: RequireAuth extends false ? undefined : User;
   body: Schema extends z.ZodType ? z.infer<Schema> : undefined;
   params: Record<string, string>;
+  accountId: string | null; // Added account ID to handler params
 }
 
 /**
@@ -79,6 +82,10 @@ export const enhanceRouteHandler = <
 
     let user: UserParam = undefined as UserParam;
 
+    const logger = await getLogger();
+    const client = getSupabaseServerClient();
+    const accountsApi = createAccountsApi(client);
+    
     // Check if the captcha token should be verified
     const shouldVerifyCaptcha = params?.captcha ?? false;
 
@@ -94,9 +101,9 @@ export const enhanceRouteHandler = <
       }
     }
 
-    const client = getSupabaseServerClient();
-
     const shouldVerifyAuth = params?.auth ?? true;
+
+    let accountId: string | null = null;
 
     // Check if the user should be authenticated
     if (shouldVerifyAuth) {
@@ -109,7 +116,21 @@ export const enhanceRouteHandler = <
       }
 
       user = auth.data as UserParam;
+      const ctx = {
+        name: 'route-handler',
+        userId: user?.id,
+        path: request.nextUrl.pathname,
+      };
+      
+      try {
+        accountId = await accountsApi.getCurrentAccountId();
+        logger.info({ ...ctx, accountId }, 'Handling request in account context');
+      } catch (error) {
+        logger.error({ ...ctx, error }, 'Failed to get account context');
+        // Continue with null accountId, but log the error
+      }
     }
+    
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let body: any;
@@ -122,11 +143,16 @@ export const enhanceRouteHandler = <
       body = zodParseFactory(params.schema)(json);
     }
 
-    return handler({
-      request,
-      body,
-      user,
-      params: await routeParams.params,
+    
+    // Run the handler with the account context
+    return withCurrentAccountId(accountId, async () => {
+      return handler({
+        request,
+        body,
+        user,
+        params: await routeParams.params,
+        accountId,
+      });
     });
   };
 };
