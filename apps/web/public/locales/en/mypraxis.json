@@ -203,7 +203,7 @@
     "loading": "Loading client bio...",
     "error": "Error loading client bio",
     "tryAgain": "Please try again later",
-    "notAvailable": "Not available yet. Will be generated after first session is recorded.",
+    "notAvailable": "Not available yet, will appear after first session recording is completed.",
     "updating": "Updating"
   },
   "clientConceptualization": {
@@ -211,7 +211,7 @@
     "loading": "Loading conceptualization...",
     "error": "Error loading conceptualization",
     "tryAgain": "Please try again later",
-    "notAvailable": "Not available yet. Will be generated after first session is recorded.",
+    "notAvailable": "Not available yet, will appear after first session recording is completed.",
     "updating": "Updating"
   },
   "clientCreationModal": {
@@ -228,7 +228,7 @@
     "loading": "Loading preparation note...",
     "error": "Error loading preparation note",
     "tryAgain": "Please try again later",
-    "notAvailable": "Not available yet. Will be generated after first session is recorded.",
+    "notAvailable": "Not available yet, will appear after first session recording is completed.",
     "updating": "Updating"
   },
   "deleteSessionModal": {
@@ -400,8 +400,8 @@
       "loadingTherapist": "Loading my summary...",
       "loadingClient": "Loading summary for client...",
       "updating": "Updating",
-      "clientSummaryPlaceholder": "Client summary will be generated automatically once you add either a transcript or session notes",
-      "therapistSummaryPlaceholder": "My summary will be generated automatically once either transcript or session notes are added"
+      "clientSummaryPlaceholder": "Client summary will appear once you add either a transcript or session notes",
+      "therapistSummaryPlaceholder": "My summary will appear either transcript or session notes are added"
     },
     "actions": {
       "save": "Save",
