@@ -41,7 +41,11 @@ export function useUpdateEmail() {
     },
     onError: (error) => {
       console.error('Error updating email:', error);
-      toast.error(t('hooks.userProfile.emailUpdatedError'));
+      let message = '';
+      if (error && typeof error === 'object' && 'message' in error) {
+        message = error.message || '';
+      }
+      toast.error(t('hooks.userProfile.emailUpdatedError', { message }));
     },
   });
 }
