@@ -4,6 +4,7 @@ import { useQuery, useQueryClient, QueryClient } from '@tanstack/react-query';
 import { useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
+import { useSessions } from './use-sessions';
 
 interface ClientArtifactResponse {
   content: string;
@@ -83,10 +84,16 @@ export function useClientArtifact(
   // Check if we have cached data and if it's stale
   const cachedData = queryClient.getQueryData<ClientArtifactResponse>(queryKey);
   const isStale = cachedData?.stale === true;
-    
-  // Set up a polling effect if the artifact is stale
+  // Get sessions for this client
+  const { data: sessionsData } = useSessions(clientId);
+  
+  // Set up a polling effect if the artifact is stale or about to be generated
   useEffect(() => {
-    if (isStale && enabled) {
+    if (
+      enabled && (
+        isStale || (cachedData == null && sessionsData && sessionsData.length > 0)
+      )
+    ) {
       console.log(`[useClientArtifact] Setting up polling for stale artifact: ${type}`);
       
       // Create polling interval
@@ -101,7 +108,7 @@ export function useClientArtifact(
         clearInterval(intervalId);
       };
     }
-  }, [isStale, queryClient, queryKey, type, enabled]);
+  }, [isStale, queryClient, queryKey, type, enabled, sessionsData, cachedData]);
   
   const { t } = useTranslation('mypraxis');
   
@@ -112,7 +119,7 @@ export function useClientArtifact(
         const response = await fetch(`/api/clients/${clientId}/artifacts/${type}`);
         
         if (response.status === 404) {
-          console.log(`[useClientArtifact] 404 NOT FOUND for ${type}`);
+          console.log(`[useClientArtifact] ${type} not found`);
           return null;
         }
         

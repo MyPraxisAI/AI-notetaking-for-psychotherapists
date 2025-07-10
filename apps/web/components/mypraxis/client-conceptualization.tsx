@@ -9,6 +9,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAppEvents } from '@kit/shared/events';
 import type { AppEvents } from '../../lib/app-events';
+import { useSessions } from '../../app/home/(user)/mypraxis/_lib/hooks/use-sessions';
 
 interface ClientConceptualizationProps {
   clientId: string;
@@ -25,30 +26,10 @@ export function ClientConceptualization({ clientId }: ClientConceptualizationPro
     error,
     refetch: _refetch // Renamed to indicate it's unused
   } = useClientArtifact(clientId, 'client_conceptualization', !!clientId);
-  
-  // We no longer need to force refetch as we're using prefetching
-  // This commented code is kept for reference
-  /*
-  useEffect(() => {
-    // Force refetch when component mounts
-    refetch();
-    
-    // Also refetch when component becomes visible
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        // Reset cache and force refetch
-        queryClient.resetQueries({ queryKey: ['client', clientId, 'artifact', 'client_conceptualization'] });
-        refetch();
-      }
-    };
-    
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, [clientId, refetch, queryClient]);
-  */
+
+  // Fetch sessions for the client
+  const { data: sessions = [] } = useSessions(clientId);
+  const hasSessions = sessions.length > 0;
   
   // Track if the conceptualization is stale (being updated)
   const [isConceptualizationStale, setIsConceptualizationStale] = useState(false);
@@ -90,7 +71,7 @@ export function ClientConceptualization({ clientId }: ClientConceptualizationPro
 
   return (
     <div className="w-full px-6 pt-6 bg-white">
-      <h2 className="text-[24px] font-semibold text-[#111827] tracking-[-0.011em]">
+      <h2 className="text-[24px] font-semibold text-[#111827] tracking-[-0.011em] truncate">
         {t('mypraxis:clientConceptualization.title')}
       </h2>
       
@@ -107,7 +88,16 @@ export function ClientConceptualization({ clientId }: ClientConceptualizationPro
           <p className="text-sm mt-1">{t('mypraxis:clientConceptualization.tryAgain')}</p>
         </div>
       ) : !conceptualizationData ? (
-        <div className="mt-5 rounded-lg bg-[#FFF9E8] p-3" data-test="client-conceptualization-empty">
+        <div className="mt-5 rounded-lg bg-[#FFF9E8] p-3 relative" data-test="client-conceptualization-empty">
+          {/* Show updating badge if there are sessions but no conceptualizationData */}
+          {hasSessions && (
+            <div className="absolute right-2 top-2">
+              <Badge variant="outline" className="flex items-center gap-1 bg-white">
+                <RefreshCw className="h-3 w-3 animate-spin" />
+                <span>{t('mypraxis:clientConceptualization.updating')}</span>
+              </Badge>
+            </div>
+          )}
           <p className="text-[#374151] text-[14px] leading-[1.6]">
             {t('mypraxis:clientConceptualization.notAvailable')}
           </p>

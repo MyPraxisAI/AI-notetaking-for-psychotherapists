@@ -9,6 +9,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAppEvents } from '@kit/shared/events';
 import type { AppEvents } from '../../lib/app-events';
+import { useSessions } from '../../app/home/(user)/mypraxis/_lib/hooks/use-sessions';
 
 interface ClientBioProps {
   clientId: string;
@@ -25,6 +26,10 @@ export function ClientBio({ clientId }: ClientBioProps) {
     isLoading: isLoadingBio,
     error
   } = useClientArtifact(clientId, 'client_bio', !!clientId);
+
+  // Fetch sessions for the client
+  const { data: sessions = [] } = useSessions(clientId);
+  const hasSessions = sessions.length > 0;
   
   // Track if the bio is stale (being updated)
   const [isBioStale, setIsBioStale] = useState(false);
@@ -83,7 +88,16 @@ export function ClientBio({ clientId }: ClientBioProps) {
           <p className="text-sm mt-1">{t('mypraxis:clientBio.tryAgain')}</p>
         </div>
       ) : !bioData ? (
-        <div className="mt-5 rounded-lg bg-[#FFF9E8] p-3" data-test="client-bio-empty">
+        <div className="mt-5 rounded-lg bg-[#FFF9E8] p-3 relative" data-test="client-bio-empty">
+          {/* Show updating badge if there are sessions but no bioData */}
+          {hasSessions && (
+            <div className="absolute right-2 top-2">
+              <Badge variant="outline" className="flex items-center gap-1 bg-white">
+                <RefreshCw className="h-3 w-3 animate-spin" />
+                <span>{t('mypraxis:clientBio.updating')}</span>
+              </Badge>
+            </div>
+          )}
           <p className="text-[#374151] text-[14px] leading-[1.6]">
             {t('mypraxis:clientBio.notAvailable')}
           </p>
