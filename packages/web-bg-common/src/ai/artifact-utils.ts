@@ -4,16 +4,7 @@
 
 import { SupabaseClient } from '@supabase/supabase-js';
 import { getLogger } from '@kit/shared-common';
-
-/**
- * Interface for transcript segment
- */
-interface TranscriptSegment {
-  start_ms: number;
-  end_ms: number;
-  speaker: string;
-  content: string;
-}
+import type { TranscriptSegment } from '../types/types';
 
 /**
  * Interface for transcript content

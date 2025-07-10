@@ -1,0 +1,12 @@
+{
+  "extends": "@kit/tsconfig/base.json",
+  "compilerOptions": {
+    "tsBuildInfoFile": "node_modules/.cache/tsbuildinfo.json",
+    "moduleResolution": "nodenext",
+    "module": "NodeNext"
+  },
+  "include": ["*.ts", "src"],
+  "exclude": [
+    "node_modules"
+  ]
+}

@@ -15,53 +15,16 @@ import type { AppEvents } from '~/lib/app-events';
 export function useClients() {
   const { workspace } = useUserWorkspace();
   const accountId = workspace?.id;
-  const client = useSupabase();
-
   const queryKey = ['clients', accountId];
 
   return useQuery({
     queryKey,
     queryFn: async (): Promise<ClientWithId[]> => {
       if (!accountId) return [];
-
       try {
-        // First get the therapist ID for the current account
-        const { data: therapistData, error: therapistError } = await client
-          .from('therapists')
-          .select('id')
-          .eq('account_id', accountId)
-          .single();
-
-        if (therapistError) {
-          throw therapistError;
-        }
-
-        if (!therapistData) {
-          return [];
-        }
-
-        const therapistId = therapistData.id;
-
-        // Now fetch clients for this therapist
-        const { data: clientsData, error: clientsError } = await client
-          .from('clients')
-          .select('*')
-          .eq('therapist_id', therapistId)
-          .order('created_at', { ascending: false });
-
-        if (clientsError) {
-          throw clientsError;
-        }
-
-        // Transform the data from database format to our schema format
-        return (clientsData || []).map((record: ClientRecord) => ({
-          id: record.id,
-          fullName: record.full_name,
-          email: record.email || '',
-          phone: record.phone || '',
-          createdAt: record.created_at,
-          demo: record.demo || false
-        }));
+        const res = await fetch('/api/clients');
+        if (!res.ok) throw new Error('Failed to fetch clients');
+        return await res.json();
       } catch (error) {
         console.error('Error fetching clients:', error);
         throw error;
@@ -78,41 +41,17 @@ export function useClients() {
 export function useClient(clientId: string | null) {
   const { workspace } = useUserWorkspace();
   const accountId = workspace?.id;
-  const client = useSupabase();
-
   const queryKey = ['client', clientId, accountId];
 
   return useQuery({
     queryKey,
     queryFn: async (): Promise<ClientWithId | null> => {
       if (!accountId || !clientId) return null;
-
       try {
-        const { data: clientData, error: clientError } = await client
-          .from('clients')
-          .select('*')
-          .eq('id', clientId)
-          .eq('account_id', accountId)
-          .single();
-
-        if (clientError) {
-          throw clientError;
-        }
-
-        if (!clientData) {
-          return null;
-        }
-
-        // Transform the data
-        const record = clientData as ClientRecord;
-        return {
-          id: record.id,
-          fullName: record.full_name,
-          email: record.email || '',
-          phone: record.phone || '',
-          createdAt: record.created_at,
-          demo: record.demo || false
-        };
+        const res = await fetch(`/api/clients/${encodeURIComponent(clientId)}`);
+        if (res.status === 404) return null;
+        if (!res.ok) throw new Error('Failed to fetch client');
+        return await res.json();
       } catch (error) {
         console.error('Error fetching client:', error);
         throw error;

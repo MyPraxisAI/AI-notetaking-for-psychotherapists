@@ -47,3 +47,5 @@ yarn-error.log*
 .contentlayer/
 dist/
 .latest-image-tag
+
+.claude/*local*
