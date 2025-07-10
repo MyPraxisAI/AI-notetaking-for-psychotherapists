@@ -61,6 +61,50 @@ execute function "supabase_functions"."http_request"(
 --         '5000'
 --                  );
 
+-- Webhook triggers for auth.users
+-- These triggers call a webhook endpoint on your app whenever a user is inserted, updated, or deleted in the auth.users table.
+-- The webhook can be used to log changes for HIPAA compliance or other audit purposes.
+
+-- Trigger for INSERT on auth.users
+create trigger "auth_users_insert"
+    after insert
+    on "auth"."users"
+    for each row
+execute function "supabase_functions"."http_request"(
+        'http://host.docker.internal:3000/api/db/webhook',
+        'POST',
+        '{"Content-Type":"application/json", "X-Supabase-Event-Signature":"WEBHOOKSECRET"}',
+        '{}',
+        '5000'
+);
+
+-- Trigger for UPDATE on auth.users
+create trigger "auth_users_update"
+    after update
+    on "auth"."users"
+    for each row
+execute function "supabase_functions"."http_request"(
+        'http://host.docker.internal:3000/api/db/webhook',
+        'POST',
+        '{"Content-Type":"application/json", "X-Supabase-Event-Signature":"WEBHOOKSECRET"}',
+        '{}',
+        '5000'
+);
+
+-- Trigger for DELETE on auth.users
+create trigger "auth_users_delete"
+    after delete
+    on "auth"."users"
+    for each row
+execute function "supabase_functions"."http_request"(
+        'http://host.docker.internal:3000/api/db/webhook',
+        'POST',
+        '{"Content-Type":"application/json", "X-Supabase-Event-Signature":"WEBHOOKSECRET"}',
+        '{}',
+        '5000'
+);
+
+
 
 -- DATA SEED
 -- This is a data dump for testing purposes. It should be used to seed the database with data for testing.

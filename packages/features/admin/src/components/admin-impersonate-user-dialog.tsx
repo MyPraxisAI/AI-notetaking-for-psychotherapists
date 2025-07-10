@@ -40,11 +40,16 @@ export function AdminImpersonateUserDialog(
     userId: string;
   }>,
 ) {
-  const form = useForm({
+  const form = useForm<{
+    userId: string;
+    confirmation: string;
+    accessReason: string;
+  }>({
     resolver: zodResolver(ImpersonateUserSchema),
     defaultValues: {
       userId: props.userId,
       confirmation: '',
+      accessReason: '',
     },
   });
 
@@ -85,10 +90,13 @@ export function AdminImpersonateUserDialog(
             data-test={'admin-impersonate-user-form'}
             className={'flex flex-col space-y-8'}
             onSubmit={form.handleSubmit((data) => {
+              if (!data.accessReason || data.accessReason.trim() === '') {
+                form.setError('accessReason', { type: 'manual', message: 'Access reason is required' });
+                return;
+              }
               startTransition(async () => {
                 try {
                   const result = await impersonateUserAction(data);
-
                   setTokens(result);
                 } catch {
                   setError(true);
@@ -128,6 +136,25 @@ export function AdminImpersonateUserDialog(
                     Are you sure you want to impersonate this user?
                   </FormDescription>
 
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              name={'accessReason'}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    Access Reason
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      required
+                      placeholder={'Enter reason for access (for Audit Log)'}
+                      {...field}
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
