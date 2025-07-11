@@ -242,7 +242,7 @@ export function RecordingModal({
             }
             // Otherwise, show the paused recording dialog
             setExistingRecordingData(result)
-            setShowPausedRecordingDialog(true),
+            setShowPausedRecordingDialog(true)
             setIsProcessing(false)
             return { success: false } // Did not start a new recording
           } else {
@@ -959,7 +959,7 @@ export function RecordingModal({
       window.addEventListener('keydown', onKeyDown);
       return () => window.removeEventListener('keydown', onKeyDown);
     }
-  }, [isOpen, modalState]);
+  }, [isOpen, modalState, handleClose]);
   
   if (!isOpen) return null
   
