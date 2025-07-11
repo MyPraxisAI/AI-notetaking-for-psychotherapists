@@ -311,6 +311,15 @@
     "savingStaleRecording": {
       "title": "Incomplete Recording Found",
       "message": "Found a previous incomplete recording. Saving it before starting a new one..."
+    },
+    "autoComplete": {
+      "inputLabel": "Auto-complete recording after",
+      "infoLabel": "Recording will auto-complete in",
+      "minutes_one": "minute",
+      "minutes_other": "minutes",
+      "seconds": "second",
+      "seconds_one": "second",
+      "seconds_other": "seconds"
     }
   },
   "recordingApi": {

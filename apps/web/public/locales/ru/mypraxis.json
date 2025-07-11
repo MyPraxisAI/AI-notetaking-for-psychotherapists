@@ -310,6 +310,17 @@
     },
     "errors": {
       "startFailed": "Не удалось начать запись"
+    },
+    "autoComplete": {
+      "inputLabel": "Автоматически завершить запись через",
+      "infoLabel": "Запись будет автоматически завершена через",
+      "minutes_one": "мин",
+      "minutes_other": "мин",
+      "seconds": "сек",
+      "seconds_one": "сек",
+      "seconds_few": "сек",
+      "seconds_many": "сек",
+      "seconds_other": "сек"
     }
   },
   "recordingApi": {
