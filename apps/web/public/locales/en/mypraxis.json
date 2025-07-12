@@ -312,6 +312,10 @@
       "title": "Incomplete Recording Found",
       "message": "Found a previous incomplete recording. Saving it before starting a new one..."
     },
+    "savingAutoCompletedRecording": {
+      "title": "Auto-completing Recording",
+      "message": "Saving your recording automatically..."
+    },
     "autoComplete": {
       "inputLabel": "Auto-complete recording after",
       "infoLabel": "Recording will auto-complete in",

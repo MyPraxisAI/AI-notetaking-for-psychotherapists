@@ -115,6 +115,9 @@ export function RecordingModal({
   const [autoCompleteRecordingAfterSeconds, setAutoCompleteRecordingAfterSeconds] = useState<number>(DEFAULT_AUTOCOMPLETE_RECORDING_AFTER_SECONDS);
   const [showSavingAutoCompletedRecordingDialog, setShowSavingAutoCompletedRecordingDialog] = useState(false);
   
+  // Ref to ensure auto-complete only triggers once per recording session
+  const autoCompleteTriggeredRef = useRef(false);
+  
   useEffect(() => {
     if (!document.getElementById('recording-modal-styles')) {
       const styleElement = document.createElement('style');
@@ -932,7 +935,13 @@ export function RecordingModal({
   
   // Watch timer during recording for auto-complete
   useEffect(() => {
-    if (modalState === 'recording' && autoCompleteRecordingAfterSeconds > 0 && timer >= autoCompleteRecordingAfterSeconds) {
+    if (
+      modalState === 'recording' &&
+      autoCompleteRecordingAfterSeconds > 0 &&
+      timer >= autoCompleteRecordingAfterSeconds &&
+      !autoCompleteTriggeredRef.current
+    ) {
+      autoCompleteTriggeredRef.current = true;
       // Auto-complete triggered
       (async () => {
         setShowSavingAutoCompletedRecordingDialog(true);
@@ -944,8 +953,14 @@ export function RecordingModal({
         setShowSavingAutoCompletedRecordingDialog(false);
       })();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [timer, modalState, autoCompleteRecordingAfterSeconds]);
+  }, [timer, modalState, autoCompleteRecordingAfterSeconds, handlePauseRecording, handleSaveSession]);
+
+  // Reset auto-complete trigger ref when starting a new recording session
+  useEffect(() => {
+    if (modalState === 'recording') {
+      autoCompleteTriggeredRef.current = false;
+    }
+  }, [modalState]);
   
   useEffect(() => {
     if (!isOpen) return;
@@ -1432,10 +1447,10 @@ export function RecordingModal({
           <Dialog open={showSavingAutoCompletedRecordingDialog} onOpenChange={() => {}}>
             <DialogContent className="sm:max-w-[425px]">
               <DialogHeader>
-                <DialogTitle>{t('mypraxis:recordingModal.savingAutoCompletedRecording.title', 'Auto-completing Recording')}</DialogTitle>
+                <DialogTitle>{t('mypraxis:recordingModal.savingAutoCompletedRecording.title')}</DialogTitle>
                 <DialogDescription className="flex items-center">
                   <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  {t('mypraxis:recordingModal.savingAutoCompletedRecording.message', 'Saving your recording automatically...')}
+                  {t('mypraxis:recordingModal.savingAutoCompletedRecording.message')}
                 </DialogDescription>
               </DialogHeader>
             </DialogContent>
