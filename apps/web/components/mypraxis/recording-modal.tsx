@@ -7,18 +7,19 @@ import { Button } from "@kit/ui/button"
 import { useAppEvents } from '@kit/shared/events';
 import { useIsSuperAdmin } from "../../lib/client/utils/is-super-admin"
 import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogHeader, DialogFooter } from "@kit/ui/dialog"
-import { Mic, Pause, Play, Loader2, Upload, AlertTriangle } from "lucide-react"
+import { Mic, Pause, Play, Loader2, Upload, AlertTriangle, Volume2 } from "lucide-react"
 import { MyPraxisAudioVisualizer } from "./utils/recording/visualizers/mypraxis-audio-visualizer"
 import { AudioChunk, uploadAudioChunks, processAudioFile } from "./utils/recording/audio-upload"
 import * as RecordingAPI from "./utils/recording/recording-api"
 import * as MediaRecorderUtils from "./utils/recording/media-recorder"
-import { HEARTBEAT_INTERVAL_MS, STALE_RECORDING_DIALOG_MIN_DISPLAY_MS } from "./utils/recording/recording-constants"
+import { HEARTBEAT_INTERVAL_MS, RECORDING_AUTO_DIALOG_MIN_DISPLAY_MS } from "./utils/recording/recording-constants"
 import * as MicrophoneUtils from "./utils/recording/microphone-selection"
 import type { MicrophoneDevice } from "./utils/recording/microphone-selection"
 import { toast } from "sonner"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@kit/ui/select"
 import { HeadphoneWarning } from "./utils/recording/headphone-warning"
 import { AppEvents } from '~/lib/app-events';
+import { MAX_RECORDING_SECONDS, DEFAULT_AUTOCOMPLETE_RECORDING_AFTER_SECONDS } from './utils/recording/recording-constants';
 
 const overlayStyles = `
   .recording-modal-overlay {
@@ -111,6 +112,11 @@ export function RecordingModal({
   const [showActiveRecordingDialog, setShowActiveRecordingDialog] = useState(false)
   const [existingRecordingData, setExistingRecordingData] = useState<RecordingAPI.ExistingRecordingResponse | null>(null)
   const [showSavingStaleRecordingDialog, setShowSavingStaleRecordingDialog] = useState(false)
+  const [autoCompleteRecordingAfterSeconds, setAutoCompleteRecordingAfterSeconds] = useState<number>(DEFAULT_AUTOCOMPLETE_RECORDING_AFTER_SECONDS);
+  const [showSavingAutoCompletedRecordingDialog, setShowSavingAutoCompletedRecordingDialog] = useState(false);
+  
+  // Ref to ensure auto-complete only triggers once per recording session
+  const autoCompleteTriggeredRef = useRef(false);
   
   useEffect(() => {
     if (!document.getElementById('recording-modal-styles')) {
@@ -184,7 +190,7 @@ export function RecordingModal({
     
     try {
       // Create a minimum timer and complete the stale recording in parallel
-      const minimumTimer = new Promise(resolve => setTimeout(resolve, STALE_RECORDING_DIALOG_MIN_DISPLAY_MS))
+      const minimumTimer = new Promise(resolve => setTimeout(resolve, RECORDING_AUTO_DIALOG_MIN_DISPLAY_MS))
       const completeRecordingPromise = RecordingAPI.completeRecording(recordingId)
       
       // Wait for both the timer and the API call to complete
@@ -721,25 +727,24 @@ export function RecordingModal({
         timerInterval.current = null
       }
       
-      const result = await pauseRecording()
-      
-      if (result) {
-        // Pause the MediaRecorder using the utility function
-        if (mediaRecorder.current) {
-          MediaRecorderUtils.pauseMediaRecorder(mediaRecorder.current);
-        }
-        
-        // Make sure all chunks are uploaded when pausing
-        if (recordingId) {
-          await handleUploadAudioChunks(recordingId).catch(err => {
-            console.error('Error uploading chunks during pause:', err);
-          });
-        }
-        
-        setIsRecording(false)
-        setModalState("paused")
-        setIsProcessing(false)
+      await pauseRecording()
+      // Go to local paused state independent of whether server pause succeeded
+
+      // Pause the MediaRecorder using the utility function
+      if (mediaRecorder.current) {
+        MediaRecorderUtils.pauseMediaRecorder(mediaRecorder.current);
       }
+      
+      // Make sure all chunks are uploaded when pausing
+      if (recordingId) {
+        await handleUploadAudioChunks(recordingId).catch(err => {
+          console.error('Error uploading chunks during pause:', err);
+        });
+      }
+      
+      setIsRecording(false)
+      setModalState("paused")
+      setIsProcessing(false)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to pause recording')
       toast.error(err instanceof Error ? err.message : 'Failed to pause recording')
@@ -927,6 +932,58 @@ export function RecordingModal({
     }
   }, [modalState]);
   
+  // Memoized auto-complete handler to avoid unnecessary effect re-runs
+  const handleAutoComplete = useCallback(async () => {
+    setShowSavingAutoCompletedRecordingDialog(true);
+    try {
+      // Wait for minimum display time and save session
+      await Promise.all([
+        new Promise(resolve => setTimeout(resolve, RECORDING_AUTO_DIALOG_MIN_DISPLAY_MS)),
+        handlePauseRecording().then(() => handleSaveSession())
+      ]);
+    } catch (err) {
+      // Log and show error if needed
+      console.error('Auto-complete error:', err);
+    } finally {
+      setShowSavingAutoCompletedRecordingDialog(false);
+    }
+  }, [handlePauseRecording, handleSaveSession, t]);
+
+  // Watch timer during recording for auto-complete
+  useEffect(() => {
+    if (
+      modalState === 'recording' &&
+      autoCompleteRecordingAfterSeconds > 0 &&
+      timer >= autoCompleteRecordingAfterSeconds &&
+      !autoCompleteTriggeredRef.current
+    ) {
+      autoCompleteTriggeredRef.current = true;
+      // Auto-complete triggered
+      handleAutoComplete();
+    }
+  }, [timer, modalState, autoCompleteRecordingAfterSeconds, handleAutoComplete]);
+
+  // Reset auto-complete trigger ref when starting a new recording session or after user closes failure dialog
+  useEffect(() => {
+    if (modalState === 'recording') {
+      autoCompleteTriggeredRef.current = false;
+    }
+  }, [modalState]);
+  
+  useEffect(() => {
+    if (!isOpen) return;
+    if (modalState === 'initial' || modalState === 'soundCheck') {
+      const onKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          handleClose();
+        }
+      };
+      window.addEventListener('keydown', onKeyDown);
+      return () => window.removeEventListener('keydown', onKeyDown);
+    }
+  }, [isOpen, modalState, handleClose]);
+  
   if (!isOpen) return null
   
   return (
@@ -946,6 +1003,16 @@ export function RecordingModal({
       {isOpen && (
         <div className="fixed inset-0 flex flex-col items-center justify-center z-50">
           <div className="relative bg-white rounded-lg w-full max-w-md mx-4 overflow-hidden">
+            <button
+              onClick={handleClose}
+              aria-label="Close"
+              className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 rounded-full p-1"
+              type="button"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
             {/* Modal content starts here */}
             <div className="p-6 pb-4 bg-gray-50 border-b border-gray-200">
               <h2 className="text-lg font-medium text-center">{t("recordingModal.title")} <span className="underline">{selectedClientName}</span></h2>
@@ -1013,10 +1080,33 @@ export function RecordingModal({
                     </SelectContent>
                   </Select>
                 </div>
+                {
+                <div className="mt-4 flex items-center gap-3 bg-white border border-gray-200 rounded-lg px-3 py-2">
+                  <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="text-sm text-gray-700">
+                    {t('mypraxis:recordingModal.autoComplete.inputLabel')}
+                  </span>
+                  <input
+                    type="number"
+                    min={1}
+                    max={MAX_RECORDING_SECONDS / 60}
+                    value={Math.floor(autoCompleteRecordingAfterSeconds / 60)}
+                    onChange={e => {
+                      let val = Number(e.target.value);
+                      if (isNaN(val) || val < 1) val = 1;
+                      if (val > MAX_RECORDING_SECONDS / 60) val = MAX_RECORDING_SECONDS / 60;
+                      setAutoCompleteRecordingAfterSeconds(val * 60);
+                    }}
+                    className="w-16 border rounded-lg px-2 py-1 text-right mx-2"
+                  />
+                  <span className="text-sm text-gray-700">{t('mypraxis:recordingModal.autoComplete.minutes', { count: Math.floor(autoCompleteRecordingAfterSeconds / 60) })}</span>
+                </div>
+                }
               </div>
             )}
             
-            {/* Transcription engine selection - only in initial state */}
             {modalState === "initial" && isSuperAdmin && (
                 <div className="p-4 bg-white rounded-lg mt-4">
                   <div className="flex items-center justify-between">
@@ -1046,31 +1136,77 @@ export function RecordingModal({
             )}
 
             
-            {modalState !== "initial" && (
+            {modalState !== "initial" && modalState !== "soundCheck" && (
               <div className="p-6 bg-white">
-                {/* Show microphone level indicator in recording state */}
-                {modalState === "recording" && (
-                  <div>                    
-                    {/* Headphone warning message */}
-                    <div className="mb-6">
-                      <HeadphoneWarning />
-                    </div>
-
-                    <div className="flex items-center justify-center w-full h-full">
-                      <MyPraxisAudioVisualizer stream={microphoneStream} className="mb-2" />
+                {/* Paused state */}
+                {modalState === "paused" && (
+                  <div className="flex items-center justify-center">
+                    {/* Paused icon */}
+                    <Pause className="w-6 h-6 mr-3 text-gray-400" />
+                    <div className="text-5xl font-mono text-center text-gray-600">
+                      {formatTime(timer)}
                     </div>
                   </div>
                 )}
-                <div className="flex items-center justify-center">
-                  {(modalState === "recording") && (
-                    <div 
-                      className={`w-3 h-3 rounded-full mr-3 bg-red-600 transition-opacity duration-700 ${isBlinking ? 'opacity-100' : 'opacity-30'}`}
-                    />
-                  )}
-                  <div className="text-5xl font-mono text-center text-gray-600">
-                    {formatTime(timer)}
-                  </div>
-                </div>
+                { /* Recording state */ }
+                {modalState === "recording" && (
+                  <>
+                    <div>                    
+                      {/* Headphone warning message */}
+                      <div className="mb-6">
+                        <HeadphoneWarning />
+                      </div>
+
+                      <div className="flex items-center justify-center w-full h-full">
+                        <MyPraxisAudioVisualizer stream={microphoneStream} className="mb-2" />
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-center">
+                      {/* Blinking red dot */}
+                      <div 
+                        className={`w-3 h-3 rounded-full mr-3 bg-red-600 transition-opacity duration-700 ${isBlinking ? 'opacity-100' : 'opacity-30'}`}
+                      />
+                      <div className="text-5xl font-mono text-center text-gray-600">
+                        {formatTime(timer)}
+                      </div>
+                    </div>
+                    {/* Auto-complete info card for recording state */}
+                    {(() => {
+                      const minutesRemainingRaw = (autoCompleteRecordingAfterSeconds - timer) / 60;
+                      const minutesRemaining = Math.max(0, Math.ceil(minutesRemainingRaw));
+                      const showLessThanOne = minutesRemainingRaw <= 1 && minutesRemainingRaw > 0;
+                      const secondsRemaining = Math.max(0, autoCompleteRecordingAfterSeconds - timer);
+                      const isWarning = minutesRemainingRaw <= 5;
+                      return (
+                        <div
+                          className={`mt-6 flex items-center rounded-lg px-3 py-2 border ${
+                            isWarning
+                              ? 'bg-red-50 border-red-200'
+                              : 'bg-white border-gray-200'
+                          }${showLessThanOne ? ` transition-opacity duration-700 ${isBlinking ? 'opacity-100' : 'opacity-30'}` : ''}`}
+                        >
+                          <svg className={`h-5 w-5 mr-3 ${isWarning ? 'text-red-400' : 'text-gray-400'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <span className={`text-sm ${isWarning ? 'text-red-700' : 'text-gray-700'}`}> 
+                            {t('mypraxis:recordingModal.autoComplete.infoLabel')}
+                            {showLessThanOne ? (
+                              <>
+                                <span className="font-semibold ml-1">{secondsRemaining}</span>
+                                <span> {t('mypraxis:recordingModal.autoComplete.seconds', { count: secondsRemaining })}</span>
+                              </>
+                            ) : (
+                              <>
+                                <span className="font-semibold ml-1">{'~ ' + minutesRemaining}</span>
+                                <span> {t('mypraxis:recordingModal.autoComplete.minutes', { count: minutesRemaining })}</span>
+                              </>
+                            )}
+                          </span>
+                        </div>
+                      );
+                    })()}
+                  </>
+                )}
               </div>
             )}
             
@@ -1134,10 +1270,13 @@ export function RecordingModal({
                       </>
                     )}
                   </Button>
-                  <div className="text-sm text-gray-500 mt-2 text-center">
-                    {t("recordingModal.microphone.supportedFormats", {
-                      formats: "mp3, wav, m4a/mp4, aac, flac, ogg, aiff, webm, wma"
-                    })}
+                  <div className="mt-4 flex items-center gap-3 bg-white border border-gray-200 rounded-lg px-3 py-2">
+                    <Volume2 className="w-5 h-5 text-gray-400" />
+                    <span className="text-sm text-gray-500">
+                      {t("recordingModal.microphone.supportedFormats", {
+                        formats: "mp3, wav, m4a/mp4, aac, flac, ogg, aiff, webm, wma"
+                      })}
+                    </span>
                   </div>
                   <input 
                     type="file" 
@@ -1191,21 +1330,24 @@ export function RecordingModal({
               
               {(modalState === "paused" || modalState === "saving") && (
                 <div className="flex gap-4">
-                  <Button 
-                    className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800"
-                    onClick={handleResumeRecording}
-                    disabled={isResuming || isSaving}
-                  >
-                    {isResuming ? (
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                    ) : (
-                      <>
-                        <Play className="mr-2 h-5 w-5" />
-                        {t("recordingModal.recording.resume")}
-                      </>
-                    )}
-                  </Button>
-                  
+                  {/* Hide resume button if autoCompleteTriggeredRef.current is true */}
+                  {!autoCompleteTriggeredRef.current && (
+      
+                    <Button 
+                      className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800"
+                      onClick={handleResumeRecording}
+                      disabled={isResuming || isSaving}
+                    >
+                      {isResuming ? (
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                      ) : (
+                        <>
+                          <Play className="mr-2 h-5 w-5" />
+                          {t("recordingModal.recording.resume")}
+                        </>
+                      )}
+                    </Button>
+                  )}
                   <Button 
                     className="flex-1 bg-green-500 hover:bg-green-600 text-white"
                     onClick={handleSaveSession}
@@ -1222,126 +1364,130 @@ export function RecordingModal({
             </div>
           </div>
           
-          {/* Close link positioned below the modal */}
-          <div className="w-full max-w-md px-4 mt-2 flex justify-end">
-            <button 
-              className="text-white underline text-sm hover:text-gray-200"
-              onClick={handleClose}
-            >
-              {t("recordingModal.close")}
-            </button>
-          </div>
+          {/* Confirmation Dialog */}
+          <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>{t('mypraxis:recordingModal.confirmCloseTitle')}</DialogTitle>
+                <DialogDescription>
+                  {t('mypraxis:recordingModal.confirmClose')}
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <Button variant="outline" onClick={handleCancelClose}>
+                  {t('mypraxis:recordingModal.cancel')}
+                </Button>
+                <Button variant="destructive" onClick={handleConfirmClose}>
+                  {t('mypraxis:recordingModal.confirm')}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+          
+          {/* Paused Recording Dialog */}
+          <Dialog open={showPausedRecordingDialog} onOpenChange={setShowPausedRecordingDialog}>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>
+                  {t('mypraxis:recordingModal.pausedRecording.title')}
+                </DialogTitle>
+                <DialogDescription>
+                  {t('mypraxis:recordingModal.pausedRecording.description')}
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => {
+                  // Just close the dialog without taking any action
+                  setExistingRecordingData(null);
+                  setShowPausedRecordingDialog(false);
+                  setModalState("initial");
+                }}>
+                  {t('mypraxis:recordingModal.pausedRecording.abort')}
+                </Button>
+                <Button onClick={async (_e) => {
+                  // Complete the existing recording and start a new one
+                  if (existingRecordingData?.id) {
+                    setShowPausedRecordingDialog(false);
+                    setExistingRecordingData(null);
+                    
+                    // Use handleStartRecording with completePausedExistingRecording option
+                    await handleStartRecording({ completePausedExistingRecording: true });
+                  }
+                }}>
+                  {t('mypraxis:recordingModal.pausedRecording.completeRecording')}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+          
+          {/* Active Recording Dialog */}
+          <Dialog open={showActiveRecordingDialog} onOpenChange={setShowActiveRecordingDialog}>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>
+                  {t('mypraxis:recordingModal.activeRecording.title')}
+                </DialogTitle>
+                <DialogDescription>
+                  {t('mypraxis:recordingModal.activeRecording.message')}
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <Button onClick={() => {
+                  setShowActiveRecordingDialog(false);
+                }}>
+                  {t('mypraxis:recordingModal.ok')}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+          
+          {/* Saving Stale Recording Dialog */}
+          <Dialog open={showSavingStaleRecordingDialog} onOpenChange={() => {}}>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>{t('mypraxis:recordingModal.savingStaleRecording.title')}</DialogTitle>
+                <DialogDescription className="flex items-center">
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  {t('mypraxis:recordingModal.savingStaleRecording.message')}
+                </DialogDescription>
+              </DialogHeader>
+            </DialogContent>
+          </Dialog>
+
+          {/* Saving Auto Completed Recording Dialog */}
+          <Dialog open={showSavingAutoCompletedRecordingDialog} onOpenChange={() => {}}>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>{t('mypraxis:recordingModal.savingAutoCompletedRecording.title')}</DialogTitle>
+                <DialogDescription className="flex items-center">
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  {t('mypraxis:recordingModal.savingAutoCompletedRecording.message')}
+                </DialogDescription>
+              </DialogHeader>
+            </DialogContent>
+          </Dialog>
+
+          {/* Microphone Access Error Dialog */}
+          <Dialog open={showMicrophoneAccessErrorDialog} onOpenChange={setShowMicrophoneAccessErrorDialog}>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <div className="flex items-center gap-2 mb-1">
+                  <AlertTriangle className="h-5 w-5 text-amber-500" />
+                  <DialogTitle>{t('mypraxis:recordingModal.microphone.errorDialog.title')}</DialogTitle>
+                </div>
+                <DialogDescription>
+                  {t('mypraxis:recordingModal.microphone.errorDialog.message')}
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <Button onClick={() => setShowMicrophoneAccessErrorDialog(false)}>
+                  {t('mypraxis:recordingModal.microphone.errorDialog.button')}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
       )}
-      {/* Confirmation Dialog */}
-      <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>{t('mypraxis:recordingModal.confirmCloseTitle')}</DialogTitle>
-            <DialogDescription>
-              {t('mypraxis:recordingModal.confirmClose')}
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={handleCancelClose}>
-              {t('mypraxis:recordingModal.cancel')}
-            </Button>
-            <Button variant="destructive" onClick={handleConfirmClose}>
-              {t('mypraxis:recordingModal.confirm')}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      
-      {/* Paused Recording Dialog */}
-      <Dialog open={showPausedRecordingDialog} onOpenChange={setShowPausedRecordingDialog}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>
-              {t('mypraxis:recordingModal.pausedRecording.title')}
-            </DialogTitle>
-            <DialogDescription>
-              {t('mypraxis:recordingModal.pausedRecording.description')}
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => {
-              // Just close the dialog without taking any action
-              setExistingRecordingData(null);
-              setShowPausedRecordingDialog(false);
-              setModalState("initial");
-            }}>
-              {t('mypraxis:recordingModal.pausedRecording.abort')}
-            </Button>
-            <Button onClick={async (_e) => {
-              // Complete the existing recording and start a new one
-              if (existingRecordingData?.id) {
-                setShowPausedRecordingDialog(false);
-                setExistingRecordingData(null);
-                
-                // Use handleStartRecording with completePausedExistingRecording option
-                await handleStartRecording({ completePausedExistingRecording: true });
-              }
-            }}>
-              {t('mypraxis:recordingModal.pausedRecording.completeRecording')}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      
-      {/* Active Recording Dialog */}
-      <Dialog open={showActiveRecordingDialog} onOpenChange={setShowActiveRecordingDialog}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>
-              {t('mypraxis:recordingModal.activeRecording.title')}
-            </DialogTitle>
-            <DialogDescription>
-              {t('mypraxis:recordingModal.activeRecording.message')}
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button onClick={() => {
-              setShowActiveRecordingDialog(false);
-            }}>
-              {t('mypraxis:recordingModal.ok')}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      
-      {/* Saving Stale Recording Dialog */}
-      <Dialog open={showSavingStaleRecordingDialog} onOpenChange={() => {}}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>{t('mypraxis:recordingModal.savingStaleRecording.title')}</DialogTitle>
-            <DialogDescription className="flex items-center">
-              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-              {t('mypraxis:recordingModal.savingStaleRecording.message')}
-            </DialogDescription>
-          </DialogHeader>
-        </DialogContent>
-      </Dialog>
-
-      {/* Microphone Access Error Dialog */}
-      <Dialog open={showMicrophoneAccessErrorDialog} onOpenChange={setShowMicrophoneAccessErrorDialog}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <div className="flex items-center gap-2 mb-1">
-              <AlertTriangle className="h-5 w-5 text-amber-500" />
-              <DialogTitle>{t('mypraxis:recordingModal.microphone.errorDialog.title')}</DialogTitle>
-            </div>
-            <DialogDescription>
-              {t('mypraxis:recordingModal.microphone.errorDialog.message')}
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button onClick={() => setShowMicrophoneAccessErrorDialog(false)}>
-              {t('mypraxis:recordingModal.microphone.errorDialog.button')}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </>
   )
 }
