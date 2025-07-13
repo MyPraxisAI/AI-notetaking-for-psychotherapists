@@ -112,9 +112,7 @@ export default function Page() {
         date: new Date(session.createdAt).toISOString().split('T')[0]!,
         title: session.title,
         createdAt: session.createdAt,
-        transcript: session.transcript ? {
-          content: session.transcript
-        } : undefined,
+        transcript: session.transcript,
         notes: session.note ? {
           userNote: session.note
         } : undefined

@@ -1475,7 +1475,6 @@ export type Database = {
       transcripts: {
         Row: {
           account_id: string
-          content: string | null
           content_json: Json | null
           created_at: string
           duration_ms: number | null
@@ -1486,7 +1485,6 @@ export type Database = {
         }
         Insert: {
           account_id: string
-          content?: string | null
           content_json?: Json | null
           created_at?: string
           duration_ms?: number | null
@@ -1497,7 +1495,6 @@ export type Database = {
         }
         Update: {
           account_id?: string
-          content?: string | null
           content_json?: Json | null
           created_at?: string
           duration_ms?: number | null

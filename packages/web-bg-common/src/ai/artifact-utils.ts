@@ -92,7 +92,8 @@ function formatTimestampMs(ms: number): string {
  */
 export async function getTranscriptsAsText(
   client: SupabaseClient,
-  sessionIds: string[]
+  sessionIds: string[],
+  messageForEmpty: boolean = true
 ): Promise<Record<string, string>> {
   if (sessionIds.length === 0) {
     return {};
@@ -139,7 +140,7 @@ export async function getTranscriptsAsText(
         
         // If no segments or empty segments array, use appropriate message
         if (!contentJson.segments || contentJson.segments.length === 0) {
-          result[sessionId] = 'Transcript has no content.';
+          result[sessionId] = messageForEmpty ? 'Transcript has no content.' : '';
           continue;
         }
         
@@ -157,11 +158,11 @@ export async function getTranscriptsAsText(
       } catch (e) {
         logger.error(ctx, `Error parsing content_json for transcript of session ${sessionId}:`, e);
         // Fall back to plain content if JSON parsing fails
-        result[sessionId] = transcript.content || 'Error parsing transcript content.';
+        result[sessionId] = transcript.content || (messageForEmpty ? 'Error parsing transcript content.' : '');
       }
     } else {
       // If no content_json, use the plain content
-      result[sessionId] = transcript.content || 'Transcript has no content.';
+      result[sessionId] = transcript.content || (messageForEmpty ? 'Transcript has no content.' : '');
     }
   }
   
@@ -172,11 +173,13 @@ export async function getTranscriptsAsText(
  * Get transcript content as formatted text for a single session. No localization, useful for LLM prompts. 
  * @param client Supabase client
  * @param sessionId Session ID
+ * @param messageForEmpty Boolean indicating whether to return a fallback message for empty transcript. Default: true.
  * @returns Formatted transcript text or error message
  */
 export async function getTranscriptAsText(
   client: SupabaseClient,
-  sessionId: string
+  sessionId: string,
+  messageForEmpty: boolean = true
 ): Promise<string> {
   const logger = await getLogger();
   const ctx = {
@@ -184,11 +187,11 @@ export async function getTranscriptAsText(
     sessionId
   };
   
-  const results = await getTranscriptsAsText(client, [sessionId]);
+  const results = await getTranscriptsAsText(client, [sessionId], messageForEmpty);
   
   if (!results[sessionId]) {
     logger.warn(ctx, `No transcript found for session ${sessionId}`);
-    return 'No transcript available for this session.';
+    return messageForEmpty ? 'No transcript available for this session.' : '';
   }
   
   return results[sessionId];

@@ -39,7 +39,8 @@ export {
   generateContent,
   generateArtifact,
   getOrCreateArtifact,
-  regenerateArtifactsForSession
+  regenerateArtifactsForSession,
+  generateSessionTitle
 } from './ai/artifacts';
 
 // Re-export types for convenience in server contexts
@@ -57,3 +58,5 @@ export * from './utils/mime';
 
 // Re-export transcription engine default
 export { TRANSCRIPTION_ENGINES, TRANSCRIPTION_ENGINE_DEFAULT } from './transcription';
+
+export * from './utils/transcript';

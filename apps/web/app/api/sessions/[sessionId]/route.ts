@@ -4,90 +4,45 @@ import { getLogger, Logger} from '@kit/shared-common/logger';
 import { logAuditLogRead, extractClientIpFromHeaders } from '@kit/audit-log';
 import { SessionWithId } from '../../../home/(user)/mypraxis/_lib/schemas/session';
 import { enhanceRouteHandler } from '@kit/next/routes';
-import { createI18nServerInstance } from '~/lib/i18n/i18n.server';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '~/lib/database.types';
-import type { TranscriptSegment } from '@kit/web-bg-common';
+import type { Transcript } from '@kit/web-bg-common';
 
-async function fetchFormattedTranscript(
+// Rename and update the function
+type FetchTranscriptResult = {
+  formatted: string | null;
+  raw: any | null;
+};
+
+async function fetchTranscript(
   client: SupabaseClient<Database>,
   sessionId: string,
   user: { id: string },
   request: Request,
   logger: Logger
-) {
-  const { t } = await createI18nServerInstance();
-  function formatTimestamp(seconds: number): string {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = Math.floor(seconds % 60);
-    return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
-  }
-  function formatTimestampMs(ms: number): string {
-    return formatTimestamp(ms / 1000);
-  }
+): Promise<Transcript | null> {
   const { data: transcript, error: transcriptError } = await client
     .from('transcripts')
-    .select('id, content, content_json')
+    .select('id, content_json')
     .eq('session_id', sessionId)
     .maybeSingle();
-  let transcriptContent: string | null = null;
   if (transcriptError) {
     logger.error({ userId: user.id, error: transcriptError }, 'Error fetching transcript');
-    transcriptContent = t('mypraxis:sessionView.transcript.errors.fetchError');
-  } else if (!transcript) {
-    transcriptContent = null;
-  } else {
-    // Log the read to audit_log if transcript has an id and userId is provided
-    if (transcript.id && user?.id) {
-      await logAuditLogRead({
-        actingUserId: user.id,
-        tableName: 'transcripts',
-        recordId: transcript.id,
-        ipAddress: extractClientIpFromHeaders(request.headers)
-      });
-    }
-    // If content_json exists, render it to text
-    if (transcript.content_json) {
-      try {
-        let contentJson: { segments: TranscriptSegment[] } | null = null;
-        const rawContentJson = transcript.content_json as unknown;
-        if (
-          rawContentJson &&
-          typeof rawContentJson === 'object' &&
-          'segments' in rawContentJson &&
-          Array.isArray((rawContentJson as { segments?: unknown }).segments)
-        ) {
-          contentJson = rawContentJson as { segments: TranscriptSegment[] };
-        } else {
-          contentJson = null;
-        }
-        // Define speaker labels using i18n
-        const speakerLabels = {
-          therapist: `**${t('mypraxis:sessionView.transcript.speakerLabels.therapist')}**`,
-          client: `**${t('mypraxis:sessionView.transcript.speakerLabels.client')}**`
-        };
-        if (!contentJson || !contentJson.segments || contentJson.segments.length === 0) {
-          transcriptContent = t('mypraxis:sessionView.transcript.errors.noContent');
-        } else {
-          transcriptContent = contentJson.segments
-            .filter(segment => segment.content.trim().length > 0)
-            .map(segment => {
-              const startTimeFormatted = formatTimestampMs(segment.start_ms);
-              const endTimeFormatted = formatTimestampMs(segment.end_ms);
-              const speakerLabel = speakerLabels[segment.speaker as keyof typeof speakerLabels] || segment.speaker;
-              return `[${startTimeFormatted}-${endTimeFormatted}] ${speakerLabel}: ${segment.content}  `;
-            })
-            .join('\n');
-        }
-      } catch (e) {
-        logger.error({ userId: user.id, error: e }, 'Error parsing content_json for transcript');
-        transcriptContent = transcript.content || t('mypraxis:sessionView.transcript.errors.parsingError');
-      }
-    } else {
-      transcriptContent = transcript.content || t('mypraxis:sessionView.transcript.errors.noContent');
-    }
+    return null;
   }
-  return transcriptContent;
+  if (!transcript) {
+    return null;
+  }
+  // Log the read to audit_log if transcript has an id and userId is provided
+  if (transcript.id && user?.id) {
+    await logAuditLogRead({
+      actingUserId: user.id,
+      tableName: 'transcripts',
+      recordId: transcript.id,
+      ipAddress: extractClientIpFromHeaders(request.headers)
+    });
+  }
+  return transcript.content_json ?? null;
 }
 
 export const GET = enhanceRouteHandler(
@@ -121,14 +76,14 @@ export const GET = enhanceRouteHandler(
       ipAddress: extractClientIpFromHeaders(request.headers)
     });
     // Fetch transcript content using the helper
-    const transcriptContent = await fetchFormattedTranscript(client, sessionId, user, request, logger);
+    const transcript = await fetchTranscript(client, sessionId, user, request, logger);
     // Transform to SessionWithId format
     const result: SessionWithId = {
       id: sessionData.id,
       clientId: sessionData.client_id,
       title: sessionData.title || '',
       note: sessionData.note || undefined,
-      transcript: transcriptContent || undefined,
+      transcript: transcript || undefined,
       createdAt: sessionData.created_at,
     };
     return NextResponse.json(result);

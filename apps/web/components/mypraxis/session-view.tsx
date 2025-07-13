@@ -23,6 +23,7 @@ import { useRecordingStatus } from "../../app/home/(user)/mypraxis/_lib/hooks/us
 import { updateSessionAction, generateSessionTitleAction } from "../../app/home/(user)/mypraxis/_lib/server/server-actions"
 import { toast } from "sonner"
 import ReactMarkdown from "react-markdown"
+import { transcriptExists } from '@kit/web-bg-common/client';
 
 interface TranscriptContentProps {
   clientId: string
@@ -211,7 +212,7 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
   } = useSessionArtifact(
     sessionId, 
     'session_therapist_summary', 
-    !!(sessionData?.transcript || sessionData?.note) // Remove conditional based on active tab
+    transcriptExists(sessionData?.transcript ?? null) || !!sessionData?.note
   )
   
   // Always fetch client summary regardless of active tab
@@ -234,9 +235,7 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
         date: new Date(sessionData.createdAt).toISOString().split('T')[0] || '',
         title: sessionData.title,
         createdAt: sessionData.createdAt,
-        transcript: sessionData.transcript ? {
-          content: sessionData.transcript
-        } : undefined,
+        transcript: sessionData.transcript,
         notes: sessionData.note ? {
           userNote: sessionData.note
         } : undefined

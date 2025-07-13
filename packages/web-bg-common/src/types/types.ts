@@ -4,3 +4,7 @@ export interface TranscriptSegment {
   speaker: string;
   content: string;
 } 
+
+export interface Transcript {
+  segments: TranscriptSegment[];
+} 
