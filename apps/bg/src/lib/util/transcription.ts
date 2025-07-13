@@ -39,7 +39,7 @@ export interface TranscriptionResult {
   text: string;
   processingTime?: number;
   timestamp: string;
-  model?: string; // The model used for transcription
+  model: string; // The model used for transcription
   segments?: TranscriptionSegment[]; // Segment information if available
   rawResponse?: unknown; // The raw response from the API
   content_json?: {

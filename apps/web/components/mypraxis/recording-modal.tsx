@@ -727,25 +727,24 @@ export function RecordingModal({
         timerInterval.current = null
       }
       
-      const result = await pauseRecording()
-      
-      if (result) {
-        // Pause the MediaRecorder using the utility function
-        if (mediaRecorder.current) {
-          MediaRecorderUtils.pauseMediaRecorder(mediaRecorder.current);
-        }
-        
-        // Make sure all chunks are uploaded when pausing
-        if (recordingId) {
-          await handleUploadAudioChunks(recordingId).catch(err => {
-            console.error('Error uploading chunks during pause:', err);
-          });
-        }
-        
-        setIsRecording(false)
-        setModalState("paused")
-        setIsProcessing(false)
+      await pauseRecording()
+      // Go to local paused state independent of whether server pause succeeded
+
+      // Pause the MediaRecorder using the utility function
+      if (mediaRecorder.current) {
+        MediaRecorderUtils.pauseMediaRecorder(mediaRecorder.current);
       }
+      
+      // Make sure all chunks are uploaded when pausing
+      if (recordingId) {
+        await handleUploadAudioChunks(recordingId).catch(err => {
+          console.error('Error uploading chunks during pause:', err);
+        });
+      }
+      
+      setIsRecording(false)
+      setModalState("paused")
+      setIsProcessing(false)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to pause recording')
       toast.error(err instanceof Error ? err.message : 'Failed to pause recording')
@@ -933,6 +932,23 @@ export function RecordingModal({
     }
   }, [modalState]);
   
+  // Memoized auto-complete handler to avoid unnecessary effect re-runs
+  const handleAutoComplete = useCallback(async () => {
+    setShowSavingAutoCompletedRecordingDialog(true);
+    try {
+      // Wait for minimum display time and save session
+      await Promise.all([
+        new Promise(resolve => setTimeout(resolve, RECORDING_AUTO_DIALOG_MIN_DISPLAY_MS)),
+        handlePauseRecording().then(() => handleSaveSession())
+      ]);
+    } catch (err) {
+      // Log and show error if needed
+      console.error('Auto-complete error:', err);
+    } finally {
+      setShowSavingAutoCompletedRecordingDialog(false);
+    }
+  }, [handlePauseRecording, handleSaveSession, t]);
+
   // Watch timer during recording for auto-complete
   useEffect(() => {
     if (
@@ -943,19 +959,11 @@ export function RecordingModal({
     ) {
       autoCompleteTriggeredRef.current = true;
       // Auto-complete triggered
-      (async () => {
-        setShowSavingAutoCompletedRecordingDialog(true);
-        // Wait for minimum display time and save session
-        await Promise.all([
-          new Promise(resolve => setTimeout(resolve, RECORDING_AUTO_DIALOG_MIN_DISPLAY_MS)),
-          handlePauseRecording().then(() => handleSaveSession())
-        ]);
-        setShowSavingAutoCompletedRecordingDialog(false);
-      })();
+      handleAutoComplete();
     }
-  }, [timer, modalState, autoCompleteRecordingAfterSeconds, handlePauseRecording, handleSaveSession]);
+  }, [timer, modalState, autoCompleteRecordingAfterSeconds, handleAutoComplete]);
 
-  // Reset auto-complete trigger ref when starting a new recording session
+  // Reset auto-complete trigger ref when starting a new recording session or after user closes failure dialog
   useEffect(() => {
     if (modalState === 'recording') {
       autoCompleteTriggeredRef.current = false;
@@ -1322,21 +1330,24 @@ export function RecordingModal({
               
               {(modalState === "paused" || modalState === "saving") && (
                 <div className="flex gap-4">
-                  <Button 
-                    className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800"
-                    onClick={handleResumeRecording}
-                    disabled={isResuming || isSaving}
-                  >
-                    {isResuming ? (
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                    ) : (
-                      <>
-                        <Play className="mr-2 h-5 w-5" />
-                        {t("recordingModal.recording.resume")}
-                      </>
-                    )}
-                  </Button>
-                  
+                  {/* Hide resume button if autoCompleteTriggeredRef.current is true */}
+                  {!autoCompleteTriggeredRef.current && (
+      
+                    <Button 
+                      className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800"
+                      onClick={handleResumeRecording}
+                      disabled={isResuming || isSaving}
+                    >
+                      {isResuming ? (
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                      ) : (
+                        <>
+                          <Play className="mr-2 h-5 w-5" />
+                          {t("recordingModal.recording.resume")}
+                        </>
+                      )}
+                    </Button>
+                  )}
                   <Button 
                     className="flex-1 bg-green-500 hover:bg-green-600 text-white"
                     onClick={handleSaveSession}
