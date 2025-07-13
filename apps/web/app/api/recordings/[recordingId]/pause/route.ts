@@ -49,7 +49,7 @@ export const POST = enhanceRouteHandler(
         return Response.json({ error: 'Recording not found' }, { status: 404 });
       }
       
-      if (recording.status !== 'recording') {
+      if (recording.status !== 'recording' && recording.status !== 'paused') {
         logger.warn({ ...ctx, currentStatus: recording.status }, 'Attempted to pause recording that is not in recording state');
         return Response.json(
           { 
