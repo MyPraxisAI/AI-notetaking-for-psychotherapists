@@ -24,6 +24,7 @@ import { updateSessionAction, generateSessionTitleAction } from "../../app/home/
 import { toast } from "sonner"
 import ReactMarkdown from "react-markdown"
 import { transcriptExists } from '@kit/web-bg-common/client';
+import type { TranscriptSegment } from '@kit/web-bg-common';
 
 interface TranscriptContentProps {
   clientId: string
@@ -95,65 +96,79 @@ function TranscriptContent({ clientId, sessionId, session, handleSessionUpdate, 
   }, [recordingStatus, sessionId, queryClient, session, clientId, handleSessionUpdate]);
   
   // If we have a transcript, show it
-  if (session?.transcript) {
-    return (
-      <div className="relative group">
-        <div 
-          className="rounded-lg bg-[#FFF9E8] px-6 pb-3 pt-3.5 text-[14px] leading-[1.6]" 
-          data-test="session-transcript-value"
-        >
-          <ReactMarkdown>
-            {session.transcript.content}
-          </ReactMarkdown>
-        </div>
-        <div className="absolute right-2 top-2 flex gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-6 w-6 hover:bg-transparent"
-            onClick={() => handleCopyText(session?.transcript?.content, 'transcript')}
-            data-test="copy-transcript-button"
-          >
-            {isTranscriptCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-          </Button>
-        </div>
-      </div>
-    )
+  if (!session || !session.transcript || !transcriptExists(session.transcript)) {
+    // fallback/empty state handled elsewhere
+    return null;
   }
-  
-  // Show loading state while we check for recording status or if session is being fetched
-  if (isLoadingRecording || !session) {    
-    return (
-      <div className="w-full h-[100px] flex items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-      </div>
-    )
-  }
-  
-  // If a recording is being processed OR if recording is done but transcript is not yet available (race condition with object updates),
-  // show the "Transcription in progress..." UI
-  if (recordingStatus?.isProcessing || (!recordingStatus?.isProcessing && !session.transcript)) {    
-    return (
-      <div className="w-full h-[150px] border border-dashed border-input bg-muted/20 rounded-md flex flex-col items-center justify-center p-6 space-y-2">
-        <div className="flex items-center justify-center space-x-2">
-          <Loader2 className="h-5 w-5 animate-spin text-primary" />
-          <h3 className="text-lg font-medium">{t('mypraxis:sessionView.transcript.inProgress')}</h3>
-        </div>
-        <p className="text-sm text-muted-foreground text-center max-w-md">
-          {t('mypraxis:sessionView.transcript.processingMessage')}
-        </p>
-      </div>
-    )
-  }
-  
-  // Otherwise, show empty state (this should never happen - we show Transcription in progress... when transcript is null)
+  // At this point, session and session.transcript are guaranteed
+  const formatTimestamp = (ms: number) => {
+    const totalSeconds = Math.floor(ms / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  };
+  const speakerLabels: Record<string, string> = {
+    therapist: t('mypraxis:sessionView.transcript.speakerLabels.therapist'),
+    client: t('mypraxis:sessionView.transcript.speakerLabels.client'),
+  };
+  const isTherapist = (sp: string) => sp === 'therapist';
+  const transcriptText = session.transcript.segments
+    .filter(seg => seg.content.trim().length > 0)
+    .map(seg => {
+      const start = formatTimestamp(seg.start_ms);
+      const end = formatTimestamp(seg.end_ms);
+      const speakerLabel = speakerLabels[seg.speaker] || seg.speaker;
+      return `[${start}-${end}] ${speakerLabel}: ${seg.content}`;
+    })
+    .join('\n');
   return (
-    <div className="w-full h-[100px] border border-dashed border-input bg-muted/20 rounded-md flex flex-col items-center justify-center">
-      <p className="text-sm text-muted-foreground">
-        {t('mypraxis:sessionView.transcript.noTranscript')}
-      </p>
+    <div className="relative group">
+      <div className="bg-[#FFF9E8] rounded-lg px-4 pt-10 pb-4 flex flex-col gap-2" data-test="session-transcript-value">
+        {(session.transcript.segments as TranscriptSegment[]).map((seg, idx, arr: TranscriptSegment[]) => {
+            const start = formatTimestamp(seg.start_ms);
+            const end = formatTimestamp(seg.end_ms);
+            const sp = seg.speaker;
+            const label = speakerLabels[sp] || sp;
+            const prevSpeaker = idx > 0 ? arr[idx - 1]?.speaker ?? null : null;
+            const isFirstOfSpeaker = prevSpeaker !== sp;
+            const align = isTherapist(sp) ? 'items-end' : 'items-start';
+            const bubbleBg = 'bg-white text-gray-900';
+            const bubbleAlign = isTherapist(sp) ? 'self-end' : 'self-start';
+            const bubbleRadius = isTherapist(sp)
+              ? 'rounded-2xl rounded-br-sm'
+              : 'rounded-2xl rounded-bl-sm';
+            const labelColor = isTherapist(sp)
+              ? 'text-primary'
+              : 'text-muted-foreground';
+            return (
+              <div key={idx} className={`flex flex-col ${align} ${isFirstOfSpeaker && idx !== 0 ? 'mt-4' : ''}`}>
+                <div
+                  className={`max-w-[85%] ${bubbleBg} ${bubbleAlign} ${bubbleRadius} px-4 py-2 shadow-sm text-[15px] whitespace-pre-line break-words flex flex-col`}
+                  style={{ wordBreak: 'break-word' }}
+                >
+                  <span className={`text-xs font-semibold text-muted-foreground mb-1 ${isTherapist(sp) ? 'text-right' : 'text-left'}`}>{label}</span>
+                  <span>{seg.content}</span>
+                  <span className="text-xs text-muted-foreground mt-2 self-end">
+                    {start === end ? start : `${start} - ${end}`}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+      </div>
+      <div className="absolute right-2 top-2 flex gap-1">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-6 w-6 hover:bg-transparent"
+          onClick={() => handleCopyText(transcriptText, 'transcript')}
+          data-test="copy-transcript-button"
+        >
+          {isTranscriptCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+        </Button>
+      </div>
     </div>
-  )
+  );
 }
 
 interface SessionViewProps {
