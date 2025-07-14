@@ -90,6 +90,7 @@ export function useSessionArtifact(
   type: 'session_therapist_summary' | 'session_client_summary', 
   enabled = true
 ) {
+  console.log('useSessionArtifact', sessionId, type, enabled);
   const queryClient = useQueryClient();
   const { t } = useTranslation('mypraxis');
   

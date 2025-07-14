@@ -413,8 +413,8 @@
       "loadingTherapist": "Loading my summary...",
       "loadingClient": "Loading summary for client...",
       "updating": "Updating",
-      "clientSummaryPlaceholder": "Client summary will appear once you add either a transcript or session notes",
-      "therapistSummaryPlaceholder": "My summary will appear either transcript or session notes are added"
+      "clientSummaryPlaceholder": "Client summary will appear after session notes are added",
+      "therapistSummaryPlaceholder": "My summary will appear after session notes are added"
     },
     "actions": {
       "save": "Save",

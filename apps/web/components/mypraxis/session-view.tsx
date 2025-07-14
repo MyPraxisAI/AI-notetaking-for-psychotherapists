@@ -95,10 +95,39 @@ function TranscriptContent({ clientId, sessionId, session, handleSessionUpdate, 
     return () => {};
   }, [recordingStatus, sessionId, queryClient, session, clientId, handleSessionUpdate]);
   
-  // If we have a transcript, show it
+  // Show loading state while we check for recording status or if session is being fetched
+  if (isLoadingRecording || !session) {    
+    return (
+      <div className="w-full h-[100px] flex items-center justify-center">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    )
+  }
+
+  // If a recording is being processed OR if recording is done but transcript is not yet available (race condition with object updates),
+  // show the "Transcription in progress..." UI
+  if (recordingStatus?.isProcessing || (!recordingStatus?.isProcessing && !session.transcript)) {    
+    return (
+      <div className="w-full h-[150px] border border-dashed border-input bg-muted/20 rounded-md flex flex-col items-center justify-center p-6 space-y-2">
+        <div className="flex items-center justify-center space-x-2">
+          <Loader2 className="h-5 w-5 animate-spin text-primary" />
+          <h3 className="text-lg font-medium">{t('mypraxis:sessionView.transcript.inProgress')}</h3>
+        </div>
+        <p className="text-sm text-muted-foreground text-center max-w-md">
+          {t('mypraxis:sessionView.transcript.processingMessage')}
+        </p>
+      </div>
+    )
+  }
+  // Show empty state if transcript is not present
   if (!session || !session.transcript || !transcriptExists(session.transcript)) {
-    // fallback/empty state handled elsewhere
-    return null;
+    return (
+      <div className="w-full h-[100px] border border-dashed border-input bg-muted/20 rounded-md flex flex-col items-center justify-center">
+        <p className="text-sm text-muted-foreground">
+          {t('mypraxis:sessionView.transcript.noTranscript')}
+        </p>
+      </div>
+    );
   }
   // At this point, session and session.transcript are guaranteed
   const formatTimestamp = (ms: number) => {
@@ -129,8 +158,7 @@ function TranscriptContent({ clientId, sessionId, session, handleSessionUpdate, 
             const end = formatTimestamp(seg.end_ms);
             const sp = seg.speaker;
             const speakerStyle = sp === 'therapist'
-              ? { color: '#9C8856', fontWeight:
-                 600 }
+              ? { color: '#7A6A3A', fontWeight: 600 }
               : { color: '#111827', fontWeight: 600 };
             // Timestamp (right-aligned)
             const timestamp = start === end ? start : `${start} - ${end}`;
@@ -207,6 +235,9 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
   // Use the session hook from Supabase to load session data
   const { data: sessionData, isLoading: isLoadingSession } = useSession(sessionId)
   
+  // Define unified query enabled flag
+  const isSummaryQueryEnabled = transcriptExists(sessionData?.transcript ?? null) || !!sessionData?.note;
+  
   // Track if we've emitted the initial therapist summary view event
   const [hasEmittedInitialView, setHasEmittedInitialView] = useState(false)
   
@@ -218,7 +249,7 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
   } = useSessionArtifact(
     sessionId, 
     'session_therapist_summary', 
-    transcriptExists(sessionData?.transcript ?? null) || !!sessionData?.note
+    isSummaryQueryEnabled
   )
   
   // Always fetch client summary regardless of active tab
@@ -229,7 +260,7 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
   } = useSessionArtifact(
     sessionId, 
     'session_client_summary', 
-    !!(sessionData?.transcript || sessionData?.note) // Remove conditional based on active tab
+    isSummaryQueryEnabled 
   )
   
   // Update local state when session data changes
@@ -306,11 +337,13 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
       // If the artifact is stale, set the stale state but don't show loading
       setIsTherapistSummaryStale(!!therapistSummaryData.stale)
       setIsLoadingTherapistSummary(false)
-    } else {
+    } else if (isLoadingTherapistSummaryQuery && isSummaryQueryEnabled) {
       // If there's no data, show loading state (404 case)
       setIsLoadingTherapistSummary(true)
+    } else {
+      setIsLoadingTherapistSummary(false)
     }
-  }, [therapistSummaryData])
+  }, [therapistSummaryData, isLoadingTherapistSummaryQuery, isSummaryQueryEnabled])
 
   // Emit initial ArtifactViewed event for default therapist summary
   useEffect(() => {
@@ -348,11 +381,13 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
       // If the artifact is stale, set the stale state but don't show loading
       setIsClientSummaryStale(!!clientSummaryData.stale)
       setIsLoadingClientSummary(false)
-    } else {
+    } else if (isLoadingClientSummaryQuery && isSummaryQueryEnabled) {
       // If there's no data, show loading state (404 case)
       setIsLoadingClientSummary(true)
+    } else {
+      setIsLoadingClientSummary(false)
     }
-  }, [clientSummaryData])
+  }, [clientSummaryData, isLoadingClientSummaryQuery, isSummaryQueryEnabled])
   
   // Initialize loading states based on query loading state
   useEffect(() => {
@@ -548,7 +583,8 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
             title: session.title,
             note: note
           });
-          
+
+          queryClient.invalidateQueries({ queryKey: ['session', sessionId] }); 
           // Update the session with the returned data
           handleSessionUpdate(result, session);
           
@@ -955,7 +991,7 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
                           <span>{t('mypraxis:sessionView.summary.loadingTherapist')}</span>
                         </div>
                       </div>
-                    ) : therapistSummary ? (
+                    ) : (isSummaryQueryEnabled && therapistSummary) ? (
                       <div className="relative">
                         <div className="rounded-lg bg-[#FFF9E8] px-6 pb-3 pt-3.5 text-[14px] leading-[1.6]">
                           {isTherapistSummaryStale && (
@@ -1000,7 +1036,7 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
                           <span>{t('mypraxis:sessionView.summary.loadingClient')}</span>
                         </div>
                       </div>
-                    ) : clientSummary ? (
+                    ) : (isSummaryQueryEnabled && clientSummary) ? (
                       <div className="relative">
                         <div className="rounded-lg bg-[#FFF9E8] px-6 pb-3 pt-3.5 text-[14px] leading-[1.6]">
                           {isClientSummaryStale && (
