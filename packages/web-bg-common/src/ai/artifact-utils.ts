@@ -108,7 +108,7 @@ export async function getTranscriptsAsText(
   // Fetch the transcripts for the sessions
   const { data: transcripts, error } = await client
     .from('transcripts')
-    .select('session_id, content, content_json')
+    .select('session_id, content_json')
     .in('session_id', sessionIds);
   
   if (error) {

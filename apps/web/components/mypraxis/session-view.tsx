@@ -123,34 +123,25 @@ function TranscriptContent({ clientId, sessionId, session, handleSessionUpdate, 
     .join('\n');
   return (
     <div className="relative group">
-      <div className="bg-[#FFF9E8] rounded-lg px-4 pt-10 pb-4 flex flex-col gap-2" data-test="session-transcript-value">
-        {(session.transcript.segments as TranscriptSegment[]).map((seg, idx, arr: TranscriptSegment[]) => {
+      <div className="bg-[#FFF9E8] rounded-lg px-4 pt-8 pb-4 flex flex-col gap-2" data-test="session-transcript-value">
+        {(session.transcript.segments as TranscriptSegment[]).map((seg, idx) => {
             const start = formatTimestamp(seg.start_ms);
             const end = formatTimestamp(seg.end_ms);
             const sp = seg.speaker;
-            const label = speakerLabels[sp] || sp;
-            const prevSpeaker = idx > 0 ? arr[idx - 1]?.speaker ?? null : null;
-            const isFirstOfSpeaker = prevSpeaker !== sp;
-            const align = isTherapist(sp) ? 'items-end' : 'items-start';
-            const bubbleBg = 'bg-white text-gray-900';
-            const bubbleAlign = isTherapist(sp) ? 'self-end' : 'self-start';
-            const bubbleRadius = isTherapist(sp)
-              ? 'rounded-2xl rounded-br-sm'
-              : 'rounded-2xl rounded-bl-sm';
-            const labelColor = isTherapist(sp)
-              ? 'text-primary'
-              : 'text-muted-foreground';
+            const speakerStyle = sp === 'therapist'
+              ? { color: '#9C8856', fontWeight:
+                 600 }
+              : { color: '#111827', fontWeight: 600 };
+            // Timestamp (right-aligned)
+            const timestamp = start === end ? start : `${start} - ${end}`;
             return (
-              <div key={idx} className={`flex flex-col ${align} ${isFirstOfSpeaker && idx !== 0 ? 'mt-4' : ''}`}>
-                <div
-                  className={`max-w-[85%] ${bubbleBg} ${bubbleAlign} ${bubbleRadius} px-4 py-2 shadow-sm text-[15px] whitespace-pre-line break-words flex flex-col`}
-                  style={{ wordBreak: 'break-word' }}
-                >
-                  <span className={`text-xs font-semibold text-muted-foreground mb-1 ${isTherapist(sp) ? 'text-right' : 'text-left'}`}>{label}</span>
-                  <span>{seg.content}</span>
-                  <span className="text-xs text-muted-foreground mt-2 self-end">
-                    {start === end ? start : `${start} - ${end}`}
-                  </span>
+              <div key={idx} className="flex flex-col gap-0 mt-2">
+                <div className="flex items-baseline justify-between w-full">
+                  <span className="text-[14px] leading-tight font-medium" style={speakerStyle}>{sp === 'therapist' ? speakerLabels.therapist : speakerLabels.client}</span>
+                  <span className="text-xs text-[#6B7280] ml-2">{timestamp}</span>
+                </div>
+                <div className="text-[14px] text-[#111827] leading-snug whitespace-pre-line break-words mt-0">
+                  {seg.content}
                 </div>
               </div>
             );

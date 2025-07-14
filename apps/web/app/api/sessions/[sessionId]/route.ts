@@ -42,7 +42,7 @@ async function fetchTranscript(
       ipAddress: extractClientIpFromHeaders(request.headers)
     });
   }
-  return transcript.content_json ?? null;
+    return transcript.content_json as unknown as Transcript ?? null;
 }
 
 export const GET = enhanceRouteHandler(

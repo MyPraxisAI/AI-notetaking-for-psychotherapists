@@ -434,7 +434,7 @@ export default function Page() {
     createSession.mutate({
       clientId: selectedClient,
       title: "New session",
-      transcript: "",
+      transcript: undefined,
       note: ""
     }, {
       onSuccess: (newSession: SessionWithId) => {
