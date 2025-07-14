@@ -487,6 +487,35 @@ export function RecordingModal({
   // Deliberately omitting microphoneStream from dependencies to avoid circular reference
   // We're properly cleaning it up inside the effect before setting a new one
   
+     /**
+   * Clean up recording resources without aborting the recording in the API
+   */
+     const cleanupRecording = useCallback(async () => {
+      // Clean up the MediaRecorder using the utility function
+      if (mediaRecorder.current) {
+        MediaRecorderUtils.cleanupMediaRecorder(mediaRecorder.current);
+        mediaRecorder.current = null;
+      }
+      
+      
+      // Clear audio chunks to prevent any pending uploads
+      audioChunks.current = [];
+      
+      // Reset recording state
+      setIsRecording(false)
+      setRecordingId(null)
+      setTimer(0)
+      setModalState("initial")
+      setError(null)
+      
+      // Clear intervals
+      if (timerInterval.current) {
+        clearInterval(timerInterval.current)
+        timerInterval.current = null
+      }
+      
+      // Note: Heartbeat interval is managed by the useEffect
+    }, []);
   
   const handleClose = useCallback(() => {
     if (isRecording || modalState === "paused") {
@@ -516,36 +545,6 @@ export function RecordingModal({
   const handleCancelClose = () => {
     setShowConfirmDialog(false)
   }
-  
-  /**
-   * Clean up recording resources without aborting the recording in the API
-   */
-  const cleanupRecording = useCallback(async () => {
-    // Clean up the MediaRecorder using the utility function
-    if (mediaRecorder.current) {
-      MediaRecorderUtils.cleanupMediaRecorder(mediaRecorder.current);
-      mediaRecorder.current = null;
-    }
-    
-    
-    // Clear audio chunks to prevent any pending uploads
-    audioChunks.current = [];
-    
-    // Reset recording state
-    setIsRecording(false)
-    setRecordingId(null)
-    setTimer(0)
-    setModalState("initial")
-    setError(null)
-    
-    // Clear intervals
-    if (timerInterval.current) {
-      clearInterval(timerInterval.current)
-      timerInterval.current = null
-    }
-    
-    // Note: Heartbeat interval is managed by the useEffect
-  }, []);
   
   /**
    * Abort the recording in the API and then clean up resources
@@ -627,8 +626,6 @@ export function RecordingModal({
     // Reset audio chunks
     audioChunks.current = []
     
-    // Store the recording start time for precise timing
-    const _recordingStartTime = performance.now()
     
     const result = await startRecording(options)
     
@@ -655,7 +652,7 @@ export function RecordingModal({
       console.log('Configuring MediaRecorder for chunks')
       
       // Configure the MediaRecorder to handle audio chunks
-      const _recordingStartTime = MediaRecorderUtils.configureMediaRecorderForChunks(
+      MediaRecorderUtils.configureMediaRecorderForChunks(
         mediaRecorder.current,
         currentRecordingId,
         audioChunks,
