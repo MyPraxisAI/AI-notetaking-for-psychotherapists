@@ -158,11 +158,10 @@ export async function getTranscriptsAsText(
       } catch (e) {
         logger.error(ctx, `Error parsing content_json for transcript of session ${sessionId}:`, e);
         // Fall back to plain content if JSON parsing fails
-        result[sessionId] = transcript.content || (messageForEmpty ? 'Error parsing transcript content.' : '');
+        result[sessionId] = transcript.content_json || (messageForEmpty ? 'Error parsing transcript content.' : '');
       }
     } else {
-      // If no content_json, use the plain content
-      result[sessionId] = transcript.content || (messageForEmpty ? 'Transcript has no content.' : '');
+      result[sessionId] = messageForEmpty ? 'Transcript has no content.' : '';
     }
   }
   

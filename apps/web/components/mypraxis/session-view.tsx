@@ -140,7 +140,6 @@ function TranscriptContent({ clientId, sessionId, session, handleSessionUpdate, 
     therapist: t('mypraxis:sessionView.transcript.speakerLabels.therapist'),
     client: t('mypraxis:sessionView.transcript.speakerLabels.client'),
   };
-  const isTherapist = (sp: string) => sp === 'therapist';
   const transcriptText = session.transcript.segments
     .filter(seg => seg.content.trim().length > 0)
     .map(seg => {

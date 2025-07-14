@@ -3,11 +3,11 @@
 import { z } from 'zod';
 import { enhanceAction } from '@kit/next/actions';
 import { getSupabaseServerClient } from '@kit/supabase/server-client';
-import { SessionSchema, SessionMetadata } from '../schemas/session';
+import { SessionSchema } from '../schemas/session';
 import { getLogger } from '@kit/shared-common/logger';
 import { createSessionApi, regenerateArtifactsForSession } from '@kit/web-bg-common';
 import { generateSessionTitle } from '@kit/web-bg-common';
-import type { User, SupabaseClient } from '@supabase/supabase-js';
+import type { User } from '@supabase/supabase-js';
 
 // Schema for updating a session
 const UpdateSessionSchema = SessionSchema.extend({
@@ -37,40 +37,10 @@ export const generateSessionTitleAction = enhanceAction(
     try {
       logger.info(ctx, 'Generating session title');
       
-      // 1. Get the current session data
-      const { data: currentSession, error: fetchError } = await client
-        .from('sessions')
-        .select('note, title, metadata')
-        .eq('id', data.id)
-        .single();
-      
-      if (fetchError) {
-        logger.error({ ...ctx, error: fetchError }, 'Failed to fetch session data');
-        throw new Error('Failed to fetch session data');
-      }
-      
-      // 1b. Get the transcript from the transcripts table
-      let transcriptData: { content_json?: any } | null = null;
-      let transcriptError = null;
-      try {
-        const result = await client
-          .from('transcripts')
-          .select('content_json')
-          .eq('session_id', data.id)
-          .maybeSingle();
-        transcriptData = result.data;
-        transcriptError = result.error;
-        if (transcriptError) {
-          logger.warn({ ...ctx, error: transcriptError }, 'Failed to fetch transcript data');
-        }
-      } catch (e) {
-        logger.warn({ ...ctx, error: e }, 'Failed to fetch transcript data');
-      }
-      
-      // 2. Call the helper function to generate the title
+      // 1. Call the helper function to generate the title
       const success = await generateSessionTitle(client, data.id);
       
-      // 3. If successful, fetch the updated session to return
+      // 2. If successful, fetch the updated session to return
       if (success) {
         const { data: updatedSession, error: fetchUpdatedError } = await client
           .from('sessions')
@@ -92,8 +62,6 @@ export const generateSessionTitleAction = enhanceAction(
           .maybeSingle();
         if (tError) {
           logger.warn({ ...ctx, error: tError }, 'Failed to fetch transcript data');
-        } else {
-          transcriptData = tData;
         }
 
         return { 
@@ -132,7 +100,7 @@ export const updateSessionAction = enhanceAction(
 
     try {
       // 1. Get the current session data to compare
-      const { data: currentSession, error: fetchError } = await client
+      const { data: currentSessionData, error: fetchError } = await client
         .from('sessions')
         .select('note, account_id, title, metadata')
         .eq('id', data.id)
@@ -143,9 +111,11 @@ export const updateSessionAction = enhanceAction(
         throw new Error('Failed to fetch current session data');
       }
 
+      const { note, account_id, title, metadata } = currentSessionData || {};
+
       // 2. Check if content has actually changed
-      const noteChanged = data.note !== currentSession.note;
-      const titleChanged = data.title !== currentSession.title;
+      const noteChanged = currentSessionData?.note !== note;
+      const titleChanged = currentSessionData?.title !== title;
       const contentChanged = noteChanged;
 
       // 3. Update the session data
@@ -160,8 +130,7 @@ export const updateSessionAction = enhanceAction(
       // 3a. If title was manually changed, update metadata to mark title as initialized
       if (titleChanged && !updateError) {
         // Handle metadata safely, checking if it exists and has the title_initialized property
-        const metadata = currentSession.metadata as SessionMetadata | null;
-        const titleInitialized = metadata?.title_initialized === true;
+        const titleInitialized = typeof metadata === 'object' && metadata !== null && 'title_initialized' in metadata && (metadata as Record<string, unknown>).title_initialized === true;
         
         // Only update if title_initialized is not already set
         if (!titleInitialized) {
@@ -199,7 +168,7 @@ export const updateSessionAction = enhanceAction(
           await regenerateArtifactsForSession(
             client, 
             data.id, 
-            currentSession.account_id
+            account_id
           );
           logger.info({ ...ctx }, 'Invalidated artifacts and queued regeneration');
         } catch (invalidateError) {
@@ -218,7 +187,7 @@ export const updateSessionAction = enhanceAction(
         .single();
         
       // Also fetch the latest transcript data if needed
-      let transcriptData: { content_json?: any } | null = null;
+      let transcriptData: { content_json?: unknown } | null = null;
       if (!fetchUpdatedError) {
         const { data: transcriptRow, error } = await client
           .from('transcripts')
@@ -227,7 +196,7 @@ export const updateSessionAction = enhanceAction(
           .order('created_at', { ascending: false })
           .limit(1)
           .maybeSingle();
-        if (error) {
+        if (error && error.code !== 'PGRST116') {
           console.error('Failed to fetch transcript data', error);
         } else if (transcriptRow && transcriptRow.content_json) {
           transcriptData = transcriptRow;

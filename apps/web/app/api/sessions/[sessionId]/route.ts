@@ -8,12 +8,6 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '~/lib/database.types';
 import type { Transcript } from '@kit/web-bg-common';
 
-// Rename and update the function
-type FetchTranscriptResult = {
-  formatted: string | null;
-  raw: any | null;
-};
-
 async function fetchTranscript(
   client: SupabaseClient<Database>,
   sessionId: string,

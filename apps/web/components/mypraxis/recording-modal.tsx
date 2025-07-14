@@ -280,7 +280,7 @@ export function RecordingModal({
     }
   }
   
-  const pauseRecording = async () => {
+  const pauseRecording = useCallback(async () => {
     if (!recordingId) return
     emit({
       type: 'RecordingPaused',
@@ -305,7 +305,7 @@ export function RecordingModal({
     } finally {
       setIsProcessing(false)
     }
-  }
+  }, [recordingId, selectedClient, emit, setIsProcessing, setError])
   
   const resumeRecording = async () => {
     if (!recordingId) return
@@ -343,7 +343,7 @@ export function RecordingModal({
     }
   }
   
-  const completeRecording = async () => {
+  const completeRecording = useCallback(async () => {
     if (!recordingId) return
     
     try {
@@ -364,7 +364,7 @@ export function RecordingModal({
     } finally {
       setIsProcessing(false)
     }
-  }
+  }, [recordingId, setIsProcessing, setError])
   
   const sendHeartbeat = async () => {
     if (!recordingId) return
@@ -488,7 +488,7 @@ export function RecordingModal({
   // We're properly cleaning it up inside the effect before setting a new one
   
   
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     if (isRecording || modalState === "paused") {
       setShowConfirmDialog(true)
     } else {
@@ -497,7 +497,7 @@ export function RecordingModal({
         onClose()
       })
     }
-  }
+  }, [isRecording, modalState, onClose, setShowConfirmDialog, cleanupRecording]);
   
   const handleConfirmClose = () => {
     setShowConfirmDialog(false)
@@ -520,7 +520,7 @@ export function RecordingModal({
   /**
    * Clean up recording resources without aborting the recording in the API
    */
-  const cleanupRecording = async () => {
+  const cleanupRecording = useCallback(async () => {
     // Clean up the MediaRecorder using the utility function
     if (mediaRecorder.current) {
       MediaRecorderUtils.cleanupMediaRecorder(mediaRecorder.current);
@@ -545,7 +545,7 @@ export function RecordingModal({
     }
     
     // Note: Heartbeat interval is managed by the useEffect
-  }
+  }, []);
   
   /**
    * Abort the recording in the API and then clean up resources
@@ -707,18 +707,18 @@ export function RecordingModal({
   }
   
   // Helper function to upload all pending audio chunks - now using the extracted function
-  const handleUploadAudioChunks = async (explicitRecordingId: string) => {
+  const handleUploadAudioChunks = useCallback(async (explicitRecordingId: string) => {
     // Don't attempt to upload if the recording has been aborted
     if (isAborted.current) {
       console.log('Recording has been aborted, skipping chunk upload');
       return false;
     }
     return await uploadAudioChunks(explicitRecordingId, audioChunks, isUploading);
-  };
+  }, [audioChunks, isUploading]);
   
   // We're now using the imported uploadAudioChunkWithId function from utils/audio-upload.ts
   
-  const handlePauseRecording = async () => {
+  const handlePauseRecording = useCallback(async () => {
     try {
       setIsProcessing(true)
       
@@ -750,7 +750,7 @@ export function RecordingModal({
       toast.error(err instanceof Error ? err.message : 'Failed to pause recording')
       setIsProcessing(false)
     }
-  }
+  }, [handleUploadAudioChunks, recordingId, setIsRecording, setModalState, setIsProcessing, setError, pauseRecording]);
   
   const handleResumeRecording = async () => {
     try {
@@ -839,7 +839,7 @@ export function RecordingModal({
     }
   };
 
-  const handleSaveSession = async () => {
+  const handleSaveSession = useCallback(async () => {
     try {
       setIsSaving(true)
       
@@ -891,7 +891,7 @@ export function RecordingModal({
       setIsSaving(false)
       toast.error('An error occurred while saving the recording.')
     }
-  }
+  }, [cleanupRecording, completeRecording, handleUploadAudioChunks, recordingId, selectedClient, onSave, setIsSaving, emit]);
   
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600)
@@ -947,7 +947,7 @@ export function RecordingModal({
     } finally {
       setShowSavingAutoCompletedRecordingDialog(false);
     }
-  }, [handlePauseRecording, handleSaveSession, t]);
+  }, [handlePauseRecording, handleSaveSession]);
 
   // Watch timer during recording for auto-complete
   useEffect(() => {
