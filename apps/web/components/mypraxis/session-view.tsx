@@ -210,10 +210,6 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
   const [isNoteCopied, setIsNoteCopied] = useState(false)
   const [isTranscriptCopied, setIsTranscriptCopied] = useState(false)
   const [summaryView, setSummaryView] = useState<"therapist" | "client">("therapist")
-  const [therapistSummary, setTherapistSummary] = useState<string | null>(null)
-  const [clientSummary, setClientSummary] = useState<string | null>(null)
-  const [isLoadingTherapistSummary, setIsLoadingTherapistSummary] = useState(false)
-  const [isLoadingClientSummary, setIsLoadingClientSummary] = useState(false)
   const [isTherapistSummaryStale, setIsTherapistSummaryStale] = useState(false)
   const [isClientSummaryStale, setIsClientSummaryStale] = useState(false)
   const [session, setSession] = useState<Session | null>(null)
@@ -226,7 +222,6 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
   }, []);
   
   const [isTitleSaved, setIsTitleSaved] = useState(false)
-  const _saveTimeout = useRef<NodeJS.Timeout | undefined>(undefined)
   const copyTimeout = useRef<NodeJS.Timeout | undefined>(undefined)
   const clientCopyTimeout = useRef<NodeJS.Timeout | undefined>(undefined)
   const titleSaveTimeout = useRef<NodeJS.Timeout | undefined>(undefined)
@@ -235,10 +230,13 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
   const { data: sessionData, isLoading: isLoadingSession } = useSession(sessionId)
   
   // Define unified query enabled flag
-  const isSummaryQueryEnabled = transcriptExists(sessionData?.transcript ?? null) || !!sessionData?.note;
+  const sessionHasContent = transcriptExists(sessionData?.transcript ?? null) || !!sessionData?.note;
   
   // Track if we've emitted the initial therapist summary view event
   const [hasEmittedInitialView, setHasEmittedInitialView] = useState(false)
+  
+  // Get the query client for invalidating queries
+  const queryClient = useQueryClient()
   
   // Always fetch both summaries regardless of active tab
   const { 
@@ -248,7 +246,7 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
   } = useSessionArtifact(
     sessionId, 
     'session_therapist_summary', 
-    isSummaryQueryEnabled
+    sessionHasContent
   )
   
   // Always fetch client summary regardless of active tab
@@ -259,7 +257,7 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
   } = useSessionArtifact(
     sessionId, 
     'session_client_summary', 
-    isSummaryQueryEnabled 
+    sessionHasContent 
   )
   
   // Update local state when session data changes
@@ -279,8 +277,11 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
       
       setSession(formattedSession)
       setUserNote(sessionData.note || "")
+      
+      // Force reload session artifacts when session changes
+      queryClient.invalidateQueries({ queryKey: ['session', sessionId, 'artifact'] })
     }
-  }, [sessionData])
+  }, [sessionData, queryClient, sessionId])
   
   // Listen for custom tab change events
   useEffect(() => {
@@ -329,20 +330,13 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
     }
   }, [isEditing, userNote]);
   
-  // Update local summary state when query data changes
+  // Update stale state when query data changes
   useEffect(() => {
     if (therapistSummaryData) {
-      setTherapistSummary(therapistSummaryData.content)
       // If the artifact is stale, set the stale state but don't show loading
       setIsTherapistSummaryStale(!!therapistSummaryData.stale)
-      setIsLoadingTherapistSummary(false)
-    } else if (isLoadingTherapistSummaryQuery && isSummaryQueryEnabled) {
-      // If there's no data, show loading state (404 case)
-      setIsLoadingTherapistSummary(true)
-    } else {
-      setIsLoadingTherapistSummary(false)
     }
-  }, [therapistSummaryData, isLoadingTherapistSummaryQuery, isSummaryQueryEnabled])
+  }, [therapistSummaryData])
 
   // Emit initial ArtifactViewed event for default therapist summary
   useEffect(() => {
@@ -350,8 +344,8 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
       !hasEmittedInitialView &&
       activeTab === "summary" &&
       summaryView === "therapist" &&
-      therapistSummary &&
-      !isLoadingTherapistSummary
+      therapistSummaryData?.content &&
+      !isLoadingTherapistSummaryQuery
     ) {
       emit({
         type: 'ArtifactViewed',
@@ -367,8 +361,8 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
     hasEmittedInitialView,
     activeTab,
     summaryView,
-    therapistSummary,
-    isLoadingTherapistSummary,
+    therapistSummaryData,
+    isLoadingTherapistSummaryQuery,
     emit,
     clientId,
     sessionId
@@ -376,41 +370,12 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
   
   useEffect(() => {
     if (clientSummaryData) {
-      setClientSummary(clientSummaryData.content)
       // If the artifact is stale, set the stale state but don't show loading
       setIsClientSummaryStale(!!clientSummaryData.stale)
-      setIsLoadingClientSummary(false)
-    } else if (isLoadingClientSummaryQuery && isSummaryQueryEnabled) {
-      // If there's no data, show loading state (404 case)
-      setIsLoadingClientSummary(true)
-    } else {
-      setIsLoadingClientSummary(false)
     }
-  }, [clientSummaryData, isLoadingClientSummaryQuery, isSummaryQueryEnabled])
+  }, [clientSummaryData])
   
-  // Initialize loading states based on query loading state
-  useEffect(() => {
-    setIsLoadingTherapistSummary(isLoadingTherapistSummaryQuery)
-  }, [isLoadingTherapistSummaryQuery])
   
-  useEffect(() => {
-    setIsLoadingClientSummary(isLoadingClientSummaryQuery)
-  }, [isLoadingClientSummaryQuery])
-  
-  // Reset and refetch summaries when content changes
-  const resetAndRefetchSummaries = () => {
-    // Reset the local state for summaries
-    setTherapistSummary(null)
-    setClientSummary(null)
-    
-    // Explicitly set loading states to true
-    setIsLoadingTherapistSummary(true)
-    setIsLoadingClientSummary(true)
-    
-    // Clear any existing summary data from the UI
-    setTherapistSummary(null)
-    setClientSummary(null)
-  }
   
   // Force refresh all client artifacts
   const refreshClientArtifacts = () => {
@@ -428,9 +393,6 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
 
   // Use React's useTransition for pending state
   const [_isPending, startTransition] = useTransition()
-  
-  // Get the query client for invalidating queries
-  const queryClient = useQueryClient()
   
   /**
    * Helper method to update the session with data from a server action response
@@ -599,24 +561,18 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
           
           // Success handling
           toast.success("Note saved");
-          
-          // Reset and refetch summaries
-          resetAndRefetchSummaries();
-          
+                    
           // Invalidate session artifacts in the cache
           queryClient.invalidateQueries({ queryKey: ['session', sessionId, 'artifact'] });
           
           // Force refresh all client artifacts
           refreshClientArtifacts();
           
-          // Force refetch of summaries
-          setTimeout(() => {
-            if (summaryView === 'therapist') {
-              refetchTherapistSummary();
-            } else {
-              refetchClientSummary();
-            }
-          }, 500); // Small delay to ensure the invalidation has completed
+          // Reset stale states
+          setIsTherapistSummaryStale(false)
+          setIsClientSummaryStale(false)
+          refetchTherapistSummary();
+          refetchClientSummary();
         } catch (error) {
           // Error handling - revert to previous state
           setSession(previousSession);
@@ -983,14 +939,14 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
                 </TabsList>
                 <TabsContent value="therapist" className="mt-3" data-test="session-therapist-summary">
                   <div className="relative group">
-                    {isLoadingTherapistSummary ? (
+                    {(sessionHasContent && (isLoadingTherapistSummaryQuery || isLoadingSession || !therapistSummaryData)) ? (
                       <div className="rounded-lg bg-[#FFF9E8] px-6 py-6 text-[14px] text-muted-foreground flex items-center justify-center min-h-[100px]">
                         <div className="flex items-center gap-2">
                           <Loader2 className="h-4 w-4 animate-spin" />
                           <span>{t('mypraxis:sessionView.summary.loadingTherapist')}</span>
                         </div>
                       </div>
-                    ) : (isSummaryQueryEnabled && therapistSummary) ? (
+                    ) : therapistSummaryData?.content ? (
                       <div className="relative">
                         <div className="rounded-lg bg-[#FFF9E8] px-6 pb-3 pt-3.5 text-[14px] leading-[1.6]">
                           {isTherapistSummaryStale && (
@@ -1002,7 +958,7 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
                             </div>
                           )}
                           <div className="markdown-content">
-                            <ReactMarkdown>{therapistSummary || ''}</ReactMarkdown>
+                            <ReactMarkdown>{therapistSummaryData.content || ''}</ReactMarkdown>
                           </div>
                         </div>
                         <div className="absolute right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity" style={{ top: isTherapistSummaryStale ? '40px' : '7px' }}>
@@ -1010,7 +966,7 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
                             variant="ghost"
                             size="icon"
                             className="h-6 w-6 hover:bg-transparent"
-                            onClick={() => handleCopyText(therapistSummary || '', 'therapist')}
+                            onClick={() => handleCopyText(therapistSummaryData?.content || '', 'therapist')}
                             data-test="copy-therapist-summary-button"
                           >
                             {isCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
@@ -1028,14 +984,14 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
                 </TabsContent>
                 <TabsContent value="client" className="mt-3" data-test="session-client-summary">
                   <div className="relative group">
-                    {isLoadingClientSummary ? (
+                    {(sessionHasContent && (isLoadingClientSummaryQuery || isLoadingSession || !clientSummaryData)) ? (
                       <div className="rounded-lg bg-[#FFF9E8] px-6 py-6 text-[14px] text-muted-foreground flex items-center justify-center min-h-[100px]">
                         <div className="flex items-center gap-2">
                           <Loader2 className="h-4 w-4 animate-spin" />
                           <span>{t('mypraxis:sessionView.summary.loadingClient')}</span>
                         </div>
                       </div>
-                    ) : (isSummaryQueryEnabled && clientSummary) ? (
+                    ) : clientSummaryData?.content ? (
                       <div className="relative">
                         <div className="rounded-lg bg-[#FFF9E8] px-6 pb-3 pt-3.5 text-[14px] leading-[1.6]">
                           {isClientSummaryStale && (
@@ -1047,7 +1003,7 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
                             </div>
                           )}
                           <div className="markdown-content">
-                            <ReactMarkdown>{clientSummary || ''}</ReactMarkdown>
+                            <ReactMarkdown>{clientSummaryData.content || ''}</ReactMarkdown>
                           </div>
                         </div>
                         <div className="absolute right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity" style={{ top: isClientSummaryStale ? '40px' : '7px' }}>

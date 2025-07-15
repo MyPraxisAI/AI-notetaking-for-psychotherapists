@@ -413,8 +413,8 @@
       "loadingTherapist": "Loading my summary...",
       "loadingClient": "Loading summary for client...",
       "updating": "Updating",
-      "clientSummaryPlaceholder": "Client summary will appear after session notes are added",
-      "therapistSummaryPlaceholder": "My summary will appear after session notes are added"
+      "clientSummaryPlaceholder": "Client summary will appear after session content is added",
+      "therapistSummaryPlaceholder": "My summary will appear after session content is added"
     },
     "actions": {
       "save": "Save",

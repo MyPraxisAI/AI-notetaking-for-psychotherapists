@@ -111,11 +111,11 @@ export const updateSessionAction = enhanceAction(
         throw new Error('Failed to fetch current session data');
       }
 
-      const { note, account_id, title, metadata } = currentSessionData || {};
+      const { note: currentNote, account_id, title: currentTitle, metadata } = currentSessionData || {};
 
       // 2. Check if content has actually changed
-      const noteChanged = currentSessionData?.note !== note;
-      const titleChanged = currentSessionData?.title !== title;
+      const noteChanged = data.note !== currentNote;
+      const titleChanged = data.title !== currentTitle;
       const contentChanged = noteChanged;
 
       // 3. Update the session data
