@@ -157,8 +157,8 @@ export async function getTranscriptsAsText(
           .join('\n');
       } catch (e) {
         logger.error(ctx, `Error parsing content_json for transcript of session ${sessionId}:`, e);
-        // Fall back to plain content if JSON parsing fails
-        result[sessionId] = transcript.content_json || (messageForEmpty ? 'Error parsing transcript content.' : '');
+        // Fall back to appropriate message if JSON parsing fails
+        result[sessionId] = messageForEmpty ? 'Error parsing transcript content.' : '';
       }
     } else {
       result[sessionId] = messageForEmpty ? 'Transcript has no content.' : '';
