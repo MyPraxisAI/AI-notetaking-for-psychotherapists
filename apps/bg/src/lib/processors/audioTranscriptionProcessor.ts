@@ -389,7 +389,6 @@ export class AudioTranscriptionProcessor {
           session_id: recordingData.session_id,
           account_id: accountId,
           transcription_model: result.model,
-          content: result.text,
           content_json: result.content_json
         });
 

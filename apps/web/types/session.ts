@@ -1,3 +1,5 @@
+import { Transcript } from "@kit/web-bg-common";
+
 export interface SessionMetadata {
   title_initialized?: boolean;
   [key: string]: unknown; // Allow additional properties
@@ -8,10 +10,7 @@ export interface Session {
   date: string
   title: string
   createdAt: string
-  meetingLink?: string
-  transcript?: {
-    content: string
-  }
+  transcript?: Transcript,
   summary?: {
     therapist: string
     client: string

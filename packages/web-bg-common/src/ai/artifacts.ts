@@ -8,6 +8,8 @@ import { cleanLLMResponse } from './artifact-utils';
 import { getArtifact, saveArtifact } from '../db/artifact-api';
 import { invalidateSessionAndClientArtifacts } from '../db/artifact-api';
 import { aws } from '..';
+import { createSessionApi } from '../db/session-api';
+import { getTranscriptAsText } from './artifact-utils';
 
 // Import types
 import type { ArtifactType, PromptSourceType, LanguageType, VariableContext } from '../types';
@@ -318,5 +320,89 @@ export async function regenerateArtifactsForSession(
   } catch (error) {
     logger.error(ctx, `Error regenerating artifacts for session ${sessionId}:`, { error });
     throw error;
+  }
+}
+
+/**
+ * Generate a title for a session if it hasn't been initialized yet
+ * @param client Supabase client
+ * @param sessionId Session ID
+ * @returns Success status
+ */
+export async function generateSessionTitle(
+  client: SupabaseClient,
+  sessionId: string
+): Promise<boolean> {
+  const logger = await getLogger();
+  try {
+    // Get the current session metadata and note
+    const { data: sessionWithMetadata, error: metadataError } = await client
+      .from('sessions')
+      .select('metadata, note')
+      .eq('id', sessionId)
+      .single();
+
+    if (metadataError) {
+      logger.error({ sessionId, error: metadataError }, 'Failed to fetch session metadata');
+      return false;
+    }
+
+    // Check if title has been initialized using the metadata flag
+    const titleInitialized = sessionWithMetadata.metadata?.title_initialized === true;
+    
+    // Early return if title is already initialized
+    if (titleInitialized) {
+      return false;
+    }
+
+    // Fetch transcript as text
+    const transcript = await getTranscriptAsText(client, sessionId, false);
+    const note = sessionWithMetadata.note || '';
+    
+    if (!transcript && !note) {
+      return false;
+    }
+    
+    logger.info({ sessionId }, 'Generating title for session');
+    
+    // Generate title using the session_title prompt
+    const generatedTitle = await generateContent(
+      client,
+      { type: 'name', value: 'session_title' },
+      {
+        session_transcript: transcript || '',
+        session_note: note
+      }
+    );
+        
+    // First update the session title
+    const { error: titleUpdateError } = await client
+      .from('sessions')
+      .update({
+        title: generatedTitle
+      })
+      .eq('id', sessionId);
+      
+    if (titleUpdateError) {
+      logger.error({ sessionId, error: titleUpdateError }, 'Failed to update session title');
+      return false;
+    }
+    
+    // Then update the session metadata using the session API
+    const sessionApi = createSessionApi(client);
+    const metadataUpdateSuccess = await sessionApi.markTitleAsInitialized(sessionId);
+    
+    if (!metadataUpdateSuccess) {
+      // Don't return false here as the title was successfully updated
+      // Just log the error and continue
+      logger.error({ sessionId }, 'Failed to update session metadata');
+    }
+    
+    logger.info({ sessionId }, 'Successfully generated and updated session title', { generatedTitle });
+    return true;
+    
+  } catch (error) {
+    logger.error({ sessionId }, 'Error generating session title', error);
+    return false;
   }
 }
