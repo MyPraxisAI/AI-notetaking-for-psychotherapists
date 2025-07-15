@@ -9,9 +9,13 @@
     ".": {
       "types": "./dist/index.d.ts",
       "node": "./index.js",
-      "import": "./index.js",
-      "require": "./index.js",
+      "import": "./src/index.ts",
+      "require": "./src/index.ts",
       "browser": null
+    },
+    "./client": {
+      "import": "./src/client.ts",
+      "require": "./src/client.ts"
     },
     "./types": {
       "types": "./dist/types.d.ts",

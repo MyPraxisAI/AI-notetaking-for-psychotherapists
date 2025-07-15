@@ -225,12 +225,12 @@ select isnt_empty(
 
 -- Test transcripts table
 select lives_ok(
-  $$ INSERT INTO public.transcripts (id, session_id, account_id, transcription_model, content)
+  $$ INSERT INTO public.transcripts (id, session_id, account_id, transcription_model, content_json)
      VALUES ('44444444-4444-4444-4444-444444444444', 
              '55555555-5555-5555-5555-555555555555', 
              (SELECT id FROM public.accounts WHERE primary_owner_user_id = tests.get_supabase_uid('account_owner')),
              'whisper-1',
-             'Test transcript content') $$,
+             '{"segments": [{"start_ms": 0, "end_ms": 5000, "speaker": "therapist", "content": "Test transcript content"}]}') $$,
   'Account owner should be able to insert transcript for their session'
 );
 
@@ -243,7 +243,7 @@ select isnt_empty(
 -- Test updating a transcript
 select lives_ok(
   $$ UPDATE public.transcripts 
-     SET content = 'Updated transcript content' 
+     SET content_json = '{"segments": [{"start_ms": 0, "end_ms": 5000, "speaker": "therapist", "content": "Updated transcript content"}]}' 
      WHERE id = '44444444-4444-4444-4444-444444444444' $$,
   'Account owner should be able to update their transcript'
 );
@@ -251,7 +251,7 @@ select lives_ok(
 -- Verify the transcript was updated correctly
 select isnt_empty(
   $$ SELECT * FROM public.transcripts 
-     WHERE id = '44444444-4444-4444-4444-444444444444' AND content = 'Updated transcript content' $$,
+     WHERE id = '44444444-4444-4444-4444-444444444444' AND content_json = '{"segments": [{"start_ms": 0, "end_ms": 5000, "speaker": "therapist", "content": "Updated transcript content"}]}' $$,
   'Transcript should be updated correctly'
 );
 
