@@ -201,7 +201,7 @@ select lives_ok(
 );
 -- Insert
 select lives_ok(
-  $$ INSERT INTO public.transcripts (id, session_id, account_id, transcription_model, content) VALUES ('55555555-5555-5555-5555-555555555555', '44444444-4444-4444-4444-444444444444', (SELECT id FROM public.accounts WHERE primary_owner_user_id = tests.get_supabase_uid('account_owner')), 'test-model', 'Test transcript content') $$,
+  $$ INSERT INTO public.transcripts (id, session_id, account_id, transcription_model, content_json) VALUES ('55555555-5555-5555-5555-555555555555', '44444444-4444-4444-4444-444444444444', (SELECT id FROM public.accounts WHERE primary_owner_user_id = tests.get_supabase_uid('account_owner')), 'test-model', '{"segments": [{"start_ms": 0, "end_ms": 5000, "speaker": "therapist", "content": "Test transcript content"}]}') $$,
   'Should be able to insert transcript and trigger audit_log CREATE'
 );
 set local role service_role;
@@ -212,7 +212,7 @@ select isnt_empty(
 select makerkit.authenticate_as('account_owner');
 -- Update
 select lives_ok(
-  $$ UPDATE public.transcripts SET content = 'Updated transcript content' WHERE id = '55555555-5555-5555-5555-555555555555' $$,
+  $$ UPDATE public.transcripts SET content_json = '{"segments": [{"start_ms": 0, "end_ms": 5000, "speaker": "therapist", "content": "Updated transcript content"}]}' WHERE id = '55555555-5555-5555-5555-555555555555' $$,
   'Should be able to update transcript and trigger audit_log UPDATE'
 );
 set local role service_role;
