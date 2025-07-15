@@ -818,15 +818,15 @@ export function RecordingModal({
       }
 
       // 3. Navigate to the session
-      toast.success(t("recordingModal.import.success"));
+      toast.success(t("recordingModal.upload.success"));
       if (result.sessionId) {
         await onSave(result.sessionId);
       } else {
         await onSave();
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : t("recordingModal.import.error"));
-      toast.error(err instanceof Error ? err.message : t("recordingModal.import.error"));
+      setError(err instanceof Error ? err.message : t("recordingModal.upload.error"));
+      toast.error(err instanceof Error ? err.message : t("recordingModal.upload.error"));
     } finally {
       setIsImporting(false);
       // Reset file input
@@ -1239,7 +1239,7 @@ export function RecordingModal({
                       <div className="w-full border-t border-gray-300" />
                     </div>
                     <div className="relative flex justify-center text-sm">
-                      <span className="px-2 bg-white text-gray-500">{t("recordingModal.import.or")}</span>
+                      <span className="px-2 bg-white text-gray-500">{t("recordingModal.upload.or")}</span>
                     </div>
                   </div>
                   
@@ -1258,20 +1258,20 @@ export function RecordingModal({
                     {isImporting ? (
                       <>
                         <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                        {t("recordingModal.import.importing")}
+                        {t("recordingModal.upload.uploading")}
                       </>
                     ) : (
                       <>
                         <Upload className="mr-2 h-5 w-5" />
-                        {t("recordingModal.import.button")}
+                        {t("recordingModal.upload.button")}
                       </>
                     )}
                   </Button>
                   <div className="mt-4 flex items-center gap-3 bg-white border border-gray-200 rounded-lg px-3 py-2">
                     <Volume2 className="w-5 h-5 text-gray-400" />
-                    <span className="text-sm text-gray-500">
+                    <span className="text-xs text-gray-500">
                       {t("recordingModal.microphone.supportedFormats", {
-                        formats: "mp3, wav, m4a/mp4, aac, flac, ogg, aiff, webm, wma"
+                        formats: "mp3, wav, m4a, mp4, aac, flac, ogg, aiff, webm, wma"
                       })}
                     </span>
                   </div>
