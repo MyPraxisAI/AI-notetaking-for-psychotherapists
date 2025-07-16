@@ -50,7 +50,9 @@ export function EditableTextField({
     if (isEditing) {
       setEditValue(textValueLocal ?? value ?? '');
     }
-  }, [isEditing, value, textValueLocal]);
+    // Only run this effect when isEditing transitions to true
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isEditing]);
 
   // In display mode, show textValueLocal if defined, else value
   const displayValue =
