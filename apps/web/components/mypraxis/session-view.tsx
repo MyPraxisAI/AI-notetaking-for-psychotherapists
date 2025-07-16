@@ -863,25 +863,25 @@ export function SessionView({ clientId, sessionId, onDelete, isDemo = false }: S
                     {userNote}
                   </div>
                   <div className="absolute right-2 top-2 flex gap-1">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6 hover:bg-transparent"
-                      onClick={() => handleCopyText(userNote, 'note')}
-                      data-test="copy-note-button"
-                    >
-                      {isNoteCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                    </Button>
                     {!isDemo && (
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
                         onClick={() => setIsEditing(true)}
                       >
                         <Edit2 className="h-4 w-4" />
                       </Button>
                     )}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 hover:bg-transparent cursor-pointer"
+                      onClick={() => handleCopyText(userNote, 'note')}
+                      data-test="copy-note-button"
+                    >
+                      {isNoteCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                    </Button>
                   </div>
                 </div>
               ) : (

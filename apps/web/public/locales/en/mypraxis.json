@@ -217,6 +217,7 @@
   },
   "clientTreatmentPlan": {
     "title": "Treatment Plan",
+    "placeholder": "Create Treatment Plan",
     "loading": "Loading treatment plan...",
     "error": "Error loading treatment plan",
     "tryAgain": "Please try again later",
