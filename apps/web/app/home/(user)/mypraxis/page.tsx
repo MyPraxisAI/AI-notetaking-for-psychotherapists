@@ -67,6 +67,18 @@ interface Session {
   createdAt: string
 }
 
+// Hash a string to a pastel background color
+function getAvatarBgColor(name: string) {
+  // Simple hash function
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  // Generate HSL color (pastel)
+  const hue = Math.abs(hash) % 360;
+  return `hsl(${hue}, 70%, 85%)`;
+}
+
 export default function Page() {
   const { t } = useTranslation();
   const { emit } = useAppEvents<AppEvents>();
@@ -1032,7 +1044,7 @@ export default function Page() {
                 <span
                   data-test="client-name-cell"
                   className={
-                    `${client.id === selectedClient ? 'text-[16px] font-semibold' : 'text-[14px] font-medium'} break-words whitespace-normal text-left pr-4 overflow-hidden`
+                    `${client.id === selectedClient ? 'text-[16px] font-semibold' : 'text-[14px] font-medium'} break-words whitespace-normal text-left pr-4 overflow-hidden w-42`
                   }
                 >
                   {renamingClientId === client.id ? (
@@ -1091,7 +1103,7 @@ export default function Page() {
                 { client.demo && (
                   <Badge
                     variant="secondary"
-                    className="ml-0.5 mr-6 text-xs font-medium bg-white text-[#6B7280] px-2.5 py-0.5 rounded-full border border-[#E5E7EB]"
+                    className="ml-0.5 mr-9 text-xs font-medium bg-white text-[#6B7280] px-2.5 py-0.5 rounded-full border border-[#E5E7EB]"
                   >
                     {t('mypraxis:page.demo')}
                   </Badge>
@@ -1101,7 +1113,10 @@ export default function Page() {
                 {/* Avatar is visible by default, hidden on hover */}
                 <div className="group-hover:opacity-0 opacity-100 transition-opacity">
                   <Avatar className="h-8 w-8">
-                    <AvatarFallback className={client.id === selectedClient ? 'font-semibold' : 'font-normal'}>
+                    <AvatarFallback
+                      className={client.id === selectedClient ? 'font-semibold' : 'font-normal'}
+                      style={{ backgroundColor: getAvatarBgColor(localClientNames[client.id] || client.fullName) }}
+                    >
                       {getFullNameInitials(localClientNames[client.id] || client.fullName)}
                     </AvatarFallback>
                   </Avatar>
