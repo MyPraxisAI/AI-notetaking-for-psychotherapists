@@ -111,6 +111,13 @@ export interface AppEvents extends ConsumerProvidedEventTypes {
     artifact_type: ArtifactType;
   };
 
+  // Treatment Plan
+  TreatmentPlanViewed: {
+    client_id: string;
+  };
+  TreatmentPlanCopied: {
+    client_id: string;
+  };
 
   // Settings
   SettingsViewed: Record<string, never>;

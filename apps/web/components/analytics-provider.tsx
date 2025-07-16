@@ -123,6 +123,10 @@ const analyticsMapping: AnalyticsMapping<AppEvents> = {
   // Help & Support
   HelpRequested: (event) => analytics.trackEvent(event.type),
 
+  // Treatment Plan
+  TreatmentPlanViewed: (event) => analytics.trackEvent(event.type, event.payload),
+  TreatmentPlanCopied: (event) => analytics.trackEvent(event.type, event.payload),
+
   // Default Makerkit events
   'user.signedIn': (event) => {
     const { userId, ...rawTraits } = event.payload as { userId: string; [key: string]: string | undefined };

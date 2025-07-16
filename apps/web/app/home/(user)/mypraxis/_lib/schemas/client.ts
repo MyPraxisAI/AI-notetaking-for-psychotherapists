@@ -28,4 +28,5 @@ export interface ClientWithId extends ClientData {
   id: string;
   createdAt: string;
   demo: boolean;
+  treatment_plan?: string | null;
 }

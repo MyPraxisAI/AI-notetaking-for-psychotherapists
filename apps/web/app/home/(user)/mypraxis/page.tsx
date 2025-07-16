@@ -29,15 +29,15 @@ import {
   ChevronRight,
   Hammer,
   Shield,
+  AlertTriangle,
 } from "lucide-react"
 
 import { ProfileForm } from "../../../../components/mypraxis/profile-form"
 import { SettingsForm } from "../../../../components/mypraxis/settings-form"
 import { SessionView } from "../../../../components/mypraxis/session-view"
 import { RecordingModal } from "../../../../components/mypraxis/recording-modal"
-import { ClientPrepNote } from '../../../../components/mypraxis/client-prep-note';
-import { ClientConceptualization } from '../../../../components/mypraxis/client-conceptualization';
-import { ClientBio } from '../../../../components/mypraxis/client-bio';
+import { ClientArtifactPanel } from '../../../../components/mypraxis/client-artifact-panel';
+import { ClientTreatmentPlanPanel } from '../../../../components/mypraxis/client-treatment-plan-panel';
 import { useClients, useCreateClient, useDeleteClient } from "./_lib/hooks/use-clients"
 import { OnboardingModal } from "../../../../components/mypraxis/onboarding-modal"
 import { useUserSettings } from "./_lib/hooks/use-user-settings"
@@ -56,7 +56,7 @@ const setClientId = (id: string): ClientId => {
   return id
 }
 
-type DetailItem = "profile" | "prep-note" | "overview" | "client-bio" | string
+type DetailItem = "profile" | "prep-note" | "treatment-plan" | "client-bio" | string
 
 interface Session {
   id: string
@@ -190,14 +190,6 @@ export default function Page() {
           payload: { 
             client_id: selectedClient, 
             artifact_type: 'client_bio'
-          },
-        });
-      } else if (item === "overview") {
-        emit({
-          type: 'ArtifactViewed',
-          payload: { 
-            client_id: selectedClient, 
-            artifact_type: 'client_conceptualization'
           },
         });
       }
@@ -654,28 +646,29 @@ export default function Page() {
     // Each component gets a stable key based on the client ID, not the selected tab
     return (
       <div className="w-full h-full">
-        {selectedDetailItem === 'overview' && (
-          <ClientConceptualization 
-            key={`conceptualization-${selectedClient}`} 
-            clientId={selectedClient} 
-          />
-        )}
-        
+        {selectedDetailItem === 'treatment-plan' && (
+            <ClientTreatmentPlanPanel
+              key={`treatment-plan-${selectedClient}`}
+              clientId={selectedClient}
+            />
+          )}
         {selectedDetailItem === 'client-bio' && (
-          <ClientBio 
+          <ClientArtifactPanel
             key={`bio-${selectedClient}`}
             clientId={selectedClient}
-            _clientName={localClientNames[selectedClient] || clients.find(c => c.id === selectedClient)?.fullName || ""} 
+            artifactType="client_bio"
+            i18nObject="clientBio"
           />
         )}
-        
         {(selectedDetailItem === 'prep-note' || 
-          (selectedDetailItem !== 'overview' && 
+          (selectedDetailItem !== 'treatment-plan' && 
            selectedDetailItem !== 'client-bio' && 
            !sessions.find(s => s.id === selectedDetailItem))) && (
-          <ClientPrepNote 
+          <ClientArtifactPanel
             key={`prep-note-${selectedClient}`}
-            clientId={selectedClient} 
+            clientId={selectedClient}
+            artifactType="client_prep_note"
+            i18nObject="clientPrepNote"
           />
         )}
       </div>
@@ -763,6 +756,10 @@ export default function Page() {
       selectDetailItem(selectedDetailItem);
     }
   }, [sessions, selectDetailItem, selectedDetailItem]);
+
+  // Find the current client object
+  const currentClient = clients.find(c => c.id === selectedClient);
+  const treatmentPlanMissing = !currentClient?.treatment_plan;
 
   return (
     <div className="flex h-screen w-full relative">
@@ -1106,12 +1103,15 @@ export default function Page() {
             </Button>
             <Button
               variant="ghost"
-              className={`${getTabButtonClass("overview")} ${clients.length === 0 ? "opacity-50 cursor-not-allowed" : ""}`}
-              onClick={() => handleDetailItemClick("overview")}
+              className={`${getTabButtonClass("treatment-plan")} ${clients.length === 0 ? "opacity-50 cursor-not-allowed" : ""}`}
+              onClick={() => handleDetailItemClick("treatment-plan")}
               disabled={clients.length === 0}
             >
               <ClipboardList className="h-4 w-4 mr-2" />
-              {t('mypraxis:page.detailsColumn.conceptualization')}
+              {t('mypraxis:page.detailsColumn.treatmentPlan')}
+              {treatmentPlanMissing && (
+                <AlertTriangle className="h-4 w-4 ml-2 text-yellow-500" />
+              )}
             </Button>
             <Button
               variant="ghost"

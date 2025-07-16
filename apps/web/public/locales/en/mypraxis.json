@@ -161,6 +161,7 @@
       "prepNote": "Prep Note",
       "conceptualization": "Conceptualization",
       "clientBio": "Client Bio",
+      "treatmentPlan": "Treatment Plan",
       "auditReadiness": "Audit Readiness"
     }
   },
@@ -212,6 +213,16 @@
     "tryAgain": "Please try again later",
     "notAvailable": "Not available yet, will appear after first session recording is completed.",
     "updating": "Updating"
+  },
+  "clientTreatmentPlan": {
+    "title": "Treatment Plan",
+    "placeholder": "Create Treatment Plan",
+    "loading": "Loading treatment plan...",
+    "error": "Error loading treatment plan",
+    "tryAgain": "Please try again later",
+    "updating": "Updating",
+    "notCreated": "No treatment plan yet. Create it!",
+    "saveError": "Failed to save treatment plan. Please try again."
   },
   "clientCreationModal": {
     "title": "Add New Client",
