@@ -45,6 +45,7 @@ import { ClientCreationModal } from "../../../../components/mypraxis/client-crea
 import { useIsSuperAdmin } from "../../../../lib/client/utils/is-super-admin"
 import { AppEvents } from "../../../../lib/app-events";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@kit/ui/dropdown-menu"
+import { DeleteClientModal } from "../../../../components/mypraxis/delete-client-modal"
 
 // Menu item type
 type MenuItem = "clients" | "settings" | "billing" | "help" | "gift" | "logout" | "admin" | "onboarding"
@@ -359,8 +360,8 @@ export default function Page() {
         setNewClientIds((prev) => new Set(prev).add(newClient.id))
 
         // Select the new client and switch to profile view
-        selectClient(newClient.id)
-        selectDetailItem("profile")
+        setSelectedClient(newClient.id)
+        setSelectedDetailItem('treatment-plan')
 
         // Close client list on small screens when new client button is clicked
         if (window.innerWidth <= 1050) {
@@ -545,11 +546,6 @@ export default function Page() {
     return `${baseClass} ${selectedDetailItem === tab ? selectedClass : unselectedClass}`
   }
 
-  const _formatDisplayDate = (dateStr: string) => {
-    const date = new Date(dateStr)
-    return `${date.getDate().toString().padStart(2, "0")}/${(date.getMonth() + 1).toString().padStart(2, "0")}`
-  }
-
   const handleDeleteSession = (sessionId: string) => {
     // Find the current session index
     const currentIndex = sessions.findIndex((s) => s.id === sessionId)
@@ -594,11 +590,21 @@ export default function Page() {
   const getTherapistInitials = (fullName: string) => {
     if (!fullName || !fullName.trim()) return "T";
     
-    return fullName.trim().split(' ')
-      .filter(part => part.length > 0)
-      .map(n => n[0])
-      .join('')
-      .toUpperCase();
+    return getFullNameInitials(fullName);
+  };
+
+  const getFullNameInitials = (fullName: string) => {
+    if (!fullName || !fullName.trim()) return "";
+    const parts = fullName.trim().split(' ').filter(Boolean);
+    if (parts.length === 0) return "";
+    if (parts.length <= 2) {
+      return parts.map(n => n[0]).join('').toUpperCase();
+    } else {
+      // More than 3 parts: take first 2 and last, safely
+      const first = parts[0]?.[0] || '';
+      const last = parts[parts.length - 1]?.[0] || '';
+      return (first + last).toUpperCase();
+    }
   };
 
   const renderContent = () => {
@@ -765,6 +771,16 @@ export default function Page() {
   const [renamingClientId, setRenamingClientId] = useState<string | null>(null)
   const [renameValue, setRenameValue] = useState<string>("")
   const [isRenamingLoading, setIsRenamingLoading] = useState(false)
+  const renameInputRef = useRef<HTMLTextAreaElement | null>(null)
+
+  useEffect(() => {
+    if (renamingClientId && renameInputRef.current) {
+      renameInputRef.current.focus()
+      renameInputRef.current.select()
+    }
+  }, [renamingClientId])
+  const [deleteModalClientId, setDeleteModalClientId] = useState<string | null>(null)
+  const [clientMenuOpen, setClientMenuOpen] = useState<Record<string, boolean>>({})
 
   return (
     <div className="flex h-screen w-full relative">
@@ -1003,7 +1019,7 @@ export default function Page() {
 
         <div className="mt-3 px-2.5 space-y-0.5">
           {clients.map((client) => (
-            <div key={client.id} className="relative group flex items-center">
+            <div key={client.id} className="relative group flex items-center min-w-0">
               <Button
                 variant="ghost"
                 className={getClientButtonClass(client.id)}
@@ -1013,20 +1029,28 @@ export default function Page() {
                 }}
                 data-test="client-list-item"
               >
-                <Avatar className="mr-2 h-7 w-7">
-                  <AvatarFallback>{getTherapistInitials(client.fullName)}</AvatarFallback>
-                </Avatar>
                 <span
                   data-test="client-name-cell"
-                  className={`${client.id === selectedClient ? 'text-[16px] font-semibold' : 'text-[14px] font-medium'}`}
+                  className={
+                    `${client.id === selectedClient ? 'text-[16px] font-semibold' : 'text-[14px] font-medium'} break-words whitespace-normal text-left pr-4 overflow-hidden`
+                  }
                 >
                   {renamingClientId === client.id ? (
-                    <input
-                      className="border rounded px-1 py-0.5 text-[14px] font-medium w-32"
+                    <textarea
+                      ref={renameInputRef}
+                      className="border rounded px-1 py-0.5 text-[14px] font-medium w-37 resize-none break-words whitespace-pre-wrap text-left"
                       value={renameValue}
-                      autoFocus
                       disabled={isRenamingLoading}
-                      onChange={e => setRenameValue(e.target.value)}
+                      rows={1}
+                      style={{ minHeight: '2rem', maxHeight: '4.5rem', overflow: 'auto' }}
+                      onChange={e => {
+                        setRenameValue(e.target.value)
+                        // Auto-resize
+                        if (renameInputRef.current) {
+                          renameInputRef.current.style.height = '2rem';
+                          renameInputRef.current.style.height = `${renameInputRef.current.scrollHeight}px`;
+                        }
+                      }}
                       onBlur={async () => {
                         if (renameValue.trim() && renameValue !== client.fullName) {
                           setIsRenamingLoading(true)
@@ -1039,10 +1063,10 @@ export default function Page() {
                             if (res.ok) {
                               setLocalClientNames(prev => ({ ...prev, [client.id]: renameValue.trim() }))
                             } else {
-                              toast.error(t('mypraxis:page.renameError'))
+                              toast.error(t('mypraxis:page.client.renameError'))
                             }
                           } catch {
-                            toast.error(t('mypraxis:page.renameError'))
+                            toast.error(t('mypraxis:page.client.renameError'))
                           } finally {
                             setIsRenamingLoading(false)
                             setRenamingClientId(null)
@@ -1073,35 +1097,50 @@ export default function Page() {
                   </Badge>
                 )}
               </Button>
-              <div className="absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <span onClick={e => e.stopPropagation()} title={t('mypraxis:page.clientActions')}>
-                      <Edit2 className="h-4 w-4 cursor-pointer" />
-                    </span>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem
-                      onClick={e => {
-                        e.preventDefault()
-                        e.stopPropagation()
-                        setRenamingClientId(client.id)
-                        setRenameValue(localClientNames[client.id] || client.fullName)
-                      }}
-                    >
-                      {t('mypraxis:page.rename')}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={e => {
-                        e.preventDefault()
-                        e.stopPropagation()
-                        handleClientDeleted(client.id)
-                      }}
-                    >
-                      {t('mypraxis:page.delete')}
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+              <div className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 transition-opacity">
+                {/* Avatar is visible by default, hidden on hover */}
+                <div className="group-hover:opacity-0 opacity-100 transition-opacity">
+                  <Avatar className="h-8 w-8">
+                    <AvatarFallback className={client.id === selectedClient ? 'font-semibold' : 'font-normal'}>
+                      {getFullNameInitials(localClientNames[client.id] || client.fullName)}
+                    </AvatarFallback>
+                  </Avatar>
+                </div>
+                {/* Pencil icon is hidden by default, visible on hover */}
+                <div className="opacity-0 group-hover:opacity-100 transition-opacity absolute inset-0 flex items-center justify-center">
+                  <DropdownMenu open={!!clientMenuOpen[client.id]} onOpenChange={open => setClientMenuOpen(prev => ({ ...prev, [client.id]: open }))}>
+                    <DropdownMenuTrigger asChild>
+                      <span onClick={e => e.stopPropagation()} title={t('mypraxis:page.client.actions')}>
+                        <Edit2 className="h-4 w-4 cursor-pointer" />
+                      </span>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      {!client.demo && (
+                        <DropdownMenuItem
+                          onClick={e => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            setRenamingClientId(client.id)
+                            setRenameValue(localClientNames[client.id] || client.fullName)
+                            setClientMenuOpen(prev => ({ ...prev, [client.id]: false }))
+                          }}
+                        >
+                          {t('mypraxis:page.client.rename')}
+                        </DropdownMenuItem>
+                      )}
+                      <DropdownMenuItem
+                        onClick={e => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                          setDeleteModalClientId(client.id)
+                          setClientMenuOpen(prev => ({ ...prev, [client.id]: false }))
+                        }}
+                      >
+                        {t('mypraxis:page.client.delete')}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
               </div>
             </div>
           ))}
@@ -1280,6 +1319,18 @@ export default function Page() {
         onClose={() => setIsClientCreationModalOpen(false)}
         onSave={handleCreateClient}
       />
+
+      {deleteModalClientId && (
+        <DeleteClientModal
+          isOpen={!!deleteModalClientId}
+          onClose={() => setDeleteModalClientId(null)}
+          onDelete={() => {
+            handleClientDeleted(deleteModalClientId)
+            setDeleteModalClientId(null)
+          }}
+          clientName={localClientNames[deleteModalClientId] || (clients.find(c => c.id === deleteModalClientId)?.fullName ?? "")}
+        />
+      )}
     </div>
   );
 }

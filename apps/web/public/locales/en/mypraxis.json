@@ -163,6 +163,12 @@
       "clientBio": "Client Bio",
       "treatmentPlan": "Treatment Plan",
       "auditReadiness": "Audit Readiness"
+    },
+    "client": {
+      "rename": "Rename",
+      "delete": "Delete",
+      "actions": "Client actions",
+      "renameError": "Failed to rename client. Please try again."
     }
   },
   "profileForm": {
