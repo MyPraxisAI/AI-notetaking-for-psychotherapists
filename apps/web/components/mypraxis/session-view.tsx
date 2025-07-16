@@ -165,7 +165,7 @@ function TranscriptContent({ clientId, sessionId, session, handleSessionUpdate, 
               <div key={idx} className="flex flex-col gap-0 mt-2">
                 <div className="flex items-baseline justify-between w-full">
                   <span className="text-[14px] leading-tight font-medium" style={speakerStyle}>{sp === 'therapist' ? speakerLabels.therapist : speakerLabels.client}</span>
-                  <span className="text-xs text-[#6B7280] ml-2">{timestamp}</span>
+                  <span className="text-xs text-[#6B7280] ml-2 select-none" unselectable="on">{timestamp}</span>
                 </div>
                 <div className="text-[14px] text-[#111827] leading-snug whitespace-pre-line break-words mt-0">
                   {seg.content}
