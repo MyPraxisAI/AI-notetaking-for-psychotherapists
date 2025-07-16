@@ -37,9 +37,7 @@ import { ProfileForm } from "../../../../components/mypraxis/profile-form"
 import { SettingsForm } from "../../../../components/mypraxis/settings-form"
 import { SessionView } from "../../../../components/mypraxis/session-view"
 import { RecordingModal } from "../../../../components/mypraxis/recording-modal"
-import { ClientPrepNote } from '../../../../components/mypraxis/client-prep-note';
-import { ClientConceptualization } from '../../../../components/mypraxis/client-conceptualization';
-import { ClientBio } from '../../../../components/mypraxis/client-bio';
+import { ClientArtifactPanel } from '../../../../components/mypraxis/client-artifact-panel';
 import { useClients, useCreateClient, useDeleteClient } from "./_lib/hooks/use-clients"
 import { OnboardingModal } from "../../../../components/mypraxis/onboarding-modal"
 import { useUserSettings } from "./_lib/hooks/use-user-settings"
@@ -657,27 +655,30 @@ export default function Page() {
     return (
       <div className="w-full h-full">
         {selectedDetailItem === 'overview' && (
-          <ClientConceptualization 
-            key={`conceptualization-${selectedClient}`} 
-            clientId={selectedClient} 
+          <ClientArtifactPanel
+            key={`conceptualization-${selectedClient}`}
+            clientId={selectedClient}
+            artifactType="client_conceptualization"
+            i18nObject="clientConceptualization"
           />
         )}
-        
         {selectedDetailItem === 'client-bio' && (
-          <ClientBio 
+          <ClientArtifactPanel
             key={`bio-${selectedClient}`}
             clientId={selectedClient}
-            _clientName={localClientNames[selectedClient] || clients.find(c => c.id === selectedClient)?.fullName || ""} 
+            artifactType="client_bio"
+            i18nObject="clientBio"
           />
         )}
-        
         {(selectedDetailItem === 'prep-note' || 
           (selectedDetailItem !== 'overview' && 
            selectedDetailItem !== 'client-bio' && 
            !sessions.find(s => s.id === selectedDetailItem))) && (
-          <ClientPrepNote 
+          <ClientArtifactPanel
             key={`prep-note-${selectedClient}`}
-            clientId={selectedClient} 
+            clientId={selectedClient}
+            artifactType="client_prep_note"
+            i18nObject="clientPrepNote"
           />
         )}
       </div>

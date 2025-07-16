@@ -350,6 +350,7 @@ export type Database = {
           id: string
           phone: string | null
           therapist_id: string
+          treatment_plan: string | null
           updated_at: string
         }
         Insert: {
@@ -361,6 +362,7 @@ export type Database = {
           id?: string
           phone?: string | null
           therapist_id: string
+          treatment_plan?: string | null
           updated_at?: string
         }
         Update: {
@@ -372,6 +374,7 @@ export type Database = {
           id?: string
           phone?: string | null
           therapist_id?: string
+          treatment_plan?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -2094,6 +2097,7 @@ export type Database = {
           owner: string | null
           owner_id: string | null
           public: boolean | null
+          type: Database["storage"]["Enums"]["buckettype"]
           updated_at: string | null
         }
         Insert: {
@@ -2106,6 +2110,7 @@ export type Database = {
           owner?: string | null
           owner_id?: string | null
           public?: boolean | null
+          type?: Database["storage"]["Enums"]["buckettype"]
           updated_at?: string | null
         }
         Update: {
@@ -2118,9 +2123,111 @@ export type Database = {
           owner?: string | null
           owner_id?: string | null
           public?: boolean | null
+          type?: Database["storage"]["Enums"]["buckettype"]
           updated_at?: string | null
         }
         Relationships: []
+      }
+      buckets_analytics: {
+        Row: {
+          created_at: string
+          format: string
+          id: string
+          type: Database["storage"]["Enums"]["buckettype"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          format?: string
+          id: string
+          type?: Database["storage"]["Enums"]["buckettype"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          format?: string
+          id?: string
+          type?: Database["storage"]["Enums"]["buckettype"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      iceberg_namespaces: {
+        Row: {
+          bucket_id: string
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          bucket_id: string
+          created_at?: string
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          bucket_id?: string
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "iceberg_namespaces_bucket_id_fkey"
+            columns: ["bucket_id"]
+            isOneToOne: false
+            referencedRelation: "buckets_analytics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      iceberg_tables: {
+        Row: {
+          bucket_id: string
+          created_at: string
+          id: string
+          location: string
+          name: string
+          namespace_id: string
+          updated_at: string
+        }
+        Insert: {
+          bucket_id: string
+          created_at?: string
+          id?: string
+          location: string
+          name: string
+          namespace_id: string
+          updated_at?: string
+        }
+        Update: {
+          bucket_id?: string
+          created_at?: string
+          id?: string
+          location?: string
+          name?: string
+          namespace_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "iceberg_tables_bucket_id_fkey"
+            columns: ["bucket_id"]
+            isOneToOne: false
+            referencedRelation: "buckets_analytics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "iceberg_tables_namespace_id_fkey"
+            columns: ["namespace_id"]
+            isOneToOne: false
+            referencedRelation: "iceberg_namespaces"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       migrations: {
         Row: {
@@ -2514,7 +2621,7 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      buckettype: "STANDARD" | "ANALYTICS"
     }
     CompositeTypes: {
       [_ in never]: never
