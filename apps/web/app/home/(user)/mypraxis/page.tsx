@@ -192,14 +192,6 @@ export default function Page() {
             artifact_type: 'client_bio'
           },
         });
-      } else if (item === "treatment-plan") {
-        emit({
-          type: 'ArtifactViewed',
-          payload: { 
-            client_id: selectedClient, 
-            artifact_type: 'client_conceptualization'
-          },
-        });
       }
     }
 
