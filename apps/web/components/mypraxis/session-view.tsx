@@ -157,8 +157,8 @@ function TranscriptContent({ clientId, sessionId, session, handleSessionUpdate, 
             const end = formatTimestamp(seg.end_ms);
             const sp = seg.speaker;
             const speakerStyle = sp === 'therapist'
-              ? { color: '#7A6A3A', fontWeight: 600 }
-              : { color: '#111827', fontWeight: 600 };
+              ? { color: '#333333', fontWeight: 600 }
+              : { color: '#111111', fontWeight: 600 };
             // Timestamp (right-aligned)
             const timestamp = start === end ? start : `${start} - ${end}`;
             return (

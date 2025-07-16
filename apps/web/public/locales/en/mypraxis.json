@@ -150,7 +150,6 @@
       "sessions": "Sessions",
       "settings": "Settings",
       "billing": "Billing",
-      "giftPraxis": "Gift Praxis",
       "help": "Get help",
       "signOut": "Sign Out"
     },
@@ -162,8 +161,8 @@
       "prepNote": "Prep Note",
       "conceptualization": "Conceptualization",
       "clientBio": "Client Bio",
-      "aiSupervision": "AI Supervision",
-      "treatmentPlan": "Treatment Plan"
+      "treatmentPlan": "Treatment Plan",
+      "auditReadiness": "Audit Readiness"
     }
   },
   "profileForm": {
@@ -269,7 +268,7 @@
       "unnamed": "Unnamed microphone",
       "loading": "Loading microphones...",
       "label": "Microphone",
-      "record": "Record with microphone",
+      "record": "Record",
       "soundCheck": "Sound check",
       "checking": "Checking microphone...",
       "headphoneWarning": "Currently teleconference recording is only supported without headphones, with your client speaking through your computer speakers.",
@@ -293,12 +292,12 @@
       "save": "Save Session",
       "saving": "Saving Recording..."
     },
-    "import": {
+    "upload": {
       "or": "or",
-      "button": "Import Audio File",
-      "importing": "Importing Audio File...",
-      "success": "Audio file imported successfully",
-      "error": "Failed to import audio file"
+      "button": "Upload Audio File",
+      "uploading": "Uploading Audio File...",
+      "success": "Audio file uploaded successfully",
+      "error": "Failed to upload audio file"
     },
     "close": "close",
     "confirmCloseTitle": "Confirm Close",

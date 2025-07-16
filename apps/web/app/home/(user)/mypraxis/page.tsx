@@ -17,7 +17,6 @@ import {
   Settings,
   Wallet,
   HelpCircle,
-  Gift,
   LogOut,
   Plus,
   ClipboardEdit,
@@ -26,7 +25,6 @@ import {
   Mic,
   User,
   ClipboardList,
-  Brain,
   ChevronLeft,
   ChevronRight,
   Hammer,
@@ -885,17 +883,6 @@ export default function Page() {
                 {t('mypraxis:page.navigation.billing')}
               </Button>
             </div>
-            <div className="px-2">
-              <Button 
-                variant="ghost" 
-                className={`${getButtonClass("gift")} opacity-50 cursor-default`} 
-                onClick={() => {}}
-                disabled={true}
-              >
-                <Gift className="h-[18px] w-[18px]" />
-                {t('mypraxis:page.navigation.giftPraxis')}
-              </Button>
-            </div>
             
             {/* Active Menu Items */}
             <div className="mt-4 px-2">
@@ -1148,8 +1135,8 @@ export default function Page() {
               className="flex items-center w-full justify-start px-3 py-2 text-[14px] font-medium text-muted-foreground opacity-50"
               disabled={true}
             >
-              <Brain className="h-4 w-4 mr-2" />
-              {t('mypraxis:page.detailsColumn.aiSupervision')}
+              <Shield className="h-4 w-4 mr-2" />
+              {t('mypraxis:page.detailsColumn.auditReadiness')}
             </Button>
           </div>
 
