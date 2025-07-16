@@ -10,7 +10,6 @@ import { useAppEvents } from '@kit/shared/events';
 import { useUserData } from './_lib/hooks/use-user-data'
 import { toast } from "sonner"
 import { useCreateSession, useSessions } from "./_lib/hooks/use-sessions"
-import { usePrefetchClientArtifacts } from "./_lib/hooks/use-client-artifacts"
 import { SessionWithId } from "./_lib/schemas/session"
 import {
   Users2,
@@ -88,7 +87,6 @@ export default function Page() {
   const [selectedDetailItem, setSelectedDetailItem] = useState<DetailItem>("prep-note")
   
   // Initialize hooks for prefetching artifacts
-  const prefetchClientArtifacts = usePrefetchClientArtifacts()
   const { data: clients = [], isLoading: _isLoadingClients } = useClients()
   const [sessions, setSessions] = useState<Session[]>([])
   const [localClientNames, setLocalClientNames] = useState<Record<string, string>>({})
@@ -331,21 +329,6 @@ export default function Page() {
     // Only hide client list on small screens when switching to a different item
     if (window.innerWidth <= 1430) {
       setIsClientListVisible(false);
-    }
-  }
-
-  const handleClientClick = (clientId: string) => {
-    selectClient(clientId)
-    
-    // Always set detail item to prep-note when selecting a client
-    selectDetailItem("prep-note")
-    
-    // Prefetch client artifacts to avoid loading flash
-    prefetchClientArtifacts(clientId);
-    
-    // Close client list on small screens when a client is clicked
-    if (window.innerWidth <= 1050) {
-      setIsClientListVisible(false)
     }
   }
 
