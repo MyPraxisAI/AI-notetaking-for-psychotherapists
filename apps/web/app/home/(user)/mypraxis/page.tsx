@@ -38,6 +38,7 @@ import { SettingsForm } from "../../../../components/mypraxis/settings-form"
 import { SessionView } from "../../../../components/mypraxis/session-view"
 import { RecordingModal } from "../../../../components/mypraxis/recording-modal"
 import { ClientArtifactPanel } from '../../../../components/mypraxis/client-artifact-panel';
+import { ClientTreatmentPlanPanel } from '../../../../components/mypraxis/client-treatment-plan-panel';
 import { useClients, useCreateClient, useDeleteClient } from "./_lib/hooks/use-clients"
 import { OnboardingModal } from "../../../../components/mypraxis/onboarding-modal"
 import { useUserSettings } from "./_lib/hooks/use-user-settings"
@@ -56,7 +57,7 @@ const setClientId = (id: string): ClientId => {
   return id
 }
 
-type DetailItem = "profile" | "prep-note" | "overview" | "client-bio" | string
+type DetailItem = "profile" | "prep-note" | "treatment-plan" | "client-bio" | string
 
 interface Session {
   id: string
@@ -192,7 +193,7 @@ export default function Page() {
             artifact_type: 'client_bio'
           },
         });
-      } else if (item === "overview") {
+      } else if (item === "treatment-plan") {
         emit({
           type: 'ArtifactViewed',
           payload: { 
@@ -654,14 +655,12 @@ export default function Page() {
     // Each component gets a stable key based on the client ID, not the selected tab
     return (
       <div className="w-full h-full">
-        {selectedDetailItem === 'overview' && (
-          <ClientArtifactPanel
-            key={`conceptualization-${selectedClient}`}
-            clientId={selectedClient}
-            artifactType="client_conceptualization"
-            i18nObject="clientConceptualization"
-          />
-        )}
+        {selectedDetailItem === 'treatment-plan' && (
+            <ClientTreatmentPlanPanel
+              key={`treatment-plan-${selectedClient}`}
+              clientId={selectedClient}
+            />
+          )}
         {selectedDetailItem === 'client-bio' && (
           <ClientArtifactPanel
             key={`bio-${selectedClient}`}
@@ -671,7 +670,7 @@ export default function Page() {
           />
         )}
         {(selectedDetailItem === 'prep-note' || 
-          (selectedDetailItem !== 'overview' && 
+          (selectedDetailItem !== 'treatment-plan' && 
            selectedDetailItem !== 'client-bio' && 
            !sessions.find(s => s.id === selectedDetailItem))) && (
           <ClientArtifactPanel
@@ -1120,12 +1119,12 @@ export default function Page() {
             </Button>
             <Button
               variant="ghost"
-              className={`${getTabButtonClass("overview")} ${clients.length === 0 ? "opacity-50 cursor-not-allowed" : ""}`}
-              onClick={() => handleDetailItemClick("overview")}
+              className={`${getTabButtonClass("treatment-plan")} ${clients.length === 0 ? "opacity-50 cursor-not-allowed" : ""}`}
+              onClick={() => handleDetailItemClick("treatment-plan")}
               disabled={clients.length === 0}
             >
               <ClipboardList className="h-4 w-4 mr-2" />
-              {t('mypraxis:page.detailsColumn.conceptualization')}
+              {t('mypraxis:page.detailsColumn.treatmentPlan')}
             </Button>
             <Button
               variant="ghost"

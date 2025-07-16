@@ -162,7 +162,8 @@
       "prepNote": "Prep Note",
       "conceptualization": "Conceptualization",
       "clientBio": "Client Bio",
-      "aiSupervision": "AI Supervision"
+      "aiSupervision": "AI Supervision",
+      "treatmentPlan": "Treatment Plan"
     }
   },
   "profileForm": {
@@ -213,6 +214,15 @@
     "tryAgain": "Please try again later",
     "notAvailable": "Not available yet, will appear after first session recording is completed.",
     "updating": "Updating"
+  },
+  "clientTreatmentPlan": {
+    "title": "Treatment Plan",
+    "loading": "Loading treatment plan...",
+    "error": "Error loading treatment plan",
+    "tryAgain": "Please try again later",
+    "updating": "Updating",
+    "notCreated": "No treatment plan yet. Create it!",
+    "saveError": "Failed to save treatment plan. Please try again."
   },
   "clientCreationModal": {
     "title": "Add New Client",
