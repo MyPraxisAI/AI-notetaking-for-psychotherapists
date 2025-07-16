@@ -1,14 +1,12 @@
 "use client";
 
-import { useState, useRef, useEffect } from 'react';
-import { Loader2, Copy, Check, Edit2 } from 'lucide-react';
-import { Button } from '@kit/ui/button';
+import { Loader2 } from 'lucide-react';
+import { useEffect } from 'react';
+import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { useAppEvents } from '@kit/shared/events';
 import type { AppEvents } from '../../lib/app-events';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Textarea } from '@kit/ui/textarea';
-import { toast } from 'sonner';
 import { EditableTextField } from './editable-text-field';
 
 interface ClientTreatmentPlanPanelProps {
@@ -48,8 +46,9 @@ export function ClientTreatmentPlanPanel({ clientId }: ClientTreatmentPlanPanelP
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['client', clientId] });
+      queryClient.invalidateQueries({ queryKey: ['clients'] });
     },
-    onError: (error) => {
+    onError: () => {
       toast.error(
         t('mypraxis:clientTreatmentPlan.saveError')
       );
@@ -66,19 +65,12 @@ export function ClientTreatmentPlanPanel({ clientId }: ClientTreatmentPlanPanelP
     }
   }, [client, clientId, emit]);
 
-  // Handle copy
-  const handleCopy = () => {
-    if (!client?.treatment_plan) return;
-    navigator.clipboard.writeText(client.treatment_plan);
-  };
-
   // In display mode, show textValueLocal if defined, else server value
 
   const title = t('mypraxis:clientTreatmentPlan.title');
   const loadingText = t('mypraxis:clientTreatmentPlan.loading');
   const errorText = t('mypraxis:clientTreatmentPlan.error');
   const tryAgainText = t('mypraxis:clientTreatmentPlan.tryAgain');
-  const notAvailableText = t('mypraxis:clientTreatmentPlan.notCreated');
 
   return (
     <div className="w-full px-6 pt-6 bg-white">

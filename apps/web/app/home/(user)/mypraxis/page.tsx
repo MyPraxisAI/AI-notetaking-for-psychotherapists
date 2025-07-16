@@ -31,6 +31,7 @@ import {
   ChevronRight,
   Hammer,
   Shield,
+  AlertTriangle,
 } from "lucide-react"
 
 import { ProfileForm } from "../../../../components/mypraxis/profile-form"
@@ -766,6 +767,10 @@ export default function Page() {
     }
   }, [sessions, selectDetailItem, selectedDetailItem]);
 
+  // Find the current client object
+  const currentClient = clients.find(c => c.id === selectedClient);
+  const treatmentPlanMissing = !currentClient?.treatment_plan;
+
   return (
     <div className="flex h-screen w-full relative">
       {/* Navigation Overlay */}
@@ -1125,6 +1130,9 @@ export default function Page() {
             >
               <ClipboardList className="h-4 w-4 mr-2" />
               {t('mypraxis:page.detailsColumn.treatmentPlan')}
+              {treatmentPlanMissing && (
+                <AlertTriangle className="h-4 w-4 ml-2 text-yellow-500" />
+              )}
             </Button>
             <Button
               variant="ghost"
