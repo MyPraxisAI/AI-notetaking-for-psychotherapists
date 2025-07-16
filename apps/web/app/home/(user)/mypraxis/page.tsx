@@ -30,6 +30,7 @@ import {
   Hammer,
   Shield,
   AlertTriangle,
+  BookOpen,
 } from "lucide-react"
 
 import { ProfileForm } from "../../../../components/mypraxis/profile-form"
@@ -56,7 +57,7 @@ const setClientId = (id: string): ClientId => {
   return id
 }
 
-type DetailItem = "profile" | "prep-note" | "treatment-plan" | "client-bio" | string
+type DetailItem = "profile" | "prep-note" | "treatment-plan" | "client-bio" | "client-conceptualization" | string
 
 interface Session {
   id: string
@@ -190,6 +191,14 @@ export default function Page() {
           payload: { 
             client_id: selectedClient, 
             artifact_type: 'client_bio'
+          },
+        });
+      } else if (item === "client-conceptualization") {
+        emit({
+          type: 'ArtifactViewed',
+          payload: {
+            client_id: selectedClient,
+            artifact_type: 'client_conceptualization'
           },
         });
       }
@@ -660,9 +669,18 @@ export default function Page() {
             i18nObject="clientBio"
           />
         )}
+        {selectedDetailItem === 'client-conceptualization' && (
+          <ClientArtifactPanel
+            key={`conceptualization-${selectedClient}`}
+            clientId={selectedClient}
+            artifactType="client_conceptualization"
+            i18nObject="clientConceptualization"
+          />
+        )}
         {(selectedDetailItem === 'prep-note' || 
           (selectedDetailItem !== 'treatment-plan' && 
            selectedDetailItem !== 'client-bio' && 
+           selectedDetailItem !== 'client-conceptualization' &&
            !sessions.find(s => s.id === selectedDetailItem))) && (
           <ClientArtifactPanel
             key={`prep-note-${selectedClient}`}
@@ -1100,6 +1118,16 @@ export default function Page() {
             >
               <ClipboardEdit className="h-4 w-4 mr-2" />
               {t('mypraxis:page.detailsColumn.prepNote')}
+            </Button>
+            <Button
+              variant="ghost"
+              className={`${getTabButtonClass("client-conceptualization")} ${clients.length === 0 ? "opacity-50 cursor-not-allowed" : ""}`}
+              onClick={() => handleDetailItemClick("client-conceptualization")}
+              disabled={clients.length === 0}
+            >
+              {/* BookOpen icon for conceptualization */}
+              <BookOpen className="h-4 w-4 mr-2" />
+              {t('mypraxis:page.detailsColumn.conceptualization')}
             </Button>
             <Button
               variant="ghost"
