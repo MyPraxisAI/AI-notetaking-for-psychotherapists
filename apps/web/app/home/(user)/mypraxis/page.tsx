@@ -595,7 +595,7 @@ export default function Page() {
     if (parts.length <= 2) {
       return parts.map(n => n[0]).join('').toUpperCase();
     } else {
-      // More than 3 parts: take first 2 and last, safely
+      // More than 2 parts: take first and last, safely
       const first = parts[0]?.[0] || '';
       const last = parts[parts.length - 1]?.[0] || '';
       return (first + last).toUpperCase();
