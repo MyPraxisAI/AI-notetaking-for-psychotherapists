@@ -52,6 +52,7 @@ export const GET = enhanceRouteHandler(
       phone: record.phone || '',
       createdAt: record.created_at,
       demo: record.demo || false,
+      treatment_plan: record.treatment_plan ?? null,
     }));
     return NextResponse.json(result);
   } catch (error) {
