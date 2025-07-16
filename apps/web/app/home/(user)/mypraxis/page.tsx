@@ -44,6 +44,7 @@ import { useUserSettings } from "./_lib/hooks/use-user-settings"
 import { ClientCreationModal } from "../../../../components/mypraxis/client-creation-modal"
 import { useIsSuperAdmin } from "../../../../lib/client/utils/is-super-admin"
 import { AppEvents } from "../../../../lib/app-events";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@kit/ui/dropdown-menu"
 
 // Menu item type
 type MenuItem = "clients" | "settings" | "billing" | "help" | "gift" | "logout" | "admin" | "onboarding"
@@ -761,6 +762,10 @@ export default function Page() {
   const currentClient = clients.find(c => c.id === selectedClient);
   const treatmentPlanMissing = !currentClient?.treatment_plan;
 
+  const [renamingClientId, setRenamingClientId] = useState<string | null>(null)
+  const [renameValue, setRenameValue] = useState<string>("")
+  const [isRenamingLoading, setIsRenamingLoading] = useState(false)
+
   return (
     <div className="flex h-screen w-full relative">
       {/* Navigation Overlay */}
@@ -998,19 +1003,66 @@ export default function Page() {
 
         <div className="mt-3 px-2.5 space-y-0.5">
           {clients.map((client) => (
-            <div key={client.id} className="relative group hover:bg-[#F3F4F6] rounded">
+            <div key={client.id} className="relative group flex items-center">
               <Button
-                key={client.id}
                 variant="ghost"
                 className={getClientButtonClass(client.id)}
-                onClick={() => handleClientClick(client.id)}
-                data-test={`client-row-${client.id}`}
+                onClick={() => {
+                  setSelectedClient(client.id)
+                  setSelectedDetailItem("prep-note")
+                }}
+                data-test="client-list-item"
               >
-                <span 
-                  data-test="client-name-cell" 
+                <Avatar className="mr-2 h-7 w-7">
+                  <AvatarFallback>{getTherapistInitials(client.fullName)}</AvatarFallback>
+                </Avatar>
+                <span
+                  data-test="client-name-cell"
                   className={`${client.id === selectedClient ? 'text-[16px] font-semibold' : 'text-[14px] font-medium'}`}
                 >
-                  {localClientNames[client.id] || client.fullName}
+                  {renamingClientId === client.id ? (
+                    <input
+                      className="border rounded px-1 py-0.5 text-[14px] font-medium w-32"
+                      value={renameValue}
+                      autoFocus
+                      disabled={isRenamingLoading}
+                      onChange={e => setRenameValue(e.target.value)}
+                      onBlur={async () => {
+                        if (renameValue.trim() && renameValue !== client.fullName) {
+                          setIsRenamingLoading(true)
+                          try {
+                            const res = await fetch(`/api/clients/${client.id}`, {
+                              method: "PATCH",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ full_name: renameValue.trim() })
+                            })
+                            if (res.ok) {
+                              setLocalClientNames(prev => ({ ...prev, [client.id]: renameValue.trim() }))
+                            } else {
+                              toast.error(t('mypraxis:page.renameError'))
+                            }
+                          } catch {
+                            toast.error(t('mypraxis:page.renameError'))
+                          } finally {
+                            setIsRenamingLoading(false)
+                            setRenamingClientId(null)
+                          }
+                        } else {
+                          setRenamingClientId(null)
+                        }
+                      }}
+                      onKeyDown={async (e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault()
+                          e.currentTarget.blur()
+                        } else if (e.key === "Escape") {
+                          setRenamingClientId(null)
+                        }
+                      }}
+                    />
+                  ) : (
+                    localClientNames[client.id] || client.fullName
+                  )}
                 </span>
                 { client.demo && (
                   <Badge
@@ -1021,16 +1073,35 @@ export default function Page() {
                   </Badge>
                 )}
               </Button>
-              <div
-                className="absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  handleClientClick(client.id)
-                  handleDetailItemClick("profile")
-                }}
-                title={t('mypraxis:page.viewProfile')}
-              >
-                <Edit2 className="h-4 w-4 cursor-pointer" />
+              <div className="absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <span onClick={e => e.stopPropagation()} title={t('mypraxis:page.clientActions')}>
+                      <Edit2 className="h-4 w-4 cursor-pointer" />
+                    </span>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem
+                      onClick={e => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        setRenamingClientId(client.id)
+                        setRenameValue(localClientNames[client.id] || client.fullName)
+                      }}
+                    >
+                      {t('mypraxis:page.rename')}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={e => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        handleClientDeleted(client.id)
+                      }}
+                    >
+                      {t('mypraxis:page.delete')}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
           ))}
@@ -1131,8 +1202,6 @@ export default function Page() {
               {t('mypraxis:page.detailsColumn.auditReadiness')}
             </Button>
           </div>
-
-
 
           {/* Start Recording Button */}
           <div className="mt-2 mb-3">
