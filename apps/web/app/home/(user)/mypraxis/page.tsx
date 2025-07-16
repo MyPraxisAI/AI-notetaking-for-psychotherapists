@@ -354,9 +354,9 @@ export default function Page() {
         // Track this as a new client
         setNewClientIds((prev) => new Set(prev).add(newClient.id))
 
-        // Select the new client and switch to profile view
-        setSelectedClient(newClient.id)
-        setSelectedDetailItem('treatment-plan')
+        // Select the new client and switch to treatment plan view
+        selectClient(newClient.id)
+        setTimeout(() => selectDetailItem('treatment-plan'), 0)
 
         // Close client list on small screens when new client button is clicked
         if (window.innerWidth <= 1050) {
@@ -1018,10 +1018,7 @@ export default function Page() {
               <Button
                 variant="ghost"
                 className={getClientButtonClass(client.id)}
-                onClick={() => {
-                  setSelectedClient(client.id)
-                  setSelectedDetailItem("prep-note")
-                }}
+                onClick={() => selectClient(client.id)}
                 data-test="client-list-item"
               >
                 <span
@@ -1095,7 +1092,7 @@ export default function Page() {
               <div className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 transition-opacity">
                 {/* Avatar is visible by default, hidden on hover */}
                 <div className="group-hover:opacity-0 opacity-100 transition-opacity">
-                  <Avatar className="h-8 w-8">
+                  <Avatar className={`h-8 w-8 ${client.id !== selectedClient ? 'opacity-30' : ''}`}>
                     <AvatarFallback
                       className={client.id === selectedClient ? 'font-semibold' : 'font-normal'}
                       style={{ backgroundColor: getAvatarBgColor(localClientNames[client.id] || client.fullName) }}
