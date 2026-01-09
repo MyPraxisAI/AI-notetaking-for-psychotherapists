@@ -2,6 +2,8 @@
 
 A web application for psychotherapists to record therapy sessions, automatically transcribe them, and generate AI-powered insights and summaries.
 
+> **Note:** This project was originally developed by the [MyPraxis](https://mypraxis.ai) team. While the team has moved on to other projects, we're releasing this codebase to the open source community in hopes that others may find it useful, learn from it, or continue its development. We believe this tool has the potential to help psychotherapists and their clients, and we'd love to see it grow in the hands of the community.
+
 ## Features
 
 - **Session Recording** - Record therapy sessions directly in the browser with pause/resume support
@@ -237,7 +239,7 @@ The background worker can be deployed to:
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome! This project is looking for new maintainers and contributors who are passionate about building tools for mental health professionals.
 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/amazing-feature`)
@@ -245,9 +247,22 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
+### Ideas for Future Development
+
+- Mobile app (React Native)
+- Real-time transcription during sessions
+- Integration with calendar apps
+- HIPAA compliance documentation
+- More AI-powered insights and analytics
+- Support for additional languages
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Credits
+
+Originally created by the [MyPraxis](https://mypraxis.ai) team.
 
 ## Acknowledgments
 
